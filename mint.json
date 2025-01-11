@@ -18,7 +18,7 @@
   "topbarLinks": [
     {
       "name": "Support",
-      "url": "mailto:hi@mintlify.com"
+      "url": "mailto:assistant@ixo.world"
     }
   ],
   "topbarCtaButton": {
@@ -27,16 +27,11 @@
   },
   "tabs": [
     {
-      "name": "API References",
+      "name": "API Reference",
       "url": "api-reference"
     }
   ],
   "anchors": [
-    {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
-    },
     {
       "name": "Community",
       "icon": "slack",
