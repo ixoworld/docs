@@ -41,7 +41,15 @@
       "name": "Blog",
       "icon": "world",
       "url": "https://chronicle.impacts.network/"
+    },
+    {
+      "name": "API Reference",
+      "openapi": "/path/to/openapi.json",
+      "url": "api-reference",
+      "icon": "square-terminal"
     }
+  ]
+}
   ],
   "navigation": [
     {
