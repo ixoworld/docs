@@ -7,7 +7,7 @@
     },
     "favicon": "/favicon.svg",
     "colors": {
-      "primary": "#0D9373",
+      "primary": "#00D2FF",
       "light": "#00D2FF",
       "dark": "#0A7CA8",
       "anchors": {
@@ -29,6 +29,10 @@
       {
         "name": "API Reference",
         "url": "api-reference"
+      },
+      {
+        "name": "Platforms",
+        "url": "platforms"
       }
     ],
     "anchors": [
@@ -50,17 +54,6 @@
           "introduction",
           "quickstart",
           "development"
-        ]
-      },
-      {
-        "group": "Essentials",
-        "pages": [
-          "essentials/markdown",
-          "essentials/code",
-          "essentials/images",
-          "essentials/settings",
-          "essentials/navigation",
-          "essentials/reusable-snippets"
         ]
       },
       {
