@@ -76,6 +76,36 @@
           "api-reference/endpoint/create",
           "api-reference/endpoint/delete"
         ]
+      },
+      {
+        "group": "Drafts-Emerging",
+        "pages": [
+          "guides/concepts"
+          "guides/data-integrity"
+          "guides/digital-certification"
+          "guides/digital-mrv"
+          "guides/digital-twins"
+          "guides/digital-vouchers"
+          "guides/dmrv"
+          "guides/domain-registration"
+          "guides/emerging-platform"
+          "guides/household-monitoring"
+          "guides/ixo-oracles-architecture"
+          "guides/kpt"
+          "guides/sdg-monitoring"
+          "guides/causal-analysis",
+          "api-reference/endpoint/create",
+          "api-reference/endpoint/delete"
+        ]
+      },
+      {
+        "group": "Drafts IXO Stack",
+        "pages": [
+          "spatial-web-stack/spatial-web-sdks"
+          "spatial-web-stack/ixo-multiclient-sdk"
+          "spatial-web-stack/ixo-matrix-sdk"
+          "spatial-web-stack/oracle-agent-sdk"
+        ]
       }
     ],
     "footerSocials": {

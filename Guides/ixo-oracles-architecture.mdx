@@ -1,31 +1,32 @@
 ---
-title: 'IXO Oracles Architecture'
-description: 'Build intelligent verification networks using AI-powered oracles with decentralized identity'
+title: "IXO Oracles Architecture"
+description: "Build intelligent verification networks using AI-powered oracles with decentralized identity"
+sidebarTitle: "Oracles"
+icon: "brain"
 ---
+
 <Note>
-IXO Oracles are autonomous AI agents that provide verifiable services through decentralized identity, secure data storage, and blockchain integration.
+  IXO Oracles are autonomous AI agents that provide verifiable services through decentralized identity, secure data storage, and blockchain integration.
 </Note>
 
 ## Key Components
 
 <CardGroup>
+  <Card title="Identity Layer" icon="fingerprint">
+    DID-based domains with verifiable credentials
+  </Card>
 
-<Card title="Identity Layer" icon="fingerprint">
-  DID-based domains with verifiable credentials
-</Card>
+  <Card title="AI Layer" icon="brain">
+    Langraph framework for cognitive workflows
+  </Card>
 
-<Card title="AI Layer" icon="brain">
-  Langraph framework for cognitive workflows
-</Card>
+  <Card title="Storage Layer" icon="database">
+    Encrypted Matrix rooms and vector stores
+  </Card>
 
-<Card title="Storage Layer" icon="database">
-  Encrypted Matrix rooms and vector stores
-</Card>
-
-<Card title="Blockchain Layer" icon="cube">
-  Impact Hub integration via MultiClient SDK
-</Card>
-
+  <Card title="Blockchain Layer" icon="cube">
+    Impact Hub integration via MultiClient SDK
+  </Card>
 </CardGroup>
 
 ## Oracle Domain
@@ -33,42 +34,40 @@ IXO Oracles are autonomous AI agents that provide verifiable services through de
 ### DID Configuration
 
 <CodeGroup>
+  ```json DID Document
+  {
+    "@context": ["https://www.w3.org/ns/did/v1"],
+    "id": "did:ixo:oracle/123",
+    "verificationMethod": [{
+      "id": "#key-1",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:ixo:oracle/123",
+      "publicKeyBase58": "..."
+    }],
+    "service": [{
+      "id": "#ai",
+      "type": "LangraphService",
+      "serviceEndpoint": "https://oracle.emerging.eco/ai"
+    }]
+  }
+  ```
 
-```json DID Document
-{
-  "@context": ["https://www.w3.org/ns/did/v1"],
-  "id": "did:ixo:oracle/123",
-  "verificationMethod": [{
-    "id": "#key-1",
-    "type": "Ed25519VerificationKey2018",
-    "controller": "did:ixo:oracle/123",
-    "publicKeyBase58": "..."
-  }],
-  "service": [{
-    "id": "#ai",
-    "type": "LangraphService",
-    "serviceEndpoint": "https://oracle.emerging.eco/ai"
-  }]
-}
-```
+  ```python Create Oracle
+  from emerging import Oracle, Domain
 
-```python Create Oracle
-from emerging import Oracle, Domain
+  # Create oracle domain
+  oracle = Oracle.create(
+      name="CleanCookingOracle",
+      capabilities=["verification", "prediction"],
+      controllers=["did:ixo:org/456"]
+  )
 
-# Create oracle domain
-oracle = Oracle.create(
-    name="CleanCookingOracle",
-    capabilities=["verification", "prediction"],
-    controllers=["did:ixo:org/456"]
-)
-
-# Configure services
-oracle.add_service(
-    type="LangraphService",
-    endpoint="https://oracle.emerging.eco/ai"
-)
-```
-
+  # Configure services
+  oracle.add_service(
+      type="LangraphService",
+      endpoint="https://oracle.emerging.eco/ai"
+  )
+  ```
 </CodeGroup>
 
 ### Memory Storage
@@ -98,77 +97,75 @@ room = Matrix.create_room(
 ### Langraph Integration
 
 <CodeGroup>
+  ```python Verification Flow
+  from emerging import Langraph, Flow
 
-```python Verification Flow
-from emerging import Langraph, Flow
+  # Create verification flow
+  flow = Flow.create(
+      name="device_verification",
+      input_schema={
+          "measurements": "DeviceTelemetry",
+          "baseline": "BaselineData"
+      }
+  )
 
-# Create verification flow
-flow = Flow.create(
-    name="device_verification",
-    input_schema={
-        "measurements": "DeviceTelemetry",
-        "baseline": "BaselineData"
+  # Add processing nodes
+  flow.add_node(
+      "validate_data",
+      type="DataValidation",
+      rules=validation_rules
+  )
+
+  flow.add_node(
+      "analyze_patterns",
+      type="AnomalyDetection",
+      model=anomaly_model
+  )
+
+  flow.add_node(
+      "verify_compliance",
+      type="ComplianceCheck",
+      standards=["GS_MMECD_1.0"]
+  )
+
+  # Deploy flow
+  flow.deploy()
+  ```
+
+  ```javascript
+  import { Langraph, Flow } from '@emerging/sdk';
+
+  // Create verification flow
+  const flow = await Flow.create({
+    name: 'device_verification',
+    inputSchema: {
+      measurements: 'DeviceTelemetry',
+      baseline: 'BaselineData'
     }
-)
+  });
 
-# Add processing nodes
-flow.add_node(
-    "validate_data",
-    type="DataValidation",
-    rules=validation_rules
-)
+  // Add processing nodes
+  await flow.addNode({
+    name: 'validate_data',
+    type: 'DataValidation',
+    rules: validationRules
+  });
 
-flow.add_node(
-    "analyze_patterns",
-    type="AnomalyDetection",
-    model=anomaly_model
-)
+  await flow.addNode({
+    name: 'analyze_patterns',
+    type: 'AnomalyDetection',
+    model: anomalyModel
+  });
 
-flow.add_node(
-    "verify_compliance",
-    type="ComplianceCheck",
-    standards=["GS_MMECD_1.0"]
-)
+  await flow.addNode({
+    name: 'verify_compliance',
+    type: 'ComplianceCheck',
+    standards: ['GS_MMECD_1.0']
+  });
 
-# Deploy flow
-flow.deploy()
-```
-
-```javascript
-import { Langraph, Flow } from '@emerging/sdk';
-
-// Create verification flow
-const flow = await Flow.create({
-  name: 'device_verification',
-  inputSchema: {
-    measurements: 'DeviceTelemetry',
-    baseline: 'BaselineData'
-  }
-});
-
-// Add processing nodes
-await flow.addNode({
-  name: 'validate_data',
-  type: 'DataValidation',
-  rules: validationRules
-});
-
-await flow.addNode({
-  name: 'analyze_patterns',
-  type: 'AnomalyDetection',
-  model: anomalyModel
-});
-
-await flow.addNode({
-  name: 'verify_compliance',
-  type: 'ComplianceCheck',
-  standards: ['GS_MMECD_1.0']
-});
-
-// Deploy flow
-await flow.deploy();
-```
-
+  // Deploy flow
+  await flow.deploy();
+  ```
 </CodeGroup>
 
 ### Semantic Routing
@@ -195,47 +192,45 @@ result = oracle.process(intent)
 ### Transaction Handling
 
 <CodeGroup>
+  ```python
+  from emerging import MultiClient
 
-```python
-from emerging import MultiClient
+  # Initialize client
+  client = MultiClient(
+      chain_id="impact-hub-1",
+      key_name="oracle-key"
+  )
 
-# Initialize client
-client = MultiClient(
-    chain_id="impact-hub-1",
-    key_name="oracle-key"
-)
+  # Submit verification
+  tx = client.submit_verification(
+      device_id="did:ixo:device/789",
+      result=verification_result,
+      proof=cryptographic_proof
+  )
 
-# Submit verification
-tx = client.submit_verification(
-    device_id="did:ixo:device/789",
-    result=verification_result,
-    proof=cryptographic_proof
-)
+  # Wait for confirmation
+  receipt = tx.wait_confirmation()
+  ```
 
-# Wait for confirmation
-receipt = tx.wait_confirmation()
-```
+  ```javascript
+  import { MultiClient } from '@emerging/sdk';
 
-```javascript
-import { MultiClient } from '@emerging/sdk';
+  // Initialize client
+  const client = new MultiClient({
+    chainId: 'impact-hub-1',
+    keyName: 'oracle-key'
+  });
 
-// Initialize client
-const client = new MultiClient({
-  chainId: 'impact-hub-1',
-  keyName: 'oracle-key'
-});
+  // Submit verification
+  const tx = await client.submitVerification({
+    deviceId: 'did:ixo:device/789',
+    result: verificationResult,
+    proof: cryptographicProof
+  });
 
-// Submit verification
-const tx = await client.submitVerification({
-  deviceId: 'did:ixo:device/789',
-  result: verificationResult,
-  proof: cryptographicProof
-});
-
-// Wait for confirmation
-const receipt = await tx.waitConfirmation();
-```
-
+  // Wait for confirmation
+  const receipt = await tx.waitConfirmation();
+  ```
 </CodeGroup>
 
 ## Security
@@ -290,37 +285,41 @@ services:
 ## Best Practices
 
 <Note>
-Implement comprehensive monitoring and follow security best practices for production deployments.
+  Implement comprehensive monitoring and follow security best practices for production deployments.
 </Note>
 
 ### Observability
 
-- Monitor performance metrics
-- Track verification accuracy
-- Log all operations
-- Set up alerts
+* Monitor performance metrics
+
+* Track verification accuracy
+
+* Log all operations
+
+* Set up alerts
 
 ### Security
 
-- Rotate keys regularly
-- Validate all inputs
-- Encrypt sensitive data
-- Monitor for attacks
+* Rotate keys regularly
+
+* Validate all inputs
+
+* Encrypt sensitive data
+
+* Monitor for attacks
 
 ## Next Steps
 
 <CardGroup>
+  <Card title="Flow Guide" icon="diagram-project">
+    Build verification workflows
+  </Card>
 
-<Card title="Flow Guide" icon="diagram-project">
-  Build verification workflows
-</Card>
+  <Card title="Security Guide" icon="shield-check">
+    Implement security measures
+  </Card>
 
-<Card title="Security Guide" icon="shield-check">
-  Implement security measures
-</Card>
-
-<Card title="Integration Guide" icon="plug">
-  Connect to Impact Hub
-</Card>
-
-</CardGroup> 
+  <Card title="Integration Guide" icon="plug">
+    Connect to Impact Hub
+  </Card>
+</CardGroup>

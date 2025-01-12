@@ -1,0 +1,252 @@
+---
+title: 'IXO Matrix Client SDK'
+description: 'Build secure data rooms and messaging systems for the Spatial Web using Matrix protocol integration'
+---
+<Note>
+The IXO Matrix Client SDK provides encrypted data storage, secure messaging, and automated room management through Matrix protocol integration.
+</Note>
+
+## Key Features
+
+<CardGroup>
+
+<Card title="API Client" icon="server">
+  Core Matrix API interactions
+</Card>
+
+<Card title="Room Bot" icon="robot">
+  Automated room management
+</Card>
+
+<Card title="State Bot" icon="database">
+  Room state and ACL handling
+</Card>
+
+<Card title="Utilities" icon="wrench">
+  Helper functions and validators
+</Card>
+
+</CardGroup>
+
+## Installation
+
+```bash
+npm install @ixo/matrixclient-sdk
+# or
+yarn add @ixo/matrixclient-sdk
+```
+
+## Quick Start
+
+### API Client
+
+<CodeGroup>
+
+```typescript Matrix API
+import { createMatrixApiClient } from "@ixo/matrixclient-sdk";
+
+// Initialize API client
+const client = await createMatrixApiClient({
+  baseUrl: "https://matrix.ixo.world",
+  accessToken: "YOUR_TOKEN"
+});
+
+// Upload media
+const mxcUrl = await client.uploadMedia(
+  file,
+  { fileName: "data.json" }
+);
+
+// Update profile
+await client.setDisplayName("User Name");
+await client.setAvatarUrl(mxcUrl);
+```
+
+```typescript Room Management
+// Create room
+const room = await client.createRoom({
+  name: "Data Room",
+  topic: "Secure data storage",
+  visibility: "private",
+  preset: "private_chat"
+});
+
+// Set room state
+await client.setState(
+  room.roomId,
+  "m.room.name",
+  "",
+  { name: "Updated Name" }
+);
+
+// Manage membership
+await client.invite(room.roomId, "@user:ixo.world");
+await client.join(room.roomId);
+```
+
+</CodeGroup>
+
+### Room Bot
+
+<CodeGroup>
+
+```typescript Room Bot
+import { createMatrixRoomBotClient } from "@ixo/matrixclient-sdk";
+
+// Initialize room bot
+const bot = await createMatrixRoomBotClient({
+  baseUrl: "https://matrix.ixo.world",
+  accessToken: "BOT_TOKEN"
+});
+
+// Create entity room
+const entityRoom = await bot.createEntityRoom({
+  entityDid: "did:ixo:entity/123",
+  name: "Entity Data Room",
+  members: ["@alice:ixo.world", "@bob:ixo.world"]
+});
+
+// Handle invites
+await bot.handleInvites();
+```
+
+```typescript Automated Management
+// Auto-join rooms
+await bot.autoJoin([room1Id, room2Id]);
+
+// Sync room members
+await bot.syncMembers(roomId, targetMembers);
+
+// Leave rooms
+await bot.leaveRooms([oldRoomId]);
+```
+
+</CodeGroup>
+
+### State Bot
+
+<CodeGroup>
+
+```typescript State Management
+import { createMatrixStateBotClient } from "@ixo/matrixclient-sdk";
+
+// Initialize state bot
+const bot = await createMatrixStateBotClient({
+  baseUrl: "https://matrix.ixo.world",
+  accessToken: "BOT_TOKEN"
+});
+
+// Get room ACL
+const acl = await bot.getRoomAcl(roomId);
+
+// Update ACL
+await bot.setRoomAcl(roomId, {
+  allow: ["@alice:ixo.world"],
+  deny: ["@malicious:ixo.world"]
+});
+
+// Get room state
+const state = await bot.getRoomState(roomId);
+```
+
+```typescript State Updates
+// Set state event
+await bot.setState(
+  roomId,
+  "custom.state.type",
+  "",
+  { key: "value" }
+);
+
+// Get state event
+const event = await bot.getState(
+  roomId,
+  "custom.state.type"
+);
+
+// Clear state
+await bot.clearState(
+  roomId,
+  "custom.state.type"
+);
+```
+
+</CodeGroup>
+
+## Utilities
+
+### MXC Helpers
+
+```typescript
+import { utils } from "@ixo/matrixclient-sdk";
+
+// Convert MXC to HTTP URL
+const httpUrl = utils.mxcUrlToHttp(
+  "mxc://ixo.world/abc123",
+  "https://matrix.ixo.world"
+);
+
+// Validate MXC URL
+const isValid = utils.isMxcUri("mxc://ixo.world/abc123");
+```
+
+### Validators
+
+```typescript
+// Validate Matrix IDs
+const isValidUserId = utils.isUserId("@alice:ixo.world");
+const isValidRoomId = utils.isRoomId("!room:ixo.world");
+const isValidAlias = utils.isAlias("#general:ixo.world");
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid request parameters
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Invalid access token
+</ResponseField>
+
+<ResponseField name="403" type="error">
+  Insufficient permissions
+</ResponseField>
+
+## Best Practices
+
+<Note>
+Follow these guidelines for secure and efficient Matrix integration
+</Note>
+
+### Security
+
+- Use encrypted rooms for sensitive data
+- Implement proper access control
+- Rotate access tokens regularly
+- Validate all user inputs
+
+### Performance
+
+- Batch state updates
+- Implement proper error handling
+- Cache room states
+- Monitor room sizes
+
+## Next Steps
+
+<CardGroup>
+
+<Card title="Room Guide" icon="door-open">
+  Learn room management
+</Card>
+
+<Card title="Bot Guide" icon="robot">
+  Implement automation
+</Card>
+
+<Card title="Security Guide" icon="shield-check">
+  Secure your rooms
+</Card>
+
+</CardGroup> 

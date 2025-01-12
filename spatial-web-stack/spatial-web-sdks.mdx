@@ -1,0 +1,468 @@
+---
+title: 'IXO Spatial Web SDKs'
+description: 'Build advanced applications for the Spatial Web using IXO's comprehensive suite of development tools'
+---
+
+<Note>
+The IXO Spatial Web SDKs provide developers with the tools to build real-world applications that leverage digital twins, AI oracles, secure data rooms, and interchain networks. This software stack enables the creation of verifiable digital domains that can interact with physical and digital entities across the Spatial Web.
+</Note>
+
+## Core SDKs
+
+<CardGroup>
+
+<Card title="MultiClient SDK" icon="network-wired">
+  Connect with IXO and Cosmos networks for interchain operations
+</Card>
+
+<Card title="Matrix Client SDK" icon="database">
+  Build secure data rooms and encrypted communication channels
+</Card>
+
+<Card title="Oracle Agent SDK" icon="robot">
+  Create AI-powered verification and analytics agents
+</Card>
+
+<Card title="SignX SDK" icon="key">
+  Manage cryptographic signatures and authentication
+</Card>
+
+</CardGroup>
+
+## Architecture Overview
+
+<Note>
+The IXO Spatial Web stack combines digital twins, secure data matrix, AI oracles, and interchain networks to create verifiable digital domains that can interact with physical and digital entities.
+</Note>
+
+### Core Layers
+
+<CardGroup>
+
+<Card title="Digital Twin Layer" icon="cube">
+  Digital representations of physical and cognitive entities
+</Card>
+
+<Card title="Data Matrix Layer" icon="database">
+  Encrypted storage and secure communication channels
+</Card>
+
+<Card title="Intelligent Oracle Layer" icon="robot">
+  AI-powered verification and analytics networks
+</Card>
+
+<Card title="Blockchain Layer" icon="network-wired">
+  Interchain identity and transaction management
+</Card>
+
+</CardGroup>
+
+### Digital Domain Architecture
+
+<AccordionGroup>
+
+<Accordion title="Domain Types">
+- **Digital Domains**: Verifiable digital representations of any entity
+- **Domain Networks**: Interconnected webs of digital domains
+- **Oracle Domains**: AI-enabled verification networks
+- **Service Domains**: Specialized capability providers
+
+```typescript
+// Create digital domain
+const domain = await Entity.create({
+  type: "DigitalDomain",
+  class: "Entity",
+  capabilities: ["verification", "dataCollection"],
+  context: spatialContext
+});
+
+// Create oracle domain
+const oracle = await Entity.create({
+  type: "DigitalDomain",
+  class: "Oracle",
+  capabilities: ["verification", "analytics"]
+});
+```
+</Accordion>
+
+<Accordion title="Domain Properties">
+- **Decentralized Identifiers**: W3C DIDs for unique identification
+- **Controllers**: Domain management permissions
+- **Services**: Associated endpoints and capabilities
+- **Verifiable Credentials**: Proofs and certifications
+- **Relationships**: Connections to other domains
+
+```typescript
+// Define domain properties
+const domain = {
+  did: "did:ixo:domain/123",
+  controller: "did:ixo:org/456",
+  services: [{
+    id: "#verification",
+    type: "VerificationService",
+    endpoint: "https://oracle.ixo.world"
+  }],
+  credentials: [{
+    type: "DomainVerification",
+    issuer: "did:ixo:oracle/789"
+  }]
+};
+```
+</Accordion>
+
+<Accordion title="State Management">
+- **Time-Sequenced Records**: Immutable state history
+- **State Transitions**: Verified changes in domain state
+- **Proofs**: Cryptographic evidence of state
+- **Claims**: Verifiable statements about domains
+
+```typescript
+// Record state transition
+await domain.transition({
+  from: "active",
+  to: "updated",
+  evidence: {
+    type: "OracleVerification",
+    proof: verificationResult
+  }
+});
+```
+</Accordion>
+
+</AccordionGroup>
+
+### Data Matrix Layer
+
+<AccordionGroup>
+
+<Accordion title="Secure Storage">
+- **Encrypted Rooms**: End-to-end encrypted data spaces
+- **Access Control**: Fine-grained permissions
+- **File Storage**: Secure document management
+- **Audit Trails**: Activity logging
+
+```typescript
+// Create encrypted room
+const room = await matrix.createRoom({
+  name: "Entity Data",
+  encryption: true,
+  permissions: {
+    read: ["did:ixo:oracle/123"],
+    write: ["did:ixo:device/456"]
+  }
+});
+```
+</Accordion>
+
+<Accordion title="Communication">
+- **Secure Messaging**: Encrypted real-time messaging
+- **Data Streaming**: IoT and sensor data ingestion
+- **Event Publishing**: State change notifications
+- **Bot Integration**: Automated room management
+
+```typescript
+// Set up data stream
+const stream = await matrix.createStream({
+  roomId: room.roomId,
+  type: "DeviceTelemetry",
+  schema: telemetrySchema
+});
+
+// Handle events
+stream.on("data", async (telemetry) => {
+  await oracle.verify(telemetry);
+});
+```
+</Accordion>
+
+</AccordionGroup>
+
+### Oracle Layer
+
+<AccordionGroup>
+
+<Accordion title="Verification Network">
+- **AI Models**: Specialized verification models
+- **Causal Analysis**: Impact attribution
+- **Evidence Collection**: Multi-source data gathering
+- **Proof Generation**: Cryptographic attestations
+
+```typescript
+// Configure oracle network
+const network = await Oracle.createNetwork({
+  type: "VerificationNetwork",
+  models: ["causal-inference", "anomaly-detection"],
+  minConsensus: 0.67
+});
+```
+</Accordion>
+
+<Accordion title="Spatial Intelligence">
+- **Location Services**: Precise positioning
+- **Spatial Queries**: Location-based search
+- **Geo-fencing**: Location-based rules
+- **Spatial Relations**: Geographic relationships
+
+```typescript
+// Query spatial context
+const entities = await spatial.query({
+  center: location,
+  radius: 1000,
+  relations: ["contains", "nearBy"],
+  type: "PhysicalAsset"
+});
+```
+</Accordion>
+
+</AccordionGroup>
+
+### Blockchain Layer
+
+<AccordionGroup>
+
+<Accordion title="Identity Management">
+- **DID Registry**: Decentralized identifier system
+- **Key Management**: Cryptographic key handling
+- **Credential Issuance**: Verifiable credential system
+- **Authentication**: SignX integration
+
+```typescript
+// Register DID
+const did = await chain.identity.register({
+  type: "EntityDID",
+  controller: ownerAddress,
+  verificationMethod: [{
+    id: "#key-1",
+    type: "Ed25519VerificationKey2020",
+    controller: ownerAddress
+  }]
+});
+```
+</Accordion>
+
+<Accordion title="Transaction Management">
+- **State Anchoring**: Cryptographic state proofs
+- **Smart Contracts**: CosmWasm integration
+- **Token Operations**: Asset management
+- **Governance**: DAO integration
+
+```typescript
+// Anchor state
+const tx = await chain.anchor({
+  entityDid: twin.did,
+  stateHash: proofHash,
+  evidence: verificationProof
+});
+```
+</Accordion>
+
+</AccordionGroup>
+
+## Getting Started
+
+### Installation
+
+```bash
+# Install core SDKs
+npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
+npm install @ixo/oracle-agent-sdk @ixo/signx-sdk
+```
+
+### Basic Setup
+
+<CodeGroup>
+
+```typescript Digital Twin
+import { createClient } from "@ixo/impactxclient-sdk";
+import { createMatrixClient } from "@ixo/matrixclient-sdk";
+
+// Initialize clients
+const chain = await createClient(RPC_ENDPOINT);
+const matrix = await createMatrixClient(MATRIX_ENDPOINT);
+
+// Create digital twin
+const twin = await chain.entity.create({
+  type: "DigitalTwin",
+  controller: "did:ixo:org/123",
+  location: spatialContext
+});
+
+// Create secure data room
+const room = await matrix.createRoom({
+  name: `Twin ${twin.did}`,
+  encryption: true
+});
+```
+
+```typescript Oracle Integration
+import { createOracleAgent } from "@ixo/oracle-agent-sdk";
+import { SignX } from "@ixo/signx-sdk";
+
+// Initialize oracle
+const oracle = await createOracleAgent({
+  did: "did:ixo:oracle/456",
+  capabilities: ["verification"]
+});
+
+// Setup authentication
+const auth = await SignX.authenticate({
+  challenge: "verification_request",
+  chainId: "ixo-5"
+});
+```
+
+</CodeGroup>
+
+## Key Features
+
+### Spatial Awareness
+
+```typescript
+// Get spatial context
+const context = await spatial.getContext({
+  latitude: 51.5074,
+  longitude: -0.1278,
+  precision: 6
+});
+
+// Query nearby entities
+const nearby = await spatial.queryEntities({
+  center: context,
+  radius: 1000,
+  type: "PhysicalAsset"
+});
+```
+
+### Secure Data Rooms
+
+```typescript
+// Create encrypted room
+const room = await matrix.createRoom({
+  name: "Asset Data",
+  encryption: true,
+  visibility: "private"
+});
+
+// Set access control
+await matrix.setRoomPermissions(room.roomId, {
+  readAccess: ["did:ixo:oracle/123"],
+  writeAccess: ["did:ixo:device/456"]
+});
+```
+
+### AI Verification
+
+```typescript
+// Configure oracle
+const oracle = await Oracle.create({
+  type: "VerificationOracle",
+  model: "causal-inference-v1",
+  confidence: 0.95
+});
+
+// Verify data
+const result = await oracle.verify({
+  data: assetData,
+  context: spatialContext,
+  rules: verificationRules
+});
+```
+
+## SDK Integration Examples
+
+### Digital Twin System
+
+```typescript
+async function createAssetTwin() {
+  // Create digital twin
+  const twin = await chain.entity.create({
+    type: "PhysicalAsset",
+    location: spatialContext
+  });
+
+  // Create data room
+  const room = await matrix.createRoom({
+    name: `Asset ${twin.did}`,
+    encryption: true
+  });
+
+  // Configure oracle
+  const oracle = await Oracle.create({
+    type: "AssetVerification"
+  });
+
+  // Link components
+  await twin.linkDataRoom(room.roomId);
+  await twin.setVerificationOracle(oracle.did);
+
+  return twin;
+}
+```
+
+### Verification Flow
+
+```typescript
+async function verifyAssetState() {
+  // Collect data
+  const telemetry = await device.getTelemetry();
+  const location = await device.getLocation();
+
+  // Create verification session
+  const session = await oracle.createVerification({
+    type: "AssetState",
+    subject: twin.did,
+    context: {
+      location,
+      timestamp: Date.now()
+    }
+  });
+
+  // Generate proof
+  const proof = await session.verify(telemetry);
+
+  // Store result
+  await matrix.storeProof(room.roomId, proof);
+}
+```
+
+## Best Practices
+
+<Note>
+Follow these guidelines for robust Spatial Web applications
+</Note>
+
+### Security
+
+- Use encrypted data rooms
+- Implement proper authentication
+- Validate spatial context
+- Monitor oracle accuracy
+
+### Performance
+
+- Cache spatial queries
+- Batch blockchain operations
+- Handle offline scenarios
+- Implement retry logic
+
+## Next Steps
+
+<CardGroup>
+
+<Card title="Tutorials" icon="book">
+  Follow step-by-step guides
+</Card>
+
+<Card title="API Reference" icon="code">
+  Explore detailed documentation
+</Card>
+
+<Card title="Examples" icon="lightbulb">
+  View sample applications
+</Card>
+
+<Card title="Community" icon="users">
+  Join the developer community
+</Card>
+
+</CardGroup>
