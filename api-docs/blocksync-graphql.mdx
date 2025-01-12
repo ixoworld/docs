@@ -1,0 +1,53 @@
+---
+title: 'Blocksync API'
+description: 'NEEDS REWRITE'
+---
+
+# IXO Blocksync GraphQL API Overview
+
+The **IXO Blocksync GraphQL API** provides a comprehensive guide to querying transaction and state data of IXO Protocol blockchains. It enables developers to query blockchain data, filter information, and interact with IXO's decentralized features in a flexible, user-friendly manner.
+
+## Purpose
+
+Introduce developers to the key components of the IXO Blocksync GraphQL API, facilitating the building of applications that rely on GraphQL for seamless blockchain service access.
+
+## Document Coverage
+
+- **Scalars**: Custom scalar types like `BigFloat` for high-precision values.
+- **Filters**: Input filters such as `BigFloatFilter` for logical data querying.
+- **Types and Queries**: Core types and queries for data interaction.
+- **Directives**: GraphQL directives like `@specifiedBy` for custom scalar behavior.
+
+## Key Sections
+
+### 1. Scalars and Directives
+
+Defines custom scalar types like `BigFloat` for precision beyond typical floating-point values. The `@specifiedBy` directive adds metadata to scalars.
+
+### 2. Filters
+
+Includes input filters like `BigFloatFilter` for applying conditions when querying blockchain data.
+
+### 3. Core Types
+
+Defines types within the IXO blockchain, such as entities, bonds, and claims.
+
+### 4. Queries
+
+Provides access to blockchain features via queries. Note: No mutations are enabled; only queries are available.
+
+## Benefits
+
+- **High Precision Data Handling**: Custom scalars ensure accurate financial calculations.
+- **Flexible Filtering**: Input filters allow complex logical conditions for data queries.
+- **Seamless Data Interaction**: Intuitive queries support a wide range of use cases.
+
+## Use Cases
+
+- **Blockchain Data Queries**: Access information about bonds, claims, and entities.
+- **High Precision Financial Operations**: Use scalars like `BigFloat` for token economics.
+
+## Additional Resources
+
+- **IXO Blocksync Core and Blocksync GitHub Repositories**: [ixo-blocksync-core](https://github.com/ixofoundation/ixo-blocksync-core) and [ixo-blocksync](https://github.com/ixofoundation/ixo-blocksync).
+- **Links to the Blocksync Playground**: [IXO Blocksync GraphQL Playground](https://blocksync-graphql.ixo.earth/graphiql), [Testnet](https://testnet-blocksync-graphql.ixo.earth/graphiql), [Devnet](https://devnet-blocksync-graphql.ixo.earth/graphiql). 
