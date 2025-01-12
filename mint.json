@@ -22,8 +22,8 @@
     }
   ],
   "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
+    "name": "Portal",
+    "url": "https://portal.ixo.world"
   },
   "tabs": [
     {
@@ -39,7 +39,7 @@
     },
     {
       "name": "Blog",
-      "icon": "newspaper",
+      "icon": "world",
       "url": "https://chronicle.impacts.network/"
     }
   ],
