@@ -1,0 +1,178 @@
+---
+title: 'Digital Vouchers'
+description: 'Create and manage digital vouchers for mitigation activity incentives'
+---
+
+## Quick Start
+
+<CodeGroup>
+  ```bash Create Voucher
+  curl -X POST https://api.emerging.eco/v1/vouchers \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -d '{
+      "recipientDid": "did:ixo:user/123",
+      "value": 10.00,
+      "expiryDate": "2024-12-31",
+      "itmoSaleId": "ITMO-456"
+    }'
+  ```
+
+  ```python
+  from emerging import Client
+
+  client = Client('YOUR_API_KEY')
+  voucher = client.vouchers.create(
+      recipient_did="did:ixo:user/123",
+      value=10.00,
+      expiry_date="2024-12-31",
+      itmo_sale_id="ITMO-456"
+  )
+  ```
+</CodeGroup>
+
+## Components
+
+<CardGroup>
+  <Card title="Issuance" icon="ticket">
+    Mint vouchers linked to ITMO sales
+  </Card>
+
+  <Card title="Distribution" icon="share-nodes">
+    Assign vouchers to user wallets
+  </Card>
+
+  <Card title="Redemption" icon="shop">
+    Process merchant transactions
+  </Card>
+
+  <Card title="Settlement" icon="money-bill-transfer">
+    Handle merchant payments
+  </Card>
+</CardGroup>
+
+## Required Parameters
+
+<ResponseField name="recipientDid" type="string" required>
+  DID of the voucher recipient
+</ResponseField>
+
+<ResponseField name="value" type="number" required>
+  Monetary value of the voucher
+</ResponseField>
+
+<ResponseField name="expiryDate" type="string" required>
+  ISO date when voucher expires
+</ResponseField>
+
+## Optional Parameters
+
+<ResponseField name="itmoSaleId" type="string">
+  Reference to originating ITMO sale
+</ResponseField>
+
+<ResponseField name="restrictions" type="array">
+  Product or merchant limitations
+</ResponseField>
+
+## Redemption Flow
+
+### 1. Verify Voucher
+
+```bash
+GET /v1/vouchers/{voucherId}/verify
+```
+
+### 2. Process Redemption
+
+```bash
+POST /v1/vouchers/redeem
+{
+  "voucherId": "VCHR-123",
+  "merchantDid": "did:ixo:merchant/456",
+  "amount": 10.00
+}
+```
+
+## Validation Rules
+
+<AccordionGroup>
+  <Accordion title="Creation Rules">
+    * Value must be positive
+
+    * Expiry date must be future
+
+    * Recipient must be registered
+  </Accordion>
+
+  <Accordion title="Redemption Rules">
+    * Voucher must be active
+
+    * Amount must not exceed value
+
+    * Merchant must be approved
+  </Accordion>
+</AccordionGroup>
+
+## Response Format
+
+```json
+{
+  "id": "VCHR-123",
+  "status": "active",
+  "value": 10.00,
+  "recipient": "did:ixo:user/123",
+  "expiryDate": "2024-12-31"
+}
+```
+
+## Error Codes
+
+<ResponseField name="400" type="error">
+  Invalid voucher parameters
+</ResponseField>
+
+<ResponseField name="403" type="error">
+  Unauthorized redemption attempt
+</ResponseField>
+
+<ResponseField name="410" type="error">
+  Voucher expired or already redeemed
+</ResponseField>
+
+## Integration Examples
+
+### Merchant Integration
+
+```javascript
+// Initialize merchant terminal
+const terminal = new VoucherTerminal({
+  merchantDid: 'did:ixo:merchant/456',
+  apiKey: 'YOUR_API_KEY'
+});
+
+// Process redemption
+async function redeemVoucher(voucherId, amount) {
+  const result = await terminal.redeem(voucherId, amount);
+  return result.transactionId;
+}
+```
+
+<Note>
+  Always verify voucher validity before processing redemption.
+</Note>
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Merchant Guide" icon="store">
+    Set up merchant integration
+  </Card>
+
+  <Card title="Security Guide" icon="shield-check">
+    Learn about security features
+  </Card>
+
+  <Card title="API Reference" icon="book">
+    View complete API documentation
+  </Card>
+</CardGroup>

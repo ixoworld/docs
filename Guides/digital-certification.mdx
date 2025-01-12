@@ -1,0 +1,173 @@
+---
+title: 'Digital Certfication'
+description: 'Create and validate Impact Certificates using W3C Verifiable Credentials.'
+---
+
+Impact Certificates may be configured to certify any real-world outcome, such as carbon emission reductions, and are highly suitable for secure digital transfers of information for applications such as Internationally Transferred Mitigation Outcomes (ITMOs).
+
+## Quick Start
+
+<CodeGroup>
+  ```bash Create Certificate
+  curl -X POST https://api.emerging.eco/v1/credentials \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -d '{
+      "type": ["VerifiableCredential", "ITMOCertificate"],
+      "issuer": "did:example:123",
+      "credentialSubject": {
+        "authorizationInfo": {
+          "reference": "AUTH-2024-001",
+          "issuingParty": "Country A"
+        }
+      }
+    }'
+  ```
+
+  ```python
+  from emerging import Client
+
+  client = Client('YOUR_API_KEY')
+  credential = client.credentials.create(
+      type=["VerifiableCredential", "ITMOCertificate"],
+      issuer="did:example:123",
+      credential_subject={
+          "authorization_info": {
+              "reference": "AUTH-2024-001",
+              "issuing_party": "Country A"
+          }
+      }
+  )
+  ```
+</CodeGroup>
+
+## Components
+
+<CardGroup>
+  <Card title="Verifiable Credentials" icon="certificate">
+    W3C standard for tamper-proof certificates
+  </Card>
+
+  <Card title="JSON-LD Context" icon="code">
+    Semantic definitions for ITMO properties
+  </Card>
+
+  <Card title="Cryptographic Proofs" icon="shield-check">
+    Digital signatures for authenticity
+  </Card>
+
+  <Card title="Selective Disclosure" icon="eye">
+    Privacy-preserving data sharing
+  </Card>
+</CardGroup>
+
+## Required Parameters
+
+<ResponseField name="type" type="array" required>
+  Must include "VerifiableCredential" and "ITMOCertificate"
+</ResponseField>
+
+<ResponseField name="issuer" type="string" required>
+  DID of the certificate issuer
+</ResponseField>
+
+<ResponseField name="credentialSubject" type="object" required>
+  ITMO-specific data and claims
+</ResponseField>
+
+## Optional Parameters
+
+<ResponseField name="evidence" type="array">
+  Supporting documentation links
+</ResponseField>
+
+<ResponseField name="expirationDate" type="string">
+  ISO timestamp when certificate expires
+</ResponseField>
+
+## Validation Rules
+
+<AccordionGroup>
+  <Accordion title="Schema Validation">
+    * Required fields present
+
+    * Valid JSON-LD context
+
+    * Proper data types
+  </Accordion>
+
+  <Accordion title="Business Rules">
+    * Conformant with standards
+
+    * Authentication of Issuers
+
+    * Authorization validity
+  </Accordion>
+</AccordionGroup>
+
+## Response Format
+
+```json
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/article6/itmo-context.jsonld"
+  ],
+  "type": ["VerifiableCredential", "ITMOCertificate"],
+  "id": "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
+  "issuer": "did:example:123",
+  "issuanceDate": "2024-03-15T00:00:00Z",
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:example:123#key-1",
+    "created": "2024-03-15T00:00:00Z",
+    "jws": "eyJhbGciOiJFZERTQS..."
+  }
+}
+```
+
+## Error Codes
+
+<ResponseField name="400" type="error">
+  Invalid credential format
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Unauthorized issuer
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Conflicting credential data
+</ResponseField>
+
+## Best Practices
+
+<Note>
+  Always verify cryptographic proofs before accepting a credential.
+</Note>
+
+### Security
+
+* Use strong cryptographic keys
+
+* Implement proper key management
+
+* Regular security audits
+
+* Monitor for compromised credentials
+
+## Next Steps
+
+<CardGroup>
+  <Card title="JSON-LD Context" icon="code">
+    Learn about new data formats for interoperability &#x20;
+  </Card>
+
+  <Card title="Verification Guide" icon="shield-check">
+    Implement credential verification
+  </Card>
+
+  <Card title="Privacy Guide" icon="lock">
+    Understand selective disclosure and authorisation
+  </Card>
+</CardGroup>

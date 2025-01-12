@@ -1,0 +1,154 @@
+---
+title: 'Emerging Platform'
+description: 'Build decentralized applications for clean cooking and climate impact'
+---
+
+## Overview
+
+<Note>
+  The Emerging Platform enables developers to create, track, and verify climate impact initiatives using blockchain and IoT technologies, with machine-readable verifiable data and AI optimisation.
+</Note>
+
+## Key Features
+
+<CardGroup>
+  <Card title="Digital MRV" icon="chart-line">
+    Automated measurement, reporting, and verification of climate impacts
+  </Card>
+
+  <Card title="Digital Vouchers" icon="ticket">
+    Blockchain-based incentives for clean cooking adoption
+  </Card>
+
+  <Card title="SDG Monitoring" icon="globe">
+    Track and validate sustainable development goals
+  </Card>
+
+  <Card title="Carbon Credits & ITMOs" icon="leaf">
+    Generate and trade verified emission reductions
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+  ```bash Install SDK
+  # Install via npm
+  npm install @emerging/sdk
+
+  # Install via pip
+  pip install emerging-sdk
+  ```
+
+  ```javascript Initialize Client
+  import { EmergingClient } from '@emerging/sdk';
+
+  const client = new EmergingClient({
+    apiKey: 'YOUR_API_KEY',
+    environment: 'testnet' // or 'mainnet'
+  });
+  ```
+
+  ```python
+  from emerging import Client
+
+  client = Client(
+      api_key='YOUR_API_KEY',
+      environment='testnet'  # or 'mainnet'
+  )
+  ```
+</CodeGroup>
+
+## Core Concepts
+
+<AccordionGroup>
+  <Accordion title="Digital Identifiers (DIDs)">
+    * Unique identifiers for households, devices, and organizations
+
+    * Cryptographically verifiable ownership
+
+    * Basis for all platform interactions
+  </Accordion>
+
+  <Accordion title="Claims & Credentials">
+    * Submit data as verifiable claims
+
+    * Receive validated credentials for digital certificates
+
+    * Build trust through cryptographic proofs, transparency and auditability
+  </Accordion>
+
+  <Accordion title="Oracle Services">
+    * Automated claims processing and digital certification
+
+    * External data integration and validation
+
+    * Intelligent workflow automations, with humans in the loop
+
+    * Advanced data queries and analytics
+
+    * Intelligent decision-support using causal logic
+  </Accordion>
+</AccordionGroup>
+
+## Authentication
+
+All API requests require an API key:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+<Note>
+  Get your API key from the [Emerging Portal](https://portal.emerging.eco).
+</Note>
+
+## Environments
+
+<ResponseField name="testnet" type="string">
+  Development environment for testing
+</ResponseField>
+
+<ResponseField name="mainnet" type="string">
+  Production environment for live applications
+</ResponseField>
+
+## Support
+
+<CardGroup>
+  <Card title="Documentation" icon="book">
+    Explore our detailed guides and API reference
+  </Card>
+
+  <Card title="AI Companion" icon="sparkles">
+    Ask anything to get intelligent answers
+  </Card>
+
+  <Card title="GitHub" icon="github">
+    View [example code](https://github.com/emerging-eco) and contribute
+  </Card>
+
+  <Card title="Support" icon="headset">
+    Contact [developer support](mailto:support@emerging.eco)
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup>
+  <Card title="API Integration" icon="plug">
+    Learn how to make API calls
+  </Card>
+
+  <Card title="Digital MRV" icon="chart-line">
+    Implement measurement and verification
+  </Card>
+
+  <Card title="SDG Monitoring" icon="globe">
+    Track development goals
+  </Card>
+
+  <Card title="Digital Vouchers" icon="ticket">
+    Create incentive programs
+  </Card>
+</CardGroup>

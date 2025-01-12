@@ -1,0 +1,127 @@
+---
+title: "Domain Registration"
+description: "Create and manage digital twins of real-world entities using the IXO Spatial Web Platform"
+---
+
+## Quick Start
+
+<CodeGroup>
+  ```bash Create Domain
+  curl -X POST https://api.emerging.eco/v1/domains \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -d '{
+      "type": "Project",
+      "protocol": "did:ixo:protocol/clean-cooking",
+      "metadata": {
+        "name": "Clean Cooking Project"
+      }
+    }'
+  ```
+
+  ```python
+  from emerging import Client
+
+  client = Client('YOUR_API_KEY')
+  domain = client.domains.create(
+      type="Project",
+      protocol="did:ixo:protocol/clean-cooking",
+      metadata={
+          "name": "Clean Cooking Project"
+      }
+  )
+  ```
+</CodeGroup>
+
+## Domain Types
+
+<CardGroup>
+  <Card title="Organizations" icon="building">
+    Legal or virtual entities, managed as DAOs
+  </Card>
+
+  <Card title="Projects" icon="diagram-project">
+    `Project` type entities for clean cooking initiatives
+  </Card>
+
+  <Card title="Assets" icon="microchip">
+    `Asset` type entities for IoT-enabled cooking devices
+  </Card>
+
+  <Card title="Protocols" icon="file-code">
+    Templates and rules that govern domain behavior
+  </Card>
+
+  <Card title="Oracles" icon="sparkles" />
+
+  <Card title="Requests" icon="sparkles" />
+</CardGroup>
+
+## Domain Properties
+
+Each domain requires:
+
+* **Digital Identifier**: Unique DID following Interchain Identifier format
+
+* **Entity Type**: Organization, Project, Device, etc.
+
+* **Protocol**: Defines the Class of entity and its inherited sets of properties
+
+* **Controller**: Account/s that manage the domain record (DID Document)
+
+* **Metadata**: Additional standard domain settings
+
+## Creating Domains
+
+### Required Parameters
+
+<ResponseField name="type" type="string" required>
+  Entity type (Organization, Project, Device, etc.)
+</ResponseField>
+
+<ResponseField name="class" type="string" required>
+  DID of the Protocol that defines the Entity Class
+</ResponseField>
+
+<ResponseField name="metadata" type="object">
+  Domain settings of the Entity
+</ResponseField>
+
+### Optional Parameters
+
+<ResponseField name="validFrom" type="string">
+  ISO timestamp when domain becomes valid
+</ResponseField>
+
+<ResponseField name="validUntil" type="string">
+  ISO timestamp when domain expires
+</ResponseField>
+
+## Domain Verification
+
+Domains require verification by the platform's governance system:
+
+1. Compliance group member submits verification proposal
+
+2. Members vote on proposal
+
+3. Upon approval, domain status updates to "Verified"
+
+<Note>
+  Only verified domains can participate in platform activities like carbon credit issuance.
+</Note>
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Protocol Templates" icon="book">
+    Browse available protocol templates
+  </Card>
+
+  <Card title="Entity Management" icon="gear">
+    Learn how to update and manage domains
+  </Card>
+
+  <Card title="Governance Guide" icon="scale-balanced">
+    Understand the verification process
+  </Card>
+</CardGroup>

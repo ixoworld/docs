@@ -1,0 +1,281 @@
+---
+title: 'Digital MRV'
+description: 'Build automated measurement, reporting, and verification systems using IoT devices, blockchain, and AI oracles'
+---
+
+<Note>
+Digital MRV (dMRV) provides cryptographically verifiable proof of real-world activities and impacts through automated data collection, validation, and certification. Unlike traditional MRV, it enables real-time monitoring, cryptographic trust, and automated verification.
+</Note>
+
+## Key Advantages
+
+<CardGroup>
+
+<Card title="Real-Time Data" icon="clock">
+  Continuous IoT monitoring vs periodic surveys
+</Card>
+
+<Card title="Cryptographic Trust" icon="shield-check">
+  Tamper-proof records with blockchain anchoring
+</Card>
+
+<Card title="Protocol-Driven" icon="file-code">
+  Standardized templates for rapid deployment
+</Card>
+
+<Card title="Automated Verification" icon="robot">
+  AI-powered validation with oracle networks
+</Card>
+
+</CardGroup>
+
+## Protocol Configuration
+
+<AccordionGroup>
+
+<Accordion title="Project Setup">
+- Select or create protocol template
+- Define measurement parameters
+- Configure validation rules
+- Set reporting intervals
+</Accordion>
+
+<Accordion title="Methodology Alignment">
+- Map to recognized standards
+- Set baseline calculations
+- Define emission factors
+- Configure verification rules
+</Accordion>
+
+</AccordionGroup>
+
+### Example Protocol
+
+```json
+{
+  "type": "CleanCookingProtocol",
+  "version": "1.0.0",
+  "methodology": "GS_MMECD_1.0",
+  "parameters": {
+    "measurementInterval": 300,
+    "requiredMetrics": [
+      "burnTime",
+      "fuelConsumed",
+      "temperature"
+    ],
+    "baselineEmissionFactor": 7.2,
+    "minimumDataPoints": 100
+  },
+  "validation": {
+    "rules": [{
+      "metric": "temperature",
+      "min": 50,
+      "max": 300
+    }],
+    "requiredEvidence": [
+      "deviceTelemetry",
+      "fuelDelivery",
+      "baselineData"
+    ]
+  }
+}
+```
+
+## Data Collection
+
+### Device Integration
+
+<CodeGroup>
+
+```python Configure Device
+from emerging import Device, Protocol
+
+# Load protocol
+protocol = Protocol.get("clean-cooking-v1")
+
+# Configure device with protocol
+device = Device.configure(
+    device_id="did:ixo:device/123",
+    protocol=protocol,
+    settings={
+        "measurement_interval": 300,
+        "offline_buffer_size": 1000
+    }
+)
+
+# Start measurements
+device.start_monitoring()
+```
+
+```json Device Telemetry
+{
+  "deviceId": "did:ixo:device/123",
+  "timestamp": "2024-03-15T12:00:00Z",
+  "measurements": {
+    "burnTime": 300,
+    "fuelConsumed": 15,
+    "temperature": 180
+  },
+  "signature": "0xabc..."
+}
+```
+
+</CodeGroup>
+
+### Data Pipeline
+
+<AccordionGroup>
+
+<Accordion title="Collection">
+- Device authentication
+- Secure data transmission
+- Edge validation
+- Offline buffering
+</Accordion>
+
+<Accordion title="Processing">
+- Protocol validation
+- Data aggregation
+- Anomaly detection
+- Baseline comparison
+</Accordion>
+
+</AccordionGroup>
+
+## Verification Process
+
+### Oracle Network
+
+<CodeGroup>
+
+```python
+from emerging import Oracle, Protocol
+
+# Initialize oracle with protocol
+oracle = Oracle(
+    protocol_id="clean-cooking-v1",
+    min_confidence=0.95,
+    required_validators=3
+)
+
+# Verify measurements
+verification = oracle.verify_measurements(
+    measurements=device_data,
+    baseline=baseline_data,
+    evidence={
+        "telemetry": sensor_logs,
+        "delivery": fuel_records
+    }
+)
+
+# Issue credential if valid
+if verification.is_valid:
+    credential = verification.issue_credential()
+```
+
+```javascript
+import { Oracle, Protocol } from '@emerging/sdk';
+
+// Initialize oracle with protocol
+const oracle = new Oracle({
+  protocolId: 'clean-cooking-v1',
+  minConfidence: 0.95,
+  requiredValidators: 3
+});
+
+// Verify measurements
+const verification = await oracle.verifyMeasurements({
+  measurements: deviceData,
+  baseline: baselineData,
+  evidence: {
+    telemetry: sensorLogs,
+    delivery: fuelRecords
+  }
+});
+
+// Issue credential if valid
+if (verification.isValid) {
+  const credential = await verification.issueCredential();
+}
+```
+
+</CodeGroup>
+
+### Validation Rules
+
+<ResponseField name="protocolCompliance" type="boolean" required>
+  Measurements follow protocol specification
+</ResponseField>
+
+<ResponseField name="dataIntegrity" type="boolean" required>
+  Cryptographic proofs are valid
+</ResponseField>
+
+<ResponseField name="evidenceQuality" type="number" required>
+  Confidence score for supporting evidence
+</ResponseField>
+
+## Credential Issuance
+
+```json
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/dmrv/v1"
+  ],
+  "type": ["VerifiableCredential", "MeasurementClaim"],
+  "issuer": "did:ixo:oracle/456",
+  "issuanceDate": "2024-03-15T12:00:00Z",
+  "credentialSubject": {
+    "id": "did:ixo:device/123",
+    "protocol": "clean-cooking-v1",
+    "measurements": {
+      "burnTime": 300,
+      "fuelConsumed": 15
+    },
+    "evidence": [{
+      "type": "TelemetryData",
+      "hash": "0x123...",
+      "uri": "ipfs://Qm..."
+    }]
+  }
+}
+```
+
+## Best Practices
+
+<Note>
+Follow protocol specifications carefully and implement comprehensive data validation at every stage.
+</Note>
+
+### Security
+
+- Use secure communication channels
+- Implement device authentication
+- Validate data integrity
+- Monitor for anomalies
+
+### Scalability
+
+- Configure offline buffering
+- Implement batch processing
+- Use load balancing
+- Monitor system performance
+
+## Next Steps
+
+<CardGroup>
+
+<Card title="Protocol Guide" icon="file-code">
+  Create custom protocols
+</Card>
+
+<Card title="Device Integration" icon="microchip">
+  Connect IoT devices
+</Card>
+
+<Card title="Oracle Setup" icon="robot">
+  Configure validation networks
+</Card>
+
+</CardGroup>

@@ -1,0 +1,249 @@
+---
+title: 'Digital Measurement, Reporting, and Verification (dMRV)'
+description: 'Build automated measurement, reporting, and verification systems using IoT devices, blockchain, and AI oracles'
+---
+
+<Note>
+Digital MRV (dMRV) provides cryptographically verifiable proof of real-world activities and impacts through automated data collection, validation, and certification.
+</Note>
+
+## Architecture
+
+<CardGroup>
+
+<Card title="Data Collection" icon="sensor">
+  IoT devices and sensors capture real-time measurements
+</Card>
+
+<Card title="Data Validation" icon="shield-check">
+  Oracle networks verify data integrity and accuracy
+</Card>
+
+<Card title="Blockchain Storage" icon="cube">
+  Immutable record of verified measurements
+</Card>
+
+<Card title="Credential Issuance" icon="certificate">
+  Automated certification of verified claims
+</Card>
+
+</CardGroup>
+
+## Core Components
+
+### Data Collection
+
+<CodeGroup>
+
+```json Device Telemetry
+{
+  "deviceId": "did:ixo:device/123",
+  "timestamp": "2024-03-15T12:00:00Z",
+  "measurements": {
+    "burnTime": 300,
+    "fuelConsumed": 15,
+    "temperature": 180
+  },
+  "signature": "0xabc..."
+}
+```
+
+```python Process Telemetry
+from emerging import Device, Measurement
+
+# Create measurement from device
+measurement = Measurement.create(
+    device_id="did:ixo:device/123",
+    data={
+        "burn_time": 300,
+        "fuel_consumed": 15,
+        "temperature": 180
+    }
+)
+```
+
+</CodeGroup>
+
+### Data Validation
+
+<AccordionGroup>
+
+<Accordion title="Validation Rules">
+- Data format compliance
+- Value range checks
+- Cross-reference validation
+- Temporal consistency
+</Accordion>
+
+<Accordion title="Oracle Network">
+- Distributed validators
+- Consensus mechanisms
+- AI-powered analysis
+- Anomaly detection
+</Accordion>
+
+</AccordionGroup>
+
+## Claim Structure
+
+<ResponseField name="type" type="string" required>
+  Type of measurement claim
+</ResponseField>
+
+<ResponseField name="deviceId" type="string" required>
+  DID of measuring device
+</ResponseField>
+
+<ResponseField name="measurements" type="object" required>
+  Key-value pairs of measurements
+</ResponseField>
+
+<ResponseField name="evidence" type="array">
+  Supporting data and proofs
+</ResponseField>
+
+### Example Claim
+
+```json
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/dmrv/v1"
+  ],
+  "type": ["VerifiableCredential", "MeasurementClaim"],
+  "issuer": "did:ixo:oracle/456",
+  "issuanceDate": "2024-03-15T12:00:00Z",
+  "credentialSubject": {
+    "id": "did:ixo:device/123",
+    "measurements": {
+      "burnTime": 300,
+      "fuelConsumed": 15
+    },
+    "evidence": [{
+      "type": "TelemetryData",
+      "hash": "0x123...",
+      "uri": "ipfs://Qm..."
+    }]
+  }
+}
+```
+
+## Verification Process
+
+<AccordionGroup>
+
+<Accordion title="Data Collection">
+- Device authentication
+- Secure data transmission
+- Real-time validation
+- Temporal anchoring
+</Accordion>
+
+<Accordion title="Oracle Verification">
+- Data integrity checks
+- Business rule validation
+- AI/ML analysis
+- Consensus achievement
+</Accordion>
+
+<Accordion title="Credential Issuance">
+- Claim compilation
+- Evidence linking
+- Cryptographic signing
+- Blockchain anchoring
+</Accordion>
+
+</AccordionGroup>
+
+## Integration Example
+
+<CodeGroup>
+
+```python
+from emerging import Device, Oracle, Credential
+
+# Initialize device and oracle
+device = Device("did:ixo:device/123")
+oracle = Oracle("did:ixo:oracle/456")
+
+# Collect and verify measurements
+measurements = device.collect_measurements()
+verification = oracle.verify_measurements(measurements)
+
+# Issue verified credential
+if verification.is_valid:
+    credential = Credential.issue(
+        type="MeasurementClaim",
+        subject=measurements,
+        evidence=verification.proof
+    )
+```
+
+```javascript
+import { Device, Oracle, Credential } from '@emerging/sdk';
+
+// Initialize device and oracle
+const device = new Device('did:ixo:device/123');
+const oracle = new Oracle('did:ixo:oracle/456');
+
+// Collect and verify measurements
+const measurements = await device.collectMeasurements();
+const verification = await oracle.verifyMeasurements(measurements);
+
+// Issue verified credential
+if (verification.isValid) {
+  const credential = await Credential.issue({
+    type: 'MeasurementClaim',
+    subject: measurements,
+    evidence: verification.proof
+  });
+}
+```
+
+</CodeGroup>
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid measurement format
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Unauthorized device or oracle
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Conflicting measurements
+</ResponseField>
+
+## Best Practices
+
+<Note>
+Always implement robust device authentication and data validation before submitting measurements.
+</Note>
+
+### Security
+
+- Use secure communication channels
+- Implement device authentication
+- Validate data integrity
+- Monitor for anomalies
+
+## Next Steps
+
+<CardGroup>
+
+<Card title="Device Integration" icon="microchip">
+  Connect IoT devices and sensors
+</Card>
+
+<Card title="Oracle Setup" icon="robot">
+  Configure validation networks
+</Card>
+
+<Card title="Credential Guide" icon="certificate">
+  Implement verification flow
+</Card>
+
+</CardGroup>
+

@@ -1,0 +1,184 @@
+---
+title: "New file"
+description: "Build and manage digital twin systems for real-world systems and processes"
+---
+
+<Note>
+  The IXO Spatial Web platform uses a systems-thinking approach where each physical or conceptual component is represented as a Digital Entity with its own Domain. Clean cooking systems serve as a practical example throughout this guide.
+</Note>
+
+## Twin Types
+
+<CardGroup>
+  <Card title="Physical Twins" icon="microchip">
+    Digital representations of physical devices and sensors (e.g., cooking stoves, IoT monitors, and tracked inventory)
+  </Card>
+
+  <Card title="Cognitive Twins" icon="brain">
+    Digital models of organizational structures (e.g., projects, funders, distribution agents)
+  </Card>
+
+  <Card title="Twin Systems" icon="diagram-project">
+    Digital representation of the networks of relationships and interactions between real-world entities
+  </Card>
+
+  <Card title="Oracle Twins" icon="robot">
+    AI-enabled agentic services performing evaluations, verification, and intelligent automations
+  </Card>
+</CardGroup>
+
+## Entity Structure
+
+<CodeGroup>
+  ```json Entity Example
+  {
+    "did": "did:ixo:entity/device-123",
+    "type": "Device",
+    "controller": "did:ixo:org/operator",
+    "services": [{
+      "id": "#data",
+      "type": "DataIngestion",
+      "endpoint": "https://api.emerging.eco/ingest"
+    }],
+    "verifiableCredential": [{
+      "type": "Certification",
+      "issuer": "did:ixo:org/certifier"
+    }]
+  }
+  ```
+
+  ```python Example: Clean Cooking Device
+  from emerging import Entity
+
+  # Create a specific device entity
+  device = Entity.create(
+      type="CleanCookingDevice",  # Specific implementation
+      controller="did:ixo:org/project-dev",
+      services=[{
+          "id": "#data",
+          "type": "DataIngestion",
+          "endpoint": "https://api.emerging.eco/ingest"
+      }]
+  )
+  ```
+</CodeGroup>
+
+## Domain Properties
+
+<ResponseField name="did" type="string" required>
+  W3C Decentralized Identifier for unique entity identification
+</ResponseField>
+
+<ResponseField name="controller" type="string" required>
+  Entity with update permissions
+</ResponseField>
+
+<ResponseField name="services" type="array">
+  Associated services and endpoints
+</ResponseField>
+
+<ResponseField name="verifiableCredential" type="array">
+  Issued certificates and proofs
+</ResponseField>
+
+## Entity Relationships
+
+<AccordionGroup>
+  <Accordion title="Generic Implementation">
+    * Organizations implement Projects
+
+    * Projects generate Assets
+
+    * Assets produce Claims
+
+    * Oracles verify Claims
+
+    * Claims become Credentials
+  </Accordion>
+
+  <Accordion title="Example: Clean Cooking">
+    * Project developer implements cooking program
+
+    * Program generates stove installations
+
+    * Stoves produce usage data
+
+    * Oracles verify emission reductions
+
+    * Verified data becomes carbon credits
+  </Accordion>
+</AccordionGroup>
+
+## Using Protocols
+
+<Note>
+  Protocols are templates that define standard properties and relationships for specific entity types. They can be customized for any domain.
+</Note>
+
+### Protocol Structure
+
+```json
+{
+  "type": "Protocol",
+  "properties": {
+    "metricOne": "string",
+    "metricTwo": "number",
+    "measurements": "object"
+  },
+  "relationships": {
+    "verifier": "OracleEntity",
+    "operator": "OrganizationEntity"
+  }
+}
+```
+
+### Instantiating Entities
+
+<CodeGroup>
+  ```bash Generic Creation
+  curl -X POST https://api.emerging.eco/v1/entities \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -d '{
+      "type": "Device",
+      "protocol": "did:ixo:protocol/template",
+      "properties": {
+        "metricOne": "value",
+        "metricTwo": 100
+      }
+    }'
+  ```
+
+  ```python Clean Cooking Example
+  from emerging import Protocol
+
+  # Example using clean cooking protocol
+  protocol = Protocol.get("did:ixo:protocol/clean-cooking")
+  stove = protocol.create_entity(
+      type="CleanCookingDevice",
+      properties={
+          "fuel_type": "electric",
+          "efficiency": 85
+      }
+  )
+  ```
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Entity Guide" icon="cube">
+    Learn about entity management
+  </Card>
+
+  <Card title="Protocol Guide" icon="file-code">
+    Create custom protocols
+  </Card>
+
+  <Card title="Oracle Guide" icon="robot">
+    Implement verification systems
+  </Card>
+
+  <Card title="Integration Guide" icon="plug">
+    Connect physical devices
+  </Card>
+</CardGroup>
