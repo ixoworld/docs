@@ -1,33 +1,110 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: "Overview of the available APIs and how to integrate with Services."
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+The IXO Platform provides multiple APIs to interact with different components of the software services and data ecosystem. This guide covers the core APIs and how to get started using them.
 
-## Welcome
+## Available APIs
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+<CardGroup>
+  <Card title="Gateways" icon="server">
+    RPC and gRPC interfaces for querying & writing to the blockchain
+  </Card>
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+  <Card title="Blocksync" icon="database">
+    Dynamic querying of indexed blockchain data using GraphQL
+  </Card>
+
+  <Card title="Data Matrix" icon="vault">
+    Secure Matrix Server interface to private data rooms
+  </Card>
+
+  <Card title="Oracles" icon="sparkles">
+    Interface with AI Oracles for automation and analytics
+  </Card>
+</CardGroup>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API requests require authentication using API keys. Include your API key in the Authorization header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Base URLs
+
+Each API has its own base URL:
+
+* PRC Gateway: [`https://rpc.ixo.earth`](https://rpc.ixo.earth/v1)
+
+* gRPC Gateway: [`https://grpc.ixo.earth`](https://grpc.ixo.earth/v1)\`
+
+* Blocksync GraphQL: [`https://graphql.ixo.earth`](https://graphql.ixo.earth/v1)
+
+* Data Matrix Bot: [`https://matrix.ixo.earth`](https://matrix.ixo.earth/v1)
+
+* Oracles: [`https://oracles.ixo.earth`](https://oracles.ixo.earth/v1)
+
+## Response Format
+
+Our APIs return responses in JSON format. A typical successful response looks like:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "data": {
+    "result": "success"
   }
-]
+}
 ```
+
+## Error Handling
+
+The API uses conventional HTTP response codes:
+
+* `2xx` - Success
+
+* `4xx` - Client errors
+
+* `5xx` - Server errors
+
+Error responses include:
+
+* Error code
+
+* Human-readable message
+
+* Request ID for support
+
+## Rate Limiting
+
+APIs are rate limited, depending on your plan and which API service you are using.
+
+Rate limit headers are included in responses:
+
+```bash:API Integration.md
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+```
+
+## Next Steps
+
+<CardGroup>
+  <Card title="RPC Reference" icon="book">
+    Detailed documentation for the RPC API
+  </Card>
+
+  <Card title="GraphQL Guide" icon="code">
+    Learn how to construct GraphQL queries
+  </Card>
+
+  <Card title="Authentication" icon="lock">
+    Detailed guide on authentication methods
+  </Card>
+
+  <Card title="Examples" icon="code">
+    Sample code and use cases for the various APIs
+  </Card>
+</CardGroup>

@@ -39,7 +39,7 @@
     },
     {
       "name": "Blog",
-      "icon": "world",
+      "icon": "globe",
       "url": "https://chronicle.impacts.network/"
     },
     {
@@ -48,6 +48,8 @@
       "url": "api-reference",
       "icon": "square-terminal"
     }
+  ]
+}
   ],
   "navigation": [
     {
