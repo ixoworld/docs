@@ -1,0 +1,453 @@
+---
+title: 'Impact Hub Registry'
+description: 'Build decentralized domain registries on the Impact Hub Network for verifiable digital identities and credentials'
+---
+
+<Note>
+The Impact Hub Registry provides a decentralized public infrastructure for registering digital domains, issuing verifiable credentials, and managing the lifecycle of tokenized claims and assets.
+</Note>
+
+## Core Components
+
+<CardGroup>
+
+<Card title="Domain Registry" icon="book">
+  Register and resolve digital domain identifiers
+</Card>
+
+<Card title="Credential Registry" icon="certificate">
+  Issue and verify domain credentials
+</Card>
+
+<Card title="Claims Registry" icon="file-check">
+  Record and validate verifiable claims
+</Card>
+
+<Card title="Token Registry" icon="coin">
+  Manage tokenized assets and credits
+</Card>
+
+</CardGroup>
+
+## Registry Architecture
+
+### Domain Registration
+
+<CodeGroup>
+
+```typescript Domain Creation
+import { Registry } from "@ixo/impactxclient-sdk";
+
+// Register new domain
+const domain = await Registry.createDomain({
+  type: "DigitalDomain",
+  controller: ownerAddress,
+  capabilities: ["verification", "claims"],
+  metadata: {
+    name: "Example Domain",
+    description: "Domain description"
+  }
+});
+
+// Resolve domain
+const resolved = await Registry.resolveDid(domain.did);
+```
+
+```typescript Credential Issuance
+// Issue domain credential
+const credential = await Registry.issueCredential({
+  type: "DomainVerification",
+  subject: domain.did,
+  issuer: "did:ixo:oracle/123",
+  claims: {
+    status: "verified",
+    level: "advanced"
+  }
+});
+```
+
+</CodeGroup>
+
+### Claims Management
+
+<AccordionGroup>
+
+<Accordion title="Claims Structure">
+- **Claim Types**: Standardized claim templates
+- **Evidence**: Supporting proofs and data
+- **Verification**: Oracle attestations
+- **State**: Claim lifecycle status
+
+```typescript
+// Submit claim
+const claim = await Registry.submitClaim({
+  type: "VerifiableOutcome",
+  subject: domain.did,
+  value: {
+    metric: "carbon_reduction",
+    amount: 100,
+    unit: "tCO2e"
+  },
+  evidence: [{
+    type: "OracleVerification",
+    proof: verificationResult
+  }]
+});
+```
+</Accordion>
+
+<Accordion title="Token Operations">
+- **Asset Tokenization**: Convert claims to tokens
+- **Transfer Rules**: Governance parameters
+- **Settlement**: Cross-chain operations
+- **Retirement**: Token lifecycle management
+
+```typescript
+// Tokenize verified claim
+const token = await Registry.tokenizeClaim({
+  claimId: claim.id,
+  standard: "cw721",
+  metadata: {
+    name: "Carbon Credit",
+    attributes: {
+      vintage: "2024",
+      standard: "GS-VER"
+    }
+  }
+});
+```
+</Accordion>
+
+</AccordionGroup>
+
+### Registry Services
+
+<AccordionGroup>
+
+<Accordion title="Resolution">
+- **DID Resolution**: Resolve domain identifiers
+- **Credential Verification**: Validate credentials
+- **Claim Validation**: Verify claim status
+- **Token Tracking**: Monitor token lifecycle
+
+```typescript
+// Verify credential
+const isValid = await Registry.verifyCredential(credential);
+
+// Check claim status
+const status = await Registry.getClaimStatus(claim.id);
+```
+</Accordion>
+
+<Accordion title="Governance">
+- **Access Control**: Permission management
+- **Policy Enforcement**: Rule validation
+- **Audit Trails**: Activity tracking
+- **Updates**: Registry maintenance
+
+```typescript
+// Update domain policy
+await Registry.updatePolicy(domain.did, {
+  controllers: ["did:ixo:org/456"],
+  allowedCredentials: ["DomainVerification"],
+  claimConstraints: {
+    requiredEvidence: ["OracleVerification"]
+  }
+});
+```
+</Accordion>
+
+</AccordionGroup>
+
+## Integration Examples
+
+### Domain Registration Flow
+
+```typescript
+async function registerVerifiedDomain() {
+  // Create domain
+  const domain = await Registry.createDomain({
+    type: "DigitalDomain",
+    controller: ownerAddress
+  });
+
+  // Setup verification
+  const oracle = await Oracle.create({
+    type: "DomainVerification"
+  });
+
+  // Verify domain
+  const verification = await oracle.verify({
+    subject: domain.did,
+    context: domainContext
+  });
+
+  // Issue credential
+  const credential = await Registry.issueCredential({
+    type: "DomainVerification",
+    subject: domain.did,
+    evidence: verification
+  });
+
+  return { domain, credential };
+}
+```
+
+### Claims Processing
+
+```typescript
+async function processVerifiedClaim() {
+  // Submit claim
+  const claim = await Registry.submitClaim({
+    type: "VerifiableOutcome",
+    subject: domain.did,
+    value: claimData
+  });
+
+  // Verify claim
+  const verification = await oracle.verifyClaim(claim);
+
+  // Update claim status
+  await Registry.updateClaimStatus(claim.id, {
+    status: "verified",
+    evidence: verification
+  });
+
+  // Tokenize if valid
+  if (verification.isValid) {
+    const token = await Registry.tokenizeClaim(claim.id);
+    return token;
+  }
+}
+```
+
+## Integration Patterns
+
+### Domain Lifecycle Management
+
+<CodeGroup>
+
+```typescript Domain Creation
+async function createProjectDomain() {
+  // Create project domain
+  const project = await Registry.createDomain({
+    type: "Project",
+    class: "CleanCooking",
+    capabilities: ["verification", "claims", "tokenization"],
+    metadata: {
+      standard: "GS_MMECD_1.0",
+      methodology: "AMS-II.G"
+    }
+  });
+
+  // Create data room
+  const room = await matrix.createRoom({
+    name: `Project ${project.did}`,
+    encryption: true
+  });
+
+  // Link data room
+  await Registry.linkService(project.did, {
+    id: "#data",
+    type: "MatrixRoom",
+    serviceEndpoint: room.roomId
+  });
+
+  return project;
+}
+```
+
+```typescript Domain Updates
+// Update domain state
+await Registry.updateDomain(domain.did, {
+  state: "active",
+  metadata: {
+    lastUpdate: Date.now(),
+    version: "2.0"
+  }
+});
+
+// Add verification oracle
+await Registry.addService(domain.did, {
+  id: "#verification",
+  type: "OracleService",
+  serviceEndpoint: oracle.did
+});
+```
+
+</CodeGroup>
+
+### Verification Networks
+
+```typescript
+// Create oracle network
+const network = await Registry.createNetwork({
+  type: "VerificationNetwork",
+  members: [
+    { did: "did:ixo:oracle/123", role: "validator" },
+    { did: "did:ixo:oracle/456", role: "validator" },
+    { did: "did:ixo:oracle/789", role: "coordinator" }
+  ],
+  policy: {
+    threshold: 2,
+    timeout: 3600
+  }
+});
+
+// Submit for verification
+const verification = await network.verify({
+  subject: domain.did,
+  claim: claim,
+  context: {
+    type: "ClaimVerification",
+    standard: "GS_MMECD_1.0"
+  }
+});
+
+// Process results
+if (verification.consensus) {
+  await Registry.updateClaimStatus(claim.id, {
+    status: "verified",
+    evidence: verification.results
+  });
+}
+```
+
+### Token Lifecycle
+
+```typescript
+// Create token collection
+const collection = await Registry.createCollection({
+  name: "Carbon Credits 2024",
+  symbol: "CC24",
+  standard: "cw721",
+  metadata: {
+    standard: "GS-VER",
+    vintage: "2024"
+  }
+});
+
+// Mint token from claim
+const token = await Registry.mintToken(collection.address, {
+  owner: domain.controller,
+  metadata: {
+    name: "Carbon Credit",
+    claimId: claim.id,
+    amount: "1000",
+    unit: "tCO2e"
+  }
+});
+
+// Transfer token
+await Registry.transferToken(collection.address, {
+  tokenId: token.id,
+  from: domain.controller,
+  to: "ixo1buyer..."
+});
+
+// Retire token
+await Registry.retireToken(collection.address, {
+  tokenId: token.id,
+  reason: "Offset",
+  evidence: {
+    type: "RetirementClaim",
+    beneficiary: "Organization XYZ"
+  }
+});
+```
+
+### Data Integration
+
+```typescript
+// Store data in Matrix room
+async function storeVerificationData(domain, verification) {
+  const room = await Registry.resolveService(domain.did, "#data");
+  
+  // Store in encrypted room
+  await matrix.sendEvent(room.serviceEndpoint, {
+    type: "verification.result",
+    content: {
+      verificationId: verification.id,
+      timestamp: Date.now(),
+      result: verification.result,
+      evidence: verification.evidence
+    }
+  });
+
+  // Update registry
+  await Registry.addEvidence(domain.did, {
+    type: "VerificationResult",
+    id: verification.id,
+    serviceEndpoint: `matrix://${room.serviceEndpoint}`,
+    hash: verification.hash
+  });
+}
+```
+
+### Protocol Integration
+
+```typescript
+// Instantiate protocol
+const protocol = await Registry.instantiateProtocol({
+  template: "CleanCookingProtocol",
+  version: "1.0.0",
+  params: {
+    standard: "GS_MMECD_1.0",
+    baselineEmissionFactor: 7.2,
+    monitoringFrequency: 300
+  }
+});
+
+// Create domain from protocol
+const domain = await Registry.createFromProtocol(protocol.id, {
+  controller: ownerAddress,
+  metadata: {
+    name: "Clean Cooking Project",
+    location: "Region XYZ"
+  }
+});
+
+// Validate against protocol
+const validation = await protocol.validate(domain.did, {
+  type: "ComplianceCheck",
+  evidence: domainData
+});
+```
+
+## Best Practices
+
+<Note>
+Follow these guidelines for reliable registry operations
+</Note>
+
+### Security
+
+- Validate all registry operations
+- Implement proper access control
+- Monitor credential status
+- Track token lifecycle
+
+### Performance
+
+- Batch registry updates
+- Cache resolution results
+- Handle network issues
+- Monitor chain state
+
+## Next Steps
+
+<CardGroup>
+
+<Card title="Domain Guide" icon="book">
+  Learn domain registration
+</Card>
+
+<Card title="Claims Guide" icon="file-check">
+  Process verifiable claims
+</Card>
+
+<Card title="Token Guide" icon="coin">
+  Manage tokenized assets
+</Card>
+
+</CardGroup>
