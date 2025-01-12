@@ -1,0 +1,326 @@
+---
+title: 'IXO Oracles Architecture'
+description: 'Build intelligent verification networks using AI-powered oracles with decentralized identity'
+---
+<Note>
+IXO Oracles are autonomous AI agents that provide verifiable services through decentralized identity, secure data storage, and blockchain integration.
+</Note>
+
+## Key Components
+
+<CardGroup>
+
+<Card title="Identity Layer" icon="fingerprint">
+  DID-based domains with verifiable credentials
+</Card>
+
+<Card title="AI Layer" icon="brain">
+  Langraph framework for cognitive workflows
+</Card>
+
+<Card title="Storage Layer" icon="database">
+  Encrypted Matrix rooms and vector stores
+</Card>
+
+<Card title="Blockchain Layer" icon="cube">
+  Impact Hub integration via MultiClient SDK
+</Card>
+
+</CardGroup>
+
+## Oracle Domain
+
+### DID Configuration
+
+<CodeGroup>
+
+```json DID Document
+{
+  "@context": ["https://www.w3.org/ns/did/v1"],
+  "id": "did:ixo:oracle/123",
+  "verificationMethod": [{
+    "id": "#key-1",
+    "type": "Ed25519VerificationKey2018",
+    "controller": "did:ixo:oracle/123",
+    "publicKeyBase58": "..."
+  }],
+  "service": [{
+    "id": "#ai",
+    "type": "LangraphService",
+    "serviceEndpoint": "https://oracle.emerging.eco/ai"
+  }]
+}
+```
+
+```python Create Oracle
+from emerging import Oracle, Domain
+
+# Create oracle domain
+oracle = Oracle.create(
+    name="CleanCookingOracle",
+    capabilities=["verification", "prediction"],
+    controllers=["did:ixo:org/456"]
+)
+
+# Configure services
+oracle.add_service(
+    type="LangraphService",
+    endpoint="https://oracle.emerging.eco/ai"
+)
+```
+
+</CodeGroup>
+
+### Memory Storage
+
+```python
+from emerging import VectorStore, Matrix
+
+# Initialize vector store
+store = VectorStore.create(
+    type="weaviate",
+    index="oracle_memory",
+    schema={
+        "class": "Verification",
+        "properties": ["context", "decision"]
+    }
+)
+
+# Create Matrix room
+room = Matrix.create_room(
+    oracle_id="did:ixo:oracle/123",
+    encryption=True
+)
+```
+
+## AI Workflows
+
+### Langraph Integration
+
+<CodeGroup>
+
+```python Verification Flow
+from emerging import Langraph, Flow
+
+# Create verification flow
+flow = Flow.create(
+    name="device_verification",
+    input_schema={
+        "measurements": "DeviceTelemetry",
+        "baseline": "BaselineData"
+    }
+)
+
+# Add processing nodes
+flow.add_node(
+    "validate_data",
+    type="DataValidation",
+    rules=validation_rules
+)
+
+flow.add_node(
+    "analyze_patterns",
+    type="AnomalyDetection",
+    model=anomaly_model
+)
+
+flow.add_node(
+    "verify_compliance",
+    type="ComplianceCheck",
+    standards=["GS_MMECD_1.0"]
+)
+
+# Deploy flow
+flow.deploy()
+```
+
+```javascript
+import { Langraph, Flow } from '@emerging/sdk';
+
+// Create verification flow
+const flow = await Flow.create({
+  name: 'device_verification',
+  inputSchema: {
+    measurements: 'DeviceTelemetry',
+    baseline: 'BaselineData'
+  }
+});
+
+// Add processing nodes
+await flow.addNode({
+  name: 'validate_data',
+  type: 'DataValidation',
+  rules: validationRules
+});
+
+await flow.addNode({
+  name: 'analyze_patterns',
+  type: 'AnomalyDetection',
+  model: anomalyModel
+});
+
+await flow.addNode({
+  name: 'verify_compliance',
+  type: 'ComplianceCheck',
+  standards: ['GS_MMECD_1.0']
+});
+
+// Deploy flow
+await flow.deploy();
+```
+
+</CodeGroup>
+
+### Semantic Routing
+
+```python
+from emerging import Router, Intent
+
+# Configure router
+router = Router.create(
+    oracles={
+        "verification": "did:ixo:oracle/123",
+        "prediction": "did:ixo:oracle/456"
+    }
+)
+
+# Route request
+intent = Intent.parse("Verify device measurements")
+oracle = router.route(intent)
+result = oracle.process(intent)
+```
+
+## Blockchain Integration
+
+### Transaction Handling
+
+<CodeGroup>
+
+```python
+from emerging import MultiClient
+
+# Initialize client
+client = MultiClient(
+    chain_id="impact-hub-1",
+    key_name="oracle-key"
+)
+
+# Submit verification
+tx = client.submit_verification(
+    device_id="did:ixo:device/789",
+    result=verification_result,
+    proof=cryptographic_proof
+)
+
+# Wait for confirmation
+receipt = tx.wait_confirmation()
+```
+
+```javascript
+import { MultiClient } from '@emerging/sdk';
+
+// Initialize client
+const client = new MultiClient({
+  chainId: 'impact-hub-1',
+  keyName: 'oracle-key'
+});
+
+// Submit verification
+const tx = await client.submitVerification({
+  deviceId: 'did:ixo:device/789',
+  result: verificationResult,
+  proof: cryptographicProof
+});
+
+// Wait for confirmation
+const receipt = await tx.waitConfirmation();
+```
+
+</CodeGroup>
+
+## Security
+
+### Key Management
+
+<ResponseField name="keyRotation" type="object" required>
+  Regular key rotation settings
+</ResponseField>
+
+<ResponseField name="backupStrategy" type="object" required>
+  Key backup and recovery procedures
+</ResponseField>
+
+### Message Signing
+
+```python
+from emerging import Crypto
+
+# Sign message
+signature = Crypto.sign(
+    message=verification_result,
+    key=oracle_key
+)
+
+# Verify signature
+is_valid = Crypto.verify(
+    message=verification_result,
+    signature=signature,
+    did="did:ixo:oracle/123"
+)
+```
+
+## Deployment
+
+### Docker Configuration
+
+```yaml
+version: '3'
+services:
+  oracle:
+    image: emerging/oracle:latest
+    environment:
+      - ORACLE_DID=did:ixo:oracle/123
+      - MATRIX_URL=https://matrix.emerging.eco
+      - CHAIN_ID=impact-hub-1
+    volumes:
+      - ./keys:/keys
+      - ./config:/config
+```
+
+## Best Practices
+
+<Note>
+Implement comprehensive monitoring and follow security best practices for production deployments.
+</Note>
+
+### Observability
+
+- Monitor performance metrics
+- Track verification accuracy
+- Log all operations
+- Set up alerts
+
+### Security
+
+- Rotate keys regularly
+- Validate all inputs
+- Encrypt sensitive data
+- Monitor for attacks
+
+## Next Steps
+
+<CardGroup>
+
+<Card title="Flow Guide" icon="diagram-project">
+  Build verification workflows
+</Card>
+
+<Card title="Security Guide" icon="shield-check">
+  Implement security measures
+</Card>
+
+<Card title="Integration Guide" icon="plug">
+  Connect to Impact Hub
+</Card>
+
+</CardGroup> 
