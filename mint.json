@@ -1,108 +1,87 @@
 {
-    "$schema": "https://mintlify.com/schema.json",
-    "name": "IXO Docs Hub",
-    "logo": {
-      "dark": "/logo/dark.svg",
-      "light": "/logo/light.svg"
-    },
-    "favicon": "/favicon.svg",
-    "colors": {
-      "primary": "#00D2FF",
-      "light": "#00D2FF",
-      "dark": "#0A7CA8",
-      "anchors": {
-        "from": "#00D2FF",
-        "to": "#00D2FF"
-      }
-    },
-    "topbarLinks": [
-      {
-        "name": "Support",
-        "url": "mailto:assistant@ixo.world"
-      }
-    ],
-    "topbarCtaButton": {
-      "name": "Portal",
-      "url": "https://portal.ixo.world"
-    },
-    "tabs": [
-      {
-        "name": "API Reference",
-        "url": "api-reference"
-      },
-      {
-        "name": "Platforms",
-        "url": "platforms"
-      }
-    ],
-    "anchors": [
-      {
-        "name": "Community",
-        "icon": "slack",
-        "url": "https://ixofoundation.slack.com/archives/C04UERAUHQT"
-      },
-      {
-        "name": "Blog",
-        "icon": "globe",
-        "url": "https://chronicle.impacts.network/"
-      }
-    ],
-    "navigation": [
-      {
-        "group": "Get Started",
-        "pages": [
-          "introduction",
-          "quickstart",
-          "development"
-        ]
-      },
-      {
-        "group": "API Documentation",
-        "pages": [
-          "api-reference/introduction"
-        ]
-      },
-      {
-        "group": "Endpoint Examples",
-        "pages": [
-          "api-reference/endpoint/get",
-          "api-reference/endpoint/create",
-          "api-reference/endpoint/delete"
-        ]
-      },
-      {
-        "group": "Drafts-Emerging",
-        "pages": [
-          "guides/concepts",
-          "guides/data-integrity",
-          "guides/digital-certification",
-          "guides/digital-mrv",
-          "guides/digital-twins",
-          "guides/digital-vouchers",
-          "guides/dmrv",
-          "guides/domain-registration",
-          "guides/emerging-platform",
-          "guides/household-monitoring",
-          "guides/ixo-oracles-architecture",
-          "guides/kpt",
-          "guides/sdg-monitoring",
-          "guides/causal-analysis",
-          "guides/registry"
-        ]
-      },
-      {
-        "group": "Drafts IXO Stack",
-        "pages": [
-          "spatial-web-stack/spatial-web-sdks",
-          "spatial-web-stack/ixo-multiclient-sdk",
-          "spatial-web-stack/ixo-matrix-sdk",
-          "spatial-web-stack/oracle-agent-sdk"
-        ]
-      }
-    ],
-    "footerSocials": {
-      "x": "https://x.com/ixoworld",
-      "github": "https://github.com/ixofoundation",
-      "linkedin": "https://linkedin.com/company/ixoworld"
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "IXO Docs Hub",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#00D2FF",
+    "light": "#00D2FF",
+    "dark": "#0A7CA8",
+    "anchors": {
+      "from": "#00D2FF",
+      "to": "#00D2FF"
     }
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:assistant@ixo.world"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Portal",
+    "url": "https://portal.ixo.world"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference",
+      "openapi": "/api-reference/Emerging-Platform-API.yaml"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Community",
+      "icon": "slack",
+      "url": "https://ixofoundation.slack.com/archives/C04UERAUHQT"
+    },
+    {
+      "name": "Blog",
+      "icon": "globe",
+      "url": "https://chronicle.impacts.network/"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": ["introduction", "quickstart", "development"]
+    },
+    {
+      "group": "Drafts-Emerging",
+      "pages": [
+        "guides/concepts",
+        "guides/data-integrity",
+        "guides/digital-certification",
+        "guides/digital-mrv",
+        "guides/digital-twins",
+        "guides/digital-vouchers",
+        "guides/dmrv",
+        "guides/domain-registration",
+        "guides/emerging-platform",
+        "guides/household-monitoring",
+        "guides/ixo-oracles-architecture",
+        "guides/kpt",
+        "guides/sdg-monitoring",
+        "guides/causal-analysis",
+        "guides/registry"
+      ]
+    },
+    {
+      "group": "Drafts IXO Stack",
+      "pages": [
+        "spatial-web-stack/spatial-web-sdks",
+        "spatial-web-stack/ixo-multiclient-sdk",
+        "spatial-web-stack/ixo-matrix-sdk",
+        "spatial-web-stack/oracle-agent-sdk"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "x": "https://x.com/ixoworld",
+    "github": "https://github.com/ixofoundation",
+    "linkedin": "https://linkedin.com/company/ixoworld"
   }
+}
