@@ -22,8 +22,8 @@
     }
   ],
   "topbarCtaButton": {
-    "name": "Portal",
-    "url": "https://portal.ixo.world"
+    "type": "github",
+    "url": "https://github.com/ixofoundation"
   },
   "tabs": [
     {
@@ -42,12 +42,21 @@
       "name": "Blog",
       "icon": "globe",
       "url": "https://chronicle.impacts.network/"
+    },
+    {
+      "name": "Platforms",
+      "icon": "layer-group",
+      "url": "platforms"
     }
   ],
   "navigation": [
     {
       "group": "Get Started",
-      "pages": ["introduction", "quickstart", "development"]
+      "pages": [
+        "introduction", 
+        "quickstart", 
+        "development"
+      ]
     },
     {
       "group": "Drafts-Emerging",
