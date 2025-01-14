@@ -2,101 +2,83 @@
 title: Introduction
 description: "Build impactful real-world solutions with the IXO Spatial Web stack"
 ---
+
 <Note>
-The IXO Spatial Web Platform provides developers with tools to create applications for creating and controlling cognitive digital twins of real-world systems, with secure federated data storage and powerful domain services for Web3 and AI-enabled coordination, financing, governance, verification, and intelligence-gathering.
-
-
+  The IXO Spatial Web Platform provides developers with tools to create applications for creating and controlling cognitive digital twins of real-world systems, with secure federated data storage and powerful domain services for Web3 and AI-enabled coordination, financing, governance, verification, and intelligence-gathering.
 </Note>
+
 <img alt="Hero Dark" classname="hidden dark:block" src="/images/hero-dark.svg" />
 
 ## Core Components
 
 <CardGroup>
+  <Card title="Impact Hub Network" icon="cube">
+    Layer-1 blockchain for digital domains and credentials
+  </Card>
 
-<Card title="Impact Hub Network" icon="blockchain">
-  Layer-1 blockchain for digital domains and credentials
-</Card>
+  <Card title="Data Matrix" icon="database">
+    Encrypted data storage and messaging
+  </Card>
 
-<Card title="Matrix Network" icon="database">
-  Encrypted data storage and messaging
-</Card>
+  <Card title="Agentic Oracles" icon="robot">
+    AI-powered automations, verification and analytics
+  </Card>
 
-<Card title="Oracle Network" icon="robot">
-  AI-powered verification and analytics
-</Card>
-
-<Card title="SignX" icon="key">
-  Authentication and key management
-</Card>
-
+  <Card title="SignX" icon="key">
+    Authentication and key management
+  </Card>
 </CardGroup>
-
-## Quick Start
-
-<CodeGroup>
-
-```bash Install SDKs
-# Install core SDKs
-npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
-npm install @ixo/oracle-agent-sdk @ixo/signx-sdk
-```
-
-```typescript Initialize Client
-import { createClient } from '@ixo/impactxclient-sdk';
-
-const client = await createClient({
-  chainId: 'ixo-5',
-  endpoint: 'https://rpc.ixo.earth'
-});
-```
-
-</CodeGroup>
 
 ## Development Tools
 
 ### Available SDKs
 
 <AccordionGroup>
+  <Accordion title="MultiClient SDK" href="spatial-web-stack/ixo-multiclient-sdk">
+    * Blockchain interactions
 
-<Accordion title="MultiClient SDK">
-- Blockchain interactions
-- Transaction management
-- Smart contract integration
-- Query operations
-</Accordion>
+    * Transaction management
 
-<Accordion title="Matrix Client SDK">
-- Encrypted data rooms
-- Secure messaging
-- Access control
-- File management
-</Accordion>
+    * Smart contract integration
 
-<Accordion title="Oracle Agent SDK">
-- AI model integration
-- Verification flows
-- Dynamic UI components
-- Proof generation
-</Accordion>
+    * Query operations
+  </Accordion>
 
+  <Accordion title="Matrix Bot SDK" href="spatial-web-stack/ixo-matrix-sdk">
+    * Encrypted data rooms
+
+    * Secure messaging
+
+    * Access control
+
+    * File management
+  </Accordion>
+
+  <Accordion title="Oracle Agent SDK" href="spatial-web-stack/oracle-agent-sdk">
+    * AI model integration
+
+    * Automated flows
+
+    * Dynamic UI components
+
+    * Proof generation
+  </Accordion>
 </AccordionGroup>
 
 ### API Access
 
 <CodeGroup>
+  ```bash RPC API
+  # Query blockchain
+  curl https://rpc.ixo.earth/status
+  ```
 
-```bash RPC API
-# Query blockchain
-curl https://rpc.ixo.earth/status
-```
-
-```bash GraphQL API
-# Query indexed data
-curl https://graphql.ixo.earth \
-  -H "Authorization: Bearer $API_KEY" \
-  -d '{ "query": "{ entities { did } }" }'
-```
-
+  ```bash GraphQL API
+  # Query indexed data
+  curl https://graphql.ixo.earth \
+    -H "Authorization: Bearer $API_KEY" \
+    -d '{ "query": "{ entities { did } }" }'
+  ```
 </CodeGroup>
 
 ## Core Features
@@ -139,36 +121,41 @@ const verification = await oracle.verify({
 ## Best Practices
 
 <Note>
-Follow these guidelines for robust application development
+  Follow these guidelines for robust application development
 </Note>
 
 ### Security
-- Use encrypted data rooms
-- Implement proper authentication
-- Validate all inputs
-- Monitor oracle accuracy
+
+* Use encrypted data rooms
+
+* Implement proper authentication
+
+* Validate all inputs
+
+* Monitor oracle accuracy
 
 ### Performance
-- Cache blockchain queries
-- Batch transactions
-- Handle offline scenarios
-- Implement retry logic
+
+* Cache blockchain queries
+
+* Batch transactions
+
+* Handle offline scenarios
+
+* Implement retry logic
 
 ## Next Steps
 
 <CardGroup>
+  <Card title="Tutorials" icon="book">
+    Follow step-by-step guides
+  </Card>
 
-<Card title="Tutorials" icon="book">
-  Follow step-by-step guides
-</Card>
+  <Card title="API Reference" icon="code" href="api-reference/introduction">
+    Explore detailed documentation
+  </Card>
 
-<Card title="API Reference" icon="code">
-  Explore detailed documentation
-</Card>
-
-<Card title="Examples" icon="lightbulb">
-  View sample applications
-</Card>
-
-</CardGroup> 
-
+  <Card title="Examples" icon="lightbulb">
+    View sample applications
+  </Card>
+</CardGroup>
