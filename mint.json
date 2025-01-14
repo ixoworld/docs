@@ -61,41 +61,45 @@
       ]
     },
     {
-      "tab": "platforms",
-      "group": "Emerging Platform",
+      "group": "Platforms",
       "pages": [
         {
-          "group": "Articles",
+          "group": "Emerging Platform",
           "pages": [
-            "guides/overview"
-          ]
-        },
-        {
-          "group": "Developers",
-          "pages": [
-            "guides/emerging-platform",
-            "guides/concepts",
-            "guides/household-monitoring",
-            "guides/digital-mrv",
-            "guides/digital-certification",
-            "guides/digital-vouchers",
-            "guides/sdg-monitoring",
-            "guides/kpt",
-            "guides/digital-twins",
-            "guides/domain-registration",
-            "guides/registry",
-            "guides/data-integrity",
-            "guides/dmrv",
-            "guides/ixo-oracles-architecture"
-          ]
-        },
-        {
-          "group": "SDKs",
-          "pages": [
-            "spatial-web-stack/spatial-web-sdks",
-            "spatial-web-stack/ixo-multiclient-sdk",
-            "spatial-web-stack/ixo-matrix-sdk",
-            "spatial-web-stack/oracle-agent-sdk"
+            {
+              "group": "Articles",
+              "pages": [
+                "guides/overview"
+              ]
+            },
+            {
+              "group": "Developers",
+              "pages": [
+                "guides/emerging-platform",
+                "guides/concepts",
+                "guides/household-monitoring",
+                "guides/digital-mrv",
+                "guides/digital-certification",
+                "guides/digital-vouchers",
+                "guides/sdg-monitoring",
+                "guides/kpt",
+                "guides/digital-twins",
+                "guides/domain-registration",
+                "guides/registry",
+                "guides/data-integrity",
+                "guides/dmrv",
+                "guides/ixo-oracles-architecture"
+              ]
+            },
+            {
+              "group": "SDKs",
+              "pages": [
+                "spatial-web-stack/spatial-web-sdks",
+                "spatial-web-stack/ixo-multiclient-sdk",
+                "spatial-web-stack/ixo-matrix-sdk",
+                "spatial-web-stack/oracle-agent-sdk"
+              ]
+            }
           ]
         }
       ]
