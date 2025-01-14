@@ -1,10 +1,10 @@
 ---
-title: Introduction
-description: "Build impactful real-world solutions with the IXO Spatial Web stack"
+title: Hello World
+description: "Welcome to the IXO Spatial Web of Impacts"
 ---
 
 <Note>
-  The IXO Spatial Web Platform provides developers with tools to create applications for creating and controlling cognitive digital twins of real-world systems, with secure federated data storage and powerful domain services for Web3 and AI-enabled coordination, financing, governance, verification, and intelligence-gathering.
+  IXO equips you with tools and services to build cognitive digital twins of real-world systems. It offers secure federated data storage and next-generation Spatial Web services for Web3 and AI-enabled coordination, financing, governance, verification, and intelligence-gathering at an Internet-scale.
 </Note>
 
 
@@ -15,26 +15,26 @@ description: "Build impactful real-world solutions with the IXO Spatial Web stac
 ## Core Components
 
 <CardGroup>
-  <Card title="Impact Hub Network" icon="cube">
-    Layer-1 blockchain for digital domains and credentials
+  <Card title="Impact Hub" icon="cube" href="articles/ixo-blockchain">
+    Layer-1 blockchain for real-world impacts
   </Card>
 
-  <Card title="Data Matrix" icon="database">
-    Encrypted data storage and messaging
+  <Card title="Data Matrix" icon="database" href="articles/ixo-matrix">
+    Federated data storage and secure messaging
   </Card>
 
-  <Card title="Agentic Oracles" icon="robot">
+  <Card title="Prediction Oracles" icon="brain" href="articles/ixo-oracles">
     AI-powered automations, verification and analytics
   </Card>
 
-  <Card title="SignX" icon="key">
-    Authentication and key management
+  <Card title="Portals" icon="globe" href="articles/ixo-portals">
+    Spatial Web and mobile client applications
   </Card>
 </CardGroup>
 
 ## Development Tools
 
-### Available SDKs
+### Developer SDKs
 
 <AccordionGroup>
   <Accordion title="MultiClient SDK" href="spatial-web-stack/ixo-multiclient-sdk">
@@ -48,7 +48,7 @@ description: "Build impactful real-world solutions with the IXO Spatial Web stac
   </Accordion>
 
   <Accordion title="Matrix Bot SDK" href="spatial-web-stack/ixo-matrix-sdk">
-    * Encrypted data rooms
+    * Manage encrypted data rooms
 
     * Secure messaging
 
@@ -86,71 +86,69 @@ description: "Build impactful real-world solutions with the IXO Spatial Web stac
 
 ## Core Features
 
-### Digital Domains
+### Digital Twin Domains
 
 ```typescript
-// Create digital domain
+// Create a digital domain entity
 const domain = await client.entity.create({
-  type: "DigitalDomain",
-  controller: ownerAddress,
+  type: "dao",
+  controller: did,
   metadata: {
     name: "Example Domain"
   }
 });
 ```
 
-### Secure Data Rooms
+### Matrix Rooms
 
 ```typescript
 // Create encrypted room
 const room = await matrix.createRoom({
-  name: "Domain Data",
+  id: "did:ixo:123abc...",
   encryption: true,
-  members: ["@alice:ixo.world"]
+  members: ["did:ixo:abc123..."]
 });
 ```
 
-### Oracle Verification
+### Oracle Services
 
 ```typescript
 // Verify data
 const verification = await oracle.verify({
-  type: "DataVerification",
-  subject: domain.did,
-  data: domainData
+  type: "ClaimEvaluation",
+  subject: did,
+  data: claimData
 });
 ```
 
-## Best Practices
+## Best Practices for IXO Spatial Web Development
 
-<Note>
-  Follow these guidelines for robust application development
+<Note icon="lightbulb" iconType="solid">
+  Adhere to these best practices to ensure the development of secure, efficient, and resilient applications within the IXO Spatial Web ecosystem.
 </Note>
 
 ### Security
 
-* Use encrypted data rooms
+* Utilize secure federated data storage solutions
 
-* Implement proper authentication
+* Implement decentralized identity verification
 
-* Validate all inputs
-
-* Monitor oracle accuracy
+* Ensure data integrity through blockchain validation
 
 ### Performance
 
-* Cache blockchain queries
+* Optimize data synchronization with [Blocksync](articles/ixo-blocksync)
 
-* Batch transactions
+* Aggregate transactions to minimize network load
 
-* Handle offline scenarios
+* Design for intermittent connectivity and offline functionality
 
-* Implement retry logic
+* Employ adaptive retry mechanisms for network operations
 
 ## Next Steps
 
 <CardGroup>
-  <Card title="Tutorials" icon="book">
+  <Card title="Tutorials" icon="book" href="tutorials/introduction">
     Follow step-by-step guides
   </Card>
 
@@ -158,7 +156,8 @@ const verification = await oracle.verify({
     Explore detailed documentation
   </Card>
 
-  <Card title="Examples" icon="lightbulb">
-    View sample applications
+  <Card title="Use Cases" icon="lightbulb" href="use-cases/introduction">
+    Explore real-world applications
   </Card>
 </CardGroup>
+
