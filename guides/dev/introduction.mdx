@@ -1,0 +1,78 @@
+---
+title: 'Implementation Guides'
+description: 'Learn how to integrate IXO SDKs and tools into your applications with step-by-step instructions'
+---
+
+## Overview
+
+The Implementation Guides provide practical instructions for integrating IXO SDKs and tools into your applications. These guides cover key functionalities like:
+
+- Creating and managing entities
+- Handling transactions 
+- Interacting with IXO APIs
+- Managing tokens and bonds
+- Working with claims and collections
+
+## Before You Begin
+
+Make sure you have:
+
+1. Installed the required [SDKs](../SDKs/SDKs-overview)
+2. Set up the [Signing Client](https://www.npmjs.com/package/@ixo/impactxclient-sdk#signing-client) if using the IXO Spatial Web Multiclient SDK
+3. Familiarized yourself with [IXO Blocksync GraphQL](blocksync-graphql-api-overview) for data queries
+
+<Note>
+The Signing Client is required for signing and broadcasting transactions when using the IXO Spatial Web Multiclient SDK.
+</Note>
+
+## Available Queries
+
+### Entity Queries
+Query entities and their associated identifiers through the Blocksync API.
+
+```graphql
+query GetEntity($id: String!) {
+  entity(id: $id) {
+    id
+    type
+    status
+  }
+}
+```
+
+### Data Queries
+Access blockchain data including:
+
+- Claims and Collections
+- Tokens and Swaps  
+- Bonds and Entities
+- Chain Information
+- Transaction History
+
+## Module Guides
+
+Each implementation guide follows a consistent format:
+
+1. **Action Steps** - How to use IXO SDK functions with code examples
+2. **Data Retrieval** - GraphQL queries to fetch relevant data
+3. **Optional Updates** - Additional modifications and operations
+4. **Reference** - Complete list of available module functions
+
+<CardGroup>
+  <Card title="Entity Module" icon="cube">
+    Create and manage entities on the blockchain
+  </Card>
+  <Card title="Claims Module" icon="file-signature">
+    Handle claims and collections
+  </Card>
+  <Card title="Tokens Module" icon="coins">
+    Manage tokens and perform swaps
+  </Card>
+  <Card title="Bonds Module" icon="link">
+    Work with blockchain bonds
+  </Card>
+</CardGroup>
+
+## Need Help?
+
+Join our [Slack community](https://ixofoundation.slack.com/archives/C04UERAUHQT) where you can connect with our team and here you can also chat with the IXO Guru AI assistant that has access to our entire knowledge-base.

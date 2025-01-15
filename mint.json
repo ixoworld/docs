@@ -46,18 +46,14 @@
       "name": "Blog",
       "icon": "globe",
       "url": "https://chronicle.impacts.network/"
-    },
-    {
-      "name": "Platforms",
-      "icon": "layer-group",
-      "url": "platforms"
     }
   ],
   "navigation": [
     {
       "group": "Get Started",
       "pages": [
-        "introduction"
+        "introduction",
+        "spatial-web-stack/spatial-web-sdks"
       ]
     },
     {
@@ -66,42 +62,50 @@
         {
           "group": "Emerging Platform",
           "pages": [
+            "guides/emerging-platform",
+            "guides/household-monitoring",
             {
               "group": "Articles",
               "pages": [
                 "guides/overview"
               ]
-            },
-            {
-              "group": "Developers",
-              "pages": [
-                "guides/emerging-platform",
-                "guides/concepts",
-                "guides/household-monitoring",
-                "guides/digital-mrv",
-                "guides/digital-certification",
-                "guides/digital-vouchers",
-                "guides/sdg-monitoring",
-                "guides/kpt",
-                "guides/digital-twins",
-                "guides/domain-registration",
-                "guides/registry",
-                "guides/data-integrity",
-                "guides/dmrv",
-                "guides/ixo-oracles-architecture"
-              ]
-            },
-            {
-              "group": "SDKs",
-              "pages": [
-                "spatial-web-stack/spatial-web-sdks",
-                "spatial-web-stack/ixo-multiclient-sdk",
-                "spatial-web-stack/ixo-matrix-sdk",
-                "spatial-web-stack/oracle-agent-sdk"
-              ]
             }
           ]
         }
+      ]
+    },
+    {
+      "group": "Developers",
+      "pages": [
+        "guides/dev/introduction",
+        "guides/concepts",
+        "guides/digital-mrv",
+        "guides/digital-twins",
+        "guides/domain-registration",
+        "guides/registry",
+        "guides/data-integrity",
+        "guides/dmrv",
+        "guides/ixo-oracles-architecture",
+        {
+          "group": "SDKs",
+          "pages": [
+            "spatial-web-stack/spatial-web-sdks",
+            "spatial-web-stack/ixo-multiclient-sdk",
+            "spatial-web-stack/ixo-matrix-sdk",
+            "spatial-web-stack/oracle-agent-sdk"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Articles",
+      "pages": [
+        "articles/introduction",
+        "articles/cdt-systems",
+        "articles/ixo-blockchain",
+        "articles/ixo-matrix",
+        "articles/ixo-oracles-architecture",
+        "articles/ixo-blocksync"
       ]
     }
   ],
@@ -110,4 +114,4 @@
     "github": "https://github.com/ixofoundation",
     "linkedin": "https://linkedin.com/company/ixoworld"
   }
-}
+}  

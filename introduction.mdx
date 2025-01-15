@@ -1,10 +1,10 @@
 ---
 title: Hello World
-description: "Welcome to the IXO Spatial Web of Impacts"
+description: "Welcome to the Spatial Web of Impacts"
 ---
 
 <Note>
-  IXO equips you with tools and services to build cognitive digital twins of real-world systems. It offers secure federated data storage and next-generation Spatial Web services for Web3 and AI-enabled coordination, financing, governance, verification, and intelligence-gathering at an Internet-scale.
+  IXO equips you with tools and services to build cognitive digital twins of real-world systems for blockchain and AI-enabled coordination, financing, verification, governance, and intelligence-gathering at an Internet-scale. **This is the Digital Immune System for Earth and Humanity**.
 </Note>
 
 
@@ -16,139 +16,29 @@ description: "Welcome to the IXO Spatial Web of Impacts"
 
 <CardGroup>
   <Card title="Impact Hub" icon="cube" href="articles/ixo-blockchain">
-    Layer-1 blockchain for real-world impacts
+    The IXO blockchain and Interchain networks
   </Card>
 
-  <Card title="Data Matrix" icon="database" href="articles/ixo-matrix">
-    Federated data storage and secure messaging
+  <Card title="Matrix" icon="database" href="articles/ixo-matrix">
+    Federated data storage modes and encrypted messaging services
   </Card>
 
-  <Card title="Prediction Oracles" icon="brain" href="articles/ixo-oracles">
-    AI-powered automations, verification and analytics
+  <Card title="Oracles" icon="brain" href="articles/ixo-oracles">
+    Agentic servicdes providing AI-powered automationa, verification, analytics, and decision-support
   </Card>
 
   <Card title="Portals" icon="globe" href="articles/ixo-portals">
-    Spatial Web and mobile client applications
+    Decentralized client applications for the Spatial Web
   </Card>
 </CardGroup>
 
-## Development Tools
+## The IXO Mobile Application
+[Start by downloading](https://ixo.earth/app) **Impacts X** which holds your personal keys to the Spatial Web of Impacts.
 
-### Developer SDKs
-
-<AccordionGroup>
-  <Accordion title="MultiClient SDK" href="spatial-web-stack/ixo-multiclient-sdk">
-    * Blockchain interactions
-
-    * Transaction management
-
-    * Smart contract integration
-
-    * Query operations
-  </Accordion>
-
-  <Accordion title="Matrix Bot SDK" href="spatial-web-stack/ixo-matrix-sdk">
-    * Manage encrypted data rooms
-
-    * Secure messaging
-
-    * Access control
-
-    * File management
-  </Accordion>
-
-  <Accordion title="Oracle Agent SDK" href="spatial-web-stack/oracle-agent-sdk">
-    * AI model integration
-
-    * Automated flows
-
-    * Dynamic UI components
-
-    * Proof generation
-  </Accordion>
-</AccordionGroup>
-
-### API Access
-
-<CodeGroup>
-  ```bash RPC API
-  # Query blockchain
-  curl https://rpc.ixo.earth/status
-  ```
-
-  ```bash GraphQL API
-  # Query indexed data
-  curl https://graphql.ixo.earth \
-    -H "Authorization: Bearer $API_KEY" \
-    -d '{ "query": "{ entities { did } }" }'
-  ```
-</CodeGroup>
-
-## Core Features
-
-### Digital Twin Domains
-
-```typescript
-// Create a digital domain entity
-const domain = await client.entity.create({
-  type: "dao",
-  controller: did,
-  metadata: {
-    name: "Example Domain"
-  }
-});
-```
-
-### Matrix Rooms
-
-```typescript
-// Create encrypted room
-const room = await matrix.createRoom({
-  id: "did:ixo:123abc...",
-  encryption: true,
-  members: ["did:ixo:abc123..."]
-});
-```
-
-### Oracle Services
-
-```typescript
-// Verify data
-const verification = await oracle.verify({
-  type: "ClaimEvaluation",
-  subject: did,
-  data: claimData
-});
-```
-
-## Best Practices for IXO Spatial Web Development
-
-<Note icon="lightbulb" iconType="solid">
-  Adhere to these best practices to ensure the development of secure, efficient, and resilient applications within the IXO Spatial Web ecosystem.
-</Note>
-
-### Security
-
-* Utilize secure federated data storage solutions
-
-* Implement decentralized identity verification
-
-* Ensure data integrity through blockchain validation
-
-### Performance
-
-* Optimize data synchronization with [Blocksync](articles/ixo-blocksync)
-
-* Aggregate transactions to minimize network load
-
-* Design for intermittent connectivity and offline functionality
-
-* Employ adaptive retry mechanisms for network operations
-
-## Next Steps
+## Explore
 
 <CardGroup>
-  <Card title="Tutorials" icon="book" href="tutorials/introduction">
+  <Card title="Tutorials" icon="hand-pointer" href="tutorials/introduction">
     Follow step-by-step guides
   </Card>
 
@@ -158,6 +48,10 @@ const verification = await oracle.verify({
 
   <Card title="Use Cases" icon="lightbulb" href="use-cases/introduction">
     Explore real-world applications
+  </Card>
+
+  <Card title="Articles" icon="book" href="articles/introduction">
+    Learn more about the IXO Spatial Web
   </Card>
 </CardGroup>
 
