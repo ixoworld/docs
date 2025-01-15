@@ -1,34 +1,25 @@
 ---
 title: 'Implementation Guides'
-description: 'Learn how to integrate IXO SDKs and tools into your applications with step-by-step instructions'
+description: 'Step-by-step instructions for integrating IXO SDKs and tools into your applications'
 ---
 
-## Overview
+import { Note } from 'components/Note'
+import { Card, CardGroup } from 'components/Card'
 
-The Implementation Guides provide practical instructions for integrating IXO SDKs and tools into your applications. These guides cover key functionalities like:
+## Prerequisites
 
-- Creating and managing entities
-- Handling transactions 
-- Interacting with IXO APIs
-- Managing tokens and bonds
-- Working with claims and collections
-
-## Before You Begin
-
-Make sure you have:
-
-1. Installed the required [SDKs](../SDKs/SDKs-overview)
-2. Set up the [Signing Client](https://www.npmjs.com/package/@ixo/impactxclient-sdk#signing-client) if using the IXO Spatial Web Multiclient SDK
-3. Familiarized yourself with [IXO Blocksync GraphQL](blocksync-graphql-api-overview) for data queries
+- Install [IXO SDKs](../SDKs/SDKs-overview)
+- Set up [Signing Client](https://www.npmjs.com/package/@ixo/impactxclient-sdk#signing-client) for transaction signing
+- Access to [IXO Blocksync GraphQL](blocksync-graphql-api-overview) for queries
 
 <Note>
-The Signing Client is required for signing and broadcasting transactions when using the IXO Spatial Web Multiclient SDK.
+Signing Client is required for transaction broadcasting when using the IXO Spatial Web Multiclient SDK.
 </Note>
 
-## Available Queries
+## Quick Start
 
 ### Entity Queries
-Query entities and their associated identifiers through the Blocksync API.
+Query entities through the Blocksync API:
 
 ```graphql
 query GetEntity($id: String!) {
@@ -40,27 +31,18 @@ query GetEntity($id: String!) {
 }
 ```
 
-### Data Queries
-Access blockchain data including:
-
+### Available Data Queries
 - Claims and Collections
 - Tokens and Swaps  
 - Bonds and Entities
 - Chain Information
 - Transaction History
 
-## Module Guides
-
-Each implementation guide follows a consistent format:
-
-1. **Action Steps** - How to use IXO SDK functions with code examples
-2. **Data Retrieval** - GraphQL queries to fetch relevant data
-3. **Optional Updates** - Additional modifications and operations
-4. **Reference** - Complete list of available module functions
+## Implementation Modules
 
 <CardGroup>
   <Card title="Entity Module" icon="cube">
-    Create and manage entities on the blockchain
+    Create and manage blockchain entities
   </Card>
   <Card title="Claims Module" icon="file-signature">
     Handle claims and collections
@@ -73,6 +55,12 @@ Each implementation guide follows a consistent format:
   </Card>
 </CardGroup>
 
-## Need Help?
+Each module guide includes:
+- Action steps with code examples
+- Data retrieval queries
+- Optional operations
+- Complete function reference
 
-Join our [Slack community](https://ixofoundation.slack.com/archives/C04UERAUHQT) where you can connect with our team and here you can also chat with the IXO Guru AI assistant that has access to our entire knowledge-base.
+## Support
+
+Join our [Slack community](https://ixofoundation.slack.com/archives/C04UERAUHQT) for direct support and access to IXO Guru AI assistant.
