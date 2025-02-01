@@ -1,10 +1,15 @@
 ---
-title: Hello IXO World
-description: "Welcome to the Spatial Web of Impacts"
+title: Hello World
+description: "Welcome to the IXO Spatial Web Platform"
 ---
 
+import { Note } from 'components/Note'
+import { Card, CardGroup, AccordionGroup, Accordion } from 'components/Card'
+
 <Note>
-  IXO equips you with tools and services to build cognitive digital twins of real-world systems for blockchain and AI-enabled coordination, financing, verification, governance, and intelligence-gathering at an Internet-scale. **This is the Digital Immune System for Earth and Humanity**.
+  IXO enables you to create and control cognitive digital twins of real-world systems, to enhance coordination, financing, verification, governance, and intelligence-gathering for social, environmental, economic, and climate impacts. 
+  
+  **Help build a Digital Immune System for Earth and Humanity**.
 </Note>
 
 <img alt="Hero Dark" className="hidden dark:block" src="/images/hero-dark.svg" />
@@ -12,13 +17,13 @@ description: "Welcome to the Spatial Web of Impacts"
 ## Core Infrastructure
 
 <CardGroup>
-  <Card title="Impact Hub" icon="cube" href="articles/ixo-blockchain">
-    Blockchain and Interchain networks
+  <Card title="Blockchains" icon="network-wired" href="articles/ixo-blockchain">
+    Impact Hub and Interchain networks
   </Card>
-  <Card title="Matrix" icon="database" href="articles/ixo-matrix">
+  <Card title="Data Matrix" icon="database" href="articles/ixo-matrix">
     Federated data storage and encrypted messaging
   </Card>
-  <Card title="Oracles" icon="brain" href="articles/ixo-oracles">
+  <Card title="AI Oracles" icon="brain" href="articles/ixo-oracles">
     AI-powered automation and verification services
   </Card>
   <Card title="Portals" icon="globe" href="articles/ixo-portals">
@@ -28,39 +33,94 @@ description: "Welcome to the Spatial Web of Impacts"
 
 ## Getting Started
 
-1. [Download Impacts X](https://ixo.earth/app) to manage your Spatial Web keys
-2. Use IXO Studio to configure your cognitive digital twin system ([CDT](articles/cdt-systems))
+1. [Download Impacts X](https://mobile.impacts.download/) to create a profile, sign messages, and manage your Spatial Web keys
+2. Use [IXO Studio](https://ixo.world/studio) to configure your cognitive digital twin ([CDT](articles/cdt-systems)) system 
 
-## Available Domains
+## Digital Twin Domains
 
 <CardGroup>
   <Card title="Org" icon="user-plus" href="articles/ixo-daos">
-    Organizations with DAO protocols
+    Organizations with DAO Tooling
   </Card>
   <Card title="Project" icon="puzzle-piece" href="articles/ixo-projects">
-    Projects with Agent protocols
+    Projects with Agent Networks
   </Card>
   <Card title="Asset" icon="diamond" href="articles/ixo-assets">
-    Collections with Asset protocols
+    Collections of Real-World Assets
   </Card>
   <Card title="Investment" icon="droplet" href="articles/ixo-investments">
-    DeFi instruments with Finance protocols
+    Decentralised Financing (DeFi) Instruments
   </Card>
   <Card title="Oracle" icon="sparkles" href="articles/ixo-oracles">
-    AI agents with Oracle protocols
+    Agentic AI Services
   </Card>
   <Card title="Protocol" icon="ruler" href="articles/ixo-protocols">
     Templates, Workflows and Rules
   </Card>
-    <Card title="Location" icon="map" href="articles/ixo-locations">
-    Geospatial data and services with Location protocols
+  <Card title="Location" icon="location-dot" href="articles/ixo-locations">
+    Geospatial Data and Services
   </Card>
-  <Card title="Deed" icon="hexagon-nodes-bolt" href="articles/ixo-deeds">
-    Requests, offers, and proposals with Deed protocols
+  <Card title="Deed" icon="file-contract" href="articles/ixo-deeds">
+    Requests, Offers, and Proposals
   </Card>
 </CardGroup>
 
-## Documentation
+## Domain Configurations
+Set the domain properties of digital twin entities.
+<AccordionGroup>
+
+  <Accordion title="Identifiers">
+  * DID
+  * Also known as: Human-readable identifiers
+  </Accordion>
+
+  <Accordion title="Controllers">
+  * Entity with update permissions
+  * Example: "did:ixo:entity:abc123..."
+  </Accordion>
+  
+  <Accordion title="Services">
+  * Associated services and endpoints
+  * Example: Data ingestion service with endpoint "https://api.ixo.earth"
+  </Accordion>
+  
+  <Accordion title="Resources">
+  * Digital media, files, and data
+  * Example: Verifiable Credential
+  </Accordion>
+  
+  <Accordion title="Rights">
+  * Permissions and access control
+  * Example: Delegated Authorisation
+  </Accordion>
+  
+  <Accordion title="Claims">
+  * Assertions made by entities or about entities
+  * Example: Emission reduction
+  </Accordion>
+  
+  <Accordion title="Relationships">
+  * Networks of entities in the system
+  * Example: Projects deploy Assets, financed by Investments
+  </Accordion>
+  
+  <Accordion title="Accounts">
+  * Blockchain account addresses
+  * Example: Ethereum Network Address
+  </Accordion>
+
+  <Accordion title="Metadata">
+  * Verification status
+  * Credentials
+  * Validity Period
+  * State (e.g. active, inactive)
+  * Ownership
+  * Creator DID
+  </Accordion>
+
+</AccordionGroup>
+
+## Next Steps
 
 <CardGroup>
   <Card title="Tutorials" icon="hand-pointer" href="tutorials/introduction">

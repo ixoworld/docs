@@ -1,4 +1,276 @@
 ---
-title: Work in Progress
-description: "This page is under development. Please check back later"
+title: 'IXO Blocksync'
+description: 'High-performance blockchain data indexing and querying service'
 ---
+
+<Note>
+  Blocksync provides real-time indexing and querying of IXO blockchain data through GraphQL, enabling efficient access to historical transactions, state changes, and entity relationships.
+</Note>
+
+## Overview
+
+Blocksync serves as a critical infrastructure component that:
+- Indexes blockchain data in real-time
+- Provides fast GraphQL querying
+- Maintains historical state
+- Enables complex data relationships
+
+## Architecture
+
+<AccordionGroup>
+  <Accordion title="Indexing Layer" icon="database">
+    ```mermaid
+    flowchart LR
+      A[Blockchain Node] -->|Events| B[Event Processor]
+      B -->|Structured Data| C[Index Storage]
+      C -->|Query Interface| D[GraphQL API]
+    ```
+    - Real-time block processing
+    - Event transformation
+    - Structured data storage
+    - Relationship mapping
+  </Accordion>
+
+  <Accordion title="Query Layer" icon="magnifying-glass">
+    ```graphql
+    type Entity {
+      id: ID!
+      type: String!
+      data: JSONObject!
+      claims: [Claim!]
+      verifications: [Verification!]
+    }
+
+    type Query {
+      entity(id: ID!): Entity
+      claims(filter: ClaimFilter): [Claim!]
+      verifications(filter: VerificationFilter): [Verification!]
+    }
+    ```
+    - GraphQL schema
+    - Type definitions
+    - Query resolvers
+    - Filter options
+  </Accordion>
+</AccordionGroup>
+
+## Core Features
+
+<CardGroup>
+  <Card title="Real-time Indexing" icon="bolt">
+    - Block processing
+    - Event capturing
+    - State tracking
+    - Data transformation
+  </Card>
+
+  <Card title="GraphQL API" icon="code">
+    - Type-safe queries
+    - Complex relationships
+    - Flexible filtering
+    - Efficient resolvers
+  </Card>
+
+  <Card title="Historical Data" icon="clock">
+    - State history
+    - Transaction records
+    - Event logs
+    - Change tracking
+  </Card>
+
+  <Card title="Performance" icon="gauge">
+    - Query optimization
+    - Connection pooling
+    - Cache management
+    - Load balancing
+  </Card>
+</CardGroup>
+
+## Query Examples
+
+<CodeGroup>
+  ```graphql Entity Query
+  query GetEntity {
+    entity(id: "did:ixo:123") {
+      id
+      type
+      data
+      claims {
+        id
+        type
+        status
+      }
+      verifications {
+        id
+        status
+        verifier
+      }
+    }
+  }
+  ```
+
+  ```graphql Claims Query
+  query GetClaims {
+    claims(
+      filter: {
+        type: "impact",
+        status: "approved",
+        fromDate: "2023-01-01"
+      }
+    ) {
+      id
+      type
+      data
+      evaluations {
+        id
+        status
+        evaluator
+      }
+    }
+  }
+  ```
+
+  ```graphql Verification Query
+  query GetVerifications {
+    verifications(
+      filter: {
+        type: "oracle",
+        status: "completed"
+      }
+    ) {
+      id
+      type
+      result
+      proof
+      timestamp
+    }
+  }
+  ```
+</CodeGroup>
+
+## Implementation Guide
+
+<Steps>
+  1. **Setup Connection**
+     - Configure endpoint
+     - Set up authentication
+     - Initialize client
+     - Test connection
+
+  2. **Define Queries**
+     - Design schema types
+     - Create query structure
+     - Set up variables
+     - Add filters
+
+  3. **Handle Results**
+     - Process responses
+     - Transform data
+     - Handle errors
+     - Cache results
+
+  4. **Monitor Performance**
+     - Track query times
+     - Monitor usage
+     - Optimize requests
+     - Handle rate limits
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Query Optimization" icon="bolt">
+    - Request only needed fields
+    - Use pagination for large results
+    - Implement caching
+    - Batch related queries
+  </Accordion>
+
+  <Accordion title="Error Handling" icon="triangle-exclamation">
+    - Handle network errors
+    - Validate responses
+    - Implement retries
+    - Log issues
+  </Accordion>
+
+  <Accordion title="Performance" icon="gauge">
+    - Monitor query complexity
+    - Use connection pooling
+    - Implement timeouts
+    - Cache frequently used data
+  </Accordion>
+</AccordionGroup>
+
+## Integration Examples
+
+<CodeGroup>
+  ```typescript TypeScript
+  import { BlocksyncClient } from '@ixo/blocksync-client';
+
+  const client = new BlocksyncClient({
+    endpoint: 'https://blocksync.emerging.eco/graphql',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`
+    }
+  });
+
+  const result = await client.query({
+    query: GET_ENTITY,
+    variables: { id: 'did:ixo:123' }
+  });
+  ```
+
+  ```python Python
+  from ixo_blocksync import BlocksyncClient
+
+  client = BlocksyncClient(
+      endpoint='https://blocksync.emerging.eco/graphql',
+      api_key='your-api-key'
+  )
+
+  result = client.query(
+      query=GET_ENTITY,
+      variables={'id': 'did:ixo:123'}
+  )
+  ```
+
+  ```javascript JavaScript
+  import { createClient } from '@ixo/blocksync-client';
+
+  const client = createClient({
+    url: 'https://blocksync.emerging.eco/graphql',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`
+    }
+  });
+
+  const { data } = await client.query({
+    query: GET_ENTITY,
+    variables: { id: 'did:ixo:123' }
+  });
+  ```
+</CodeGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-reference/blocksync">
+    Complete API documentation
+  </Card>
+  
+  <Card title="SDK Guide" icon="code" href="/spatial-web-stack/spatial-web-sdks">
+    Client library integration
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
+    Implementation examples
+  </Card>
+  
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer assistance
+  </Card>
+</CardGroup>
+
+<Note>
+  For technical support or questions about Blocksync, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Note>

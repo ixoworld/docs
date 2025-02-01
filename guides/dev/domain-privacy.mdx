@@ -1,0 +1,564 @@
+---
+title: 'Domain Privacy'
+description: 'Implement secure private domains using IID-compliant encryption'
+---
+
+<Note>
+  Domain encryption enables controllers to securely store sensitive domain settings using Interchain Identifiers (IIDs), which are fully conformant DIDs specifically designed for digital domains within blockchain namespaces.
+</Note>
+
+## Overview
+
+Domain encryption provides:
+- IID-compliant document structure
+- Privacy-preserving domain tokenization
+- Verifiable linked resources
+- Polymorphic service mediation
+- Herd privacy protection
+
+## Domain Settings Encryption
+
+<Note>
+  Domain settings encryption uses pairwise key agreement and authenticated encryption to ensure that sensitive configuration data is only accessible to authorized parties, while maintaining IID compliance.
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Key Agreement Setup" icon="key">
+    ```typescript
+    interface EncryptionKeys {
+      keyAgreement: {
+        id: string;
+        type: "X25519KeyAgreementKey2020";
+        privateKeyMultibase: string;
+        publicKeyMultibase: string;
+      };
+      authentication: {
+        id: string;
+        type: "Ed25519VerificationKey2020";
+        privateKeyMultibase: string;
+        publicKeyMultibase: string;
+      };
+    }
+
+    async function setupEncryptionKeys(
+      controller: string
+    ): Promise<EncryptionKeys> {
+      // Generate key agreement key pair
+      const keyAgreement = await X25519.generateKeyPair();
+      
+      // Generate authentication key pair
+      const authentication = await Ed25519.generateKeyPair();
+      
+      return {
+        keyAgreement: {
+          id: `${controller}#key-1`,
+          type: "X25519KeyAgreementKey2020",
+          privateKeyMultibase: keyAgreement.privateKey,
+          publicKeyMultibase: keyAgreement.publicKey
+        },
+        authentication: {
+          id: `${controller}#key-2`,
+          type: "Ed25519VerificationKey2020",
+          privateKeyMultibase: authentication.privateKey,
+          publicKeyMultibase: authentication.publicKey
+        }
+      };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Settings Encryption" icon="lock">
+    ```typescript
+    interface EncryptedSettings {
+      name: string;
+      value: string;
+      nonce: string;
+      recipient: string;
+      timestamp: string;
+    }
+
+    async function encryptDomainSettings(
+      controllerKeys: EncryptionKeys,
+      recipientDID: string,
+      settings: any
+    ): Promise<EncryptedSettings> {
+      // Get recipient's key agreement key
+      const recipientKey = await resolveKeyAgreementKey(recipientDID);
+      
+      // Perform ECDH
+      const sharedSecret = await X25519.deriveSharedSecret(
+        controllerKeys.keyAgreement.privateKeyMultibase,
+        recipientKey.publicKeyMultibase
+      );
+      
+      // Derive encryption key
+      const encryptionKey = await HKDF(sharedSecret, {
+        salt: randomBytes(32),
+        info: "ixo-domain-settings-encryption"
+      });
+      
+      // Encrypt settings
+      const nonce = randomBytes(12);
+      const ciphertext = await AES_GCM.encrypt(
+        encryptionKey,
+        JSON.stringify(settings),
+        nonce,
+        { recipient: recipientDID }
+      );
+      
+      return {
+        name: "domainSettings",
+        value: base64Encode(ciphertext),
+        nonce: base64Encode(nonce),
+        recipient: recipientDID,
+        timestamp: new Date().toISOString()
+      };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Settings Storage" icon="database">
+    ```typescript
+    interface EncryptedResource {
+      id: string;
+      type: string;
+      encryptedData: EncryptedSettings[];
+      proof: string;
+    }
+
+    async function storeEncryptedSettings(
+      iidDoc: IIDDocument,
+      settings: EncryptedSettings
+    ): Promise<void> {
+      // Create encrypted resource
+      const resource: EncryptedResource = {
+        id: `${iidDoc.id}#encrypted-settings`,
+        type: "EncryptedDomainSettings",
+        encryptedData: [settings],
+        proof: await generateProof(settings)
+      };
+
+      // Store via polymorphic mediator
+      await iidDoc.mediator.storeResource(
+        resource.id,
+        resource,
+        {
+          encryption: "required",
+          access: "restricted"
+        }
+      );
+
+      // Update hashgraph
+      await iidDoc.resourceHashgraph.add({
+        id: resource.id,
+        type: resource.type,
+        proof: resource.proof
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Settings Decryption" icon="unlock">
+    ```typescript
+    async function decryptDomainSettings(
+      recipientKeys: EncryptionKeys,
+      iidDoc: IIDDocument
+    ): Promise<any> {
+      // Get encrypted settings resource
+      const resource = await iidDoc.mediator.getResource(
+        `${iidDoc.id}#encrypted-settings`
+      );
+      
+      // Verify recipient authorization
+      if (resource.encryptedData[0].recipient !== recipientKeys.keyAgreement.id) {
+        throw new Error("Unauthorized recipient");
+      }
+      
+      // Get controller's key agreement key
+      const controllerKey = await resolveKeyAgreementKey(iidDoc.id);
+      
+      // Perform ECDH
+      const sharedSecret = await X25519.deriveSharedSecret(
+        recipientKeys.keyAgreement.privateKeyMultibase,
+        controllerKey.publicKeyMultibase
+      );
+      
+      // Derive decryption key
+      const decryptionKey = await HKDF(sharedSecret, {
+        salt: resource.encryptedData[0].salt,
+        info: "ixo-domain-settings-encryption"
+      });
+      
+      // Decrypt settings
+      const plaintext = await AES_GCM.decrypt(
+        decryptionKey,
+        base64Decode(resource.encryptedData[0].value),
+        base64Decode(resource.encryptedData[0].nonce),
+        { recipient: recipientKeys.keyAgreement.id }
+      );
+      
+      return JSON.parse(plaintext);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Steps>
+  1. **Setup Encryption Keys**
+     - Generate key agreement key pair
+     - Generate authentication key pair
+     - Register in IID document
+     - Secure private keys
+
+  2. **Encrypt Settings**
+     - Perform key agreement
+     - Derive encryption key
+     - Encrypt with authentication
+     - Generate proof
+
+  3. **Store Encrypted Data**
+     - Create encrypted resource
+     - Store via mediator
+     - Update hashgraph
+     - Maintain privacy
+
+  4. **Access Control**
+     - Verify recipient
+     - Validate authorization
+     - Check proofs
+     - Enforce permissions
+</Steps>
+
+## Security Considerations
+
+<CardGroup>
+  <Card title="Key Management" icon="key">
+    - Regular key rotation
+    - Secure key storage
+    - Authorization validation
+    - Access revocation
+  </Card>
+
+  <Card title="Encryption" icon="lock">
+    - Authenticated encryption
+    - Fresh nonces
+    - Additional data
+    - Integrity checks
+  </Card>
+
+  <Card title="Storage" icon="database">
+    - Off-chain encryption
+    - Mediator security
+    - Proof verification
+    - Backup strategy
+  </Card>
+
+  <Card title="Future Proofing" icon="shield">
+    - Post-quantum readiness
+    - Protocol upgrades
+    - Version management
+    - Migration support
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+<CardGroup>
+  <Card title="IID Knowledge" icon="id-card">
+    - Interchain Identifier specification
+    - Domain tokenization concepts
+    - Linked resources
+    - Privacy-preserving features
+  </Card>
+
+  <Card title="Cryptography" icon="lock">
+    - Key agreement methods
+    - Content-derived identifiers
+    - Hashgraph verification
+    - Tor network integration
+  </Card>
+</CardGroup>
+
+## Domain IID Setup
+
+<AccordionGroup>
+  <Accordion title="IID Document Structure" icon="file-code">
+    ```json
+    {
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://w3id.org/ixo/ns/interchain-identifiers/v1"
+      ],
+      "id": "did:ixo:domain123",
+      "verificationMethod": [
+        {
+          "id": "did:ixo:domain123#keys-1",
+          "type": "Ed25519VerificationKey2020",
+          "controller": "did:ixo:domain123",
+          "publicKeyMultibase": "zH3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+        }
+      ],
+      "authentication": ["did:ixo:domain123#keys-1"],
+      "service": [{
+        "id": "did:ixo:domain123#mediator",
+        "type": "polymorphicMediator2021",
+        "serviceEndpoint": "http://mediator.onion/iid/mediator/did:ixo:domain123"
+      }],
+      "linkedResource": [{
+        "id": "did:ixo:domain123#resourceHashgraph",
+        "path": "did:ixo:domain123/resourceHashgraph",
+        "type": "hashgraph",
+        "proof": "afybeiemxf5abjwjbikoz4mcb3a3dla6ual3jsgpdr4cjr3oz",
+        "endpoint": "did:ixo:domain123?service=mediator"
+      }]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Domain Properties" icon="cube">
+    ```typescript
+    interface DomainProperties {
+      // Tokenization properties
+      tokenType: string;
+      tokenClass: string;
+      
+      // Linked resources
+      resources: LinkedResource[];
+      
+      // Rights and capabilities
+      accordedRights: Right[];
+      capabilities: Capability[];
+      
+      // Entity relationships
+      linkedEntities: EntityLink[];
+      
+      // Blockchain accounts
+      accounts: BlockchainAccount[];
+    }
+
+    interface LinkedResource {
+      id: string;
+      path: string;
+      type: string;
+      proof: string;
+      endpoint: string;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Privacy-Preserving Features
+
+<Steps>
+  1. **Polymorphic Mediation**
+     - Single service endpoint
+     - Tor network integration
+     - Blind request routing
+     - Service negotiation
+
+  2. **Resource Hashgraph**
+     - Content-derived identifiers
+     - Verifiable resource linking
+     - Private resource count
+     - Proof verification
+
+  3. **Herd Privacy**
+     - Standardized document structure
+     - Common service patterns
+     - Minimal correlation data
+     - Population-based obscurity
+
+  4. **Secure Storage**
+     - Off-chain encryption
+     - Content addressing
+     - Distributed storage
+     - Access control
+</Steps>
+
+## Implementation Guide
+
+<CodeGroup>
+  ```typescript Domain Setup
+  import { IIDDocument, LinkedResource } from '@ixo/iid-sdk';
+
+  async function createPrivateDomain(
+    controller: string,
+    properties: DomainProperties
+  ): Promise<IIDDocument> {
+    // Create hashgraph for domain resources
+    const resourceHashgraph = await createResourceHashgraph(properties.resources);
+
+    // Setup polymorphic mediator
+    const mediator = await setupPolymorphicMediator(controller);
+
+    // Create IID document
+    const iidDoc = await IIDDocument.create({
+      controller,
+      mediator,
+      resourceHashgraph,
+      properties
+    });
+
+    return iidDoc;
+  }
+  ```
+
+  ```typescript Resource Management
+  async function addPrivateResource(
+    iidDoc: IIDDocument,
+    resource: LinkedResource
+  ) {
+    // Generate content identifier
+    const contentId = await generateContentId(resource.content);
+
+    // Update hashgraph
+    const updatedHashgraph = await iidDoc.resourceHashgraph.add({
+      id: contentId,
+      type: resource.type,
+      proof: await generateProof(resource)
+    });
+
+    // Store via mediator
+    await iidDoc.mediator.storeResource(contentId, resource);
+
+    return updatedHashgraph;
+  }
+  ```
+
+  ```typescript Privacy Features
+  async function setupPrivacyFeatures(
+    iidDoc: IIDDocument
+  ) {
+    // Configure Tor endpoint
+    const torEndpoint = await setupTorEndpoint(iidDoc.id);
+
+    // Setup polymorphic mediator
+    const mediator = await configureMediatorService({
+      endpoint: torEndpoint,
+      capabilities: ['storage', 'negotiation', 'proxy']
+    });
+
+    // Update service endpoint
+    iidDoc.addService({
+      id: `${iidDoc.id}#mediator`,
+      type: 'polymorphicMediator2021',
+      serviceEndpoint: mediator.endpoint
+    });
+
+    return iidDoc;
+  }
+  ```
+</CodeGroup>
+
+## Domain Capabilities
+
+<CardGroup>
+  <Card title="Asset Identification" icon="fingerprint">
+    - Unique digital asset typing
+    - Token class specification
+    - Verifiable identifiers
+    - Namespace registration
+  </Card>
+
+  <Card title="Resource Linking" icon="link">
+    - On-chain/off-chain resources
+    - Verifiable content addressing
+    - Private resource metadata
+    - Proof verification
+  </Card>
+
+  <Card title="Rights Management" icon="key">
+    - Machine-executable rights
+    - Capability delegation
+    - Service invocation
+    - Access control
+  </Card>
+
+  <Card title="Entity Relationships" icon="diagram-project">
+    - Spatial Web integration
+    - Graph relationships
+    - Edge definitions
+    - Node connections
+  </Card>
+</CardGroup>
+
+## Security Considerations
+
+<AccordionGroup>
+  <Accordion title="Privacy Protection" icon="user-shield">
+    - Single service endpoint
+    - Tor network routing
+    - Polymorphic mediation
+    - Population-based privacy
+  </Accordion>
+
+  <Accordion title="Resource Security" icon="lock">
+    - Content-derived addressing
+    - Hashgraph verification
+    - Proof validation
+    - Secure storage
+  </Accordion>
+
+  <Accordion title="Access Control" icon="shield-check">
+    - Capability-based security
+    - Delegated rights
+    - Service authorization
+    - Resource permissions
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup>
+  <Card title="IID Compliance" icon="check">
+    - Follow IID specification
+    - Implement privacy features
+    - Use content addressing
+    - Enable service mediation
+  </Card>
+
+  <Card title="Resource Management" icon="database">
+    - Content-derived identifiers
+    - Hashgraph implementation
+    - Private metadata
+    - Proof generation
+  </Card>
+
+  <Card title="Privacy" icon="user-shield">
+    - Minimize correlation
+    - Use Tor endpoints
+    - Implement mediation
+    - Protect metadata
+  </Card>
+
+  <Card title="Integration" icon="puzzle-piece">
+    - Spatial Web compatibility
+    - Cross-chain interoperability
+    - Standard representations
+    - Proper verification
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="IID Specification" icon="book" href="https://github.com/ixofoundation/ixo-protocol/blob/main/interchain-identifiers/v1.md">
+    Interchain Identifiers specification
+  </Card>
+  
+  <Card title="Implementation Guide" icon="code" href="/api-reference/iid">
+    IID implementation details
+  </Card>
+  
+  <Card title="Privacy Guide" icon="user-shield" href="/guides/dev/privacy">
+    Privacy-preserving features
+  </Card>
+  
+  <Card title="Resource Guide" icon="link" href="/guides/dev/resources">
+    Resource management
+  </Card>
+</CardGroup>
+
+<Note>
+  For technical support or questions about domain encryption and IIDs, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Note>

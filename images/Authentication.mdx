@@ -1,0 +1,91 @@
+---
+title: 'Authentication'
+description: 'Secure your API requests with IXO Spatial Web authentication'
+---
+
+## Bearer Token Authentication
+
+Include a bearer token in the HTTP `Authorization` header of each request:
+
+```bash
+Authorization: Bearer <your_access_token>
+```
+
+<Note>
+Access tokens expire after a set time period. Your application needs to handle token refresh.
+</Note>
+
+## OAuth 2.0 Flows
+
+### Client Credentials
+For server-to-server authentication:
+
+```bash
+curl -X POST https://auth.ixo.world/oauth/token \
+  -d 'grant_type=client_credentials' \
+  -d 'client_id=YOUR_CLIENT_ID' \
+  -d 'client_secret=YOUR_CLIENT_SECRET'
+```
+
+### Authorization Code
+For user-facing applications:
+
+1. Redirect users to authorization URL
+2. Receive callback with auth code
+3. Exchange code for access token
+
+## Security Requirements
+
+### HTTPS Only
+All API requests must use HTTPS. HTTP requests will be rejected.
+
+### Rate Limiting
+Default limits per IP address:
+- 1000 requests per hour
+- 10 concurrent requests
+
+### JWT Format
+Access tokens are JWTs with the following structure:
+
+```json
+{
+  "sub": "user_id",
+  "scope": ["read", "write"],
+  "exp": 1516239022
+}
+```
+
+## API Keys
+
+For simple use cases, you can use API keys instead of OAuth:
+
+```bash
+curl https://api.ixo.world/v1/data \
+  -H "X-API-Key: your_api_key"
+```
+
+<Warning>
+Store API keys securely in environment variables, never in code.
+</Warning>
+
+## Best Practices
+
+1. Rotate tokens/keys regularly
+2. Use scoped permissions
+3. Implement token refresh logic
+4. Monitor for suspicious activity
+5. Whitelist IPs for sensitive endpoints
+
+## Error Responses
+
+```json
+{
+  "error": "invalid_token",
+  "error_description": "The access token has expired"
+}
+```
+
+Common authentication errors:
+- 401: Invalid or expired token
+- 403: Insufficient permissions
+- 429: Rate limit exceeded

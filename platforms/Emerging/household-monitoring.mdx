@@ -1,0 +1,203 @@
+---
+title: 'Household Monitoring'
+description: 'Learn how to implement household-level monitoring for clean cooking initiatives'
+---
+
+<Note>
+Household monitoring enables granular tracking of clean cooking adoption through digital twins, IoT integration, and AI-powered verification.
+</Note>
+
+## Key Features
+
+<CardGroup>
+  <Card title="System-Level View" icon="diagram-project">
+    Track complete household energy transitions
+  </Card>
+  <Card title="Real-Time Insights" icon="chart-line">
+    Continuous monitoring vs periodic surveys
+  </Card>
+  <Card title="Automated Verification" icon="robot">
+    AI-powered validation replaces manual audits
+  </Card>
+  <Card title="Blockchain Trust" icon="cube">
+    Cryptographic proof of impact claims
+  </Card>
+</CardGroup>
+
+## Digital Twin Setup
+
+<CodeGroup>
+```json Household Model
+{
+  "did": "did:ixo:household/123",
+  "type": "CleanCookingHousehold",
+  "location": {
+    "district": "XYZ",
+    "density": "Medium"
+  },
+  "devices": [{
+    "did": "did:ixo:device/456", 
+    "type": "ElectricPressureCooker",
+    "status": "active"
+  }],
+  "baseline": {
+    "fuelType": "Charcoal",
+    "monthlyConsumption": 40
+  }
+}
+```
+
+```python Create Household
+from emerging import Household, Device
+
+household = Household.create(
+    location={
+        "district": "XYZ",
+        "density": "Medium"
+    },
+    baseline={
+        "fuel_type": "Charcoal", 
+        "monthly_consumption": 40
+    }
+)
+
+device = Device.get("did:ixo:device/456")
+household.add_device(device)
+```
+</CodeGroup>
+
+## Data Collection
+
+### IoT Integration
+
+<AccordionGroup>
+  <Accordion title="Device Telemetry">
+    * Usage monitoring
+    * Fuel consumption
+    * Temperature sensors
+    * Power measurements
+  </Accordion>
+
+  <Accordion title="Edge Processing">
+    * Local validation
+    * Offline buffering
+    * Secure transmission
+    * Anomaly detection
+  </Accordion>
+</AccordionGroup>
+
+## Impact Verification
+
+<ResponseField name="claim" type="object" required>
+  Impact claim from measurements
+</ResponseField>
+
+<ResponseField name="evidence" type="array" required>
+  Supporting IoT data and proofs
+</ResponseField>
+
+<ResponseField name="verification" type="object" required>
+  Oracle validation results
+</ResponseField>
+
+### Causal Analysis
+
+```json
+{
+  "householdId": "did:ixo:household/123",
+  "period": {
+    "start": "2024-01-01",
+    "end": "2024-01-31"
+  },
+  "analysis": {
+    "baselineEmissions": 120,
+    "actualEmissions": 45,
+    "reductions": 75,
+    "confidence": 0.95,
+    "deviceContributions": [{
+      "deviceId": "did:ixo:device/456",
+      "reductionShare": 0.8,
+      "evidence": {
+        "usageHours": 120,
+        "fuelSaved": 32
+      }
+    }]
+  }
+}
+```
+
+## API Integration
+
+### Household Management
+
+```bash
+# Create household
+curl -X POST https://api.emerging.eco/v1/households \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "location": {
+      "district": "XYZ",
+      "density": "Medium"
+    },
+    "baseline": {
+      "fuelType": "Charcoal",
+      "monthlyConsumption": 40
+    }
+  }'
+```
+
+### Impact Analysis
+
+```bash
+# Analyze household impact
+curl -X POST https://api.emerging.eco/v1/analysis/household \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "householdId": "did:ixo:household/123",
+    "periodStart": "2024-01-01",
+    "periodEnd": "2024-01-31"
+  }'
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid household data
+</ResponseField>
+
+<ResponseField name="404" type="error">
+  Household not found
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Conflicting device data
+</ResponseField>
+
+## Best Practices
+
+<Note>
+Implement comprehensive monitoring to capture the full complexity of cooking behavior and energy transitions.
+</Note>
+
+### Data Quality
+* Validate device installations
+* Monitor sensor health  
+* Cross-reference data sources
+* Track behavioral patterns
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Device Guide" icon="microchip">
+    Set up IoT monitoring
+  </Card>
+  <Card title="Oracle Guide" icon="robot">
+    Configure impact verification
+  </Card>
+  <Card title="Analytics Guide" icon="chart-line">
+    Access household insights
+  </Card>
+  <Card title="Registry API" icon="brackets-curly" href="/platforms/Emerging/registry-server">
+    Integration server
+  </Card>
+</CardGroup>

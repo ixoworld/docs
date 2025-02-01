@@ -1,0 +1,162 @@
+---
+title: 'Digital Certification'
+description: 'Implement Internationally Transferred Mitigation Outcome (ITMO) certificates using W3C Verifiable Credentials'
+---
+
+## Overview
+
+The W3C Verifiable Credential (VC) standard provides a framework for creating machine-verifiable, tamper-resistant ITMO certificates for carbon trading and cross-border climate initiatives. This guide explains how to implement ITMO certificates and use the accompanying JSON-LD context.
+
+## Key Benefits
+
+- **Cryptographic Trust** - Signatures ensure authenticity and detect tampering
+- **Global Standards** - W3C format enables cross-platform compatibility 
+- **Extensible Design** - JSON-LD approach allows adding properties without breaking changes
+- **Privacy Controls** - Selective disclosure of sensitive transaction details
+- **Provenance Tracking** - Built-in support for tracking credential history
+
+## Schema Structure
+
+Each ITMO credential contains:
+
+```json
+{
+  "@context": ["Base contexts and ITMO context"],
+  "id": "Unique credential identifier",
+  "type": ["VerifiableCredential", "ITMOCredential"],
+  "issuer": "DID of issuing entity",
+  "issuanceDate": "Issuance timestamp",
+  "expirationDate": "Expiration timestamp",
+  "credentialSubject": {
+    // ITMO-specific data sections
+  },
+  "credentialSchema": "Schema reference",
+  "credentialStatus": "Status information",
+  "evidence": "Supporting documentation",
+  "proof": "Cryptographic proof"
+}
+```
+
+The `credentialSubject` contains four main ITMO-specific sections:
+- `authorizationInfo` - Authorization details and participating parties
+- `ndcQuantification` - NDC sectors, sources, and GHG information
+- `correspondingAdjustments` - Adjustment calculations and emissions data
+- `environmentalIntegrity` - Environmental integrity metrics and compliance
+
+## JSON-LD Context
+
+### Setup
+
+Add the ITMO and required contexts to your credential:
+
+```json
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/security/suites/ed25519-2018/v1",
+    {
+      "itmo": "https://w3id.org/article6/itmo-context.jsonld",
+      "prov": "http://www.w3.org/ns/prov#"
+    }
+  ]
+}
+```
+
+### Core Properties
+
+The ITMO context defines these key sections:
+
+#### Authorization Information
+- `authorizationReference` - Reference ID for the authorization
+- `cooperativeApproachDuration` - Time period of the approach
+- `expectedMitigationOutcomes` - Expected outcomes by year
+- `participatingParties` - List of participating countries
+- `authorizedEntities` - List of authorized entity DIDs
+
+#### NDC Quantification
+- `ndcSectors` - Covered sectors (e.g., "Residential")
+- `ndcSources` - Emission sources
+- `ndcGHGs` - Covered greenhouse gases
+- `ndcTimePeriods` - Relevant time periods
+- `ndcReferenceLevel` - Reference emission levels
+- `ndcTargetLevel` - Target emission levels
+
+#### Corresponding Adjustments
+- `singleYearNDC` - Single year NDC flag
+- `multiYearNDC` - Multi year NDC flag
+- `emissionsTrajectory` - Emissions trajectory data
+- `annualCorrespondingAdjustments` - Annual adjustment values
+- `averageAnnualITMOs` - Average annual ITMO amount
+- `cumulativeAdjustments` - Cumulative adjustment total
+
+#### Environmental Integrity
+- `environmentalIntegrityMetrics` - Used metrics (e.g., "CO2e")
+- `ipccMethodologiesReference` - IPCC methodology reference
+- `partyStatusUnderParis` - Paris Agreement status
+- `trackingArrangements` - Links to tracking systems
+- `mostRecentNationalInventory` - Latest inventory reference
+
+## Implementation Example
+
+Here's a minimal example of creating an ITMO credential:
+
+```json
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/security/suites/ed25519-2018/v1",
+    {
+      "itmo": "https://w3id.org/article6/itmo-context.jsonld",
+      "prov": "http://www.w3.org/ns/prov#"
+    }
+  ],
+  "type": ["VerifiableCredential", "ITMOCredential"],
+  "issuer": "did:example:issuer",
+  "issuanceDate": "2024-03-15T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:example:subject",
+    "itmo:authorizationInfo": {
+      "itmo:authorizationReference": "AUTH-2024-001",
+      "itmo:participatingParties": ["Country A"],
+      "itmo:expectedMitigationOutcomes": {
+        "2024": 5000
+      }
+    }
+  }
+}
+```
+
+## Validation Requirements
+
+Technical checks:
+- JSON-LD context validation
+- Schema conformance
+- Cryptographic proof verification
+- Credential status verification
+
+Business rules:
+- Required ITMO fields present
+- Valid participating parties
+- Environmental integrity compliance
+- NDC alignment verification
+
+## Security and Privacy
+
+### Security Best Practices
+- Use Ed25519 signatures for proofs
+- Implement proper key management
+- Regular credential status updates
+- Monitor for revoked credentials
+
+### Privacy Guidelines
+- Enable selective disclosure of sensitive data
+- Implement minimal disclosure principle
+- Define clear data retention policies
+- Comply with relevant privacy regulations
+
+## Resources
+
+- [W3C Verifiable Credentials Spec](https://www.w3.org/TR/vc-data-model/)
+- [Paris Agreement Article 6.2](https://unfccc.int/process/the-paris-agreement/cooperative-implementation)
+- [JSON-LD 1.1 Spec](https://www.w3.org/TR/json-ld11/)
+- [IPCC Guidelines](https://www.ipcc.ch/report/2006-ipcc-guidelines-for-national-greenhouse-gas-inventories/)

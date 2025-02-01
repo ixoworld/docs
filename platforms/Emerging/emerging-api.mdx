@@ -1,15 +1,17 @@
 ---
 title: "Emerging Platform APIs"
-description: "Overview of the available APIs and how to integrate with Services."
+description: "Build service integrations"
 ---
 
-The Emerging Platform provides multiple APIs to interact with different components of the software services and data ecosystem. This guide covers the core APIs and how to get started using them.
+<Note>
+  The Emerging Platform provides a comprehensive set of APIs for interacting with the Impact Hub Network, Data Matrix, and AI Oracle services. These APIs enable developers to build applications for clean cooking initiatives and climate impact projects.
+</Note>
 
-## Available APIs
+## Service APIs
 
 <CardGroup>
-  <Card title="Gateways" icon="server">
-    RPC and gRPC interfaces for querying & writing to the blockchain
+  <Card title="Impact Hub" icon="server">
+    Blockchain APIs for registry and verification services
   </Card>
 
   <Card title="Blocksync" icon="database">
@@ -20,91 +22,136 @@ The Emerging Platform provides multiple APIs to interact with different componen
     Secure Matrix Server interface to private data rooms
   </Card>
 
-  <Card title="Oracles" icon="sparkles">
-    Interface with AI Oracles for automation and analytics
+## API Architecture
+
+### Core Services
+<CardGroup>
+  <Card title="Registry API" icon="book" href="/platforms/Emerging/registry-server">
+    Register and manage digital twins
+  </Card>
+  <Card title="Verification API" icon="check-double" href="/platforms/Emerging/verification">
+    Process and validate claims
+  </Card>
+  <Card title="Data API" icon="database" href="/platforms/Emerging/data-matrix">
+    Store and retrieve secure data
+  </Card>
+  <Card title="Oracle API" icon="sparkles" href="/guides/ixo-oracles-architecture">
+    Access AI services
   </Card>
 </CardGroup>
 
 ## Authentication
 
-All API requests require authentication using API keys. Include your API key in the Authorization header:
+<AccordionGroup>
+  <Accordion title="API Keys">
+    - Required for all API requests
+    - Managed through Mission Control
+    - Role-based access control
+    - Environment-specific keys
+  </Accordion>
 
-```bash
-Authorization: Bearer YOUR_API_KEY
-```
+  <Accordion title="Authorization">
+    ```bash
+    Authorization: Bearer YOUR_API_KEY
+    ```
+    Include your API key in all request headers
+  </Accordion>
 
-## Base URLs
+  <Accordion title="Security">
+    - TLS encryption required
+    - Key rotation policies
+    - Rate limiting enforced
+    - Request logging
+  </Accordion>
+</AccordionGroup>
 
-Each API has its own base URL:
+## Service Endpoints
 
-* PRC Gateway: [`https://rpc.ixo.earth`](https://rpc.ixo.earth/v1)
+### Production APIs
+<AccordionGroup>
+  <Accordion title="Impact Hub Network">
+    - Registry: `https://registry.emerging.eco/v1`
+    - Claims: `https://claims.emerging.eco/v1`
+    - Verification: `https://verify.emerging.eco/v1`
+  </Accordion>
 
-* gRPC Gateway: [`https://grpc.ixo.earth`](https://grpc.ixo.earth/v1)\`
+  <Accordion title="Data Services">
+    - Matrix: `https://matrix.emerging.eco/v1`
+    - Storage: `https://storage.emerging.eco/v1`
+    - Query: `https://query.emerging.eco/v1`
+  </Accordion>
 
-* Blocksync GraphQL: [`https://graphql.ixo.earth`](https://graphql.ixo.earth/v1)
-
-* Data Matrix Bot: [`https://matrix.ixo.earth`](https://matrix.ixo.earth/v1)
-
-* Oracles: [`https://oracles.ixo.earth`](https://oracles.ixo.earth/v1)
+  <Accordion title="Oracle Services">
+    - AI Verification: `https://oracles.emerging.eco/v1`
+    - Analytics: `https://analytics.emerging.eco/v1`
+  </Accordion>
+</AccordionGroup>
 
 ## Response Format
 
-Our APIs return responses in JSON format. A typical successful response looks like:
+### Standard Response
+<AccordionGroup>
+  <Accordion title="Success Response">
+    ```json
+    {
+      "success": true,
+      "data": {
+        // Response data
+      }
+    }
+    ```
+  </Accordion>
 
-```json
-{
-  "data": {
-    "result": "success"
-  }
-}
-```
+  <Accordion title="Error Response">
+    ```json
+    {
+      "success": false,
+      "error": {
+        "code": "ERROR_CODE",
+        "message": "Human readable message"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
 
-## Error Handling
+## Integration Guide
 
-The API uses conventional HTTP response codes:
+1. [Get API credentials](/guides/dev/authentication)
+2. [Choose service endpoints](/platforms/Emerging/service-endpoints)
+3. [Implement authentication](/platforms/Emerging/authentication)
+4. [Handle responses](/guides/dev/error-handling)
 
-* `2xx` - Success
-
-* `4xx` - Client errors
-
-* `5xx` - Server errors
-
-Error responses include:
-
-* Error code
-
-* Human-readable message
-
-* Request ID for support
-
-## Rate Limiting
-
-APIs are rate limited, depending on your plan and which API service you are using.
-
-Rate limit headers are included in responses:
-
-```bash:API Integration.md
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1640995200
-```
-
-## Next Steps
+## Developer Tools
 
 <CardGroup>
-  <Card title="RPC Reference" icon="book">
-    Detailed documentation for the RPC API
+  <Card title="API Reference" icon="book" href="/api-docs/emerging-api/emerging-api">
+    Complete API documentation
   </Card>
-
-  <Card title="GraphQL Guide" icon="code">
-    Learn how to construct GraphQL queries
+  <Card title="SDKs" icon="code" href="/spatial-web-stack/spatial-web-sdks">
+    Client libraries and tools
   </Card>
-
-  <Card title="Authentication" icon="lock">
-    Detailed guide on authentication methods
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
+    Sample integrations
   </Card>
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer assistance
+  </Card>
+</CardGroup>
 
-  <Card title="Examples" icon="code">
-    Sample code and use cases for the various APIs
+## Best Practices
+
+<CardGroup>
+  <Card title="Rate Limiting" icon="gauge">
+    Implement proper request throttling
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation">
+    Handle errors gracefully
+  </Card>
+  <Card title="Security" icon="shield">
+    Follow security guidelines
+  </Card>
+  <Card title="Monitoring" icon="chart-line">
+    Track API usage and performance
   </Card>
 </CardGroup>

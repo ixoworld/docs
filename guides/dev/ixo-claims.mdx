@@ -1,0 +1,724 @@
+---
+title: 'Claims Management'
+description: 'Create and process verifiable claims with payment automations'
+---
+
+<Note>
+  The Claims module enables the creation, processing, and management of verifiable claims on IXO Protocol blockchains, with cryptographic proofs, verification workflows, and payment automations.
+</Note>
+
+## Overview
+
+The Claims module provides:
+- Verifiable claim creation and management
+- Automated verification workflows
+- Multi-party evaluation processes
+- Dispute resolution mechanisms
+- Cryptographic proof generation
+- Payment automations with governance-controlled fees
+
+## Claim Structure
+
+<AccordionGroup>
+  <Accordion title="Core Properties" icon="file-lines">
+    ```typescript
+    interface Claim {
+      id: string;              // Unique identifier
+      type: string;           // Claim type
+      issuer: string;         // Issuer DID
+      subject: string;        // Subject DID
+      data: any;             // Claim data
+      proof: string;         // Cryptographic proof
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Verification Method" icon="check-double">
+    ```typescript
+    interface ClaimVerification {
+      id: string;             // Verification ID
+      type: string;          // Verification type
+      method: string;        // Verification method
+      verifier: string;      // Verifier DID
+      status: string;        // Verification status
+      proof: string;        // Verification proof
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Claim Collections
+
+<Note>
+  Claim Collections enable grouping of related claims for efficient management, batch processing, and aggregated verification.
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Collection Properties" icon="folder">
+    ```typescript
+    interface ClaimCollection {
+      id: string;              // Collection identifier
+      name: string;           // Collection name
+      type: string;          // Collection type
+      owner: string;         // Owner DID
+      claims: string[];      // Claim IDs
+      metadata: {
+        description?: string;
+        schema?: string;
+        version?: string;
+      };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Collection Management" icon="layer-group">
+    ```typescript
+    async function createCollection(
+      creator: string,
+      collectionData: Partial<ClaimCollection>
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgCreateCollection",
+        value: {
+          creator,
+          name: collectionData.name,
+          type: collectionData.type,
+          metadata: collectionData.metadata
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+
+    async function addClaimToCollection(
+      collectionId: string,
+      claimId: string
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgAddClaimToCollection",
+        value: {
+          collectionId,
+          claimId
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Batch Operations" icon="objects-align-bottom">
+    ```typescript
+    async function batchVerifyClaims(
+      collectionId: string,
+      verifier: string,
+      status: "approved" | "rejected"
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgBatchEvaluateClaims",
+        value: {
+          collectionId,
+          verifier,
+          status
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+
+    async function queryCollection(
+      collectionId: string
+    ) {
+      const query = `
+        query GetCollection($id: String!) {
+          collection(id: $id) {
+            id
+            name
+            type
+            claims {
+              id
+              status
+              evaluations {
+                status
+                verifier
+              }
+            }
+            metadata
+          }
+        }
+      `;
+
+      return await client.query({
+        query,
+        variables: { id: collectionId }
+      });
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Agent Authorization
+
+<Note>
+  Agents can be authorized to submit, process, and evaluate claims through role-based permissions and verifiable credentials.
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Agent Roles" icon="user-gear">
+    ```typescript
+    interface AgentRole {
+      id: string;              // Role identifier
+      type: "evaluator" | "processor" | "resolver";
+      capabilities: string[];  // Allowed actions
+      constraints: {
+        claimTypes: string[];  // Authorized claim types
+        collections?: string[]; // Specific collections
+        timeLimit?: number;    // Role duration in blocks
+      };
+    }
+
+    async function authorizeAgent(
+      agentDid: string,
+      role: AgentRole,
+      authorization: {
+        authorizerId: string;
+        credential: VerifiableCredential;
+      }
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgAuthorizeAgent",
+        value: {
+          agentDid,
+          role,
+          authorization
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Verification Credentials" icon="id-card">
+    ```typescript
+    interface AgentCredential {
+      type: "ClaimEvaluator" | "ClaimProcessor" | "DisputeResolver";
+      issuer: string;
+      subject: string;
+      capabilities: {
+        actions: string[];
+        conditions: {
+          claimTypes: string[];
+          startDate: string;
+          endDate?: string;
+        };
+      };
+    }
+
+    async function issueAgentCredential(
+      params: {
+        type: AgentCredential["type"];
+        subject: string;
+        capabilities: AgentCredential["capabilities"];
+      }
+    ) {
+      const credential = await Claims.createVerifiableCredential({
+        type: params.type,
+        issuer: getIssuerDid(),
+        subject: params.subject,
+        claims: {
+          capabilities: params.capabilities
+        }
+      });
+
+      return credential;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Permission Management" icon="key">
+    ```typescript
+    interface AgentPermissions {
+      did: string;
+      roles: AgentRole[];
+      credentials: VerifiableCredential[];
+      status: "active" | "suspended" | "revoked";
+    }
+
+    async function updateAgentPermissions(
+      agentDid: string,
+      updates: Partial<AgentPermissions>
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgUpdateAgentPermissions",
+        value: {
+          agentDid,
+          ...updates
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+
+    async function revokeAgentAuthorization(
+      agentDid: string,
+      roleId: string,
+      reason: string
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgRevokeAgentAuthorization",
+        value: {
+          agentDid,
+          roleId,
+          reason
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Steps>
+  1. **Define Agent Role**
+     - Specify role type
+     - Set capabilities
+     - Define constraints
+     - Configure time limits
+
+  2. **Issue Credentials**
+     - Create verifiable credential
+     - Define capabilities
+     - Set validity period
+     - Sign by authorizer
+
+  3. **Authorize Agent**
+     - Assign role
+     - Grant permissions
+     - Link credentials
+     - Activate authorization
+
+  4. **Monitor & Manage**
+     - Track agent activity
+     - Review performance
+     - Update permissions
+     - Handle revocations
+</Steps>
+
+<CardGroup>
+  <Card title="Role Configuration" icon="user-gear">
+    - Define clear responsibilities
+    - Set appropriate constraints
+    - Implement time limits
+    - Regular role reviews
+  </Card>
+
+  <Card title="Credential Management" icon="id-card">
+    - Use strong verification
+    - Include expiration dates
+    - Regular credential rotation
+    - Maintain credential chain
+  </Card>
+
+  <Card title="Access Control" icon="lock">
+    - Implement least privilege
+    - Regular access reviews
+    - Monitor agent actions
+    - Quick revocation process
+  </Card>
+</CardGroup>
+
+## Claim Evaluation & Disputes
+
+<Note>
+  Claims go through a structured evaluation process with support for multi-party verification and dispute resolution.
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Evaluation Process" icon="clipboard-check">
+    ```typescript
+    interface EvaluationParams {
+      claimId: string;
+      evaluator: string;
+      status: "approved" | "rejected" | "disputed";
+      evidence?: {
+        type: string;
+        data: any;
+        proof: string;
+      };
+      reason?: string;
+    }
+
+    async function evaluateClaim(params: EvaluationParams) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgEvaluateClaim",
+        value: {
+          claimId: params.claimId,
+          evaluator: params.evaluator,
+          status: params.status,
+          evidence: params.evidence,
+          reason: params.reason
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Dispute Resolution" icon="gavel">
+    ```typescript
+    interface DisputeParams {
+      claimId: string;
+      disputerId: string;
+      evaluationId: string;
+      reason: string;
+      evidence: {
+        type: string;
+        data: any;
+        proof: string;
+      };
+    }
+
+    async function submitDispute(params: DisputeParams) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgSubmitDispute",
+        value: {
+          claimId: params.claimId,
+          disputerId: params.disputerId,
+          evaluationId: params.evaluationId,
+          reason: params.reason,
+          evidence: params.evidence
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+
+    async function resolveDispute(
+      disputeId: string,
+      resolverId: string,
+      resolution: "upheld" | "rejected",
+      reason: string
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgResolveDispute",
+        value: {
+          disputeId,
+          resolverId,
+          resolution,
+          reason
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Multi-Party Verification" icon="users">
+    ```typescript
+    interface VerificationPolicy {
+      threshold: number;        // Required approvals
+      evaluators: string[];     // Authorized evaluators
+      timeout: number;         // Evaluation timeout in blocks
+      disputeWindow: number;   // Blocks to allow disputes
+    }
+
+    async function setVerificationPolicy(
+      claimType: string,
+      policy: VerificationPolicy
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgSetVerificationPolicy",
+        value: {
+          claimType,
+          policy
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Payment Automations
+
+<Note>
+  The Claims module supports automated payment processing with network-governed fee distributions. All fee percentages for platform, network DAO, and evaluators are set through governance proposals.
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Collection Payment Settings" icon="coins">
+    ```typescript
+    interface CollectionPaymentConfig {
+      enabled: boolean;
+      tokens: {
+        type: "native" | "ibc" | "cw20";  // Token type
+        denom: string;                    // Token denomination
+        minAmount: string;               // Minimum payment amount
+        maxAmount?: string;             // Optional maximum amount
+      }[];
+    }
+
+    async function setCollectionPaymentConfig(
+      collectionId: string,
+      config: CollectionPaymentConfig
+    ) {
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgSetCollectionPaymentConfig",
+        value: {
+          collectionId,
+          config
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Network Fee Parameters" icon="money-bill-transfer">
+    ```typescript
+    interface NetworkFeeParams {
+      // Read-only network parameters set by governance
+      readonly platformFee: string;     // Platform fee percentage
+      readonly networkDaoFee: string;   // Network DAO fee percentage
+      readonly evaluatorFee: string;    // Evaluator fee percentage
+    }
+
+    async function queryNetworkFeeParams(): Promise<NetworkFeeParams> {
+      const query = `
+        query NetworkParams {
+          claims {
+            params {
+              platformFee
+              networkDaoFee
+              evaluatorFee
+            }
+          }
+        }
+      `;
+
+      return await client.query({ query });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Supported Token Types" icon="wallet">
+    ```typescript
+    // Native blockchain tokens
+    const nativeTokens = {
+      type: "native",
+      denom: "uixo",     // IXO native token
+      minAmount: "1000"  // 1000 uixo (1 IXO)
+    };
+
+    // IBC tokens from other chains
+    const ibcTokens = {
+      type: "ibc",
+      denom: "ibc/HASH", // IBC token denomination
+      minAmount: "1000000"
+    };
+
+    // CW20 tokens (CosmWasm tokens)
+    const cw20Tokens = {
+      type: "cw20",
+      denom: "contract_address", // CW20 contract address
+      minAmount: "1000000"
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Payment Processing" icon="credit-card">
+    ```typescript
+    interface PaymentProcessing {
+      claimId: string;
+      payment: {
+        amount: string;
+        denom: string;
+      };
+      payer: string;
+    }
+
+    async function processClaimPayment(
+      params: PaymentProcessing
+    ) {
+      // Fee distribution is handled automatically based on
+      // network governance parameters
+      const msg = {
+        typeUrl: "/ixo.claims.v1beta1.MsgProcessPayment",
+        value: {
+          ...params
+        }
+      };
+      
+      return await Claims.broadcast(msg);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Steps>
+  1. **Configure Collection Payments**
+     - Enable/disable payments
+     - Set accepted tokens
+     - Define minimum amounts
+     - Set optional maximums
+
+  2. **Network Fee Structure**
+     - Query current fee parameters
+     - View governance-set rates
+     - Monitor fee updates
+     - Track distributions
+
+  3. **Process Payments**
+     - Validate payment amount
+     - Process token transfer
+     - Automatic fee splitting
+     - Record transactions
+</Steps>
+
+<CardGroup>
+  <Card title="Supported Token Types" icon="coins">
+    - Native blockchain tokens (uixo)
+    - IBC tokens (cross-chain)
+    - CW20 tokens (CosmWasm)
+    - Custom token standards
+  </Card>
+
+  <Card title="Network Parameters" icon="money-bill-transfer">
+    - Governance-set fees
+    - Network-wide standards
+    - Transparent rates
+    - Automatic compliance
+  </Card>
+
+  <Card title="Distribution Rules" icon="chart-pie">
+    - Governance controlled
+    - Automatic splitting
+    - Instant distribution
+    - Transparent tracking
+  </Card>
+
+  <Card title="Payment Security" icon="shield-check">
+    - Payment validation
+    - Transaction verification
+    - Error handling
+    - Refund processing
+  </Card>
+</CardGroup>
+
+## Implementation Examples
+
+<CodeGroup>
+  ```typescript Submit Claim
+  import { Claims } from '@ixo/client-sdk';
+
+  async function submitClaim(
+    creator: string,
+    claimData: any
+  ) {
+    const msg = {
+      typeUrl: "/ixo.claims.v1beta1.MsgSubmitClaim",
+      value: {
+        creator,
+        claimId: generateClaimId(),
+        claimType: "verification",
+        data: claimData
+      }
+    };
+
+    return await Claims.broadcast(msg);
+  }
+  ```
+
+  ```typescript Query Claims
+  async function queryClaims(
+    filters: {
+      type?: string,
+      status?: string,
+      fromDate?: string
+    }
+  ) {
+    const query = `
+      query GetClaims($filters: ClaimFilters) {
+        claims(filter: $filters) {
+          id
+          type
+          status
+          data
+          evaluations {
+            id
+            status
+            evaluator
+          }
+        }
+      }
+    `;
+
+    return await client.query({
+      query,
+      variables: { filters }
+    });
+  }
+  ```
+</CodeGroup>
+
+## Best Practices
+
+<CardGroup>
+  <Card title="Data Integrity" icon="shield-check">
+    - Validate input data
+    - Include cryptographic proofs
+    - Maintain audit trails
+    - Version control
+  </Card>
+
+  <Card title="Verification" icon="check-double">
+    - Use multiple verifiers
+    - Implement timeouts
+    - Handle disputes
+    - Record evidence
+  </Card>
+
+  <Card title="Privacy" icon="user-shield">
+    - Protect sensitive data
+    - Control access
+    - Encrypt when needed
+    - Manage permissions
+  </Card>
+
+  <Card title="Integration" icon="puzzle-piece">
+    - Handle errors gracefully
+    - Implement retries
+    - Monitor performance
+    - Log activities
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-reference/claims">
+    Claims module API documentation
+  </Card>
+  
+  <Card title="SDK Guide" icon="code" href="/guides/dev/claims-sdk">
+    Client SDK implementation guide
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/claims-examples">
+    Implementation examples
+  </Card>
+  
+  <Card title="GitHub" icon="github" href="https://github.com/ixofoundation/ixo-blockchain/tree/main/x/claims">
+    Claims module source code
+  </Card>
+</CardGroup>
+
+<Note>
+  For technical support or questions about Claims Management, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Note>

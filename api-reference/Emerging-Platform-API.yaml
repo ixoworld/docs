@@ -1,337 +1,534 @@
 openapi: 3.1.0
 info:
-  title: Emerging Platform API
-  version: "1.0"
-  summary: |
-    The Emerging Platform API enables the registry system to retrieve accurate data from the dMRV system, ensuring seamless integration, reliable communication, and streamlined monitoring and verification workflows.
+  contact:
+    email: ixo@ixo.world
+    name: IXO Team
   description: |
     The Emerging Platform API is designed to facilitate seamless communication between the dMRV system and the registry system. It enables the registry system to retrieve accurate and timely data from the dMRV system, supporting efficient monitoring, reporting, and verification processes. By ensuring reliable data exchange and integration, the API plays a critical role in maintaining data integrity and streamlining workflows between these interconnected systems.
-  contact:
-    name: IXO Team
-    email: ixo@ixo.world
   license:
     name: Apache License 2.0
-    url: "http://www.apache.org/licenses/LICENSE-2.0"
-components:
-  securitySchemes:
-    apiKey:
-      type: http
-      scheme: basic
-  schemas:
-    HouseholdStats:
-      type: object
-      properties:
-        total_households:
-          type: integer
-          description: Total number of serviced households.
-        density:
-          type: object
-          properties:
-            low:
-              type: integer
-              description: Number of low-density households.
-            medium:
-              type: integer
-              description: Number of medium-density households.
-            high:
-              type: integer
-              description: Number of high-density households.
-      example:
-        total_households: 1500
-        density:
-          low: 700
-          medium: 500
-          high: 300
-    StoveStacking:
-      type: object
-      properties:
-        fuel_type:
-          type: string
-          description: Type of fuel used (e.g., LPG + Biomass).
-        percentage:
-          type: number
-          format: float
-          description: Percentage of households using this combination.
-      example:
-        fuel_type: "LPG + Biomass"
-        percentage: 65.5
-    DeviceStatus:
-      type: object
-      properties:
-        device_id:
-          type: string
-          description: Unique identifier of the device.
-        status:
-          type: string
-          description: Current operational status of the device.
-        last_active:
-          type: string
-          format: date-time
-          description: Timestamp of the last recorded activity.
-      example:
-        device_id: "device-456"
-        status: "inactive"
-        last_active: "2024-01-01T08:30:00Z"
-    FuelUsage:
-      type: object
-      properties:
-        household_id:
-          type: string
-          description: Unique identifier of the household.
-        fuel_consumed:
-          type: number
-          description: Total fuel consumed in the specified period.
-        region:
-          type: string
-          description: Geographic region of the household.
-      example:
-        household_id: "household-010"
-        fuel_consumed: 42.3
-        region: "East Region"
-    CreditsIssued:
-      type: object
-      properties:
-        project_id:
-          type: string
-          description: Unique identifier of the project.
-        time_period:
-          type: string
-          description: Time period for which credits were issued.
-        credits:
-          type: integer
-          description: Number of credits issued.
-      example:
-        project_id: "project-789"
-        time_period: "2023-Q4"
-        credits: 1200
-    CreditsCancelled:
-      type: object
-      properties:
-        credit_id:
-          type: string
-          description: Unique identifier of the invalidated credit.
-        cancellation_date:
-          type: string
-          format: date
-          description: Date of credit cancellation.
-      example:
-        credit_id: "credit-001"
-        cancellation_date: "2024-01-05"
-    CreditsTransferred:
-      type: object
-      properties:
-        sender:
-          type: string
-          description: Entity transferring the credits.
-        recipient:
-          type: string
-          description: Entity receiving the credits.
-        amount:
-          type: integer
-          description: Number of credits transferred.
-        transfer_date:
-          type: string
-          format: date
-          description: Date of credit transfer.
-      example:
-        sender: "entity-abc"
-        recipient: "entity-xyz"
-        amount: 500
-        transfer_date: "2024-01-10"
-    CreditsRetired:
-      type: object
-      properties:
-        credit_id:
-          type: string
-          description: Unique identifier of the retired credit.
-        retirement_date:
-          type: string
-          format: date
-          description: Date of credit retirement.
-        emission_reductions:
-          type: integer
-          description: Amount of emission reductions associated with the retired credit.
-      example:
-        credit_id: "credit-789"
-        retirement_date: "2024-01-15"
-        emission_reductions: 350
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  title: Emerging Platform API
+  version: '1.0'
+servers:
+  - description: Production
+    url: https://api.emerging.eco
+  - description: Staging
+    url: https://stage.api.emerging.eco
+  - description: Development
+    url: https://dev.api.emerging.eco
+security:
+  - basicAuth: []
 paths:
   /households/stats:
     get:
-      summary: Get household statistics
-      description: Retrieve household statistics, including the number of serviced households and density profiles.
+      description: 'Retrieve household statistics, including the number of serviced households and density profiles.'
+      operationId: getHouseholdStats
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/HouseholdStats"
               example:
                 total_households: 1500
                 density:
                   low: 700
                   medium: 500
                   high: 300
+              schema:
+                $ref: '#/components/schemas/HouseholdStats'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get household statistics
+      x-eov-operation-handler: controllers/DefaultController
   /households/stove-stacking:
     get:
-      summary: Get stove stacking data
-      description: Analyze usage patterns combining multiple fuel types (e.g., LPG + Biomass).
+      description: 'Analyze usage patterns combining multiple fuel types (e.g., LPG + Biomass).'
+      operationId: getStoveStackingData
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StoveStacking"
-              example:
-                fuel_type: "LPG + Biomass"
-                percentage: 65.5
+                $ref: '#/components/schemas/StoveStacking'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get stove stacking data
+      x-eov-operation-handler: controllers/DefaultController
   /devices/status:
     get:
-      summary: Get device status and activity
       description: Monitor real-time status and activity logs of connected devices.
+      operationId: getDeviceStatus
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/DeviceStatus"
               example:
-                device_id: "device-456"
-                status: "inactive"
-                last_active: "2024-01-01T08:30:00Z"
+                device_id: device-456
+                status: inactive
+                last_active: 2024-01-01T08:30:00Z
+              schema:
+                $ref: '#/components/schemas/DeviceStatus'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get device status and activity
+      x-eov-operation-handler: controllers/DefaultController
   /fuel-usage:
     get:
-      summary: Get fuel usage metrics
-      description: Retrieve data on fuel usage aggregated by household, region, or time period.
+      description: 'Retrieve data on fuel usage aggregated by household, region, or time period.'
+      operationId: getFuelUsage
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/FuelUsage"
               example:
-                household_id: "household-010"
+                household_id: household-010
                 fuel_consumed: 42.3
-                region: "East Region"
+                region: East Region
+              schema:
+                $ref: '#/components/schemas/FuelUsage'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get fuel usage metrics
+      x-eov-operation-handler: controllers/DefaultController
   /credits/issued:
     get:
-      summary: Get issued credits
       description: Retrieve the number of credits issued per project and time period.
+      operationId: getIssuedCredits
       parameters:
-        - name: project_id
+        - description: Unique identifier of the project.
+          explode: true
           in: query
+          name: project_id
           required: true
           schema:
             type: string
-          description: Unique identifier of the project.
-        - name: time_period
+          style: form
+        - description: Time period for which credits were issued.
+          explode: true
           in: query
+          name: time_period
           required: true
           schema:
             type: string
-          description: Time period for which credits were issued.
+          style: form
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/CreditsIssued"
               example:
-                project_id: "project-789"
-                time_period: "2023-Q4"
+                project_id: project-789
+                time_period: 2023-Q4
                 credits: 1200
+              schema:
+                $ref: '#/components/schemas/CreditsIssued'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get issued credits
+      x-eov-operation-handler: controllers/DefaultController
   /credits/cancelled:
     get:
-      summary: Get cancelled credits
       description: Retrieve records of credits that have been invalidated.
+      operationId: getCancelledCredits
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/CreditsCancelled"
               example:
-                credit_id: "credit-001"
-                cancellation_date: "2024-01-05"
+                credit_id: credit-001
+                cancellation_date: 2024-01-05
+              schema:
+                $ref: '#/components/schemas/CreditsCancelled'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get cancelled credits
+      x-eov-operation-handler: controllers/DefaultController
   /credits/transferred:
     get:
-      summary: Get transferred credits
-      description: View records of credits transferred between entities.
+      description: View records of credits transferred to ITMOs.
+      operationId: getTransferredCredits
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/CreditsTransferred"
               example:
-                sender: "entity-abc"
-                recipient: "entity-xyz"
+                sender: entity-abc
+                recipient: entity-xyz
                 amount: 500
-                transfer_date: "2024-01-10"
+                transfer_date: 2024-01-10
+              schema:
+                $ref: '#/components/schemas/CreditsTransferred'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get transferred credits
+      x-eov-operation-handler: controllers/DefaultController
   /credits/retired:
     get:
-      summary: Get retired credits
-      description: Retrieve information about retired credits and their associated emission reductions.
+      description: Retrieve information about retired credits and their associated
+        emission reductions.
+      operationId: getRetiredCredits
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/CreditsRetired"
               example:
-                credit_id: "credit-789"
-                retirement_date: "2024-01-15"
+                credit_id: credit-789
+                retirement_date: 2024-01-15
                 emission_reductions: 350
+              schema:
+                $ref: '#/components/schemas/CreditsRetired'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get retired credits
+      x-eov-operation-handler: controllers/DefaultController
   /claims/fuel-purchase:
     get:
-      summary: View fuel purchase claims
       description: Retrieve verified claims of purchased fuel units.
+      operationId: getFuelPurchaseClaims
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/FuelPurchaseClaim"
               example:
-                fuel_id: "fuel-123"
+                fuel_id: fuel-123
                 amount: 100.5
-                purchase_date: "2024-01-20"
+                purchase_date: 2024-01-20
+              schema:
+                $ref: '#/components/schemas/FuelPurchaseClaim'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: View fuel purchase claims
+      x-eov-operation-handler: controllers/DefaultController
   /claims/fuel-delivery:
     get:
-      summary: View fuel delivery claims
       description: Retrieve details of completed fuel deliveries.
+      operationId: getFuelDeliveryClaims
       responses:
-        "200":
-          description: Successful response
+        '200':
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/FuelDeliveryClaim"
               example:
-                delivery_id: "delivery-456"
-                delivery_date: "2024-01-25"
+                delivery_id: delivery-456
+                delivery_date: 2024-01-25
                 delivered_quantity: 250.0
+              schema:
+                $ref: '#/components/schemas/FuelDeliveryClaim'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: View fuel delivery claims
+      x-eov-operation-handler: controllers/DefaultController
   /claims/emission-reduction:
     get:
-      summary: View emission reduction claims
       description: Retrieve records of Certified Emission Reductions (CERs) achieved.
+      operationId: getEmissionReductionClaims
       responses:
-        "200":
+        '200':
+          content:
+            application/json:
+              example:
+                project_id: project-789
+                period: 2023-Q4
+                reductions: 300
+              schema:
+                $ref: '#/components/schemas/EmissionReductionClaim'
           description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: View emission reduction claims
+      x-eov-operation-handler: controllers/DefaultController
+  /claims/household-onboarding:
+    get:
+      description: Retrieve records of household onboarding claims.
+      operationId: getHouseholdOnboardingClaims
+      responses:
+        '200':
+          content:
+            application/json:
+              example:
+                household_id: household-123
+                onboarding_date: 2024-01-01
+              schema:
+                $ref: '#/components/schemas/HouseholdOnboardingClaim'
+          description: Successful response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Get household onboarding claims
+      x-eov-operation-handler: controllers/DefaultController
+  /hello:
+    get:
+      description: Health check endpoint
+      operationId: hello
+      responses:
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EmissionReductionClaim"
-              example:
-                project_id: "project-789"
-                period: "2023-Q4"
-                reductions: 300
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 'ok'
+                  message:
+                    type: string
+                    example: 'Hello from Registry API'
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2024-01-27T20:12:33.023Z'
+          description: Successful response
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      summary: Health check
+      x-eov-operation-handler: controllers/DefaultController
+components:
+  responses:
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Bad request
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Unauthorized
+  schemas:
+    HouseholdStats:
+      example:
+        total_households: 1500
+        density:
+          low: 700
+          medium: 500
+          high: 300
+      properties:
+        total_households:
+          description: Total number of serviced households.
+          type: integer
+        density:
+          $ref: '#/components/schemas/HouseholdStats_density'
+    StoveStacking:
+      example:
+        fuel_type: LPG + Biomass
+        percentage: 65.5
+      properties:
+        fuel_type:
+          description: 'Type of fuel used (e.g., LPG + Biomass).'
+          type: string
+        percentage:
+          description: Percentage of households using this combination.
+          format: float
+          type: number
+    DeviceStatus:
+      example:
+        device_id: device-456
+        status: inactive
+        last_active: 2024-01-01T08:30:00Z
+      properties:
+        device_id:
+          description: Unique identifier of the device.
+          type: string
+        status:
+          description: Current operational status of the device.
+          type: string
+        last_active:
+          description: Timestamp of the last recorded activity.
+          format: date-time
+          type: string
+    FuelUsage:
+      example:
+        household_id: household-010
+        fuel_consumed: 42.3
+        region: East Region
+      properties:
+        household_id:
+          description: Unique identifier of the household.
+          type: string
+        fuel_consumed:
+          description: Total fuel consumed in the specified period.
+          type: number
+        region:
+          description: Geographic region of the household.
+          type: string
+    CreditsIssued:
+      example:
+        project_id: project-789
+        time_period: 2023-Q4
+        credits: 1200
+      properties:
+        project_id:
+          description: Unique identifier of the project.
+          type: string
+        time_period:
+          description: Time period for which credits were issued.
+          type: string
+        credits:
+          description: Number of credits issued.
+          type: integer
+    CreditsCancelled:
+      example:
+        credit_id: credit-001
+        cancellation_date: 2024-01-05
+      properties:
+        credit_id:
+          description: Unique identifier of the invalidated credit.
+          type: string
+        cancellation_date:
+          description: Date of credit cancellation.
+          format: date
+          type: string
+    CreditsTransferred:
+      example:
+        sender: entity-abc
+        recipient: entity-xyz
+        amount: 500
+        transfer_date: 2024-01-10
+      properties:
+        sender:
+          description: Entity transferring the credits.
+          type: string
+        recipient:
+          description: Entity receiving the credits.
+          type: string
+        amount:
+          description: Number of credits transferred.
+          type: integer
+        transfer_date:
+          description: Date of credit transfer.
+          format: date
+          type: string
+    CreditsRetired:
+      example:
+        credit_id: credit-789
+        retirement_date: 2024-01-15
+        emission_reductions: 350
+      properties:
+        credit_id:
+          description: Unique identifier of the retired credit.
+          type: string
+        retirement_date:
+          description: Date of credit retirement.
+          format: date
+          type: string
+        emission_reductions:
+          description: Amount of emission reductions associated with the retired credit.
+          type: integer
+    FuelPurchaseClaim:
+      example:
+        fuel_id: fuel-123
+        amount: 100.5
+        purchase_date: 2024-01-20
+      properties:
+        fuel_id:
+          description: Unique identifier of the fuel purchase
+          type: string
+        amount:
+          description: Amount of fuel purchased
+          format: float
+          type: number
+        purchase_date:
+          description: Date when the fuel was purchased
+          format: date
+          type: string
+    FuelDeliveryClaim:
+      example:
+        delivery_id: delivery-456
+        delivery_date: 2024-01-25
+        delivered_quantity: 250.0
+      properties:
+        delivery_id:
+          description: Unique identifier of the delivery
+          type: string
+        delivery_date:
+          description: Date when the fuel was delivered
+          format: date
+          type: string
+        delivered_quantity:
+          description: Quantity of fuel delivered
+          format: float
+          type: number
+    EmissionReductionClaim:
+      example:
+        project_id: project-789
+        period: 2023-Q4
+        reductions: 300
+      properties:
+        project_id:
+          description: Unique identifier of the project
+          type: string
+        period:
+          description: Time period for which emissions were reduced
+          type: string
+        reductions:
+          description: Amount of emissions reduced
+          type: integer
+    Error:
+      example:
+        message: message
+      properties:
+        message:
+          description: Error message describing what went wrong
+          type: string
+    HouseholdStats_density:
+      properties:
+        low:
+          description: Number of low-density households.
+          type: integer
+        medium:
+          description: Number of medium-density households.
+          type: integer
+        high:
+          description: Number of high-density households.
+          type: integer
+    HouseholdOnboardingClaim:
+      type: object
+      properties:
+        household_id:
+          type: string
+          description: Unique identifier of the household.
+        onboarding_date:
+          type: string
+          format: date
+          description: Date of onboarding.
+      required:
+        - household_id
+        - onboarding_date
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: HTTP Basic authentication using username and password

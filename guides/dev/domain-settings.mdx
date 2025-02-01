@@ -1,0 +1,260 @@
+---
+title: 'Domain Settings'
+description: 'Manage your entity Domain settings on IXO blockchains'
+---
+## IID Document Management
+
+<Note>
+  The IXO ID (IID) Module provides a comprehensive set of methods for managing a Domain's properties on IXO blockchains, which includes adding/updating controllers, verification methods, services, linked resources, rights, linked claims, and linked entities. 
+  
+  **The Domain Document resolves to a W3C-standard DID Document for the IXO ID Method.**
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Document Updates" icon="pen-to-square">
+    ```typescript
+    interface IIDDocumentUpdate {
+      context?: string[];
+      controller?: string[];
+      verificationMethod?: VerificationMethod[];
+      authentication?: string[];
+      assertionMethod?: string[];
+      keyAgreement?: string[];
+      capabilityInvocation?: string[];
+      capabilityDelegation?: string[];
+      service?: Service[];
+    }
+
+    async function updateIIDDocument(
+      id: string,
+      update: IIDDocumentUpdate
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgUpdateIidDocument",
+        value: {
+          id,
+          controller: update.controller,
+          verificationMethod: update.verificationMethod,
+          authentication: update.authentication,
+          assertionMethod: update.assertionMethod,
+          keyAgreement: update.keyAgreement,
+          capabilityInvocation: update.capabilityInvocation,
+          capabilityDelegation: update.capabilityDelegation,
+          service: update.service
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Verification Methods" icon="key">
+    ```typescript
+    interface VerificationMethod {
+      id: string;
+      type: string;
+      controller: string;
+      publicKeyMultibase: string;
+    }
+
+    async function addVerificationMethod(
+      id: string,
+      method: VerificationMethod,
+      relationships: string[]
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgAddVerification",
+        value: {
+          id,
+          verification: method,
+          relationships // e.g. ["authentication", "keyAgreement"]
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+
+    async function setVerificationRelationships(
+      id: string,
+      methodId: string,
+      relationships: string[]
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgSetVerificationRelationships",
+        value: {
+          id,
+          methodId,
+          relationships
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+
+    async function revokeVerification(
+      id: string,
+      methodId: string
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgRevokeVerification",
+        value: {
+          id,
+          methodId
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Services" icon="gears">
+    ```typescript
+    interface Service {
+      id: string;
+      type: string;
+      serviceEndpoint: string;
+    }
+
+    async function addService(
+      id: string,
+      service: Service
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgAddService",
+        value: {
+          id,
+          serviceData: service
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+
+    async function deleteService(
+      id: string,
+      serviceId: string
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgDeleteService",
+        value: {
+          id,
+          serviceId
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Controllers & Resources" icon="sitemap">
+    ```typescript
+    async function addController(
+      id: string,
+      controllerDid: string
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgAddController",
+        value: {
+          id,
+          controller: controllerDid
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+
+    async function addLinkedResource(
+      id: string,
+      resource: LinkedResource
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgAddLinkedResource",
+        value: {
+          id,
+          resource
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+
+    async function addAccordedRight(
+      id: string,
+      right: AccordedRight
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgAddAccordedRight",
+        value: {
+          id,
+          right
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Context & Deactivation" icon="power-off">
+    ```typescript
+    async function addContext(
+      id: string,
+      context: string
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgAddIidContext",
+        value: {
+          id,
+          context
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+
+    async function deactivateIID(
+      id: string,
+      state: boolean
+    ): Promise<void> {
+      const msg = {
+        typeUrl: "/ixo.iid.v1beta1.MsgDeactivateIID",
+        value: {
+          id,
+          state
+        }
+      };
+      
+      await signAndBroadcast(msg);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Steps>
+  1. **Update Document Structure**
+     - Modify verification methods
+     - Update service endpoints
+     - Add/remove controllers
+     - Manage linked resources
+
+  2. **Manage Verification**
+     - Add verification methods
+     - Set relationships
+     - Handle revocation
+     - Update proofs
+
+  3. **Service Management**
+     - Add new services
+     - Update endpoints
+     - Remove services
+     - Configure mediators
+
+  4. **Access Control**
+     - Add controllers
+     - Grant rights
+     - Set capabilities
+     - Manage delegation
+</Steps>

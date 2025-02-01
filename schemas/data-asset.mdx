@@ -1,0 +1,239 @@
+---
+title: 'Data Asset Schema'
+description: 'Standardized schema for describing data assets in the Internet of Impact'
+---
+
+<Note>
+  Data Assets in the IXO ecosystem use structured schemas based on schema.org to ensure interoperability, discoverability, and proper attribution across the Internet of Impact.
+</Note>
+
+## Overview
+
+Data Assets can take many forms within the IXO ecosystem:
+
+<CardGroup>
+  <Card title="Structured Data" icon="table">
+    - Verifiable Claims
+    - Data models
+    - Processing algorithms
+    - Tabular data
+  </Card>
+
+  <Card title="Collections" icon="folder-tree">
+    - Related file sets
+    - Data catalogs
+    - Search queries
+    - Dataset collections
+  </Card>
+
+  <Card title="Machine Learning" icon="brain">
+    - Training parameters
+    - Neural networks
+    - Model definitions
+    - Learning datasets
+  </Card>
+
+  <Card title="Media Assets" icon="images">
+    - Data visualizations
+    - Captured metrics
+    - Sensor readings
+    - Impact evidence
+  </Card>
+</CardGroup>
+
+## Schema Structure
+
+<AccordionGroup>
+  <Accordion title="Required Properties" icon="asterisk">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `description` | `Text` | Summary of the dataset (50-5000 chars) |
+    | `name` | `Text` | Descriptive name of the dataset |
+
+    The description may include Markdown syntax with absolute URLs for images.
+  </Accordion>
+
+  <Accordion title="Recommended Properties" icon="star">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `alternateName` | `Text` | Alternative names or aliases |
+    | `creator` | `Person/Organization` | Author with ORCID/ROR ID |
+    | `citation` | `Text/CreativeWork` | Related academic citations |
+    | `identifier` | `URL/Text/PropertyValue` | DOI or other identifiers |
+    | `license` | `URL/CreativeWork` | Distribution license |
+    | `version` | `Text/Number` | Version identifier |
+  </Accordion>
+
+  <Accordion title="Optional Properties" icon="circle-plus">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `keywords` | `Text` | Search keywords |
+    | `spatialCoverage` | `Text/Place` | Geographic scope |
+    | `temporalCoverage` | `Text` | Time period covered |
+    | `variableMeasured` | `Text/PropertyValue` | Measured variables |
+    | `url` | `URL` | Dataset landing page |
+  </Accordion>
+</AccordionGroup>
+
+## Implementation Guide
+
+<Steps>
+  1. **Define Basic Metadata**
+     - Create unique identifier
+     - Set name and description
+     - Add version information
+     - Specify creator details
+
+  2. **Add Context Information**
+     - Set temporal coverage
+     - Define spatial scope
+     - List measured variables
+     - Add relevant keywords
+
+  3. **Configure Access**
+     - Set license terms
+     - Define distribution method
+     - Specify formats
+     - Add download URLs
+
+  4. **Link Related Resources**
+     - Add citations
+     - Link to catalogs
+     - Reference related datasets
+     - Include documentation
+</Steps>
+
+## Data Catalog Integration
+
+<AccordionGroup>
+  <Accordion title="Catalog Properties" icon="book">
+    ```json
+    {
+      "@type": "DataCatalog",
+      "name": "Impact Registry",
+      "url": "https://registry.emerging.eco",
+      "dataset": [{
+        "@type": "Dataset",
+        "name": "Clean Cooking Metrics",
+        "includedInDataCatalog": {
+          "@type": "DataCatalog",
+          "name": "Impact Registry"
+        }
+      }]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Download Options" icon="download">
+    ```json
+    {
+      "@type": "Dataset",
+      "distribution": {
+        "@type": "DataDownload",
+        "contentUrl": "https://data.emerging.eco/dataset.csv",
+        "encodingFormat": "text/csv"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Example Implementation
+
+<CodeGroup>
+  ```json Dataset
+  {
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "Clean Cooking Impact Metrics",
+    "description": "Monthly measurements of clean cooking adoption...",
+    "creator": {
+      "@type": "Organization",
+      "@id": "https://ror.org/04wxnsj81",
+      "name": "Impact Organization"
+    },
+    "license": "https://creativecommons.org/licenses/by/4.0",
+    "identifier": "https://doi.org/10.1234/example",
+    "temporalCoverage": "2023-01-01/2023-12-31",
+    "variableMeasured": [
+      "Fuel consumption",
+      "Emissions reduction",
+      "Usage patterns"
+    ]
+  }
+  ```
+
+  ```json Catalog Entry
+  {
+    "@context": "https://schema.org/",
+    "@type": "DataCatalog",
+    "name": "Impact Registry",
+    "dataset": {
+      "@type": "Dataset",
+      "name": "Clean Cooking Impact Metrics",
+      "url": "https://registry.emerging.eco/datasets/123",
+      "distribution": {
+        "@type": "DataDownload",
+        "contentUrl": "https://data.emerging.eco/123.csv",
+        "encodingFormat": "text/csv"
+      }
+    }
+  }
+  ```
+</CodeGroup>
+
+## Best Practices
+
+<CardGroup>
+  <Card title="Metadata Quality" icon="circle-check">
+    - Use clear descriptions
+    - Include all required fields
+    - Add relevant keywords
+    - Maintain version info
+  </Card>
+
+  <Card title="Data Access" icon="key">
+    - Specify clear licenses
+    - Provide download options
+    - Include format details
+    - Document access methods
+  </Card>
+
+  <Card title="Identifiers" icon="fingerprint">
+    - Use persistent IDs
+    - Include DOIs when available
+    - Link to canonical sources
+    - Reference related works
+  </Card>
+
+  <Card title="Documentation" icon="book">
+    - Add usage examples
+    - Document variables
+    - Include citations
+    - Maintain changelog
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="Schema Reference" icon="code" href="https://schema.org/Dataset">
+    Complete schema documentation
+  </Card>
+  
+  <Card title="Validation Tools" icon="check-double" href="https://validator.schema.org">
+    Schema validation tools
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
+    Implementation examples
+  </Card>
+  
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer assistance
+  </Card>
+</CardGroup>
+
+<Note>
+  For help with implementing data asset schemas, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or use Google's [Structured Data Markup Helper](https://www.google.com/webmasters/markup-helper/).
+</Note>
