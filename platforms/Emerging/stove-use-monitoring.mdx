@@ -1,0 +1,272 @@
+---
+title: 'Stove Use Monitoring'
+icon: 'fire'
+description: 'Implement continuous stove usage tracking using sensors for accurate emission reduction quantification'
+---
+
+<Tip>
+Stove Use Monitors (SUMs) are sensors that track cooking events to verify actual stove usage and prevent stove stacking. A cooking event is recorded when the stove temperature exceeds a defined threshold, providing continuous, objective data about usage patterns.
+</Tip>
+
+## Key Features
+
+<CardGroup>
+  <Card title="Complete Coverage" icon="temperature-three-quarters">
+    Installation required on all active cookstoves unless deviation is justified
+  </Card>
+  <Card title="Continuous Monitoring" icon="chart-line">
+    Ongoing measurements with no interruption preferred
+  </Card>
+  <Card title="Stacking Detection" icon="layer-group">
+    Track concurrent usage across multiple stoves to prevent double-counting
+  </Card>
+  <Card title="Data Reliability" icon="wifi">
+    Regular collection to prevent data loss when digital transmission isn't possible
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+```bash Register SUM
+curl -X POST https://api.emerging.eco/v1/devices \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "type": "StoveUseMonitor",
+    "householdId": "did:ixo:household/123",
+    "stoveId": "did:ixo:stove/456",
+    "configuration": {
+      "samplingRate": 300,
+      "temperatureThreshold": 60,
+      "transmissionMode": "realtime"
+    }
+  }'
+```
+
+```python
+from emerging import Device
+
+# Register a new Device
+sum_device = Device.create(
+    type="StoveUseMonitor",
+    household_id="did:ixo:household/123",
+    stove_id="did:ixo:stove/456",
+    configuration={
+        "sampling_rate": 300,  # 5 minute intervals
+        "temperature_threshold": 60,  # Celsius
+        "transmission_mode": "realtime"
+    }
+)
+```
+</CodeGroup>
+
+## Implementation Requirements
+
+<AccordionGroup>
+  <Accordion title="Installation Coverage">
+    * **Full Coverage Mandate**:
+      - Install sensors on ALL cookstoves in project
+      - Document any deviation with detailed justification
+      - Regular verification of sensor presence
+      - Monitor sensor health and calibration
+    * **Stove Stacking Prevention**:
+      - Track temperature patterns across all household stoves
+      - Detect concurrent usage
+      - Validate cooking event plausibility
+      - Cross-reference with household surveys
+  </Accordion>
+
+  <Accordion title="Measurement Duration">
+    * **Continuous Operation**:
+      - Ongoing monitoring required
+      - No planned interruptions
+      - Battery life management
+      - Backup data storage
+    * **Data Continuity**:
+      - Real-time transmission where possible
+      - Regular manual collection if needed
+      - Backup procedures for power/connectivity issues
+      - Data gap documentation and justification
+  </Accordion>
+
+  <Accordion title="Data Collection">
+    * **Digital Transmission**:
+      - Preferred method for data retrieval
+      - Real-time data validation
+      - Automatic anomaly detection
+    * **Manual Collection**:
+      - Required when digital not possible
+      - Frequent collection to prevent data loss
+      - Structured collection schedule
+      - Chain of custody documentation
+    * **Data Quality**:
+      - Validation of temperature readings
+      - Cross-checking between stoves
+      - Time synchronization
+      - Completeness verification
+  </Accordion>
+
+  <Accordion title="Sampling Design">
+    * **Coverage Requirements**:
+      - Full monitoring preferred
+      - Sampling allowed if digital collection impossible
+      - Must follow [sampling guidelines](/platforms/Emerging/sample-size)
+      - Statistical validity requirements
+  </Accordion>
+</AccordionGroup>
+
+## Device Configuration
+
+<ResponseField name="samplingRate" type="integer" required>
+  Seconds between temperature readings (recommended: 1-5 minutes)
+</ResponseField>
+
+<ResponseField name="temperatureThreshold" type="integer" required>
+  Temperature (°C) threshold for cooking event detection
+</ResponseField>
+
+<ResponseField name="transmissionMode" type="string" required>
+  "realtime" | "batch" | "manual"
+</ResponseField>
+
+## Data Model
+
+```json
+{
+  "deviceId": "did:ixo:device/sum789",
+  "stoveId": "did:ixo:stove/456",
+  "readings": [{
+    "timestamp": "2024-02-20T08:15:00Z",
+    "temperature": 85.4,
+    "cookingEvent": true,
+    "duration": 1800
+  }],
+  "status": {
+    "battery": 92,
+    "signal": "strong",
+    "lastSync": "2024-02-20T08:20:00Z"
+  }
+}
+```
+
+## Handling Stove Stacking
+
+```python
+from emerging import HouseholdAnalytics
+
+# Analyze stove usage patterns
+analytics = HouseholdAnalytics("did:ixo:household/123")
+
+stacking_report = analytics.detect_stacking(
+    period_start="2024-02-01",
+    period_end="2024-02-28",
+    stove_types=["traditional", "improved"]
+)
+
+# Get detailed cooking events
+events = analytics.get_cooking_events(
+    min_duration=1800,  # 30 minutes
+    min_temperature=60
+)
+```
+
+## Integration with Household Monitoring
+
+```python
+from emerging import Household, Device
+
+# Get household digital twin
+household = Household.get("did:ixo:household/123")
+
+# Register SUMs for all stoves
+for stove in household.stoves:
+    sum_device = Device.create(
+        type="StoveUseMonitor",
+        stove_id=stove.id,
+        household_id=household.id
+    )
+    
+    # Link to household digital twin
+    household.add_device(sum_device)
+
+# Monitor stove usage compliance
+compliance = household.check_monitoring_compliance()
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid device configuration
+</ResponseField>
+
+<ResponseField name="404" type="error">
+  Device or stove not found
+</ResponseField>
+
+<ResponseField name="503" type="error">
+  Data transmission failure
+</ResponseField>
+
+## Best Practices
+
+### Installation
+* Mount sensors securely
+* Calibrate temperature thresholds
+* Verify signal strength
+* Test data transmission
+* Document any coverage exceptions
+
+### Monitoring
+* Check battery levels regularly
+* Validate sensor readings
+* Monitor data completeness
+* Track transmission status
+* Verify continuous operation
+
+### Data Collection
+* Implement backup procedures
+* Regular quality checks
+* Document collection frequency
+* Maintain collection records
+* Prevent data loss
+
+### Stove Stacking Prevention
+* Monitor all household stoves
+* Track concurrent usage
+* Validate cooking patterns
+* Cross-reference data sources
+* Document usage anomalies
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Installation Guide" icon="screwdriver-wrench">
+    Sensor placement and setup
+  </Card>
+  <Card title="Data Collection" icon="database">
+    Managing SUM data
+  </Card>
+  <Card title="Analytics Guide" icon="chart-simple">
+    Usage pattern analysis
+  </Card>
+  <Card title="Household Integration" icon="house" href="/platforms/Emerging/household-monitoring">
+    Digital twin setup
+  </Card>
+</CardGroup>
+
+## Related Guides
+
+<CardGroup>
+  <Card title="Household Monitoring" icon="house" href="/platforms/Emerging/household-monitoring">
+    Track complete household energy transitions
+  </Card>
+  <Card title="Qualitative Surveys" icon="clipboard-list-check" href="/platforms/Emerging/qualitative-surveys">
+    Validate usage patterns with surveys
+  </Card>
+  <Card title="Kitchen Performance Tests" icon="flask" href="/platforms/Emerging/kpt">
+    Verify fuel consumption measurements
+  </Card>
+  <Card title="Household Reporting" icon="file-chart-column" href="/platforms/Emerging/household-reporting">
+    Generate comprehensive reports
+  </Card>
+</CardGroup>

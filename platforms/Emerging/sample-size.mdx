@@ -1,0 +1,389 @@
+---
+title: 'Sample Size Calculator'
+icon: 'calculator'
+description: 'Implement statistically robust sampling for cookstove monitoring with CDM-compliant methodologies'
+---
+
+<Tip>
+Accurate sample size calculation is crucial for reliable emission reduction quantification. This guide implements CDM-compliant sampling methodologies with 95/5 confidence/precision requirements, ensuring the 5% imprecision is factored into emission reduction calculations as per Art. 5 para. 1 let. c No 4 CO2 Ordinance.
+</Tip>
+
+## Quick Start
+
+<CodeGroup>
+```bash Calculate Sample
+curl -X POST https://api.emerging.eco/v1/sampling \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "projectId": "did:ixo:project/789",
+    "population": 5000,
+    "confidence": 0.95,
+    "precision": 0.05,
+    "expectedMean": 0.8,
+    "expectedSD": 0.2,
+    "dropoutRate": 0.15,
+    "stratification": {
+      "enabled": true,
+      "strata": [
+        {"name": "urban", "weight": 0.6},
+        {"name": "rural", "weight": 0.4}
+      ]
+    }
+  }'
+```
+
+```python
+from emerging import SampleCalculator
+
+calculator = SampleCalculator(
+    project_id="did:ixo:project/789",
+    confidence=0.95,
+    precision=0.05
+)
+
+sample_size = calculator.compute(
+    population=5000,
+    expected_mean=0.8,
+    expected_sd=0.2,
+    dropout_rate=0.15,
+    stratification={
+        "enabled": True,
+        "strata": [
+            {"name": "urban", "weight": 0.6},
+            {"name": "rural", "weight": 0.4}
+        ]
+    }
+)
+```
+</CodeGroup>
+
+## Core Requirements
+
+<AccordionGroup>
+  <Accordion title="Statistical Parameters">
+    * **Confidence/Precision**:
+      - 95% confidence level mandatory
+      - 5% precision requirement
+      - Factor imprecision into ER calculations
+    * **Sample Parameters**:
+      - Justify expected mean/SD with credible data
+      - Document ER coverage percentage
+      - Account for realistic dropout rates
+    * **Adaptation Requirements**:
+      - Recalculate after each monitoring period
+      - Use actual variation from monitoring data
+      - Adjust size up/down based on real data
+  </Accordion>
+
+  <Accordion title="Stratified Sampling">
+    * **Independent Strata**:
+      - Calculate size for each stratum separately
+      - Maintain confidence/precision per stratum
+      - Document stratum-specific parameters
+    * **Stratification Criteria**:
+      - Based on baseline survey data
+      - Account for socio-economic factors
+      - Consider geographical variations
+  </Accordion>
+
+  <Accordion title="Random Selection">
+    * **Initial Phase**:
+      - Document selection methodology in MADD
+      - Ensure verifiable randomness
+      - Include non-adopting households
+    * **Verification Phase**:
+      - Submit project list to FOEN
+      - Include active and planned projects
+      - Allow external random selection
+  </Accordion>
+</AccordionGroup>
+
+## Data Models
+
+### Sample Design
+
+```json
+{
+  "designId": "sample-123",
+  "projectId": "did:ixo:project/789",
+  "parameters": {
+    "confidence": 0.95,
+    "precision": 0.05,
+    "population": 5000,
+    "calculatedSize": 357,
+    "adjustedSize": 420,
+    "dropoutRate": 0.15,
+    "erCoverage": 0.85
+  },
+  "stratification": {
+    "method": "proportional",
+    "strata": [{
+      "name": "urban",
+      "population": 3000,
+      "sampleSize": 252,
+      "mean": 0.8,
+      "sd": 0.2
+    }, {
+      "name": "rural",
+      "population": 2000,
+      "sampleSize": 168,
+      "mean": 0.75,
+      "sd": 0.25
+    }]
+  },
+  "verification": {
+    "status": "approved",
+    "verifier": "did:ixo:validator/456",
+    "timestamp": "2024-02-20T10:00:00Z"
+  }
+}
+```
+
+## Sample Size Calculator
+
+```python
+from emerging import CDMCalculator, StratificationEngine
+
+# Initialize CDM calculator
+calculator = CDMCalculator()
+
+# Calculate base sample size
+base_size = calculator.compute_base_size(
+    mean=0.8,
+    sd=0.2,
+    confidence=0.95,
+    precision=0.05
+)
+
+# Adjust for finite population
+adjusted_size = calculator.adjust_for_population(
+    base_size=base_size,
+    population=5000
+)
+
+# Account for dropout
+final_size = calculator.adjust_for_dropout(
+    sample_size=adjusted_size,
+    dropout_rate=0.15
+)
+
+# Stratify if needed
+stratification = StratificationEngine()
+strata_sizes = stratification.allocate(
+    total_size=final_size,
+    strata=[
+        {"name": "urban", "weight": 0.6},
+        {"name": "rural", "weight": 0.4}
+    ]
+)
+```
+
+## Random Selection
+
+```python
+from emerging import RandomSelector
+
+selector = RandomSelector(seed=20240220)
+
+# Generate random sample
+sample = selector.select(
+    population_list="household_registry.csv",
+    sample_size=420,
+    stratification={
+        "column": "region",
+        "sizes": strata_sizes
+    }
+)
+
+# Validate selection
+validation = selector.validate_randomness(
+    selected_sample=sample,
+    confidence=0.95
+)
+```
+
+## Monitoring & Adaptation
+
+```python
+from emerging import SampleMonitor
+
+monitor = SampleMonitor("did:ixo:project/789")
+
+# Analyze current data
+stats = monitor.analyze_current_period(
+    start_date="2024-01-01",
+    end_date="2024-01-31"
+)
+
+# Recalculate sample size
+new_size = monitor.recalculate_size(
+    current_mean=stats.mean,
+    current_sd=stats.sd
+)
+
+# Check if adjustment needed
+if monitor.requires_adjustment(new_size):
+    adjustment = monitor.generate_adjustment_plan()
+```
+
+## External Verification
+
+```python
+from emerging import VerificationSubmission
+
+submission = VerificationSubmission(
+    project_id="did:ixo:project/789"
+)
+
+# Prepare project list
+project_list = submission.prepare_project_list(
+    active_projects=True,
+    planned_projects=True
+)
+
+# Submit for sampling
+response = submission.submit_to_foen(
+    project_list=project_list,
+    monitoring_period="2024-Q1"
+)
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid sampling parameters
+</ResponseField>
+
+<ResponseField name="422" type="error">
+  Insufficient population data
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Conflicting stratum definitions
+</ResponseField>
+
+## Best Practices
+
+### Sample Design
+* Document all assumptions
+* Justify stratification choices
+* Consider seasonal variations
+* Plan for dropouts
+* Maintain stratum independence
+
+### Data Quality
+* Validate input parameters
+* Monitor dropout rates
+* Track response rates
+* Document non-responses
+* Verify random selection
+
+### Adaptation
+* Regular recalculation
+* Document changes
+* Update stratification
+* Maintain precision levels
+* Track ER coverage
+
+### Verification
+* Prepare FOEN submissions
+* Document selection process
+* Maintain project lists
+* Track verification status
+* Archive supporting data
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Survey Integration" icon="clipboard-list" href="/platforms/Emerging/qualitative-surveys">
+    Apply sampling to surveys
+  </Card>
+  <Card title="SUM Integration" icon="temperature-three-quarters" href="/platforms/Emerging/stove-use-monitoring">
+    Sensor deployment sampling
+  </Card>
+  <Card title="CDM Tools" icon="calculator">
+    Official calculators
+  </Card>
+  <Card title="Verification Guide" icon="shield-check">
+    FOEN submission process
+  </Card>
+</CardGroup>
+
+## Sample Size Adaptation
+
+### Monitoring Period Updates
+
+```python
+from emerging import AdaptiveSampling
+
+adaptive = AdaptiveSampling(project_id="did:ixo:project/789")
+
+# Analyze current monitoring data
+current_stats = adaptive.analyze_period(
+    start_date="2024-01-01",
+    end_date="2024-01-31"
+)
+
+# Recalculate using actual data
+new_sample_size = adaptive.recalculate(
+    actual_mean=current_stats.mean,
+    actual_sd=current_stats.sd,
+    current_dropout_rate=current_stats.dropout_rate
+)
+
+# Generate adaptation plan if needed
+if adaptive.requires_adjustment(new_sample_size):
+    plan = adaptive.create_adjustment_plan(
+        current_size=current_stats.sample_size,
+        required_size=new_sample_size,
+        implementation_date="2024-03-01"
+    )
+```
+
+### Dropout Management
+
+```python
+# Configure with realistic dropout rate
+calculator = CDMCalculator(
+    base_confidence=0.95,
+    base_precision=0.05,
+    dropout_buffer=0.15  # 15% dropout rate
+)
+
+# Track actual dropouts
+dropout_analysis = calculator.analyze_dropouts(
+    historical_data="2023",
+    current_period="2024-Q1"
+)
+
+# Adjust sample size if needed
+adjusted_size = calculator.compensate_for_dropouts(
+    current_size=400,
+    actual_dropout_rate=dropout_analysis.rate
+)
+```
+
+## FOEN Submission Process
+
+```python
+from emerging import FOENSubmission
+
+submission = FOENSubmission(project_id="did:ixo:project/789")
+
+# Prepare project list for random selection
+project_list = submission.prepare_list(
+    active_projects=True,
+    planned_projects=True,
+    monitoring_period="2024-Q2"
+)
+
+# Submit for random sampling
+response = submission.submit_to_foen(
+    project_list=project_list,
+    er_coverage_percentage=0.85,  # Document ER coverage
+    supporting_data={
+        "mean_justification": "historical_data.pdf",
+        "sd_calculation": "variance_analysis.pdf"
+    }
+)
+```

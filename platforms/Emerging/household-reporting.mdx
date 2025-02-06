@@ -1,8 +1,43 @@
+---
+title: 'Household Reporting'
+icon: 'file-chart-column'
+description: 'Track and report household-level monitoring data for clean cooking initiatives'
+---
+
 # Household-level Monitoring
 
 ## Introduction
 
-Household-level monitoring aggregates data from one or more cooking devices used by a family or dwelling. Rather than tracking each device in isolation, this approach ensures a holistic view of how the household’s collective cooking practices influence fuel consumption and emissions. By using the Emerging Platform’s decentralized identifiers (DIDs), verifiable credentials, and data orchestration tools, you can automate the measurement, reporting, and verification (MRV) of these activities while aligning with Mitigation Activity Design Documents, recognized standards and methodologies (Gold Standard for Metered & Measured Energy Cooking Devices).
+Household-level monitoring aggregates data from one or more cooking devices used by a family or dwelling. Rather than tracking each device in isolation, this approach ensures a holistic view of how the household's collective cooking practices influence fuel consumption and emissions. By using the Emerging Household Energy's decentralized identifiers (DIDs), verifiable credentials, and data orchestration tools, you can automate the measurement, reporting, and verification (MRV) of these activities while aligning with Mitigation Activity Design Documents, recognized standards and methodologies (Gold Standard for Metered & Measured Energy Cooking Devices).
+
+## Target Population Description
+
+The monitoring plan must include a comprehensive description of target households to account for project-specific circumstances. This description should capture:
+
+### Household Characteristics
+- Geographic location and environmental context
+- Household structure and composition
+- Income levels and economic factors
+- Occupational patterns
+- Seasonal variations in behavior
+
+### Behavioral Factors
+- Existing cooking practices and fuel usage patterns
+- Social and cultural influences on cooking behavior
+- Environmental factors affecting fuel choices
+- Seasonal variations in cooking needs
+
+### Monitoring Considerations
+- Stratification requirements based on household diversity
+- Sampling design incorporating behavioral factors
+- Inclusion/exclusion criteria alignment
+- Impact of geographical and seasonal variations
+
+This demographic and behavioral data is stored as metadata in the household's digital twin, enabling:
+- Informed sampling strategies
+- More accurate baseline calculations
+- Better understanding of adoption patterns
+- Targeted intervention strategies
 
 ## Key Components of the Architecture
 
@@ -26,7 +61,7 @@ Household-level monitoring aggregates data from one or more cooking devices used
 ### Registration
 
 1. **Create a Household DID**  
-   - Use the platform’s DID registration endpoint to generate a unique identifier for the household.  
+   - Use the platform's DID registration endpoint to generate a unique identifier for the household.  
    - Store any metadata (e.g., location, population, technology preferences).
 
 2. **Associate Customer or Resident Profiles**  
@@ -56,7 +91,7 @@ Household-level monitoring aggregates data from one or more cooking devices used
 ### Device Onboarding
 
 • **Device DID Creation**: Every stove or cooktop must be registered with the platform. This includes specifying the device model, serial number, and fuel type.  
-• **Sensor Calibration and Configuration**: Ensure that the cooking device’s sensors (e.g., temperature, fuel flow, electricity usage) meet the accuracy and reporting guidelines defined by the methodology.
+• **Sensor Calibration and Configuration**: Ensure that the cooking device's sensors (e.g., temperature, fuel flow, electricity usage) meet the accuracy and reporting guidelines defined by the methodology.
 
 ## Data Ingestion Architecture
 
@@ -65,7 +100,7 @@ Household-level monitoring aggregates data from one or more cooking devices used
 2. **Edge or Mobile App Logging**  
    - In areas without reliable connectivity, mobile apps can store data offline and sync it to the platform when a connection is available.
 3. **Cryptographic Signatures**  
-   - Each measurement is digitally signed with the device’s private key.  
+   - Each measurement is digitally signed with the device's private key.  
    - The platform verifies these signatures, ensuring no tampering in transit.
 
 ### Claims Creation
@@ -73,7 +108,7 @@ Household-level monitoring aggregates data from one or more cooking devices used
 After each measurement cycle or transaction (e.g., fuel delivery):
 1. **Claim Payload**  
    - Basic attributes: device ID, timestamp, usage metrics (e.g., burn time, fuel consumed).  
-   - Sign with the device’s private key.  
+   - Sign with the device's private key.  
 2. **Household Association**  
    - Link each claim to the Household DID for aggregated analytics.
 
@@ -121,14 +156,14 @@ When multiple devices are linked to a household, the platform uses these referen
 
 1. **Data Validation**  
    - The Oracle retrieves all usage claims from the household.  
-   - Compares timestamps, quantities, and device types with expected patterns (e.g., the MMECD methodology’s standards).
+   - Compares timestamps, quantities, and device types with expected patterns (e.g., the MMECD methodology's standards).
 
 2. **Anomaly Detection**  
    - Flags contradictory or implausible claims (e.g., more hours of cooking logged than possible in a day).  
-   - Identifies suspicious fuel purchase or usage intervals that don’t align with delivery logs.
+   - Identifies suspicious fuel purchase or usage intervals that don't align with delivery logs.
 
 3. **Causal AI**  
-   - If stove-stacking is detected, a causal model estimates each device’s impact versus a counterfactual scenario without that device.  
+   - If stove-stacking is detected, a causal model estimates each device's impact versus a counterfactual scenario without that device.  
    - Helps accurately attribute emission reductions to each device-fuel combination.
 
 ###  Manual or Third-Party Auditing
@@ -145,14 +180,14 @@ This generally follows the following patterns:
 
 ### Baseline vs. Actual Emissions
 
-1. **Baseline Emissions**: Estimate the household’s emissions using its traditional cooking fuels (e.g., wood, charcoal).  
+1. **Baseline Emissions**: Estimate the household's emissions using its traditional cooking fuels (e.g., wood, charcoal).  
 2. **Actual Emissions**: Aggregate the real-time usage data from the new, cleaner devices.  
 3. **Reduction** = Baseline – Actual
 
 ### Stove Stacking Considerations
 
 • **Partial Fuel Switch**  
-  - If the household is using both LPG and biomass, the platform’s data integration keeps a record of exactly how much of each fuel was used in a given period.  
+  - If the household is using both LPG and biomass, the platform's data integration keeps a record of exactly how much of each fuel was used in a given period.  
 • **Weighted Emission Factors**  
   - Each device or fuel source has a known emission factor. The platform automatically applies these to the usage logs, summing the total emissions for the period.
 
@@ -209,7 +244,7 @@ function calculateHouseholdEmissions(householdId, startDate, endDate):
 ## Best Practices
 
 1. **Standardized Protocols**  
-   - Adopt existing protocols (e.g., a “Clean Cooking Protocol”) that define data schemas, usage intervals, and emission factors to avoid custom logic for each project.  
+   - Adopt existing protocols (e.g., a "Clean Cooking Protocol") that define data schemas, usage intervals, and emission factors to avoid custom logic for each project.  
 2. **Fallback Options**  
    - In limited-connectivity scenarios, allow devices or mobile apps to buffer data. On reconnection, the entire data set can be batch-submitted for verification.  
 3. **Security**  
@@ -225,6 +260,6 @@ function calculateHouseholdEmissions(householdId, startDate, endDate):
 
 ## Conclusion
 
-Household-level monitoring on the Emerging Platform provides a robust, verifiable, and scalable framework for clean cooking dMRV. By registering households and their devices under DIDs, collecting real-time sensor data, and employing Oracle-based validation—enhanced by causal AI—the system accurately attributes emission reductions, even under complex stove-stacking scenarios. This holistic approach not only bolsters credibility among stakeholders and carbon registries but also yields actionable insights for program improvement.
+Household-level monitoring on the Emerging Household Energy provides a robust, verifiable, and scalable framework for clean cooking dMRV. By registering households and their devices under DIDs, collecting real-time sensor data, and employing Oracle-based validation—enhanced by causal AI—the system accurately attributes emission reductions, even under complex stove-stacking scenarios. This holistic approach not only bolsters credibility among stakeholders and carbon registries but also yields actionable insights for program improvement.
 
 By following the steps above, developers and project implementers can ensure transparent, accurate, and efficient MRV of modern energy cooking activities, helping accelerate the global transition to cleaner, more sustainable cooking solutions.

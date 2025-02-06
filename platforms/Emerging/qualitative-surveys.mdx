@@ -1,0 +1,370 @@
+---
+title: 'Qualitative Surveys'
+icon: 'clipboard-question'
+description: 'Implement structured survey protocols for cookstove projects with verifiable claims and SDG impact tracking'
+---
+
+<Tip>
+Qualitative surveys are conducted at different project stages to validate stove adoption, usage patterns, and SDG impacts. Survey design is project-specific and must be included in the Mitigation Activity Design Document (MADD). Survey effectiveness is continuously assessed during monitoring/verification phases and adapted as needed.
+</Tip>
+
+## Survey Types
+
+<CardGroup>
+  <Card title="Baseline Survey" icon="clipboard-list-check">
+    Pre-distribution assessment and eligibility verification
+  </Card>
+  <Card title="Follow-up Survey" icon="magnifying-glass-chart">
+    Early adoption and performance evaluation
+  </Card>
+  <Card title="Monitoring Survey" icon="chart-mixed">
+    Ongoing SDG impact and emission reduction validation
+  </Card>
+</CardGroup>
+
+## Survey Stages and Objectives
+
+### Baseline Survey (Pre-Project)
+- **Timing**: Before stove distribution/sales
+- **Target Population**: 
+  - Potential adopters
+  - Non-adopting households for comparison
+- **Objectives**:
+  - Assess community perception of new stoves
+  - Gather socio-economic baseline data
+  - Verify household eligibility
+  - Validate inclusion criteria
+  - Inform sampling design
+- **Data Collection**:
+  - Household demographics
+  - Current cooking practices
+  - Economic indicators
+  - Technology preferences
+
+### Follow-up Survey (Post-Installation)
+- **Timing**: Shortly after stove deployment
+- **Objectives**:
+  - Identify performance strengths
+  - Detect early adoption issues
+  - Enable rapid problem resolution
+  - Assess user satisfaction
+- **Focus Areas**:
+  - Installation quality
+  - Initial user experience
+  - Technical challenges
+  - Usage patterns
+
+### Monitoring Survey (Ongoing)
+- **Purpose**: 
+  - Validate emission reduction calculations
+  - Verify SDG impacts
+  - Cross-reference with KPT/SUM data
+- **Key Parameters**:
+  - Stove usage patterns
+  - Fuel consumption
+  - User satisfaction
+  - SDG indicators
+  - Inclusion criteria validation
+
+## Implementation Requirements
+
+<AccordionGroup>
+  <Accordion title="Survey Design">
+    * **MADD Integration**:
+      - Complete questionnaire in MADD
+      - Regular suitability assessment
+      - Adaptation based on monitoring feedback
+    * **Data Collection Protocol**:
+      - Defined collection methodology
+      - Specified storage solutions
+      - Clear responsibility assignment
+    * **Quality Control**:
+      - Validation procedures
+      - Cross-reference mechanisms
+      - Update protocols
+  </Accordion>
+
+  <Accordion title="Data Management">
+    * **Collection Responsibility**:
+      - Designated data collectors
+      - Training requirements
+      - Quality assurance roles
+    * **Storage Solutions**:
+      - Secure data repositories
+      - Access control
+      - Backup procedures
+    * **Data Flow**:
+      - Collection to storage pipeline
+      - Verification process
+      - Integration with other data sources
+  </Accordion>
+
+  <Accordion title="Sampling Design">
+    * **Methodology**:
+      - Statistical approach
+      - Population coverage
+      - Stratification criteria
+    * **Sample Size**:
+      - Calculation methodology
+      - Confidence levels
+      - Margin of error
+    * **Selection Process**:
+      - Random selection methods
+      - Bias prevention
+      - Documentation requirements
+  </Accordion>
+</AccordionGroup>
+
+## Quick Start
+
+<CodeGroup>
+```bash Create Survey
+curl -X POST https://api.emerging.eco/v1/surveys \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "type": "BaselineSurvey",
+    "projectId": "did:ixo:project/789",
+    "template": {
+      "eligibilityCriteria": true,
+      "socioEconomicData": true,
+      "cookingPatterns": true,
+      "stovePerceptions": true
+    },
+    "sampling": {
+      "method": "stratified",
+      "size": 100,
+      "confidence": 0.95
+    }
+  }'
+```
+
+```python
+from emerging import Survey, SamplingDesign
+
+# Create a new survey campaign
+survey = Survey.create(
+    type="BaselineSurvey",
+    project_id="did:ixo:project/789",
+    template=Survey.Templates.BASELINE,
+    sampling=SamplingDesign(
+        method="stratified",
+        size=100,
+        confidence=0.95
+    )
+)
+```
+</CodeGroup>
+
+## Data Models
+
+### Survey Template
+
+```json
+{
+  "templateId": "baseline-v1",
+  "sections": [{
+    "id": "eligibility",
+    "questions": [{
+      "id": "current_cooking",
+      "type": "multiple_choice",
+      "required": true,
+      "options": ["wood", "charcoal", "lpg", "electric"]
+    }]
+  }, {
+    "id": "socio_economic",
+    "questions": [{
+      "id": "household_size",
+      "type": "number",
+      "validation": {
+        "min": 1,
+        "max": 20
+      }
+    }]
+  }],
+  "validations": {
+    "requiredSections": ["eligibility"],
+    "completionThreshold": 0.8
+  }
+}
+```
+
+### Survey Response
+
+```json
+{
+  "responseId": "survey-123",
+  "surveyId": "baseline-v1",
+  "householdId": "did:ixo:household/123",
+  "timestamp": "2024-02-20T10:00:00Z",
+  "responses": {
+    "eligibility": {
+      "current_cooking": ["wood", "charcoal"]
+    },
+    "socio_economic": {
+      "household_size": 5
+    }
+  },
+  "verification": {
+    "status": "verified",
+    "verifier": "did:ixo:validator/456",
+    "timestamp": "2024-02-20T10:15:00Z"
+  }
+}
+```
+
+## Survey Management
+
+```python
+from emerging import SurveyManager, DataValidator, SampleCalculator
+
+# Create survey campaign with CDM-compliant sampling
+calculator = SampleCalculator(
+    project_id="did:ixo:project/789",
+    confidence=0.95,
+    precision=0.05
+)
+
+sampling = calculator.compute(
+    population=1000,
+    expected_mean=0.8,
+    expected_sd=0.2,
+    dropout_rate=0.15
+)
+
+# Create and deploy survey
+manager = SurveyManager("did:ixo:project/789")
+campaign = manager.deploy_survey(
+    template_id="baseline-v1",
+    sampling=sampling,
+    collectors=["did:ixo:agent/123"]
+)
+```
+
+<Tip>
+For detailed information on sampling methodology and CDM compliance, see the [Sample Size Calculator](/platforms/Emerging/sample-size) guide.
+</Tip>
+
+## Data Handling
+
+```python
+from emerging import DataProcessor, SDGValidator
+
+# Process survey responses
+processor = DataProcessor()
+results = processor.analyze_survey_data(
+    survey_id="baseline-v1",
+    validation_rules={
+        "completeness": 0.8,
+        "consistency": True
+    }
+)
+
+# Validate SDG impacts
+sdg_validator = SDGValidator()
+sdg_impacts = sdg_validator.assess_impacts(
+    survey_data=results,
+    sdg_targets=["SDG7", "SDG13"]
+)
+```
+
+## Integration with Monitoring Tools
+
+```python
+from emerging import MonitoringIntegration
+
+# Create integrated analysis
+integration = MonitoringIntegration(
+    project_id="did:ixo:project/789"
+)
+
+# Cross-validate data sources
+validation = integration.cross_validate(
+    survey_data="baseline-v1",
+    sum_data="sum-456",
+    kpt_data="kpt-789"
+)
+
+# Generate comprehensive report
+report = integration.generate_report(
+    period_start="2024-01-01",
+    period_end="2024-01-31"
+)
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid survey configuration
+</ResponseField>
+
+<ResponseField name="404" type="error">
+  Survey or response not found
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Conflicting response data
+</ResponseField>
+
+## Best Practices
+
+### Survey Design
+* Align with project objectives
+* Include all MADD requirements
+* Enable data cross-validation
+* Support multiple languages
+* Allow for periodic updates
+
+### Data Collection
+* Train survey collectors
+* Implement quality controls
+* Ensure consistent methodology
+* Document collection process
+* Maintain chain of custody
+
+### Data Analysis
+* Cross-reference with SUMs/KPTs
+* Validate response consistency
+* Track temporal changes
+* Generate actionable insights
+* Monitor inclusion criteria
+
+### Documentation
+* Record methodology
+* Track survey updates
+* Document responsibility assignments
+* Maintain data flow records
+* Archive survey versions
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Survey Templates" icon="file-lines">
+    Standard questionnaire formats
+  </Card>
+  <Card title="Data Collection" icon="tablet">
+    Mobile survey tools
+  </Card>
+  <Card title="Protocols" icon="chart-column">
+    Impact assessment methods
+  </Card>
+  <Card title="Integration Guide" icon="link" href="/platforms/Emerging/stove-use-monitoring">
+    Cross-validation with SUMs
+  </Card>
+</CardGroup>
+
+## Related Guides
+
+<CardGroup>
+  <Card title="Household Monitoring" icon="house" href="/platforms/Emerging/household-monitoring">
+    Track complete household transitions
+  </Card>
+  <Card title="Stove Use Monitoring" icon="temperature-three-quarters" href="/platforms/Emerging/stove-use-monitoring">
+    Validate with sensor data
+  </Card>
+  <Card title="Kitchen Performance Tests" icon="flask" href="/platforms/Emerging/kpt">
+    Measure fuel consumption
+  </Card>
+  <Card title="Household Reporting" icon="file-chart-column" href="/platforms/Emerging/household-reporting">
+    Generate comprehensive reports
+  </Card>
+</CardGroup>

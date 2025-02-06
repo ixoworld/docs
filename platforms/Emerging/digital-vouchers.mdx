@@ -1,0 +1,243 @@
+---
+title: 'Digital Vouchers'
+icon: 'ticket'
+description: 'Create and manage digital vouchers for Mitigation Activity benefit transfers'
+---
+
+## Overview
+
+Digital vouchers enable households to receive benefits for verified emission reductions through a secure blockchain-based system. These vouchers (CARBON credit tokens) can be used to purchase approved products from authorized suppliers.
+
+<Tip>
+  Digital vouchers are issued as CARBON credit tokens using the EIP1155 standard, with embedded attributes linking them to verified emission reduction certificates.
+</Tip>
+
+<img alt="Hero Dark" className="hidden dark:block" src="/images/voucher-dark.png" />
+<img alt="Hero Light" className="block dark:hidden" src="/images/voucher-light.png" />
+
+## Key Actors
+
+<CardGroup>
+  <Card title="Household Beneficiaries" icon="house">
+    Receive and spend CARBON credit tokens for emission reductions
+  </Card>
+  
+  <Card title="Suppliers" icon="store">
+    Accept vouchers and submit verifiable claims
+  </Card>
+  
+  <Card title="Implementers" icon="gear">
+    Manage emission reduction projects and ITMO conversions
+  </Card>
+  
+  <Card title="Regulators" icon="building-government">
+    Monitor and approve mitigation activities
+  </Card>
+</CardGroup>
+
+## Voucher Lifecycle
+
+### 1. Issuance
+
+<CodeGroup>
+```bash Issue Voucher
+curl -X POST https://api.emerging.eco/v1/vouchers/issue \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "recipientDid": "did:ixo:household/123",
+    "emissionCertificateId": "CERT-456",
+    "value": 100.00,
+    "attributes": {
+      "batchId": "BATCH-789",
+      "issuanceDate": "2024-03-15",
+      "expiryDate": "2024-12-31"
+    }
+  }'
+```
+
+```python
+from emerging import Client
+
+client = Client('YOUR_API_KEY')
+voucher = client.vouchers.issue(
+    recipient_did="did:ixo:household/123",
+    emission_certificate_id="CERT-456",
+    value=100.00,
+    attributes={
+        "batch_id": "BATCH-789",
+        "issuance_date": "2024-03-15",
+        "expiry_date": "2024-12-31"
+    }
+)
+```
+</CodeGroup>
+
+### 2. Redemption
+
+<CodeGroup>
+```bash Redeem Voucher
+curl -X POST https://api.emerging.eco/v1/vouchers/redeem \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "voucherId": "VCHR-123",
+    "supplierDid": "did:ixo:supplier/456",
+    "amount": 50.00,
+    "productId": "PROD-789"
+  }'
+```
+
+```python
+from emerging import Client
+
+client = Client('YOUR_API_KEY')
+redemption = client.vouchers.redeem(
+    voucher_id="VCHR-123",
+    supplier_did="did:ixo:supplier/456",
+    amount=50.00,
+    product_id="PROD-789"
+)
+```
+</CodeGroup>
+
+### 3. Claim Submission
+
+<CodeGroup>
+```bash Submit Claim
+curl -X POST https://api.emerging.eco/v1/claims \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "redemptionId": "REDM-123",
+    "verifiableCredential": {
+      "type": "ProductDeliveryCredential",
+      "proof": "..."
+    }
+  }'
+```
+
+```python
+from emerging import Client
+
+client = Client('YOUR_API_KEY')
+claim = client.claims.submit(
+    redemption_id="REDM-123",
+    verifiable_credential={
+        "type": "ProductDeliveryCredential",
+        "proof": "..."
+    }
+)
+```
+</CodeGroup>
+
+## Token Conversion Flow
+
+<Steps>
+  <Step title="CARBON → USDC">
+    Suppliers make claims to convert received CARBON tokens to USDC through the liquidity pool
+  </Step>
+  <Step title="USDC → Local Currency">
+    Suppliers convert USDC to local currency via payment processors
+  </Step>
+  <Step title="USDC → CARBON">
+    Implementers swap USDC for CARBON tokens through the liquidity pool
+  </Step>
+  <Step title="CARBON → ITMO">
+    Implementers convert CARBON tokens to ITMO claims with on-chain transfer proofs
+  </Step>
+  <Step title="ITMO → Fiat">
+    Implementers convert ITMO claims and transfer prooofs to ITMO Certificates through National Registy
+    Implementers receive fiat payments for ITMO certificates through Mitigation Outcome Purchase Agreements (MOPA)
+  </Step>
+  <Step title="Fiat → USDC">
+    Implementers convert fiat payments to USDC through a regulated exchange operator (Circle)
+  </Step>
+</Steps>
+
+## Validation Rules
+
+<AccordionGroup>
+  <Accordion title="Issuance Rules">
+    * Must have valid emission reduction certificate
+    * Recipient must be registered household
+    * Value must match verified reduction amount
+  </Accordion>
+
+  <Accordion title="Redemption Rules">
+    * Voucher must be active and non-expired
+    * Supplier must be authorized
+    * Amount must not exceed available balance
+    * Product must be approved for scheme
+  </Accordion>
+
+  <Accordion title="Claim Rules">
+    * Must include verifiable delivery proof
+    * Must align with monitoring plan
+    * Must be submitted within time limit
+  </Accordion>
+</AccordionGroup>
+
+## Response Format
+
+```json
+{
+  "id": "VCHR-123",
+  "status": "active",
+  "recipientDid": "did:ixo:household/123",
+  "emissionCertificateId": "CERT-456",
+  "value": 100.00,
+  "remainingBalance": 50.00,
+  "attributes": {
+    "batchId": "BATCH-789",
+    "issuanceDate": "2024-03-15",
+    "expiryDate": "2024-12-31"
+  }
+}
+```
+
+## Error Codes
+
+<ResponseField name="400" type="error">
+  Invalid parameters or validation failure
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Unauthorized access or invalid credentials
+</ResponseField>
+
+<ResponseField name="403" type="error">
+  Forbidden operation (e.g., unauthorized supplier)
+</ResponseField>
+
+<ResponseField name="404" type="error">
+  Resource not found
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Conflict with existing state
+</ResponseField>
+
+## Security Considerations
+
+<Warning>
+  Never expose API keys or private keys in client-side code. Always use secure server-side implementations for token conversions and claims processing.
+</Warning>
+
+* All transactions are recorded on the Impact Hub blockchain
+* Multi-party controls govern the liquidity pool
+* Strong authentication required for supplier applications
+* Compliance with Article 6.2 ITMO regulations
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Supplier Integration" icon="store" href="/guides/supplier-integration">
+    Set up merchant integration
+  </Card>
+  
+  <Card title="Monitoring Guide" icon="chart-line" href="/guides/monitoring">
+    Learn about verification and monitoring
+  </Card>
+  
+  <Card title="API Reference" icon="book" href="/api-reference/vouchers">
+    View complete API documentation
+  </Card>
+</CardGroup>

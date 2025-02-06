@@ -1,0 +1,105 @@
+---
+title: 'Blocksync GraphQL API'
+description: 'Query and interact with the IXO blockchain using the Blocksync GraphQL API'
+---
+
+
+
+<Tip>
+  The Blocksync GraphQL API provides a flexible interface to query blockchain data, filter information, and interact with IXO's decentralized features.
+</Tip>
+
+## Overview
+
+The Blocksync GraphQL API enables developers to query blockchain data and interact with decentralized entities through a flexible, type-safe interface. The API supports querying features such as bonds, claims, entities, and other blockchain data.
+
+## Key Components
+
+<CardGroup>
+  <Card title="Scalars" icon="ruler">
+    Custom scalar types like `BigFloat` for high-precision values
+  </Card>
+  <Card title="Filters" icon="filter">
+    Input filters for applying logical conditions when querying data
+  </Card>
+  <Card title="Core Types" icon="cube">
+    Entity definitions for bonds, claims, and other blockchain objects
+  </Card>
+  <Card title="Queries" icon="magnifying-glass">
+    Methods to fetch and filter blockchain data
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+### Playgrounds
+
+Test your queries using our GraphQL playgrounds:
+
+- Production: [https://blocksync-graphql.ixo.earth/graphiql](https://blocksync-graphql.ixo.earth/graphiql)
+- Testnet: [https://testnet-blocksync-graphql.ixo.earth/graphiql](https://testnet-blocksync-graphql.ixo.earth/graphiql)
+- Devnet: [https://devnet-blocksync-graphql.ixo.earth/graphiql](https://devnet-blocksync-graphql.ixo.earth/graphiql)
+
+### Core Repositories
+
+The API is powered by two main repositories:
+- [ixo-blocksync-core](https://github.com/ixofoundation/ixo-blocksync-core)
+- [ixo-blocksync](https://github.com/ixofoundation/ixo-blocksync)
+
+## Use Cases
+
+<CardGroup>
+  <Card title="Data Queries" icon="database">
+    Access information about bonds, claims, and entities
+  </Card>
+  <Card title="Financial Operations" icon="money-bill">
+    Handle high-precision calculations for token economics
+  </Card>
+  <Card title="Entity Management" icon="users">
+    Query and filter decentralized entity data
+  </Card>
+</CardGroup>
+
+## Schema Components
+
+### Scalars
+
+The API provides custom scalar types for precise data handling:
+
+- `BigFloat`: High-precision numeric values
+- `JSON`: Complex data structures
+- `DateTime`: Timestamp values
+
+### Filters
+
+Query filters allow precise data retrieval:
+
+```graphql
+input BigFloatFilter {
+  eq: BigFloat
+  gt: BigFloat
+  gte: BigFloat
+  lt: BigFloat
+  lte: BigFloat
+  neq: BigFloat
+}
+```
+
+### Available Queries
+
+The API currently supports read-only operations through queries. No mutations are available.
+
+<Tip>
+  All queries support filtering and pagination for efficient data retrieval.
+</Tip>
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Query Examples" icon="code" href="/api-docs/blocksync-api/examples">
+    Learn through practical examples
+  </Card>
+  <Card title="Schema Reference" icon="book" href="/api-docs/blocksync-api/schema">
+    Explore the complete schema
+  </Card>
+</CardGroup>
