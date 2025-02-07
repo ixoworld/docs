@@ -3,12 +3,13 @@ title: "Cognitive Digital Twins"
 description: "Build and manage cognitive digital twin systems for optimizing real-world systems and processes"
 ---
 
-<Note>
-  The IXO Spatial Web platform uses a systems-thinking approach where each physical or conceptual component is represented as a Digital Entity with its own Domain. Clean cooking systems serve as a practical example throughout this guide.
-</Note>
+<Tip>
+  The IXO Spatial Web platform implements a whole-systems approach in which each physical or conceptual entity is represented as a Digital Twin Domain within a graph of inter-connected domains. Clean cooking systems serve as a practical example throughout this guide.
+</Tip>
 
-## Twin Types
-
+## Digital Twin Domains
+Different classes of entities have unique configurations of properties. For instance, an Organisational Domain always contains Membership Groups as Sub-domains.
+### Canonical Domain Classes
 <CardGroup>
   <Card title="Physical Twins" icon="microchip">
     Digital representations of physical devices and sensors (e.g., cooking stoves, IoT monitors, and tracked inventory)
@@ -22,7 +23,7 @@ description: "Build and manage cognitive digital twin systems for optimizing rea
     Digital representation of the networks of relationships and interactions between real-world entities
   </Card>
 
-  <Card title="Oracle Twins" icon="robot">
+  <Card title="Oracle Twins" icon="brain">
     AI-enabled agentic services performing evaluations, verification, and intelligent automations
   </Card>
 </CardGroup>
@@ -97,23 +98,23 @@ description: "Build and manage cognitive digital twin systems for optimizing rea
   </Accordion>
 
   <Accordion title="Example: Clean Cooking">
-    * Project developer implements cooking program
+    * `Organisation` implements a `Project`
 
-    * Program generates stove installations
+    * `Project` distributes cookstove `Assets` and Fuel
 
-    * Stoves produce usage data
+    * `Assets produce` usage data based on a `Protocol`
 
-    * Oracles verify emission reductions
+    * `Oracles` verify Claims according to the `Protocol`
 
-    * Verified data becomes carbon credits
+    * Carbon Credit `Assets` are minted with Verifiable Credentials
   </Accordion>
 </AccordionGroup>
 
 ## Using Protocols
 
-<Note>
+<Tip>
   Protocols are templates that define standard properties and relationships for specific entity types. They can be customized for any domain.
-</Note>
+</Tip>
 
 ### Protocol Structure
 
@@ -174,7 +175,7 @@ description: "Build and manage cognitive digital twin systems for optimizing rea
     Create custom protocols
   </Card>
 
-  <Card title="Oracle Guide" icon="robot">
+  <Card title="Oracle Guide" icon="brain">
     Implement verification systems
   </Card>
 

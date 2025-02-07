@@ -1,0 +1,454 @@
+---
+title: "MultiClient SDK"
+description: "Build advanced Spatial Web client applications with interchain blockchain networks, data matrix integration, and AI oracles"
+---
+
+<Tip>
+  The IXO MultiClient SDK provides a unified interface for building Spatial Web client applications that leverage interchain networks, decentralized data matrix storage, and AI-powered oracles for verifiable digital twins.
+</Tip>
+
+## Key Features
+
+<CardGroup>
+  <Card title="Cognitive Digital Twins" icon="globe">
+    Operate digital domains of real-world systems
+  </Card>
+
+  <Card title="Interchain Networks" icon="network-wired">
+    Connects IXO Protocol networks with most other blockchains
+  </Card>
+
+  <Card title="Matrix Data Nodes" icon="database">
+    Encrypts data in sovereign decentralised stores, with secure messaging
+  </Card>
+
+  <Card title="AI Oracles" icon="sparkles" href="Guides/ixo-oracles-architecture">
+    Provide intelligent automations, data verification, with agents and  causal AI services
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+npm install @ixo/impactxclient-sdk
+# or
+yarn add @ixo/impactxclient-sdk
+```
+
+## Quick Start
+
+### Matrix Client
+
+<CodeGroup>
+  ```typescript Matrix Example
+  import { createMatrixClient } from "@ixo/impactxclient-sdk";
+
+  // Initialize matrix client
+  const client = await createMatrixClient({
+    baseUrl: "https://matrix.ixo.world",
+    accessToken: "YOUR_TOKEN"
+  });
+
+  // Create data room
+  const room = await client.createRoom({
+    name: "Digital Twin Data",
+    encryption: true
+  });
+
+  // Store encrypted data
+  await client.sendEvent(room.roomId, "m.room.message", {
+    msgtype: "m.data",
+    body: encryptedData
+  });
+  ```
+
+  ```typescript Query Chain
+  import { createQueryClient } from "@ixo/impactxclient-sdk";
+
+  // Initialize query client
+  const client = await createQueryClient(RPC_ENDPOINT);
+
+  // Query digital twin Entity Domains
+  const entity = await client.ixo.entity.v1beta1.entityList({
+    type: "Asset"
+  });
+  ```
+</CodeGroup>
+
+### Oracle Integration
+
+<CodeGroup>
+  ```typescript Oracle Verification
+  import { createOracleClient } from "@ixo/impactxclient-sdk";
+
+  // Initialize oracle client
+  const oracle = await createOracleClient({
+    did: "did:ixo:oracle/123",
+    endpoint: "https://oracle.ixo.world"
+  });
+
+  // Verify digital twin data
+  const verification = await oracle.verify({
+    twinId: "did:ixo:twin/456",
+    data: twinData,
+    context: spatialContext
+  });
+  ```
+
+  ```typescript Spatial Context
+  // Get spatial context
+  const context = await oracle.getSpatialContext({
+    latitude: 51.5074,
+    longitude: -0.1278,
+    precision: 6
+  });
+
+  // Verify location claim
+  const locationVerification = await oracle.verifyLocation({
+    claim: locationClaim,
+    context: context
+  });
+  ```
+</CodeGroup>
+
+## Authentication
+
+### SignX Integration
+
+<Tip>
+  SignX provides secure authentication and key management for Spatial Web applications.
+</Tip>
+
+<CodeGroup>
+  ```typescript SignX Auth
+  import { SignX } from "@ixo/impactxclient-sdk";
+
+  // Initialize SignX client
+  const signx = new SignX({
+    serviceEndpoint: "https://signx.ixo.world",
+    appId: "YOUR_APP_ID"
+  });
+
+  // Authenticate user
+  const auth = await signx.authenticate({
+    challenge: "random_challenge",
+    chainId: "impact-hub-1"
+  });
+
+  // Get signing capabilities
+  const signer = await signx.getSigner(auth.sessionId);
+  ```
+
+  ```typescript Key Management
+  // Create key pair
+  const keyPair = await signx.createKeyPair({
+    type: "Ed25519",
+    controller: "did:ixo:user/123"
+  });
+
+  // Sign message
+  const signature = await signer.sign(message);
+
+  // Verify signature
+  const isValid = await signx.verify({
+    message,
+    signature,
+    publicKey: keyPair.publicKey
+  });
+  ```
+</CodeGroup>
+
+## The Spatial Web Stack
+
+### Core Components
+
+<AccordionGroup>
+  <Accordion title="Data Matrix">
+    * Encrypted data rooms
+
+      ```typescript
+      // Create encrypted room
+      const room = await matrix.createRoom({
+        name: "Twin Data",
+        encryption: true,
+        visibility: "private"
+      });
+
+      // Set room permissions
+      await matrix.setRoomPermissions(room.roomId, {
+        readAccess: ["did:ixo:oracle/123"],
+        writeAccess: ["did:ixo:device/456"]
+      });
+      ```
+
+    * Secure messaging
+
+      ```typescript
+      // Send encrypted message
+      await matrix.sendMessage(room.roomId, {
+        type: "m.room.message",
+        content: {
+          msgtype: "m.text",
+          body: encryptedData
+        }
+      });
+      ```
+
+    * File storage
+
+      ```typescript
+      // Store file
+      const uri = await matrix.uploadFile(file, {
+        encryption: true,
+        contentType: "application/json"
+      });
+      ```
+  </Accordion>
+
+  <Accordion title="Oracle Services">
+    * AI-powered verification Oracle
+
+      ```typescript
+      // Configure oracle
+      const oracle = await Oracle.create({
+        type: "VerificationOracle",
+        model: "causal-inference-v1",
+        confidence: 0.95
+      });
+
+      // Run verification
+      const result = await oracle.verify({
+        data: twinData,
+        context: spatialContext,
+        rules: verificationRules
+      });
+      ```
+
+    * Spatial awareness
+
+      ```typescript
+      // Get location context
+      const context = await oracle.getSpatialContext({
+        coordinates: [51.5074, -0.1278],
+        precision: 6,
+        timestamp: Date.now()
+      });
+      ```
+
+    * Predictive analytics
+
+      ```typescript
+      // Run prediction
+      const forecast = await oracle.predict({
+        twinId: "did:ixo:twin/456",
+        metrics: ["usage", "performance"],
+        horizon: "7d"
+      });
+      ```
+  </Accordion>
+
+  <Accordion title="Digital Twins">
+    * Digital twin management
+
+      ```typescript
+      // Create digital twin Domain
+      const twin = await Entity.create({
+        type: "Asset",
+        controller: "did:ixo:org/123",
+        properties: {
+          model: "device-v1",
+          serialNumber: "SN123"
+        }
+      });
+      ```
+
+    * Spatial relationships
+
+      ```typescript
+      // Define relationships
+      await entity.addRelationships([{
+        type: "contains",
+        target: "did:ixo:twin/789",
+        properties: {
+          startDate: Date.now()
+        }
+      }]);
+      ```
+
+    * State transitions
+
+      ```typescript
+      // Update twin state
+      await entity.transition({
+        from: "active",
+        to: "maintenance",
+        evidence: {
+          reason: "scheduled",
+          timestamp: Date.now()
+        }
+      });
+      ```
+  </Accordion>
+
+  <Accordion title="Claims Module">
+    * Verifiable credentials
+
+      ```typescript
+      // Issue credential
+      const credential = await Claims.issue({
+        type: "VerifiableCredential",
+        subject: "did:ixo:twin/456",
+        claims: {
+          performance: "certified",
+          rating: 5
+        }
+      });
+      ```
+
+    * Location proofs
+
+      ```typescript
+      // Create location proof
+      const proof = await Claims.createLocationProof({
+        twinId: "did:ixo:twin/456",
+        location: spatialContext,
+        timestamp: Date.now()
+      });
+      ```
+
+    * Oracle attestations
+
+      ```typescript
+      // Get oracle attestation
+      const attestation = await Claims.getAttestation({
+        type: "DataVerification",
+        oracle: "did:ixo:oracle/123",
+        evidence: verificationResult
+      });
+      ```
+  </Accordion>
+</AccordionGroup>
+
+### Blockchain Modules
+
+```typescript
+import { cosmos } from "@ixo/impactxclient-sdk";
+
+// Bank module
+const bankMsg = cosmos.bank.v1beta1.MsgSend.fromPartial({/*...*/});
+
+// Staking module
+const stakingMsg = cosmos.staking.v1beta1.MsgDelegate.fromPartial({/*...*/});
+
+// Gov module
+const govMsg = cosmos.gov.v1beta1.MsgSubmitProposal.fromPartial({/*...*/});
+```
+
+## Smart Contract Integration
+
+### Contract Deployment
+
+```typescript
+import { cosmwasm, customQueries } from "@ixo/impactxclient-sdk";
+
+// Get contract code
+const codes = customQueries.contract.getContractCodes("devnet", "ixo");
+const code = codes.find(c => c.name === "ixo1155");
+
+// Instantiate contract
+const instantiateMsg = {
+  typeUrl: "/cosmwasm.wasm.v1.MsgInstantiateContract",
+  value: cosmwasm.wasm.v1.MsgInstantiateContract.fromPartial({
+    sender: myAddress,
+    admin: myAddress,
+    codeId: code.code,
+    label: `${myAddress}-contract-${code.code}`,
+    msg: new TextEncoder().encode(JSON.stringify({
+      minter: myAddress
+    })),
+    funds: [{
+      denom: "uixo",
+      amount: "1"
+    }]
+  })
+};
+```
+
+### Contract Interaction
+
+```typescript
+// Execute contract message
+const executeMsg = {
+  typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+  value: cosmwasm.wasm.v1.MsgExecuteContract.fromPartial({
+    sender: myAddress,
+    contract: contractAddress,
+    msg: new TextEncoder().encode(JSON.stringify({
+      batch_mint: {
+        to: recipient,
+        batch: [[tokenId, "1000", "uri"]]
+      }
+    })),
+    funds: [{
+      denom: "uixo",
+      amount: "1"
+    }]
+  })
+};
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid message format or parameters
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Unauthorized - check wallet connection
+</ResponseField>
+
+<ResponseField name="500" type="error">
+  Blockchain node error
+</ResponseField>
+
+## Best Practices
+
+<Tip>
+  Follow these guidelines for robust application development
+</Tip>
+
+### Security
+
+* Validate all user inputs
+
+* Use secure key management
+
+* Implement proper error handling
+
+* Monitor transaction status
+
+### Performance
+
+* Batch transactions when possible
+
+* Implement proper caching
+
+* Handle offline scenarios
+
+* Monitor gas usage
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Components Guide" icon="cubes">
+    Learn about IXO Spatial Web components
+  </Card>
+
+  <Card title="Smart Contracts Guide" icon="file-code">
+    Deploy smart contracts
+  </Card>
+
+  <Card title="Query Guide" icon="magnifying-glass">
+    Using GraphQL to query the Blocksync indexing database  &#x20;
+  </Card>
+</CardGroup>

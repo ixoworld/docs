@@ -1,0 +1,92 @@
+---
+title: 'SDG Monitoring'
+icon: 'bullseye-arrow'
+description: 'Technical guide for implementing Sustainable Development Goal (SDG) monitoring using the Emerging Household Energy'
+---
+
+The Emerging Household Energy uses decentralized Measurement, Reporting, and Verification (dMRV) to track SDG indicators through:
+
+- Decentralized Identifiers (DIDs) for entities
+- Verifiable claims and credentials
+- Oracle-based validation
+- Ex-post and ex-ante data collection
+
+## Core Components
+
+### Entity DIDs
+Each participant (household, business, project) has a unique DID that links to their claims and credentials.
+
+### Claims & Credentials
+- **Claims**: Data records about an entity (e.g., fuel purchases, survey responses)
+- **Credentials**: Verified claims that are cryptographically signed and stored on the ledger
+
+### Oracles
+Validation agents that verify claims using:
+- External APIs
+- Sensor data
+- Survey forms
+- Partner databases
+
+### Data Collection Methods
+- **Ex-Ante**: Baseline data collected before intervention
+- **Ex-Post**: Follow-up data collected at defined intervals
+
+## SDG Implementation Guide
+
+### SDG 1: No Poverty
+**Indicator**: Annual household fuel cost savings
+
+<Tip>
+Requires tracking baseline vs. current fuel expenditure through validated purchase claims
+</Tip>
+
+**Data Flow**:
+1. Register household DID
+2. Record fuel purchase claims
+3. Oracle validates payments
+4. Issue savings credentials
+
+### SDG 7: Clean Energy Access
+**Indicator**: Modern cooking device adoption rate
+
+**Data Flow**:
+1. Log fuel purchase claims
+2. Calculate usage thresholds
+3. Validate through oracles
+4. Generate adoption credentials
+
+### SDG 13: Climate Action
+**Indicator**: GHG emission reductions
+
+**Data Flow**:
+1. Collect device usage data
+2. Validate emission calculations
+3. Issue ITMO credentials
+4. Maintain audit trail
+
+## Security
+
+The platform ensures data integrity through:
+- Cryptographic signatures on all claims
+- Immutable ledger records
+- Role-based access control
+- Privacy-preserving data handling
+
+## Integration Points
+
+<CardGroup>
+<Card title="Oracle APIs" icon="plug">
+  Configure validation rules and data sources for each SDG indicator
+</Card>
+
+<Card title="Data Submission" icon="arrow-up-from-bracket">
+  Integrate user apps, IoT devices, and partner systems
+</Card>
+
+<Card title="Registry Server" icon="chart-line" href="/platforms/Emerging/registry-server">
+  API interface to get SDG reporting data
+</Card>
+<Card title="Protocols" icon="ruler" href="/platforms/Emerging/protocols">
+  Templates, Workflows and Rules
+</Card>
+</CardGroup>

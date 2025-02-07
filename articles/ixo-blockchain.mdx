@@ -1,4 +1,431 @@
 ---
-title: Work in Progress
-description: "This page is under development. Please check back later"
+title: 'IXO Blockchain'
+description: 'Sovereign blockchain networks for the Spatial Web'
 ---
+
+<Tip>
+  The IXO Blockchain is built on Interchain standards and the Cosmos SDK to create secure and scalable networks for the Spatial Web.
+</Tip>
+
+## Overview
+
+IXO Blockchain networks provide core infrastructure for:
+- Decentralized Identity
+- Cognitive Digital Twins
+- Verifiable Claims and Credentials
+- Intelligent Oracles
+- Adaptive Financing
+
+// todo: add more details
+
+- Digital Claims Processing
+- Digital Financing
+- Verifiable Data Assets
+- Digital asset management
+- 
+- Token economics
+
+## Architecture
+
+<AccordionGroup>
+  <Accordion title="Core Modules" icon="cube">
+    ```mermaid
+    flowchart TB
+      A[Cosmos SDK] -->|Base| B[IXO Modules]
+      B --> C[Claims]
+      B --> D[Entities]
+      B --> E[Bonds]
+      B --> F[Tokens]
+      B --> G[Oracles]
+    ```
+    - Custom IXO modules
+    - Cosmos SDK integration
+    - IBC compatibility
+    - Module interactions
+  </Accordion>
+
+  <Accordion title="Consensus Layer" icon="network-wired">
+    ```mermaid
+    flowchart LR
+      A[Validators] -->|Tendermint| B[Consensus]
+      B -->|Blocks| C[State Machine]
+      C -->|Updates| D[State]
+      D -->|Queries| E[Clients]
+    ```
+    - Tendermint BFT
+    - Validator network
+    - Block production
+    - State management
+  </Accordion>
+</AccordionGroup>
+
+## Core Modules
+
+<CardGroup>
+  <Card title="Claims Module" icon="file-check">
+    - Impact claims management
+    - Verification workflows
+    - Claim templates
+    - Evaluation processes
+  </Card>
+
+  <Card title="Entities Module" icon="id-card">
+    - DID-based identities
+    - Entity relationships
+    - Attribute management
+    - Verification methods
+  </Card>
+
+  <Card title="Bonds Module" icon="link">
+    - Token bonding curves
+    - Liquidity pools
+    - Staking mechanisms
+    - Reward distribution
+  </Card>
+
+  <Card title="Tokens Module" icon="coins">
+    - Asset management
+    - Token minting/burning
+    - Transfer rules
+    - Access controls
+  </Card>
+</CardGroup>
+
+## Transaction Types
+
+<AccordionGroup>
+  <Accordion title="Claims Transactions" icon="file-signature">
+    ```typescript
+    interface CreateClaimTx {
+      type: string;
+      data: any;
+      proof: string;
+      context: string[];
+    }
+
+    interface EvaluateClaimTx {
+      claimId: string;
+      status: "approved" | "rejected";
+      proof: string;
+    }
+    ```
+    Common claim operations and their parameters
+  </Accordion>
+
+  <Accordion title="Entity Transactions" icon="user">
+    ```typescript
+    interface CreateEntityTx {
+      did: string;
+      type: string;
+      credentials: VerifiableCredential[];
+    }
+
+    interface UpdateEntityTx {
+      did: string;
+      updates: EntityUpdate[];
+      proof: string;
+    }
+    ```
+    Entity management transactions
+  </Accordion>
+
+  <Accordion title="Bond Transactions" icon="chart-line">
+    ```typescript
+    interface CreateBondTx {
+      token: string;
+      function: BondingFunction;
+      reserve: Coin[];
+    }
+
+    interface BuyBondTx {
+      bondId: string;
+      amount: Coin;
+      maxPrice: string;
+    }
+    ```
+    Bond and token operations
+  </Accordion>
+</AccordionGroup>
+
+## State Management
+
+<Steps>
+  1. **Transaction Processing**
+     - Signature validation
+     - State transition checks
+     - Module handlers
+     - Event emission
+
+  2. **State Updates**
+     - IAVL+ tree updates
+     - State versioning
+     - Snapshot management
+     - Pruning policies
+
+  3. **Query Handling**
+     - State queries
+     - Proof verification
+     - Historical queries
+     - Filtered searches
+
+  4. **Event Processing**
+     - Event subscription
+     - Webhook delivery
+     - Event indexing
+     - Log management
+</Steps>
+
+## Network Participation
+
+<CardGroup>
+  <Card title="Validators" icon="server">
+    - Block production
+    - Transaction validation
+    - Consensus participation
+    - Network security
+  </Card>
+
+  <Card title="Delegators" icon="users">
+    - Token staking
+    - Validator selection
+    - Reward earning
+    - Governance participation
+  </Card>
+
+  <Card title="Clients" icon="desktop">
+    - Transaction submission
+    - State queries
+    - Event monitoring
+    - Proof verification
+  </Card>
+
+  <Card title="Relayers" icon="arrows-rotate">
+    - IBC packet relay
+    - Cross-chain communication
+    - Protocol bridging
+    - Message verification
+  </Card>
+</CardGroup>
+
+## Blockchain Interfaces
+
+<Tip>
+  The IXO blockchain provides three primary interfaces for interacting with nodes: CLI, gRPC, and REST. While all interfaces support state queries, only CLI can generate and sign transactions directly.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Command-Line Interface (CLI)" icon="terminal">
+    The CLI provides direct node interaction through the `ixod` binary, which serves as both node and application client.
+
+    ```bash
+    # View all commands
+    ixod --help
+
+    # View transaction commands
+    ixod tx --help
+
+    # View query commands
+    ixod query --help
+    ```
+
+    The CLI is particularly useful for:
+    - Node management
+    - Transaction generation and signing
+    - State queries
+    - Network configuration
+  </Accordion>
+
+  <Accordion title="gRPC Interface" icon="server">
+    gRPC enables programmatic blockchain interaction using protocol buffers.
+
+    ```bash
+    # List available services
+    grpcurl -plaintext localhost:9090 list
+
+    # Query account balances
+    grpcurl \
+        -plaintext \
+        -d '{"address":"<address>"}' \
+        localhost:9090 \
+        cosmos.bank.v1beta1.Query/AllBalances
+    ```
+
+    Key features:
+    - High-performance RPC framework
+    - Strong typing with protocol buffers
+    - Language-agnostic interface
+    - Streaming capabilities
+  </Accordion>
+
+  <Accordion title="REST Interface" icon="globe">
+    REST endpoints are available through gRPC Gateway, providing HTTP access to all gRPC services.
+
+    ```bash
+    # Query account balances
+    curl \
+        -X GET \
+        -H "Content-Type: application/json" \
+        http://localhost:1317/cosmos/bank/v1beta1/balances/<address>
+    ```
+
+    Benefits include:
+    - Familiar HTTP/REST paradigm
+    - OpenAPI/Swagger documentation
+    - Easy integration with web applications
+    - Browser-friendly interface
+  </Accordion>
+</AccordionGroup>
+
+## Interface Comparison
+
+<CardGroup>
+  <Card title="CLI Benefits" icon="terminal">
+    - Complete node control
+    - Transaction generation & signing
+    - Direct state queries
+    - Local key management
+  </Card>
+
+  <Card title="gRPC Benefits" icon="bolt">
+    - High performance
+    - Bi-directional streaming
+    - Strong typing
+    - Code generation
+  </Card>
+
+  <Card title="REST Benefits" icon="cloud">
+    - Web compatibility
+    - Simple HTTP requests
+    - Swagger documentation
+    - Broad tool support
+  </Card>
+</CardGroup>
+
+<Steps>
+  1. **Choose Interface**
+     - CLI for direct node interaction
+     - gRPC for programmatic integration
+     - REST for web applications
+
+  2. **Configure Access**
+     - Enable required interfaces
+     - Set security parameters
+     - Configure endpoints
+     - Manage permissions
+
+  3. **Implement Integration**
+     - Select client libraries
+     - Handle authentication
+     - Manage connections
+     - Process responses
+
+  4. **Monitor Usage**
+     - Track performance
+     - Handle errors
+     - Monitor availability
+     - Optimize requests
+</Steps>
+
+## Integration Guide
+
+<CodeGroup>
+  ```typescript Node Integration
+  import { IxoClient } from '@ixo/client-sdk';
+
+  const client = new IxoClient({
+    rpcUrl: 'https://rpc.emerging.eco',
+    chainId: 'impact-hub-1'
+  });
+
+  // Create and sign transaction
+  const tx = await client.createTx({
+    messages: [createClaimMsg],
+    memo: 'Create impact claim'
+  });
+
+  const result = await client.signAndBroadcast(tx);
+  ```
+
+  ```python Python Integration
+  from ixo_sdk import IxoClient
+
+  client = IxoClient(
+      rpc_url='https://rpc.emerging.eco',
+      chain_id='impact-hub-1'
+  )
+
+  // Create and sign transaction
+  tx = client.create_tx(
+      messages=[create_claim_msg],
+      memo='Create impact claim'
+  )
+
+  result = client.sign_and_broadcast(tx)
+  ```
+
+  ```go Go Integration
+  import "github.com/ixofoundation/ixo-sdk-go"
+
+  client := ixo.NewClient(
+      "https://rpc.emerging.eco",
+      "impact-hub-1",
+  )
+
+  // Create and sign transaction
+  tx := client.CreateTx(
+      []sdk.Msg{createClaimMsg},
+      "Create impact claim",
+  )
+
+  result := client.SignAndBroadcast(tx)
+  ```
+</CodeGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Transaction Handling" icon="paper-plane">
+    - Proper message construction
+    - Gas estimation
+    - Error handling
+    - Retry strategies
+  </Accordion>
+
+  <Accordion title="Security" icon="shield-check">
+    - Key management
+    - Signature verification
+    - Access control
+    - Rate limiting
+  </Accordion>
+
+  <Accordion title="Performance" icon="gauge">
+    - Batch processing
+    - Query optimization
+    - Cache utilization
+    - Connection management
+  </Accordion>
+</AccordionGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-reference/blockchain">
+    Complete API documentation
+  </Card>
+  
+  <Card title="SDK Guide" icon="code" href="/spatial-web-stack/spatial-web-sdks">
+    Client library integration
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
+    Implementation examples
+  </Card>
+  
+  <Card title="GitHub" icon="github" href="https://github.com/ixofoundation/ixo-blockchain">
+    Source code and updates
+  </Card>
+</CardGroup>
+
+<Tip>
+  For technical support or questions about the IXO Blockchain, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip>

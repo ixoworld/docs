@@ -1,0 +1,306 @@
+---
+title: 'ITMO Schema'
+icon: 'brackets-curly'
+description: 'Technical specification for ITMO Verifiable Credentials schema with W3C standards compliance'
+---
+
+<Tip>
+  The ITMO Schema defines a standardized structure for Internationally Transferred Mitigation Outcomes (ITMOs) as W3C Verifiable Credentials. It combines established standards with domain-specific extensions to ensure interoperability and compliance with Article 6.2 requirements.
+</Tip>
+
+## Key Components
+
+<CardGroup>
+  <Card title="Standards Compliance" icon="certificate">
+    Built on W3C Verifiable Credentials and JSON-LD
+  </Card>
+  <Card title="Semantic Clarity" icon="language">
+    Unambiguous term definitions via JSON-LD context
+  </Card>
+  <Card title="Cryptographic Proofs" icon="shield-check">
+    Ed25519-2018 suite for tamper-evident credentials
+  </Card>
+  <Card title="Data Provenance" icon="timeline">
+    W3C PROV vocabulary for traceability
+  </Card>
+</CardGroup>
+
+## Core Structure
+
+<CodeGroup>
+```json Basic Structure
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/security/suites/ed25519-2018/v1",
+    {
+      "itmo": "https://w3id.org/article6/itmo-context.jsonld",
+      "prov": "http://www.w3.org/ns/prov#"
+    }
+  ],
+  "type": [
+    "VerifiableCredential",
+    "ITMOCredential"
+  ],
+  "id": "urn:uuid:<uuid>",
+  "issuer": "did:ixo:entity:<issuer-id>",
+  "issuanceDate": "<ISO-8601-date>",
+  "expirationDate": "<ISO-8601-date>"
+}
+```
+
+```python Python Implementation
+from emerging import CredentialBuilder
+
+# Create base credential structure
+credential = CredentialBuilder.create(
+    credential_type="ITMOCredential",
+    contexts=[
+        "https://www.w3.org/2018/credentials/v1",
+        "https://w3id.org/security/suites/ed25519-2018/v1",
+        {"itmo": "https://w3id.org/article6/itmo-context.jsonld"}
+    ]
+)
+
+# Add metadata
+credential.add_metadata(
+    issuer="did:ixo:entity:123",
+    issuance_date="2024-02-20T10:00:00Z",
+    expiration_date="2030-12-31T23:59:59Z"
+)
+```
+</CodeGroup>
+
+## JSON-LD Context
+
+<Tip>
+  The JSON-LD context provides semantic meaning to ITMO data, enabling unambiguous interpretation across different systems while maintaining data integrity and provenance tracking.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Core Vocabularies">
+    ```json
+    {
+      "@context": {
+        "@version": 1.1,
+        "id": "@id",
+        "type": "@type",
+        "itmo": {
+          "@id": "https://w3id.org/article6/vocab#",
+          "@prefix": true
+        },
+        "prov": "http://www.w3.org/ns/prov#"
+      }
+    }
+    ```
+
+    **Key Namespaces:**
+    - `@version`: JSON-LD version
+    - `itmo`: Carbon market vocabulary
+    - `prov`: W3C provenance terms
+  </Accordion>
+
+  <Accordion title="ITMO Terms">
+    ```json
+    {
+      "@context": {
+        "authorizationInfo": {
+          "@id": "itmo:authorizationInfo",
+          "@type": "@id"
+        },
+        "ndcQuantification": {
+          "@id": "itmo:ndcQuantification",
+          "@type": "@id"
+        },
+        "correspondingAdjustments": {
+          "@id": "itmo:correspondingAdjustments",
+          "@type": "@id"
+        }
+      }
+    }
+    ```
+
+    **Domain Terms:**
+    - Authorization details
+    - NDC metrics
+    - Adjustment records
+  </Accordion>
+
+  <Accordion title="Provenance Terms">
+    ```json
+    {
+      "@context": {
+        "wasGeneratedBy": {
+          "@id": "prov:wasGeneratedBy",
+          "@type": "@id"
+        },
+        "wasAttributedTo": {
+          "@id": "prov:wasAttributedTo",
+          "@type": "@id"
+        },
+        "startedAtTime": {
+          "@id": "prov:startedAtTime",
+          "@type": "xsd:dateTime"
+        }
+      }
+    }
+    ```
+
+    **Tracking Terms:**
+    - Generation activities
+    - Attribution entities
+    - Temporal metadata
+  </Accordion>
+</AccordionGroup>
+
+## Credential Attributes
+
+### Authorization Information
+
+```json
+{
+  "credentialSubject": {
+    "itmo:authorizationInfo": {
+      "itmo:authorizationReference": "AUTH-2024-001",
+      "itmo:cooperativeApproachDuration": "2024-01-01T00:00:00Z/2024-12-31T23:59:59Z",
+      "itmo:expectedMitigationOutcomes": {
+        "2024": 5000
+      },
+      "itmo:participatingParties": ["ZMB", "CHE"],
+      "itmo:authorizedEntities": [
+        "did:ixo:entity:project123",
+        "did:ixo:entity:verifier456"
+      ]
+    }
+  }
+}
+```
+
+### NDC Quantification
+
+```json
+{
+  "credentialSubject": {
+    "itmo:ndcQuantification": {
+      "itmo:sectors": ["Residential", "Energy"],
+      "itmo:sources": ["BiomassFuelCombustion"],
+      "itmo:ghgs": ["CO2", "CH4", "N2O"],
+      "itmo:referenceLevel": 1000,
+      "itmo:targetLevel": 800,
+      "itmo:quantificationTonnesCO2e": 200
+    }
+  }
+}
+```
+
+### Corresponding Adjustments
+
+```json
+{
+  "credentialSubject": {
+    "itmo:correspondingAdjustments": {
+      "itmo:singleYearTarget": true,
+      "itmo:multiYearTarget": false,
+      "itmo:emissionsTrajectory": [1000, 950, 900, 850, 800],
+      "itmo:annualAdjustments": [40, 40, 40, 40, 40],
+      "itmo:cumulativeAdjustment": 200
+    }
+  }
+}
+```
+
+## Validation & Proofs
+
+<AccordionGroup>
+  <Accordion title="Schema Validation">
+    ```python
+    from emerging import SchemaValidator
+
+    # Validate against JSON Schema
+    validator = SchemaValidator("itmo-vc-schema.json")
+    validation_result = validator.validate(credential)
+
+    if not validation_result.is_valid:
+        print(f"Validation errors: {validation_result.errors}")
+    ```
+  </Accordion>
+
+  <Accordion title="Cryptographic Proofs">
+    ```python
+    from emerging import ProofGenerator
+
+    # Generate Ed25519 proof
+    proof = ProofGenerator.create_proof(
+        credential,
+        key_pair=issuer_key_pair,
+        proof_type="Ed25519Signature2018",
+        verification_method="did:ixo:entity:123#key-1"
+    )
+
+    # Add proof to credential
+    credential.add_proof(proof)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Developer Best Practices
+
+### Interoperability
+* Use standard JSON-LD contexts
+* Implement full vocabulary
+* Support multiple proof types
+* Enable cross-registry exchange
+
+### Data Validation
+* Validate schema compliance
+* Check proof signatures
+* Verify credential status
+* Validate semantic constraints
+
+### Extension Points
+* Custom context terms
+* Additional proof methods
+* Enhanced provenance tracking
+* Registry-specific metadata
+
+## Implementation Guide
+
+<CardGroup>
+  <Card title="Create Credential" icon="plus">
+    1. Initialize context and type
+    2. Add credential metadata
+    3. Populate subject data
+    4. Generate and attach proof
+  </Card>
+
+  <Card title="Verify Credential" icon="check">
+    1. Validate JSON-LD structure
+    2. Check schema compliance
+    3. Verify cryptographic proof
+    4. Validate business rules
+  </Card>
+
+  <Card title="Process Credential" icon="gears">
+    1. Parse semantic data
+    2. Extract relevant claims
+    3. Process adjustments
+    4. Update registries
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup>
+  <Card title="ITMO Credentials" icon="certificate" href="/platforms/Emerging/itmo-credentials">
+    Implement credential workflows
+  </Card>
+  <Card title="Registry Integration" icon="database" href="/platforms/Emerging/registry-server">
+    Connect with carbon registries
+  </Card>
+  <Card title="dMRV Guide" icon="chart-line" href="/platforms/Emerging/digital-mrv">
+    Digital MRV implementation
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/credentials">
+    API documentation
+  </Card>
+</CardGroup>

@@ -1,0 +1,292 @@
+---
+title: 'Oracle Agent SDK'
+description: 'Build intelligent AI agents for the Spatial Web with conversational capabilities, dynamic UI components, and verifiable outputs'
+---
+
+<Tip>
+  The Oracle Agent SDK enables developers to create AI-powered oracles that can interact with users through dynamic conversational interfaces, process data in real-time, and provide verifiable attestations through IXO Protocol networks. It supports both web and mobile platforms through React integration.
+</Tip>
+
+## Key Features
+
+<CardGroup>
+  <Card title="AI Integration" icon="brain">
+    LLM-powered conversational agents with real-time message streaming
+  </Card>
+
+  <Card title="Dynamic UI" icon="window">
+    Platform-agnostic reactive component rendering for web and mobile
+  </Card>
+
+  <Card title="Verification" icon="shield-check">
+    Cryptographic proof generation for Oracle interactions
+  </Card>
+
+  <Card title="Matrix Integration" icon="network-wired">
+    Secure data rooms and real-time messaging
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+npm install @ixo/oracle-agent-sdk
+# or
+yarn add @ixo/oracle-agent-sdk
+```
+
+## Quick Start
+
+### Agent Configuration
+
+<CodeGroup>
+  ```typescript Agent Setup
+  import { createOracleAgent } from "@ixo/oracle-agent-sdk";
+
+  // Initialize agent
+  const agent = await createOracleAgent({
+    did: "did:ixo:oracle/123",
+    capabilities: ["verification", "conversation"],
+    model: "gpt-4",
+    streaming: true // Enable real-time streaming
+  });
+
+  // Configure verification rules
+  agent.setVerificationRules({
+    requiredConfidence: 0.95,
+    evidenceTypes: ["telemetry", "location"]
+  });
+  ```
+
+  ```typescript Session Management
+  // Create and manage multiple chat sessions
+  const session = await agent.createSession({
+    sessionId: "session-123",
+    context: {
+      user: "did:ixo:user/456",
+      preferences: userPrefs
+    }
+  });
+
+  // Switch between active sessions
+  await agent.setActiveSession("session-123");
+  ```
+</CodeGroup>
+
+### React Integration
+
+<CodeGroup>
+  ```typescript Web Components
+  import { useOracleChat, useMessages } from "@ixo/oracle-agent-sdk/react";
+
+  function WebChatInterface() {
+    const { messages, sendMessage, isLoading } = useOracleChat({
+      oracleId: "did:ixo:oracle/123",
+      sessionId: "session-456"
+    });
+
+    const { messageList, hasMore } = useMessages({
+      sessionId: "session-456",
+      limit: 50
+    });
+
+    return (
+      <div className="chat-container">
+        <MessageList messages={messageList} />
+        <ChatInput onSend={sendMessage} disabled={isLoading} />
+        {isLoading && <LoadingIndicator />}
+      </div>
+    );
+  }
+  ```
+
+  ```typescript Mobile Components
+  import { View, Text } from 'react-native';
+  import { useOracleChat } from "@ixo/oracle-agent-sdk/react-native";
+
+  function MobileChatInterface() {
+    const { messages, sendMessage, isLoading } = useOracleChat({
+      oracleId: "did:ixo:oracle/123",
+      sessionId: "session-456"
+    });
+
+    return (
+      <View style={styles.container}>
+        <MessageList messages={messages} />
+        <ChatInput onSend={sendMessage} />
+        {isLoading && <ActivityIndicator />}
+      </View>
+    );
+  }
+  ```
+</CodeGroup>
+
+### Dynamic UI Components
+
+```typescript
+import { OracleUI } from "@ixo/oracle-agent-sdk/ui";
+
+// Register custom components
+OracleUI.register("VerificationCard", VerificationCard);
+OracleUI.register("LocationProof", LocationProof);
+OracleUI.register("DataVisualizer", DataVisualizer);
+
+// Dynamic component resolver
+function DynamicContent({ content }) {
+  return (
+    <OracleUI.Renderer
+      content={content}
+      components={{
+        VerificationCard,
+        LocationProof,
+        DataVisualizer
+      }}
+      platform="web" // or 'mobile'
+    />
+  );
+}
+```
+
+### Verification Flow
+
+```typescript
+// Create verification session
+const session = await agent.createVerification({
+  type: "DataVerification",
+  subject: "did:ixo:entity/456",
+  context: {
+    location: spatialContext,
+    timestamp: Date.now()
+  }
+});
+
+// Process data
+const result = await session.verify(data, {
+  rules: verificationRules,
+  evidence: supportingData
+});
+
+// Generate proof
+const proof = await session.generateProof({
+  result,
+  method: "Ed25519Signature2020"
+});
+```
+
+## Hooks and Components
+
+### React Hooks
+
+<CodeGroup>
+  ```typescript Chat Hook
+  const { messages, sendMessage } = useOracleChat({
+    oracleId: "did:ixo:oracle/123"
+  });
+  ```
+
+  ```typescript Verification Hook
+  const { verify, result, isVerifying } = useOracleVerification({
+    oracleId: "did:ixo:oracle/123",
+    type: "DataVerification"
+  });
+  ```
+</CodeGroup>
+
+### UI Components
+
+```typescript
+import {
+  ChatWindow,
+  MessageList,
+  VerificationCard,
+  ProofDisplay
+} from "@ixo/oracle-agent-sdk/ui";
+
+function OracleInterface() {
+  return (
+    <ChatWindow>
+      <MessageList />
+      <VerificationCard result={verificationResult} />
+      <ProofDisplay proof={cryptographicProof} />
+    </ChatWindow>
+  );
+}
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid verification request
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Unauthorized oracle access
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Verification conflict
+</ResponseField>
+
+## Use Cases
+
+<CardGroup>
+  <Card title="AI Chat Interfaces" icon="comments">
+    Build interactive conversational experiences with real-time responses
+  </Card>
+  
+  <Card title="Dynamic Content" icon="wand-magic-sparkles">
+    Create AI-driven dynamic UI components and workflows
+  </Card>
+  
+  <Card title="Data Verification" icon="shield-check">
+    Implement secure data verification with cryptographic proofs
+  </Card>
+  
+  <Card title="Cross-Platform Apps" icon="mobile">
+    Deploy on both web and mobile platforms
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Tip>
+  Follow these guidelines for robust oracle implementation
+</Tip>
+
+### Security
+
+* Validate all inputs
+* Implement rate limiting
+* Store sensitive data in encrypted rooms
+* Monitor verification accuracy
+* Implement proper session management
+* Use secure WebSocket connections
+
+### Performance
+
+* Cache verification results
+* Implement retry logic
+* Handle offline scenarios
+* Monitor resource usage
+* Optimize message batching
+* Implement proper error boundaries
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Verification Guide" icon="shield-check">
+    Implement verification flows
+  </Card>
+
+  <Card title="UI Guide" icon="palette">
+    Build dynamic chat interfaces
+  </Card>
+
+  <Card title="Integration Guide" icon="plug">
+    Connect with AI Models
+  </Card>
+
+  <Card title="Platform Guide" icon="mobile-screen">
+    Deploy across platforms
+  </Card>
+</CardGroup>

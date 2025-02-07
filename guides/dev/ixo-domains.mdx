@@ -1,0 +1,268 @@
+---
+title: 'Entity Domains'
+description: 'Create and manage digital domains for entities in the IXO Spatial Web'
+---
+
+<Tip>
+  Entity Domains provide a standardized way to register and manage digital twins of real-world entities on the IXO blockchain, with built-in support for decentralized identity, verifiable credentials, and relationship management.
+</Tip>
+
+## Overview
+
+Entity Domains enable:
+- Decentralized identity management
+- Verifiable ownership and control
+- Service endpoint configuration
+- Resource and claim linking
+- Relationship mapping
+- Economic account management
+
+## Domain Properties
+
+<AccordionGroup>
+  <Accordion title="Core Properties" icon="cube">
+    ```typescript
+    interface DomainProperties {
+      did: string;              // Decentralized identifier
+      controller: string[];     // Domain controllers
+      type: string;            // Entity type
+      status: number;          // Domain status
+      credentials: VerifiableCredential[]; // Domain credentials
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Service Configuration" icon="gears">
+    ```typescript
+    interface Service {
+      id: string;              // Service identifier
+      type: string;           // Service type
+      serviceEndpoint: string; // Endpoint URL
+      description?: string;    // Optional description
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Linked Resources" icon="link">
+    ```typescript
+    interface LinkedResource {
+      id: string;             // Resource identifier
+      type: string;          // Resource type
+      path: string;          // Resource location
+      proof?: string;        // Optional cryptographic proof
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Domain Registration
+
+<Steps>
+  1. **Create Domain Document**
+     - Specify entity type and class
+     - Define controllers
+     - Configure services
+     - Set up linked resources
+
+  2. **Submit Registration**
+     - Sign domain creation transaction
+     - Broadcast to blockchain
+     - Wait for confirmation
+     - Verify registration
+
+  3. **Configure Properties**
+     - Add verification methods
+     - Link resources
+     - Set up services
+     - Define relationships
+</Steps>
+
+## Implementation
+
+<CodeGroup>
+  ```typescript Create Domain
+  import { Entity } from '@ixo/client-sdk';
+
+  async function createEntityDomain(
+    creator: string,
+    entityType: string
+  ) {
+    const msg = {
+      typeUrl: "/ixo.entity.v1beta1.MsgCreateEntity",
+      value: {
+        creator,
+        entityType,
+        entityStatus: 1
+      }
+    };
+
+    return await Entity.broadcast(msg);
+  }
+  ```
+
+  ```typescript Update Domain
+  async function updateEntityDomain(
+    id: string,
+    updates: DomainProperties
+  ) {
+    const msg = {
+      typeUrl: "/ixo.entity.v1beta1.MsgUpdateEntity",
+      value: {
+        id,
+        ...updates
+      }
+    };
+
+    return await Entity.broadcast(msg);
+  }
+  ```
+
+  ```typescript Query Domain
+  async function queryEntityDomain(
+    did: string
+  ) {
+    const query = `
+      query GetEntity($did: String!) {
+        entity(id: $did) {
+          id
+          type
+          status
+          controller
+          services {
+            id
+            type
+            endpoint
+          }
+          resources {
+            id
+            type
+            path
+          }
+        }
+      }
+    `;
+
+    return await client.query({
+      query,
+      variables: { did }
+    });
+  }
+  ```
+</CodeGroup>
+
+## Domain Management
+
+<AccordionGroup>
+  <Accordion title="Add Service" icon="plus">
+    ```typescript
+    async function addDomainService(
+      entityId: string,
+      service: Service
+    ) {
+      const msg = {
+        typeUrl: "/ixo.entity.v1beta1.MsgAddEntityService",
+        value: {
+          entityId,
+          service
+        }
+      };
+      
+      return await Entity.broadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Link Resource" icon="link">
+    ```typescript
+    async function addLinkedResource(
+      entityId: string,
+      resource: LinkedResource
+    ) {
+      const msg = {
+        typeUrl: "/ixo.entity.v1beta1.MsgAddEntityResource",
+        value: {
+          entityId,
+          resource
+        }
+      };
+      
+      return await Entity.broadcast(msg);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Update Status" icon="pen">
+    ```typescript
+    async function updateEntityStatus(
+      entityId: string,
+      status: number
+    ) {
+      const msg = {
+        typeUrl: "/ixo.entity.v1beta1.MsgUpdateEntityStatus",
+        value: {
+          entityId,
+          status
+        }
+      };
+      
+      return await Entity.broadcast(msg);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup>
+  <Card title="Identity Management" icon="fingerprint">
+    - Use strong verification methods
+    - Implement key rotation
+    - Maintain controller list
+    - Document access policies
+  </Card>
+
+  <Card title="Service Configuration" icon="gears">
+    - Validate endpoints
+    - Monitor availability
+    - Update stale endpoints
+    - Document service types
+  </Card>
+
+  <Card title="Resource Management" icon="link">
+    - Verify resource integrity
+    - Maintain proof chains
+    - Update broken links
+    - Document dependencies
+  </Card>
+
+  <Card title="Security" icon="shield">
+    - Implement access control
+    - Validate transactions
+    - Monitor activities
+    - Regular audits
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-reference/entity">
+    Entity module API documentation
+  </Card>
+  
+  <Card title="SDK Guide" icon="code" href="/guides/dev/entity-sdk">
+    Client SDK implementation guide
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/entity-examples">
+    Implementation examples
+  </Card>
+  
+  <Card title="GitHub" icon="github" href="https://github.com/ixofoundation/ixo-blockchain/tree/main/x/entity">
+    Entity module source code
+  </Card>
+</CardGroup>
+
+<Tip>
+  For technical support or questions about Entity Domains, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip>

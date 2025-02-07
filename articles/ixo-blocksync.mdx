@@ -1,4 +1,302 @@
 ---
-title: Work in Progress
-description: "This page is under development. Please check back later"
+title: 'IXO Blocksync'
+description: 'High-performance blockchain data indexing and querying service'
 ---
+
+<Note>
+Blocksync provides real-time indexing and querying of IXO blockchain data through GraphQL, enabling efficient access to historical transactions, state changes, and entity relationships. It serves as a critical infrastructure component for building scalable applications on the IXO Spatial Web.
+</Note>
+
+## Overview
+
+<CardGroup>
+  <Card title="Real-time Indexing" icon="bolt">
+    Continuously processes and indexes blockchain events, transactions, and state changes
+  </Card>
+  
+  <Card title="GraphQL API" icon="code">
+    Type-safe querying interface with support for complex relationships and filtering
+  </Card>
+  
+  <Card title="Historical Data" icon="clock">
+    Access to complete transaction history and state changes with efficient retrieval
+  </Card>
+  
+  <Card title="Entity Relationships" icon="diagram-project">
+    Track connections between digital twins, claims, and verifications
+  </Card>
+</CardGroup>
+
+## Architecture
+
+<AccordionGroup>
+  <Accordion title="Core Components" icon="layer-group">
+    ```mermaid
+    flowchart TB
+      A[IXO Blockchain] -->|Events| B[Event Processor]
+      B -->|Transforms| C[Index Storage]
+      C -->|Serves| D[GraphQL API]
+      D -->|Queries| E[Client Applications]
+      F[Cache Layer] ---|Optimizes| D
+    ```
+    - **Event Processor**: Captures and processes blockchain events
+    - **Index Storage**: Optimized database for quick data retrieval
+    - **GraphQL API**: Flexible query interface
+    - **Cache Layer**: Performance optimization
+  </Accordion>
+
+  <Accordion title="Data Model" icon="database">
+    Core entities tracked by Blocksync:
+    - **Digital Twins**: Entity states and metadata
+    - **Claims**: Impact claims and evaluations
+    - **Verifications**: Oracle verification results
+    - **Transactions**: Historical operations
+    - **State Changes**: Entity modifications
+  </Accordion>
+
+  <Accordion title="Query Layer" icon="magnifying-glass">
+    ```graphql
+    type Entity {
+      id: ID!
+      type: String!
+      data: JSONObject!
+      claims: [Claim!]
+      verifications: [Verification!]
+      transactions: [Transaction!]
+      state: EntityState!
+    }
+
+    type Query {
+      entity(id: ID!): Entity
+      claims(filter: ClaimFilter): [Claim!]
+      verifications(filter: VerificationFilter): [Verification!]
+      transactions(filter: TransactionFilter): [Transaction!]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Features
+
+### Data Indexing
+
+<CardGroup>
+  <Card title="Event Processing" icon="bolt">
+    - Real-time event capture
+    - State transition tracking
+    - Relationship mapping
+    - Data transformation
+  </Card>
+
+  <Card title="Storage Optimization" icon="database">
+    - Efficient indexing
+    - Query optimization
+    - Cache management
+    - Data compression
+  </Card>
+
+  <Card title="Historical Data" icon="clock">
+    - Complete history
+    - State snapshots
+    - Change tracking
+    - Audit trails
+  </Card>
+</CardGroup>
+
+### Query Capabilities
+
+<AccordionGroup>
+  <Accordion title="Entity Queries" icon="cube">
+    ```graphql
+    query GetEntity {
+      entity(id: "did:ixo:123") {
+        id
+        type
+        data
+        claims {
+          id
+          type
+          status
+        }
+        verifications {
+          id
+          status
+          verifier
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Filtered Queries" icon="filter">
+    ```graphql
+    query GetClaims {
+      claims(
+        filter: {
+          type: "impact",
+          status: "approved",
+          fromDate: "2023-01-01"
+        }
+      ) {
+        id
+        type
+        data
+        evaluations {
+          id
+          status
+          evaluator
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Transaction History" icon="clock-rotate-left">
+    ```graphql
+    query GetTransactions {
+      transactions(
+        filter: {
+          entityId: "did:ixo:123",
+          type: "state_change"
+        }
+      ) {
+        id
+        type
+        timestamp
+        changes {
+          field
+          oldValue
+          newValue
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Implementation Guide
+
+<Steps>
+  1. **Setup Connection**
+     ```typescript
+     import { BlocksyncClient } from '@ixo/blocksync-client'
+
+     const client = new BlocksyncClient({
+       endpoint: 'https://blocksync.ixo.earth/graphql',
+       headers: {
+         'Authorization': `Bearer ${apiKey}`
+       }
+     })
+     ```
+
+  2. **Define Queries**
+     ```typescript
+     const GET_ENTITY = gql`
+       query GetEntity($id: ID!) {
+         entity(id: $id) {
+           id
+           type
+           data
+           claims {
+             id
+             status
+           }
+         }
+       }
+     `
+     ```
+
+  3. **Execute Queries**
+     ```typescript
+     const result = await client.query({
+       query: GET_ENTITY,
+       variables: { id: 'did:ixo:123' }
+     })
+     ```
+
+  4. **Handle Results**
+     ```typescript
+     const { data, errors } = result
+     if (errors) {
+       console.error('Query failed:', errors)
+       return
+     }
+     
+     const entity = data.entity
+     // Process entity data
+     ```
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Query Optimization" icon="bolt">
+    - Request only needed fields
+    - Use pagination for large results
+    - Implement caching
+    - Batch related queries
+    - Monitor query complexity
+  </Accordion>
+
+  <Accordion title="Error Handling" icon="triangle-exclamation">
+    - Implement retry logic
+    - Handle network errors
+    - Validate responses
+    - Log issues
+    - Monitor timeouts
+  </Accordion>
+
+  <Accordion title="Performance" icon="gauge">
+    - Use connection pooling
+    - Enable response compression
+    - Implement rate limiting
+    - Cache frequent queries
+    - Monitor metrics
+  </Accordion>
+</AccordionGroup>
+
+## Available Environments
+
+<CardGroup>
+  <Card title="Production" icon="server">
+    ```
+    https://blocksync.ixo.earth/graphql
+    ```
+  </Card>
+  
+  <Card title="Testnet" icon="vial">
+    ```
+    https://testnet-blocksync.ixo.earth/graphql
+    ```
+  </Card>
+  
+  <Card title="Development" icon="code">
+    ```
+    https://devnet-blocksync.ixo.earth/graphql
+    ```
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-docs/blocksync-api/schema">
+    Complete schema documentation
+  </Card>
+  
+  <Card title="GraphQL Playground" icon="browser" href="https://blocksync.ixo.earth/graphiql">
+    Interactive query testing
+  </Card>
+  
+  <Card title="GitHub" icon="github" href="https://github.com/ixofoundation/ixo-blocksync">
+    Source code and updates
+  </Card>
+  
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer assistance
+  </Card>
+</CardGroup>
+
+<Tip>
+For technical support or questions about Blocksync, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip>

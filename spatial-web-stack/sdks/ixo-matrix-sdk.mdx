@@ -1,0 +1,278 @@
+---
+title: 'Matrix Bot SDK'
+description: 'Build secure data rooms and messaging systems for the Spatial Web Matrix protocol integration'
+---
+
+<Tip>
+  The IXO Matrix Bot SDK provides encrypted data storage, secure messaging, and automated room management through Matrix protocol integration. It enables developers to create secure, scalable, and well-integrated applications within the Matrix ecosystem.
+</Tip>
+
+## Overview
+
+The IXO Matrix Client SDK is a comprehensive toolkit that enables developers to interact seamlessly with Matrix servers and associated bot services. It provides capabilities for:
+
+- User profile management and authentication
+- Room creation and management
+- Automated bot-assisted room operations
+- State management and access control
+- Real-time communication features
+- Secure data handling across rooms
+
+## Key Features
+
+<CardGroup>
+  <Card title="Matrix Client" icon="server">
+   Provides the interface for standard Matrix server interactions including media management, user profiles, and room operations
+  </Card>
+
+  <Card title="Room Bot" icon="brain">
+    Automates Matrix room management, with blockchain integration and membership handling
+  </Card>
+
+  <Card title="State Bot" icon="database">
+    Manages Matrix room state data, access controls, and configuration
+  </Card>
+
+  <Card title="Utilities" icon="wrench">
+    Helper functions for MXC URLs, validators, and Matrix ecosystem tools
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+npm install @ixo/matrixclient-sdk
+# or
+yarn add @ixo/matrixclient-sdk
+```
+
+## Quick Start
+
+### API Client
+
+<CodeGroup>
+  ```typescript Matrix API
+  import { createMatrixApiClient } from "@ixo/matrixclient-sdk";
+
+  // Initialize API client
+  const client = await createMatrixApiClient({
+    baseUrl: "https://matrix.ixo.world",
+    accessToken: "YOUR_TOKEN"
+  });
+
+  // Upload media
+  const mxcUrl = await client.uploadMedia(
+    file,
+    { fileName: "data.json" }
+  );
+
+  // Update profile
+  await client.setDisplayName("User Name");
+  await client.setAvatarUrl(mxcUrl);
+  ```
+
+  ```typescript Room Management
+  // Create room
+  const room = await client.createRoom({
+    name: "Data Room",
+    topic: "Secure data storage",
+    visibility: "private",
+    preset: "private_chat"
+  });
+
+  // Set room state
+  await client.setState(
+    room.roomId,
+    "m.room.name",
+    "",
+    { name: "Updated Name" }
+  );
+
+  // Manage membership
+  await client.invite(room.roomId, "@user:ixo.world");
+  await client.join(room.roomId);
+  ```
+</CodeGroup>
+
+### Room Bot
+
+<CodeGroup>
+  ```typescript Room Bot
+  import { createMatrixRoomBotClient } from "@ixo/matrixclient-sdk";
+
+  // Initialize room bot
+  const bot = await createMatrixRoomBotClient({
+    baseUrl: "https://matrix.ixo.world",
+    accessToken: "BOT_TOKEN"
+  });
+
+  // Create entity room
+  const entityRoom = await bot.createEntityRoom({
+    entityDid: "did:ixo:entity/123",
+    name: "Entity Data Room",
+    members: ["@alice:ixo.world", "@bob:ixo.world"]
+  });
+
+  // Handle invites
+  await bot.handleInvites();
+  ```
+
+  ```typescript Automated Management
+  // Auto-join rooms
+  await bot.autoJoin([room1Id, room2Id]);
+
+  // Sync room members
+  await bot.syncMembers(roomId, targetMembers);
+
+  // Leave rooms
+  await bot.leaveRooms([oldRoomId]);
+  ```
+</CodeGroup>
+
+### State Bot
+
+<CodeGroup>
+  ```typescript State Management
+  import { createMatrixStateBotClient } from "@ixo/matrixclient-sdk";
+
+  // Initialize state bot
+  const bot = await createMatrixStateBotClient({
+    baseUrl: "https://matrix.ixo.world",
+    accessToken: "BOT_TOKEN"
+  });
+
+  // Get room ACL
+  const acl = await bot.getRoomAcl(roomId);
+
+  // Update ACL
+  await bot.setRoomAcl(roomId, {
+    allow: ["@alice:ixo.world"],
+    deny: ["@malicious:ixo.world"]
+  });
+
+  // Get room state
+  const state = await bot.getRoomState(roomId);
+  ```
+
+  ```typescript State Updates
+  // Set state event
+  await bot.setState(
+    roomId,
+    "custom.state.type",
+    "",
+    { key: "value" }
+  );
+
+  // Get state event
+  const event = await bot.getState(
+    roomId,
+    "custom.state.type"
+  );
+
+  // Clear state
+  await bot.clearState(
+    roomId,
+    "custom.state.type"
+  );
+  ```
+</CodeGroup>
+
+## Utilities
+
+### MXC Helpers
+
+```typescript
+import { utils } from "@ixo/matrixclient-sdk";
+
+// Convert MXC to HTTP URL
+const httpUrl = utils.mxcUrlToHttp(
+  "mxc://ixo.world/abc123",
+  "https://matrix.ixo.world"
+);
+
+// Validate MXC URL
+const isValid = utils.isMxcUri("mxc://ixo.world/abc123");
+```
+
+### Validators
+
+```typescript
+// Validate Matrix IDs
+const isValidUserId = utils.isUserId("@alice:ixo.world");
+const isValidRoomId = utils.isRoomId("!room:ixo.world");
+const isValidAlias = utils.isAlias("#general:ixo.world");
+```
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid request parameters
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Invalid access token
+</ResponseField>
+
+<ResponseField name="403" type="error">
+  Insufficient permissions
+</ResponseField>
+
+## Use Cases
+
+<CardGroup>
+  <Card title="Real-Time Communication" icon="comments">
+    Build secure messaging and real-time collaboration systems
+  </Card>
+  
+  <Card title="Data Rooms" icon="database">
+    Create and manage encrypted data storage rooms with controlled access
+  </Card>
+  
+  <Card title="Automated Management" icon="robot">
+    Implement bot-driven room and membership automation
+  </Card>
+  
+  <Card title="Access Control" icon="lock">
+    Define and enforce granular access permissions using ACLs
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Tip>
+  Follow these guidelines for secure and efficient Matrix integration
+</Tip>
+
+### Security
+
+* Use encrypted rooms for sensitive data
+* Implement proper access control
+* Rotate access tokens regularly
+* Validate all user inputs
+* Enable end-to-end encryption where appropriate
+* Regularly audit room access permissions
+
+### Performance
+
+* Batch state updates
+* Implement proper error handling
+* Cache room states
+* Monitor room sizes
+* Use appropriate SDK methods for bulk operations
+* Implement rate limiting for API calls
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Room Guide" icon="door-open">
+    Learn room management
+  </Card>
+
+  <Card title="Bot Guide" icon="brain">
+    Implement automation
+  </Card>
+
+  <Card title="Security Guide" icon="shield-check">
+    Secure your rooms
+  </Card>
+</CardGroup>

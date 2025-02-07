@@ -1,85 +1,95 @@
-
 ---
 title: Digital Twin Domains
 description: "An introduction to Cognitive Digital Twin Systems"
 ---
 
-<Note>
+<Tip>
     The IXO Spatial Web implements a systems-thinking approach to capture relationships, feedback loops, and interdependencies in the real-world systems through which mitigation activities are coordinated, financed, verified, governed, and intelligently optimised. 
-</Note>
+</Tip>
 
-Each physical or conceptual element is represented as a _Digital Entity_ with a digital **Domain**.
+## What are Cognitive Digital Twins?
 
-#### What is a Digital Entity?
-A Digital Entity is the online “twin” of a real-world object or concept. Examples include:  
-- Physical entities (e.g., modern energy cooking devices)  
-- Cognitive entities (such as organizations, projects, investment vehicles, and assets)
+Cognitive Digital Twins (CDTs) are digital replicas of real-world entities that possess cognitive capabilities – they can learn from data, adapt, and make intelligent decisions. The IXO Spatial Web platform implements CDTs through three core components:
 
-#### What is a Digital Domain?
-A Domain in the IXO Spatial Web is a unique, verifiably owned digital entity that represents a real-world entity, identified by a DID and controlled by the holders of specified public keys or blockchain accounts. It integrates various internet-based services for functionality, manages resources such as documents or media through URI references (often backed by cryptographic proofs), and defines explicit rights for who can perform particular actions via object capabilities and other secure authentication mechanisms. Domains can record verified data (“linked claims”) that update their state, and they connect to other entities (like oracles and projects) to form interoperable virtual networks. Serving as economic actors, they hold blockchain accounts for digital financing activities and are represented as NFTs, allowing for seamless transfer of ownership and interaction across decentralized ecosystems.
+1. **AI/ML Models for Cognition**: CDTs integrate artificial intelligence to simulate cognition. With runtime learning, a twin can analyze streaming data and update its behavior or predictions autonomously. On IXO, Oracle Twins serve this role – they are AI-powered agent services that evaluate data, perform verifications, and automate intelligent actions within the twin system.
 
-#### Identifying Entities and their Domains  
-Decentralized Identifiers (DIDs) provide a unique identity for each Entity and its Domain. A DID is cryptographically verifiable and self-sovereign, guaranteeing that data ownership and control of the Ebtity Domain belongs to its Creator or Controller. This approach upholds:  
-- Uniqueness: Each entity has its own traceable ID.  
-- Trust: Verifiable cryptographic proofs ensure authenticity.  
-- Self-Sovereignty: Full ownership by the entity creator/controller.
+2. **Federated Data Architecture**: CDTs draw from distributed data sources in a federated manner. IXO implements a "data matrix" layer of secure data nodes for each twin, allowing data to be shared across a network of stores rather than one silo. This federated design ensures scalability and resilience.
 
-#### Relationships Between Entities
+3. **Decentralized Identity Integration**: Every twin is anchored by a decentralized identity to establish trust and uniqueness. Each Digital Entity is identified by a W3C Decentralized Identifier (DID).
 
-Entities are nodes within a rich data graph in which entities are connected by relationships that represent how they interact, influence, and impact on each other.
+## Digital Entity Types
 
-Relationship Examples:  
-- A Mitigation Activity proponent **organization** `implements` a **project**  
-- An investor **organisation** `funds` a **project** 
-- Funding to the  **project** is from an `allocation` of capital through an **investment** instrument   
-- **Assets** are `generated` through a **project**  
-- Claims from **project** activities are `verified` by an **Oracle** Service  
+IXO distinguishes different types of twins in its architecture:
 
-#### The Impact Graph   
-1. Captures Immutable Data Streams: Post-hoc data manipulation is impractical due to blockchain integrity.  
-2. Enables Systems-Level Analysis: Offers a big-picture view, suitable for holistic monitoring and optimization.  
-3. Strengthens Trust: Transparent accountability fosters higher confidence among stakeholders and auditors.
+- **Physical Twins**: Correspond to real-world devices and sensors (e.g., IoT-enabled cooking stoves)
+- **Cognitive Twins**: Model higher-level constructs like organizations, projects, or processes
+- **Oracle Twins**: AI agents that provide analytical and decision-making capabilities
+- **Twin Systems**: Capture the relationships and feedback loops between entities
 
-#### Data Integrity
-Ensuring data integrity is vital to preventing fraudulent mitigation outcome claims and thwarting attacks aimed at compromising trust in climate impact records. The Platform design and how it is operated [assures data integrity](Emerging Platform/Data-Integrity.md).
+<Image src="images/digital-twin.svg" alt="Cognitive Digital Twins" />
 
-#### Data Fusion
-Data from real-world systems is fused into the digital twin system through Verifiable Claims. These Claims are processed through verification processes that results in Verifiable Credentials (digital certificates) being issued. This enables tokenized outcomes (Impact Credits) to be minted, representing the verifiable units of measured, reported and verified outcomes that are generated through the digital twin system, which mirrors the claimed and verified changes that have ocurred over time in the real-world system.
+## Digital Domain Properties
 
-### Digital Domain Setup
+Each physical or conceptual element is represented as a _Digital Entity_ with a digital **Domain**. The domain infrastructure is implemented on blockchain with the following components:
 
-Entities and their relationships are [registered](Registration.md) in the platform as _domains_ and each domain is configured with its Domain Properties:  
-1. Digital Identifier  
+### Domain Components
+1. **Digital Identifier**  
    Created as a DID for verifiable ownership and uniqueness; can be enhanced with verifiable credentials.  
-2. Domain Controllers  
-   Defined by public keys or blockchain accounts. Only those with permission can update a domain’s data.  
-3. Services  
+
+2. **Domain Controllers**  
+   Defined by public keys or blockchain accounts. Only those with permission can update a domain's data.  
+
+3. **Services**  
    Internet-based services tied to the domain, providing necessary functionalities (e.g., data ingestion endpoints).  
-4. Linked Resources  
+
+4. **Linked Resources**  
    Digital materials (documents, media) referenced via URIs, often with cryptographic proofs for authenticity.  
-5. Accorded Rights  
+
+5. **Accorded Rights**  
    Object capabilities (zCAPs, Cacao) specify who can perform specific actions, preserving privacy and security.  
-6. Linked Claims  
-   Verified data items that update the domain’s state (e.g., device usage records, fuel delivery confirmations).  
-7. Linked Entities  
+
+6. **Linked Claims**  
+   Verified data items that update the domain's state (e.g., device usage records, fuel delivery confirmations).  
+
+7. **Linked Entities**  
    Builds a network of related domains—such as funders, projects, or oracles—and formalizes their interconnections.  
-8. Economic Accounts  
+
+8. **Economic Accounts**  
    Domains function as economic actors with blockchain accounts, enabling DeFi-related actions (e.g., staking, payments).  
-9. Non-Fungible Tokens (NFTs)  
+
+9. **Non-Fungible Tokens (NFTs)**  
    Each domain is represented as an NFT, facilitating ownership transfers and interactions with other decentralized ecosystems.
+
+### Data Security and Privacy
+
+IXO implements a federated, end-to-end encrypted data architecture built on the Matrix protocol. Key features include:
+
+- **Sovereign Data Stores**: Each digital twin domain has its own secure data store where structured data and real-time streams are recorded
+- **End-to-End Encryption**: All data is protected with E2EE, ensuring only authorized agents can access the data
+- **Interoperable Data Sharing**: Data can be securely shared across different servers and organizations while maintaining encryption
+- **Decentralized Storage**: Integration with decentralized file storage networks like IPFS for larger files or public datasets
+
+### Trust and Verification
+
+Trust is established through:
+
+1. **Verifiable Claims**: Digitally signed data or assertions produced by agents or devices
+2. **Oracle Verification**: AI or human validators evaluate and verify claims
+3. **Verifiable Credentials**: W3C-standard digital certificates that encapsulate verified claims
+4. **End-to-End Trust Pipeline**: From data origin to verification and credential issuance
 
 ## Using Protocols
 
 Manually configuring domains can be intricate, so the IXO platform offers _Protocols_ to streamline the process. A protocol is a predefined template of properties, relationships, and data models for a specific type of domain.
 
 ### Instantiating Protocols  
-When developers create an entity from a protocol “class,” it inherits the protocol’s default configurations. These inherited settings can be forked and updated to fit the specific use case, promoting:  
-- Rapid deployment of standard domain types.  
-- Consistent data structures across projects.  
-- Hierarchical organization, allowing child entities to trace back to a parent protocol.
+When developers create an entity from a protocol "class," it inherits the protocol's default configurations. These inherited settings can be forked and updated to fit the specific use case, promoting:  
+- Rapid deployment of standard domain types
+- Consistent data structures across projects
+- Hierarchical organization, allowing child entities to trace back to a parent protocol
 
 Example: Climate Mitigation Project Protocol  
 A protocol designed for clean cooking initiatives can include:  
-- Default data fields (fuel types, reporting standards, usage metrics).  
-- Relationships (verification oracles, project developers, funders).  
-- Services (data analytics, payment frameworks, governance tools).
+- Default data fields (fuel types, reporting standards, usage metrics)
+- Relationships (verification oracles, project developers, funders)
+- Services (data analytics, payment frameworks, governance tools)

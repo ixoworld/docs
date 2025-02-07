@@ -1,0 +1,157 @@
+---
+title: 'Spatial Web SDKs'
+description: 'Build advanced applications for the Spatial Web using the comprehensive suite of IXO development tools'
+---
+
+<Tip>
+The IXO Spatial Web SDKs provide developers with the tools to build real-world applications that leverage digital twins, AI oracles, secure data rooms, and interchain networks.
+</Tip>
+
+## Available SDKs
+
+<CardGroup>
+
+<Card title="MultiClient SDK" icon="network-wired" href="https://www.npmjs.com/package/@ixo/impactxclient-sdk">
+  Connect with IXO and Cosmos networks for interchain operations
+</Card>
+
+<Card title="Matrix Client SDK" icon="database" href="https://www.npmjs.com/package/@ixo/matrixclient-sdk">
+  Build secure data rooms and encrypted communication channels
+</Card>
+
+<Card title="Oracles SDK" icon="brain" href="https://www.npmjs.com/package/@ixo/assistant-sdk">
+  Create AI-powered autonomous agents
+</Card>
+
+<Card title="JAMBO Wallet SDK" icon="wallet" href="https://www.npmjs.com/package/@ixo/jambo-wallet-sdk">
+  Manage digital assets and credentials in the JAMBO wallet
+</Card>
+
+</CardGroup>
+
+## Installation
+
+```bash
+# Install core SDKs
+npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
+npm install @ixo/assistant-sdk @ixo/jambo-wallet-sdk
+```
+
+## Basic Setup
+
+<CodeGroup>
+
+```typescript ImpactX Client
+import { createClient } from "@ixo/impactxclient-sdk";
+
+// Initialize client
+const chain = await createClient({
+  rpcEndpoint: RPC_ENDPOINT,
+  chainId: "ixo-5"
+});
+
+// Create digital twin
+const twin = await chain.entity.create({
+  type: "DigitalTwin",
+  controller: "did:ixo:org/123"
+});
+```
+
+```typescript Matrix Client
+import { createMatrixClient } from "@ixo/matrixclient-sdk";
+
+// Initialize Matrix client
+const matrix = await createMatrixClient({
+  baseUrl: MATRIX_ENDPOINT,
+  accessToken: USER_TOKEN
+});
+
+// Create secure data room
+const room = await matrix.createRoom({
+  name: "Secure Data Room",
+  encryption: true,
+  visibility: "private"
+});
+```
+
+```typescript Assistant
+import { createAssistant } from "@ixo/assistant-sdk";
+
+// Initialize assistant
+const assistant = await createAssistant({
+  type: "VerificationAgent",
+  capabilities: ["verification", "analytics"]
+});
+
+// Process verification request
+const result = await assistant.verify({
+  data: inputData,
+  context: verificationContext
+});
+```
+
+```typescript JAMBO Wallet
+import { createWallet } from "@ixo/jambo-wallet-sdk";
+
+// Initialize wallet
+const wallet = await createWallet({
+  storageType: "secure",
+  network: "mainnet"
+});
+
+// Manage credentials
+const credential = await wallet.createCredential({
+  type: "VerifiableCredential",
+  issuer: "did:ixo:issuer/123"
+});
+```
+
+</CodeGroup>
+
+## Key Features
+
+### MultiClient SDK
+- Interchain transactions and queries
+- Digital twin management
+- Entity state management
+- Blockchain service management
+
+### Matrix Client SDK
+- End-to-end encrypted data rooms
+- Secure messaging and file storage
+- Access control management
+- Real-time data streaming
+
+### Oracles SDK
+- AI-powered agent services
+- Analytics processing
+- Evidence collection
+- Proof generation
+
+### JAMBO Wallet SDK
+- Credential management
+- Digital asset operations
+- Secure key storage
+- Transaction signing
+
+## Next Steps
+
+<CardGroup>
+
+<Card title="API Reference" icon="code">
+  View detailed SDK documentation
+</Card>
+
+<Card title="Examples" icon="lightbulb">
+  Explore sample applications
+</Card>
+
+<Card title="GitHub" icon="github">
+  Access SDK source code
+</Card>
+
+<Card title="Support" icon="headset">
+  Get developer support
+</Card>
+
+</CardGroup>

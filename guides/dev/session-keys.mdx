@@ -1,0 +1,175 @@
+---
+title: 'Session Keys'
+description: 'Implement one-click signing in IXO web applications using session-based keys'
+---
+
+<Tip>
+  Session keys enable streamlined transaction signing in IXO web applications through Smart Accounts and secure mobile wallet integration.
+</Tip>
+
+## Overview
+
+Session-based signing keys allow users to:
+- Sign multiple transactions without repeated wallet confirmations
+- Maintain security through time-limited authorizations
+- Restrict signing capabilities to specific transaction types
+- Control access through their IXO Mobile wallet
+
+## Core Components
+
+<CardGroup>
+  <Card title="Smart Accounts" icon="wallet">
+    Flexible authentication system separating fee payment from transaction authorization
+  </Card>
+
+  <Card title="Session Keys" icon="key">
+    Time-limited browser-based keys for specific transaction types
+  </Card>
+
+  <Card title="Mobile Wallet" icon="mobile">
+    Master key control and authorization management
+  </Card>
+</CardGroup>
+
+## Implementation Flow
+
+<Steps>
+  1. **Initial Access**
+     - User opens IXO web application
+     - System generates authorization request
+     - QR code displayed with SignX message
+
+  2. **Mobile Authorization**
+     - User scans QR with IXO Mobile
+     - Wallet validates SignX message
+     - User confirms authorization
+
+  3. **Session Establishment**
+     - Browser receives signed payload
+     - Session key generated locally
+     - Transaction permissions configured
+</Steps>
+
+## Transaction Processing
+
+<AccordionGroup>
+  <Accordion title="Signing Process" icon="signature">
+    ```typescript
+    try {
+      // 1. Create transaction
+      const tx = {
+        typeUrl: "/ixo.entity.v1beta1.MsgCreateEntity",
+        value: entityData
+      };
+
+      // 2. Sign with session key
+      const signedTx = await sessionKey.sign(tx);
+
+      // 3. Broadcast to network
+      const result = await client.broadcast(signedTx);
+      
+      return result;
+    } catch (error) {
+      if (error.code === 'SESSION_EXPIRED') {
+        // Handle session expiry
+        await refreshSession();
+      } else if (error.code === 'UNAUTHORIZED_TX_TYPE') {
+        // Handle unauthorized transaction type
+        throw new Error('Transaction type not allowed with current session key');
+      } else {
+        // Handle other errors
+        throw error;
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Authorization Scope" icon="shield-check">
+    ```typescript
+    // Session key configuration
+    const sessionConfig = {
+      duration: "1h",           // Time limit
+      allowedTypes: [          // Permitted transactions
+        "MsgCreateEntity",
+        "MsgUpdateEntity"
+      ],
+      restrictions: {          // Optional limits
+        maxTransactions: 100,
+        maxAmount: "1000uixo"
+      },
+      network: {              // Network configuration
+        chainId: "ixo-5",
+        rpcUrl: "https://rpc.ixo.world"
+      }
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Session Management" icon="arrows-rotate">
+    ```typescript
+    // Monitor session status
+    sessionKey.on('expiring', async (timeLeft) => {
+      if (timeLeft < 300000) { // 5 minutes
+        await notifyUser('Session expiring soon');
+      }
+    });
+
+    // Handle session cleanup
+    window.addEventListener('beforeunload', () => {
+      sessionKey.cleanup();
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Security Considerations
+
+<CardGroup>
+  <Card title="Time Limits" icon="clock">
+    - Automatic session expiration
+    - Configurable duration
+    - Forced re-authorization
+  </Card>
+
+  <Card title="Scope Control" icon="shield">
+    - Transaction type restrictions
+    - Optional spending limits
+    - Granular permissions
+  </Card>
+
+  <Card title="Key Management" icon="key">
+    - Mobile wallet control
+    - Session revocation
+    - Access monitoring
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Implementation" icon="code">
+    - Validate QR code sources
+    - Handle session expiry gracefully
+    - Implement proper error handling
+    - Monitor session status
+  </Accordion>
+
+  <Accordion title="Security" icon="lock">
+    - Use appropriate session durations
+    - Restrict transaction types
+    - Monitor active sessions
+    - Implement session cleanup
+  </Accordion>
+</AccordionGroup>
+
+## Related Resources
+
+<CardGroup>
+  <Card title="Smart Accounts" icon="book" href="/guides/dev/smart-accounts">
+    Learn about IXO Smart Account system
+  </Card>
+
+  <Card title="SignX Integration" icon="plug" href="/guides/dev/signx">
+    Implement secure transaction signing
+  </Card>
+</CardGroup>

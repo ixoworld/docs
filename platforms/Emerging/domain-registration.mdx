@@ -1,0 +1,173 @@
+---
+title: 'Domain Registration'
+icon: 'globe'
+description: 'Register and manage Digital Twin Domains for clean cooking projects'
+---
+
+<Tip>
+  Digital Twin Domains are the foundation of the Emerging Household Energy, providing secure, AI-enabled management of clean cooking projects, devices, and impact claims through unique digital identifiers and verifiable credentials.
+</Tip>
+
+## Domain Types
+
+<CardGroup>
+  <Card title="Organizations" icon="building">
+    Legal entities managing clean cooking projects
+  </Card>
+  <Card title="Projects" icon="folder">
+    Mitigation activities and programs
+  </Card>
+  <Card title="Assets" icon="box">
+    Physical devices and tokenized outcomes
+  </Card>
+  <Card title="Protocols" icon="scroll">
+    Templates and governance rules
+  </Card>
+  <Card title="Oracles" icon="brain">
+    AI-enabled verification services
+  </Card>
+</CardGroup>
+
+## Domain Structure
+
+### Core Properties
+<AccordionGroup>
+  <Accordion title="Digital Identifier (DID)">
+    - Follows Interchain Identifier methodology
+    - Self-sovereign and cryptographically secure
+    - Globally unique and resolvable
+    - Permanent and immutable
+  </Accordion>
+
+  <Accordion title="Entity Metadata">
+    - Verification credentials
+    - Relayer node assignment
+    - Validity period
+    - Operational status
+    - Verification state
+  </Accordion>
+
+  <Accordion title="Service Configuration">
+    - API endpoints
+    - Data streams
+    - Oracle integrations
+    - Payment services
+  </Accordion>
+</AccordionGroup>
+
+## Registration Process
+
+### 1. Protocol Selection
+<CardGroup>
+  <Card title="Browse Templates" icon="list">
+    View available protocol templates
+  </Card>
+  <Card title="Check Requirements" icon="clipboard-check">
+    Review domain specifications
+  </Card>
+  <Card title="Select Protocol" icon="check">
+    Choose appropriate template
+  </Card>
+</CardGroup>
+
+### 2. Domain Creation
+
+<AccordionGroup>
+  <Accordion title="Entity Document">
+    ```json
+    {
+      "@context": {
+        "class": "did:ixo:entity:abc123",
+        "type": "CleanCookingProject",
+        "version": "1.0"
+      },
+      "credentials": [],
+      "relayerNode": "did:ixo:entity:relayer123",
+      "validFrom": "2024-01-01T00:00:00Z",
+      "status": "active"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Required Fields">
+    - Protocol class reference
+    - Entity type specification
+    - Relayer node assignment
+    - Validity period (optional)
+    - Initial status
+  </Accordion>
+</AccordionGroup>
+
+### 3. Verification Flow
+
+<CardGroup>
+  <Card title="Submission" icon="paper-plane">
+    Submit domain proposal to DAO
+  </Card>
+  <Card title="Governance" icon="users">
+    Community verification voting
+  </Card>
+  <Card title="Execution" icon="check-double">
+    Automatic verification on approval
+  </Card>
+</CardGroup>
+
+## Query Examples
+
+### Find Available Protocols
+```graphql
+query EntitiesByRelayerNodeAndType {
+  entities(
+    filter: {
+      relayerNode: {equalTo: "did:ixo:entity:a1fcead81eab2f1158a726597d872413"}, 
+      type: {equalTo: "protocol"}
+    }
+  ) {
+    nodes {
+      id
+      type
+      metadata
+    }
+  }
+}
+```
+
+### Check Domain Status
+```graphql
+query DomainStatus($did: String!) {
+  entity(id: $did) {
+    id
+    status
+    verificationStatus
+    credentials {
+      type
+      status
+    }
+  }
+}
+```
+
+## Implementation Guide
+
+1. [Review available protocols](/platforms/Emerging/registry)
+2. [Prepare entity document](/guides/digital-twins)
+3. [Submit for verification](/platforms/Emerging/verification)
+4. [Configure services](/platforms/Emerging/service-configuration)
+5. [Monitor status](/platforms/Emerging/monitoring)
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="code" href="/api-docs/emerging-api/emerging-api">
+    Domain registration endpoints
+  </Card>
+  <Card title="SDK Guide" icon="box" href="/spatial-web-stack/spatial-web-sdks">
+    Client libraries and tools
+  </Card>
+  <Card title="Example Projects" icon="lightbulb" href="/guides/dev/examples">
+    Sample implementations
+  </Card>
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer assistance
+  </Card>
+</CardGroup>

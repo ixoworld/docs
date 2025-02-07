@@ -3,7 +3,8 @@
   "name": "IXO Docs Hub",
   "logo": {
     "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "light": "/logo/light.svg",
+    "href": "https://ixo.world"
   },
   "favicon": "/favicon.svg",
   "colors": {
@@ -15,6 +16,12 @@
       "to": "#00D2FF"
     }
   },
+  "background": {
+    "style": "windows"
+  },
+  "codeBlock": {
+    "mode": "auto"
+  },
   "topbarLinks": [
     {
       "name": "Support",
@@ -25,15 +32,34 @@
     "type": "github",
     "url": "https://github.com/ixofoundation"
   },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true
+  },
+  "primaryTab": {
+    "name": "Spatial Web"
+  },
   "tabs": [
     {
-      "name": "API Reference",
+      "name": "Platforms",
+      "url": "platforms"
+    },
+    {
+      "name": "Products",
+      "url": "spatial-web-stack/apps"
+    },
+    {
+      "name": "APIs",
       "url": "api-reference",
       "openapi": "/api-reference/Emerging-Platform-API.yaml"
     },
     {
-      "name": "Platforms",
-      "url": "platforms"
+      "name": "Guides",
+      "url": "guides/users"
+    },
+    {
+      "name": "Changelog",
+      "url": "changelog/overview.mdx"
     }
   ],
   "anchors": [
@@ -48,28 +74,59 @@
       "url": "https://chronicle.impacts.network/"
     }
   ],
+  "analytics": {
+    "posthog": {
+      "apiKey": "phc_UsTVlfyxpK1L0FLAxXuuOHehGWVaoaXTAW5NlyLh9Fc"
+    }
+  },
   "navigation": [
     {
       "group": "Get Started",
       "pages": [
         "introduction",
-        "spatial-web-stack/spatial-web-sdks"
+        "core-concepts",
+        "/articles/ixo-protocol",
+        "guides/hands-on"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/dev/spatial-web-sdks",
+        "guides/dev/domain-settings",
+        "guides/dev/domain-privacy",
+        "guides/dev/authentication"
+      ]
+    },
+    {
+      "group": "User Guides",
+      "pages": [
+        "guides/users/intro-users"
       ]
     },
     {
       "group": "Platforms",
       "pages": [
+        "articles/intro-platforms",
         {
-          "group": "Emerging Platform",
+          "group": "Emerging",
           "pages": [
-            "guides/emerging-platform",
-            "guides/household-monitoring",
-            {
-              "group": "Articles",
-              "pages": [
-                "guides/overview"
-              ]
-            }
+            "platforms/Emerging/intro-emerging",
+            "platforms/Emerging/concepts",
+            "platforms/Emerging/dmrv",
+            "platforms/Emerging/household-monitoring",
+            "platforms/Emerging/stove-use-monitoring",
+            "platforms/Emerging/qualitative-surveys",
+            "platforms/Emerging/sdg-monitoring",
+            "platforms/Emerging/domain-registration",
+            "platforms/Emerging/digital-certification",
+            "platforms/Emerging/registry",
+            "platforms/Emerging/registry-server",
+            "platforms/Emerging/digital-vouchers",
+            "platforms/Emerging/kpt",
+            "platforms/Emerging/data-integrity",
+            "platforms/Emerging/itmo-schema",
+            "platforms/Emerging/emerging-api"
           ]
         }
       ]
@@ -78,21 +135,20 @@
       "group": "Developers",
       "pages": [
         "guides/dev/introduction",
-        "guides/concepts",
         "guides/digital-mrv",
         "guides/digital-twins",
         "guides/domain-registration",
         "guides/registry",
-        "guides/data-integrity",
-        "guides/dmrv",
         "guides/ixo-oracles-architecture",
+        "guides/dev/ixo-claims",
+        "guides/dev/domain-privacy",
         {
           "group": "SDKs",
           "pages": [
-            "spatial-web-stack/spatial-web-sdks",
-            "spatial-web-stack/ixo-multiclient-sdk",
-            "spatial-web-stack/ixo-matrix-sdk",
-            "spatial-web-stack/oracle-agent-sdk"
+            "spatial-web-stack/sdks/intro-sdks",
+            "spatial-web-stack/sdks/ixo-multiclient-sdk",
+            "spatial-web-stack/sdks/ixo-matrix-sdk",
+            "spatial-web-stack/sdks/oracle-agent-sdk"
           ]
         }
       ]
@@ -100,12 +156,12 @@
     {
       "group": "Articles",
       "pages": [
-        "articles/introduction",
+        "articles/intro-articles",
         "articles/cdt-systems",
         "articles/ixo-blockchain",
         "articles/ixo-matrix",
-        "articles/ixo-oracles-architecture",
-        "articles/ixo-blocksync"
+        "articles/ixo-blocksync",
+        "articles/ixo-oracles"
       ]
     }
   ],
@@ -114,4 +170,4 @@
     "github": "https://github.com/ixofoundation",
     "linkedin": "https://linkedin.com/company/ixoworld"
   }
-}  
+}

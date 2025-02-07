@@ -1,0 +1,245 @@
+---
+title: 'gRPC Gateway'
+description: 'Access IXO blockchain services through REST endpoints'
+---
+
+<Tip>
+  The gRPC Gateway provides RESTful HTTP endpoints for interacting with IXO blockchain services, enabling seamless integration without implementing gRPC clients directly.
+</Tip>
+
+## Overview
+
+The gRPC Gateway translates HTTP/REST calls to gRPC, allowing developers to:
+- Access blockchain data through familiar REST endpoints
+- Use standard HTTP methods for state queries
+- Integrate with web and mobile applications easily
+- Maintain compatibility with existing REST tools
+
+## Architecture
+
+<AccordionGroup>
+  <Accordion title="Request Flow" icon="arrow-right-to-bracket">
+    ```mermaid
+    sequenceDiagram
+      Client->>Gateway: HTTP/REST Request
+      Gateway->>gRPC Server: Translated gRPC Call
+      gRPC Server->>Gateway: gRPC Response
+      Gateway->>Client: HTTP/JSON Response
+    ```
+    The gateway handles protocol translation transparently
+  </Accordion>
+
+  <Accordion title="Data Translation" icon="arrows-rotate">
+    ```json
+    {
+      "input": {
+        "http": "GET /ixo/entity/{id}",
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "output": {
+        "grpc": "service.GetEntity",
+        "message": "EntityRequest"
+      }
+    }
+    ```
+    Automatic conversion between HTTP and gRPC formats
+  </Accordion>
+</AccordionGroup>
+
+## Core Endpoints
+
+<CardGroup>
+  <Card title="Entity Operations" icon="id-card">
+    - GET /ixo/entity/{id}
+    - GET /ixo/entity/list
+    - POST /ixo/entity/create
+    - PUT /ixo/entity/update
+  </Card>
+
+  <Card title="Claims Management" icon="file-check">
+    - GET /ixo/claims/{id}
+    - GET /ixo/claims/list
+    - POST /ixo/claims/submit
+    - PUT /ixo/claims/evaluate
+  </Card>
+
+  <Card title="Token Operations" icon="coins">
+    - GET /ixo/token/params
+    - GET /ixo/token/supply
+    - POST /ixo/token/mint
+    - POST /ixo/token/burn
+  </Card>
+
+  <Card title="Bond Operations" icon="link">
+    - GET /ixo/bonds/{id}
+    - GET /ixo/bonds/list
+    - POST /ixo/bonds/create
+    - PUT /ixo/bonds/edit
+  </Card>
+</CardGroup>
+
+## Implementation Guide
+
+<Steps>
+  1. **Choose Integration Method**
+     - Direct HTTP calls
+     - SDK integration
+     - Custom client implementation
+     - Proxy configuration
+
+  2. **Configure Endpoints**
+     - Set base URL
+     - Configure headers
+     - Handle authentication
+     - Set timeouts
+
+  3. **Implement Error Handling**
+     - HTTP status codes
+     - gRPC error mapping
+     - Retry logic
+     - Timeout handling
+
+  4. **Test Integration**
+     - Endpoint validation
+     - Response parsing
+     - Error scenarios
+     - Performance testing
+</Steps>
+
+## Request Examples
+
+<CodeGroup>
+  ```bash cURL
+  # Get entity details
+  curl -X GET 'https://rest.emerging.eco/ixo/entity/did:ixo:123' \
+    -H 'Accept: application/json'
+
+  # Submit a claim
+  curl -X POST 'https://rest.emerging.eco/ixo/claims/submit' \
+    -H 'Content-Type: application/json' \
+    -d '{"type": "impact", "data": {...}}'
+  ```
+
+  ```typescript TypeScript
+  // Using fetch API
+  const getEntity = async (id: string) => {
+    const response = await fetch(
+      `https://rest.emerging.eco/ixo/entity/${id}`,
+      {
+        headers: { Accept: 'application/json' }
+      }
+    );
+    return response.json();
+  };
+
+  // Using SDK
+  import { IxoClient } from '@ixo/client-sdk';
+  
+  const client = new IxoClient('https://rest.emerging.eco');
+  const entity = await client.getEntity('did:ixo:123');
+  ```
+
+  ```python Python
+  # Using requests
+  import requests
+
+  def get_entity(entity_id):
+      response = requests.get(
+          f'https://rest.emerging.eco/ixo/entity/{entity_id}',
+          headers={'Accept': 'application/json'}
+      )
+      return response.json()
+  ```
+</CodeGroup>
+
+## Response Formats
+
+<AccordionGroup>
+  <Accordion title="Success Response" icon="check">
+    ```json
+    {
+      "height": "123456",
+      "result": {
+        "id": "did:ixo:123",
+        "type": "entity",
+        "data": {
+          // Entity specific data
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Error Response" icon="xmark">
+    ```json
+    {
+      "code": 3,
+      "message": "entity not found",
+      "details": [
+        {
+          "type_url": "type.googleapis.com/google.rpc.ErrorInfo",
+          "value": "..."
+        }
+      ]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup>
+  <Card title="Performance" icon="gauge">
+    - Use pagination for large datasets
+    - Implement caching where appropriate
+    - Monitor request latency
+    - Handle rate limits
+  </Card>
+
+  <Card title="Error Handling" icon="triangle-exclamation">
+    - Implement proper error handling
+    - Use retry mechanisms
+    - Log errors appropriately
+    - Provide meaningful feedback
+  </Card>
+
+  <Card title="Security" icon="shield-check">
+    - Use HTTPS only
+    - Implement authentication
+    - Validate inputs
+    - Monitor usage
+  </Card>
+
+  <Card title="Integration" icon="plug">
+    - Follow REST conventions
+    - Use appropriate content types
+    - Handle versioning
+    - Document endpoints
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-reference/grpc-gateway">
+    Complete endpoint documentation
+  </Card>
+  
+  <Card title="SDK Guide" icon="code" href="/spatial-web-stack/spatial-web-sdks">
+    Client library integration
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
+    Implementation examples
+  </Card>
+  
+  <Card title="GitHub" icon="github" href="https://github.com/ixofoundation/ixo-blockchain">
+    Source code and updates
+  </Card>
+</CardGroup>
+
+<Tip>
+  For technical support or questions about the gRPC Gateway, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip>

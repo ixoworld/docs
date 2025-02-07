@@ -1,141 +1,264 @@
 ---
 title: 'IXO Oracles'
-description: 'Understanding Agentic AI in the Spatial Web'
+description: 'Build intelligent oracle services using agentic AI and the Spatial Web Stack'
 ---
+
+<Tip>
+  IXO Oracles are autonomous AI agents that provide intelligent services through cognitive workflows, secure data storage, and blockchain integration.
+</Tip>
 
 ## Overview
 
-IXO Oracles represent a new paradigm in blockchain oracle services by combining Web3 capabilities with agentic AI. These autonomous, data-driven entities go beyond traditional oracles by providing:
+IXO Oracles combine multiple technologies to create intelligent agent networks:
+- Decentralized Identity (DIDs) with verifiable credentials
+- AI-powered cognitive workflows using Langraph
+- Encrypted data storage with Matrix rooms
+- Blockchain integration via MultiClient SDK
 
-- Self-Sovereign Identity through DIDs
-- NFT-Based Domain Ownership
-- AI-Driven Decision Making
-- Verifiable Claims and Impacts
+## Core Architecture
 
-<Note>
-IXO Oracles bridge the gap between on-chain and off-chain realities while ensuring reliability, transparency, and responsible AI practices.
-</Note>
+<AccordionGroup>
+  <Accordion title="Identity Layer" icon="fingerprint">
+    ```json
+    {
+      "@context": ["https://www.w3.org/ns/did/v1"],
+      "id": "did:ixo:oracle/123",
+      "service": [{
+        "id": "#ai",
+        "type": "LangraphService",
+        "serviceEndpoint": "https://oracle.emerging.eco/ai"
+      }]
+    }
+    ```
+    - DID-based oracle domains
+    - Verifiable credentials
+    - Key management system
+    - Access control policies
+  </Accordion>
 
-## Core Principles
+  <Accordion title="AI Layer" icon="brain">
+    ```python
+    flow = Flow.create(
+        name="cognitive_workflow",
+        capabilities=[
+            "verification",
+            "prediction",
+            "optimization"
+        ]
+    )
+    ```
+    - Langraph framework
+    - Cognitive workflows
+    - Semantic routing
+    - Pattern recognition
+  </Accordion>
+
+  <Accordion title="Storage Layer" icon="database">
+    ```python
+    store = VectorStore.create(
+        type="weaviate",
+        index="oracle_memory"
+    )
+    room = Matrix.create_room(
+        encryption=True
+    )
+    ```
+    - Encrypted Matrix rooms
+    - Vector stores for memory
+    - Event processing
+    - Data integrity proofs
+  </Accordion>
+
+  <Accordion title="Blockchain Layer" icon="cube">
+    ```python
+    client = MultiClient(
+        chain_id="impact-hub-1",
+        key_name="oracle-key"
+    )
+    ```
+    - Impact Hub integration
+    - Transaction handling
+    - Smart contract interaction
+    - Cross-chain messaging
+  </Accordion>
+</AccordionGroup>
+
+## Cognitive Capabilities
 
 <CardGroup>
-  <Card title="Agentic Autonomy" icon="robot">
-    Independent operation powered by AI-driven logic and cryptographic identity
+  <Card title="Intelligent Verification" icon="check-double">
+    - Claims validation with AI
+    - Pattern-based verification
+    - Anomaly detection
+    - Compliance monitoring
   </Card>
-  <Card title="Decentralization" icon="network-wired">
-    True ownership and governance through NFT-based domains
+
+  <Card title="Predictive Analytics" icon="chart-line">
+    - Future state prediction
+    - Risk assessment
+    - Trend analysis
+    - Performance forecasting
   </Card>
-  <Card title="Verifiability" icon="shield-check">
-    All outputs are cryptographically signed and auditable
+
+  <Card title="Process Optimization" icon="gears">
+    - Workflow automation
+    - Resource allocation
+    - Efficiency improvement
+    - Cost optimization
   </Card>
-  <Card title="Interoperability" icon="link">
-    Seamless integration across blockchain networks
+
+  <Card title="Semantic Understanding" icon="brain-circuit">
+    - Natural language processing
+    - Context interpretation
+    - Intent recognition
+    - Knowledge extraction
   </Card>
 </CardGroup>
 
-## Prediction Functions
-
-IXO Oracles perform sophisticated P-Functions including:
-
-* Proofing & Verification
-* Personalization
-* Payment Automation
-* Problem Detection & Resolution
-* Prescribing Interventions
-* Planning, Profiling, Pattern Recognition
-* Prevention of Risks
-* Participation of People (humans in the loop)
-* Policy Enforcement
-* Portfolio Management
-* Process Optimization
-* Protocol Adherence
-* Pathfinding and Positioning
-
-## Conceptual Framework
-
-### Agentic Intelligence
-
-IXO Oracles evolve traditional oracle concepts by incorporating advanced cognitive computing to:
-
-- Evaluate claims autonomously
-- Trigger automated processes
-- Learn continuously from verified data
-- Make informed decisions
-
-### Digital Twin Architecture
-
-Each Oracle functions as a Cognitive Digital Twin—a digital representation that:
-
-- Mirrors real-world systems
-- Coordinates operations
-- Manages governance
-- Handles financial transactions
-- Verifies data integrity
-- Facilitates learning
-
-### The Spatial Web Context
-
-In the IXO Spatial Web, Oracles operate within a rich ecosystem where:
-
-- Every entity has a decentralized identity
-- Data flows are cryptographically secure
-- Trust is established through verifiable credentials
-- Cross-chain interactions are seamless
-
-## Key Capabilities
-
-<Tabs>
-  <Tab title="Data Management">
-    - Encrypted Storage
-    - Event Processing
-    - Decentralized File Systems
-  </Tab>
-  <Tab title="AI Operations">
-    - Intelligent Inference
-    - Verification Systems
-    - Semantic Processing
-  </Tab>
-  <Tab title="Blockchain Integration">
-    - Smart Contract Interaction
-    - Claims Processing
-    - Transaction Management
-  </Tab>
-</Tabs>
-
-## Real World Applications
-
-### Climate Intelligence
-
-Oracles can process weather data, validate carbon credits, and automate environmental impact assessments using advanced AI models.
-
-### Location Services
-
-Spatial intelligence oracles provide verified location data and context-aware services for decentralized applications.
-
-### Compliance Verification
-
-Automated verification of regulatory compliance, ESG metrics, and impact claims through AI-driven analysis.
-
-## Resources
+### P-Functions
 
 <CardGroup>
-  <Card title="Documentation" icon="book">
-    Explore our [Technical Documentation](/api-reference/oracles)
+  <Card title="Proving & Predicting" icon="magnifying-glass-chart">
+    - Verification of claims accuracy and validity
+    - Statistical probability forecasting
+    - Outcome prediction models
+    - Evidence-based validation
   </Card>
-  <Card title="Community" icon="users">
-    Join the [IXO Developer Community](https://ixofoundation.slack.com)
+
+  <Card title="Prescribing & Planning" icon="chart-gantt">
+    - Data-driven intervention programming
+    - Strategic outcome optimization
+    - Resource allocation planning
+    - Impact maximization strategies
   </Card>
-  <Card title="Standards" icon="file-contract">
-    Learn about [W3C Standards Integration](/docs/standards)
+
+  <Card title="Prevention & Protection" icon="shield-halved">
+    - Risk calculation and mitigation
+    - Threat detection and response
+    - Data security safeguards
+    - Process protection measures
+  </Card>
+
+  <Card title="Personalization & Participation" icon="users-gear">
+    - Individual service customization
+    - Human-in-the-loop decision making
+    - Adaptive interaction models
+    - Collaborative validation processes
   </Card>
 </CardGroup>
 
-## Next Steps
+## Implementation Guide
 
-1. Understand the [Core Concepts](/docs/concepts)
-2. Review [Use Cases](/docs/use-cases)
-3. Explore [Integration Patterns](/docs/patterns)
+<Steps>
+  <Step title="Oracle Domain Setup">
+    Configure the foundational identity and security layer for your oracle:
+    - Generate oracle DID
+    - Configure service endpoints
+    - Set up key management
+    - Initialize Matrix rooms
+  </Step>
 
-<Note>
-For guidance on implementing IXO Oracles in your project, reach out to our developer relations team through the [IXO Developer Portal](https://developers.ixo.world).
-</Note>
+  <Step title="AI Workflow Configuration">
+    Set up the cognitive processing capabilities:
+    - Define Langraph flows
+    - Configure semantic routing
+    - Set up vector stores
+    - Implement cognitive models
+  </Step>
+
+  <Step title="Integration Setup">
+    Connect your oracle to the blockchain and external services:
+    - Connect to Impact Hub
+    - Configure API endpoints
+    - Set up event handlers
+    - Enable cross-chain messaging
+  </Step>
+
+  <Step title="Security Configuration">
+    Implement security measures and monitoring:
+    - Implement key rotation
+    - Configure encryption
+    - Set up backup strategy
+    - Enable monitoring
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Intelligent Verification
+
+<AccordionGroup>
+  <Accordion title="Claims Processing" icon="file-check">
+    - AI-powered validation
+    - Pattern matching
+    - Anomaly detection
+    - Automated compliance checks
+  </Accordion>
+
+  <Accordion title="Impact Assessment" icon="chart-line">
+    - Predictive modeling
+    - Performance analytics
+    - Risk evaluation
+    - Outcome forecasting
+  </Accordion>
+</AccordionGroup>
+
+### Process Automation
+
+<AccordionGroup>
+  <Accordion title="Workflow Optimization" icon="gears">
+    - Smart routing
+    - Resource scheduling
+    - Task automation
+    - Performance monitoring
+  </Accordion>
+
+  <Accordion title="Decision Support" icon="brain">
+    - Intelligent recommendations
+    - Risk assessment
+    - Strategy optimization
+    - Pattern recognition
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Security" icon="shield">
+    - Regular key rotation
+    - Input validation
+    - Encrypted storage
+    - Attack monitoring
+  </Accordion>
+
+  <Accordion title="Observability" icon="chart-mixed">
+    - Performance metrics
+    - Accuracy tracking
+    - Operation logging
+    - Alert systems
+  </Accordion>
+</AccordionGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="Oracle SDK" icon="code" href="/spatial-web-stack/oracle-agent-sdk">
+    Build intelligent Oracle services
+  </Card>
+  
+  <Card title="Architecture Guide" icon="diagram-project" href="/guides/ixo-oracles-architecture">
+    Learn about oracle design patterns
+  </Card>
+  
+  <Card title="Flow Guide" icon="arrows-split-up-and-left" href="/guides/dev/flows">
+    Create cognitive workflows
+  </Card>
+  
+  <Card title="Security Guide" icon="shield-check" href="/guides/dev/security">
+    Implement security measures
+  </Card>
+</CardGroup>
+
+<Tip>
+  For implementation support, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip>

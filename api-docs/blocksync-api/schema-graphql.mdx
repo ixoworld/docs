@@ -1,0 +1,131 @@
+---
+title: 'GraphQL Schema Reference'
+description: 'Complete schema definition for the Blocksync GraphQL API'
+---
+
+<Tip>
+  This reference documents all types, queries, and filters available in the Blocksync GraphQL API schema.
+</Tip>
+
+## Types
+
+### Message Filter Types
+
+The following filter types are available for querying message-related data:
+
+```graphql
+"""
+A filter to be used against many `Message` object types. All fields are combined with a logical 'and.'
+"""
+input TransactionToManyMessageFilter {
+  """
+  Every related `Message` matches the filter criteria. All fields are combined with a logical 'and.'
+  """
+  every: MessageFilter
+
+  """
+  Some related `Message` matches the filter criteria. All fields are combined with a logical 'and.'
+  """
+  some: MessageFilter
+
+  """
+  No related `Message` matches the filter criteria. All fields are combined with a logical 'and.'
+  """
+  none: MessageFilter
+}
+
+"""
+A filter to be used against `BigFloat` fields.
+"""
+input BigFloatFilter {
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """
+  Equal to the specified value.
+  """
+  equalTo: BigFloat
+
+  """
+  Greater than the specified value.
+  """
+  greaterThan: BigFloat
+
+  """
+  Greater than or equal to the specified value.
+  """
+  greaterThanOrEqualTo: BigFloat
+
+  """
+  Less than the specified value.
+  """
+  lessThan: BigFloat
+
+  """
+  Less than or equal to the specified value.
+  """
+  lessThanOrEqualTo: BigFloat
+
+  """
+  Not equal to the specified value.
+  """
+  notEqualTo: BigFloat
+}
+```
+
+## Using Filters
+
+Filters can be combined to create complex queries. Here's how to use them:
+
+### Message Filtering
+
+Use the `TransactionToManyMessageFilter` to query transactions based on their associated messages:
+
+```graphql
+{
+  transactions(
+    filter: {
+      messages: {
+        some: {
+          type: { equalTo: "send" }
+        }
+      }
+    }
+  ) {
+    nodes {
+      hash
+      messages {
+        type
+        value
+      }
+    }
+  }
+}
+```
+
+### Numeric Filtering
+
+Use the `BigFloatFilter` for precise numeric comparisons:
+
+```graphql
+{
+  transactions(
+    filter: {
+      amount: {
+        greaterThan: "100.50"
+      }
+    }
+  ) {
+    nodes {
+      hash
+      amount
+    }
+  }
+}
+```
+
+<Tip>
+  All filter types support null checks and basic comparison operations. Combine multiple filters to create more specific queries.
+</Tip>
