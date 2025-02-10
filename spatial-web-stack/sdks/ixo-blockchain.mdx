@@ -2,27 +2,26 @@
 
 ### Links
 
-{% tabs %}
-{% tab title="Mainnet" %}
-[https://github.com/cosmos/chain-registry/tree/master/impacthub](https://github.com/cosmos/chain-registry/tree/master/impacthub)
-{% endtab %}
-
-{% tab title="Testnet" %}
-[https://github.com/cosmos/chain-registry/tree/master/testnets/impacthubtestnet](https://github.com/cosmos/chain-registry/tree/master/testnets/impacthubtestnet)
-{% endtab %}
-{% endtabs %}
+<Tabs>
+    <Tab title="Mainnet">
+        [https://github.com/cosmos/chain-registry/tree/master/impacthub](https://github.com/cosmos/chain-registry/tree/master/impacthub)
+    </Tab>
+    <Tab title="Testnet">
+        [https://github.com/cosmos/chain-registry/tree/master/testnets/impacthubtestnet](https://github.com/cosmos/chain-registry/tree/master/testnets/impacthubtestnet)
+    </Tab>
+</Tabs>
 
 The following instructions allow you to run a single node network on your local machine and interact with it using the command line interface (CLI). It is the simplest way to become familiar with the ixo Blockchain.
 
 After completing this guide you can [run a node](https://github.com/ixofoundation/genesis/blob/main/README.md) on the `pandora` testnet.
 
-{% hint style="info" %}
+<Info>
 We recommend the use of Docker and Docker Compose. The configuration files are provided in the `ixo-blockchain` directory.
-{% endhint %}
+</Info>
 
-{% hint style="info" %}
+<Info>
 Another way to interact with a node is the [ixo MultiClient SDK](../ixo-multiclient-sdk/), instead of CLI.
-{% endhint %}
+</Info>
 
 ### Prerequisites
 
@@ -59,9 +58,9 @@ Check out the latest stable version:
 git checkout main
 ```
 
-{% tabs %}
-{% tab title="Local" %}
-#### Run a node
+<Tabs>
+    <Tab title="Local">
+        #### Run a node
 
 Start a session (let's refer to it as `session 1`).
 
@@ -84,9 +83,9 @@ Start the `ixo-blockchain` node using pre-configured data.
 ./scripts/run_with_all_data.sh
 ```
 
-{% hint style="info" %}
+<Info>
 The script will start the blockchain and create accounts appropriate for the `ixo-blockchain` to enable easy interaction. The blocks will progress and you should see the logs to confirm it.
-{% endhint %}
+</Info>
 
 #### Interact with the node
 
@@ -120,10 +119,10 @@ ixod start
 ```bash
 make run_with_all_data
 ```
-{% endtab %}
+    </Tab>
 
-{% tab title="Docker" %}
-#### Run a node
+    <Tab title="Docker">
+        #### Run a node
 
 Create a Docker image called `ixo-chain`and tagged `devel`.
 
@@ -162,9 +161,9 @@ Start the `ixo-blockchain` node using pre-configured data.
 ./scripts/run_with_all_data.sh
 ```
 
-{% hint style="info" %}
+<Info>
 Script will start the blockchain and create accounts appropriate for the `ixo-blockchain` to enable easy interaction. The blocks will progress and you should see the logs to confirm it.
-{% endhint %}
+</Info>
 
 #### Interact with the node
 
@@ -202,5 +201,5 @@ ixod start
 ```bash
 make run_with_all_data
 ```
-{% endtab %}
-{% endtabs %}
+    </Tab>
+</Tabs>

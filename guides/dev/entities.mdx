@@ -16,11 +16,11 @@ const entityDid = utils.common.getValueFromEvents(response, "wasm", "token_id");
 console.log({ entityDid });
 ```
 
-<!-- theme: info -->
+<Info>
+ #### Protocols as canonical classes
 
-> #### Protocols as canonical classes
->
-> Entities can be of different types (e.g., "asset") and include context information that defines their class and properties. The context helps establish the entity's relationship to protocols and inherited properties.
+ Entities can be of different types (e.g., "asset") and include context information that defines their class and properties. The context helps establish the entity's relationship to protocols and inherited properties.
+</Info>
 
 In this example, the `CreateEntity` function is invoked to create a new entity, and the returned **entity DID** is logged to 
 the console. The `entityDid` value will be required in the next step to query the entity details.

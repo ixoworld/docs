@@ -8,24 +8,31 @@ info:
   license:
     name: Apache License 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
-  title: Emerging Household Energy API
-  version: '1.0'
+  title: Emerging Platform API
+  version: "1.0"
 servers:
-  - description: Production
-    url: https://api.emerging.eco
-  - description: Staging
-    url: https://stage.api.emerging.eco
   - description: Development
-    url: https://dev.api.emerging.eco
-security:
-  - basicAuth: []
+    url: https://dev.api.emerging.eco/emerging-platform/v1
+tags:
+  - name: Household Information
+    description: Endpoints related to household statistics and density profiles
+  - name: Device Monitoring
+    description: Endpoints for monitoring device status and activity
+  - name: Fuel Management
+    description: Endpoints for tracking fuel usage and consumption
+  - name: Carbon Credits
+    description: Endpoints for managing carbon credit lifecycle
+  - name: Claims Management
+    description: Endpoints for verifying and tracking various claims
+  - name: System Health
+    description: Server health and documentation endpoints
 paths:
   /households/stats:
     get:
-      description: 'Retrieve household statistics, including the number of serviced households and density profiles.'
+      description: "Retrieve household statistics, including the number of serviced households and density profiles."
       operationId: getHouseholdStats
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -35,37 +42,39 @@ paths:
                   medium: 500
                   high: 300
               schema:
-                $ref: '#/components/schemas/HouseholdStats'
+                $ref: "#/components/schemas/HouseholdStats"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get household statistics
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Household Information"]
   /households/stove-stacking:
     get:
-      description: 'Analyze usage patterns combining multiple fuel types (e.g., LPG + Biomass).'
+      description: "Analyze usage patterns combining multiple fuel types (e.g., LPG + Biomass)."
       operationId: getStoveStackingData
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StoveStacking'
+                $ref: "#/components/schemas/StoveStacking"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get stove stacking data
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Household Information"]
   /devices/status:
     get:
       description: Monitor real-time status and activity logs of connected devices.
       operationId: getDeviceStatus
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -73,20 +82,21 @@ paths:
                 status: inactive
                 last_active: 2024-01-01T08:30:00Z
               schema:
-                $ref: '#/components/schemas/DeviceStatus'
+                $ref: "#/components/schemas/DeviceStatus"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get device status and activity
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Device Monitoring"]
   /fuel-usage:
     get:
-      description: 'Retrieve data on fuel usage aggregated by household, region, or time period.'
+      description: "Retrieve data on fuel usage aggregated by household, region, or time period."
       operationId: getFuelUsage
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -94,14 +104,15 @@ paths:
                 fuel_consumed: 42.3
                 region: East Region
               schema:
-                $ref: '#/components/schemas/FuelUsage'
+                $ref: "#/components/schemas/FuelUsage"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get fuel usage metrics
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Fuel Management"]
   /credits/issued:
     get:
       description: Retrieve the number of credits issued per project and time period.
@@ -124,7 +135,7 @@ paths:
             type: string
           style: form
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -132,40 +143,42 @@ paths:
                 time_period: 2023-Q4
                 credits: 1200
               schema:
-                $ref: '#/components/schemas/CreditsIssued'
+                $ref: "#/components/schemas/CreditsIssued"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get issued credits
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Carbon Credits"]
   /credits/cancelled:
     get:
       description: Retrieve records of credits that have been invalidated.
       operationId: getCancelledCredits
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
                 credit_id: credit-001
                 cancellation_date: 2024-01-05
               schema:
-                $ref: '#/components/schemas/CreditsCancelled'
+                $ref: "#/components/schemas/CreditsCancelled"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get cancelled credits
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Carbon Credits"]
   /credits/transferred:
     get:
       description: View records of credits transferred to ITMOs.
       operationId: getTransferredCredits
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -174,21 +187,23 @@ paths:
                 amount: 500
                 transfer_date: 2024-01-10
               schema:
-                $ref: '#/components/schemas/CreditsTransferred'
+                $ref: "#/components/schemas/CreditsTransferred"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get transferred credits
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Carbon Credits"]
   /credits/retired:
     get:
-      description: Retrieve information about retired credits and their associated
+      description:
+        Retrieve information about retired credits and their associated
         emission reductions.
       operationId: getRetiredCredits
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -196,20 +211,21 @@ paths:
                 retirement_date: 2024-01-15
                 emission_reductions: 350
               schema:
-                $ref: '#/components/schemas/CreditsRetired'
+                $ref: "#/components/schemas/CreditsRetired"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get retired credits
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Carbon Credits"]
   /claims/fuel-purchase:
     get:
       description: Retrieve verified claims of purchased fuel units.
       operationId: getFuelPurchaseClaims
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -217,20 +233,21 @@ paths:
                 amount: 100.5
                 purchase_date: 2024-01-20
               schema:
-                $ref: '#/components/schemas/FuelPurchaseClaim'
+                $ref: "#/components/schemas/FuelPurchaseClaim"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: View fuel purchase claims
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Claims Management"]
   /claims/fuel-delivery:
     get:
       description: Retrieve details of completed fuel deliveries.
       operationId: getFuelDeliveryClaims
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -238,20 +255,21 @@ paths:
                 delivery_date: 2024-01-25
                 delivered_quantity: 250.0
               schema:
-                $ref: '#/components/schemas/FuelDeliveryClaim'
+                $ref: "#/components/schemas/FuelDeliveryClaim"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: View fuel delivery claims
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Claims Management"]
   /claims/emission-reduction:
     get:
       description: Retrieve records of Certified Emission Reductions (CERs) achieved.
       operationId: getEmissionReductionClaims
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
@@ -259,73 +277,49 @@ paths:
                 period: 2023-Q4
                 reductions: 300
               schema:
-                $ref: '#/components/schemas/EmissionReductionClaim'
+                $ref: "#/components/schemas/EmissionReductionClaim"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: View emission reduction claims
       x-eov-operation-handler: controllers/DefaultController
+      tags: ["Claims Management"]
   /claims/household-onboarding:
     get:
       description: Retrieve records of household onboarding claims.
       operationId: getHouseholdOnboardingClaims
       responses:
-        '200':
+        "200":
           content:
             application/json:
               example:
                 household_id: household-123
                 onboarding_date: 2024-01-01
               schema:
-                $ref: '#/components/schemas/HouseholdOnboardingClaim'
+                $ref: "#/components/schemas/HouseholdOnboardingClaim"
           description: Successful response
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
       summary: Get household onboarding claims
       x-eov-operation-handler: controllers/DefaultController
-  /hello:
-    get:
-      description: Health check endpoint
-      operationId: hello
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: 'ok'
-                  message:
-                    type: string
-                    example: 'Hello from Registry API'
-                  timestamp:
-                    type: string
-                    format: date-time
-                    example: '2024-01-27T20:12:33.023Z'
-          description: Successful response
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-      summary: Health check
-      x-eov-operation-handler: controllers/DefaultController
+      tags: ["Claims Management"]
 components:
   responses:
     BadRequest:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
       description: Bad request
     Unauthorized:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
       description: Unauthorized
   schemas:
     HouseholdStats:
@@ -340,14 +334,14 @@ components:
           description: Total number of serviced households.
           type: integer
         density:
-          $ref: '#/components/schemas/HouseholdStats_density'
+          $ref: "#/components/schemas/HouseholdStats_density"
     StoveStacking:
       example:
         fuel_type: LPG + Biomass
         percentage: 65.5
       properties:
         fuel_type:
-          description: 'Type of fuel used (e.g., LPG + Biomass).'
+          description: "Type of fuel used (e.g., LPG + Biomass)."
           type: string
         percentage:
           description: Percentage of households using this combination.
@@ -527,8 +521,3 @@ components:
       required:
         - household_id
         - onboarding_date
-  securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-      description: HTTP Basic authentication using username and password
