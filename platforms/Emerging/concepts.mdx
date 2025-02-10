@@ -1,163 +1,230 @@
 ---
 title: 'Core Concepts'
-description: 'Understand the fundamentals of the Emerging Platform'
+icon: 'lightbulb'
+description: 'Understand the fundamentals of the Emerging Household Energy Platform'
 ---
 
-## Overview
-
-<Note>
-The Emerging Platform enables decentralized measurement, reporting, and verification (dMRV) of climate impacts using blockchain, IoT, and AI technologies.
-</Note>
+<Tip>
+The Emerging Household Energy Platform enables intelligent coordination, financing, verification, governance, and data collection for climate impact mitigation, using blockchain, IoT, and AI technologies, with a focus on clean cooking and household energy solutions.
+</Tip>
 
 ## Platform Architecture
 
 <CardGroup>
 
-<Card title="Blockchain Layer" icon="cube">
-  Immutable ledger for climate impact data and transactions.
+<Card title="Impact Hub Blockchain" icon="cube" href="articles/ixo-blockchain">
+  Decentralized registry for climate impact data and transactions, built on the IXO Protocol.
 </Card>
 
-<Card title="Data Layer" icon="database">
-  IoT integration and secure data storage.
+<Card title="Encrypted Data Matrix" icon="database" href="articles/ixo-matrix">
+  Secure IoT integration, data storage, and encrypted messaging channels.
 </Card>
 
-<Card title="Integration Layer" icon="plug">
-  APIs and interfaces for external systems.
+<Card title="Integration Services" icon="plug" href="articles/ixo-integrations">
+  APIs and interfaces for external systems, device connectivity, and registries.
 </Card>
 
-<Card title="AI Layer" icon="robot">
-  Oracle services and automated verification.
+<Card title="Intelligent Oracles" icon="sparkles">
+  AI-enabled services for automated verification, predictive analytics, and intelligent automation.
 </Card>
 
 </CardGroup>
 
-## Key Features
+## Digital MRV System
 
-### Digital MRV (dMRV)
+The platform provides a comprehensive decentralized Measurement, Reporting, and Verification (dMRV) system that offers:
 
 <AccordionGroup>
 
-<Accordion title="Data Collection">
-- **IoT device integration**
-- **Real-time monitoring**
-- **Standardized reporting**
-- **Secure validation**
+<Accordion title="Real-Time Monitoring">
+- **IoT Integration**: Smart device connectivity and data streaming
+- **Continuous Monitoring**: Real-time usage and performance tracking
+- **Standardized Reporting**: Structured data collection and validation
+- **Secure Validation**: Cryptographic proofs and verification
 </Accordion>
 
-<Accordion title="Verification">
-- **Automated checks**
-- **Oracle services**
-- **Cross-validation**
-- **Audit trails**
+<Accordion title="Automated Verification">
+- **Protocols**: Methodology alignment and reporting
+- **Claims Processing**: Data validation and evaluation
+- **Automated Checks**: Data completeness and threshold compliance
+- **Oracle Services**: Causal AI-powered validation and evaluation
+- **Manual Reviews**: Expert validation and audit
+</Accordion>
+
+<Accordion title="Digital Certification">
+- **Verifiable Credentials**: Standardized digital certificates
+- **ITMO Certificates**: Digital carbon credit certification
+- **Selective Disclosure**: Privacy-preserving verification
 </Accordion>
 
 </AccordionGroup>
 
-### Digital Certification
+## Digital Certification
 
 <AccordionGroup>
 
-<Accordion title="Credentials">
-- **W3C Verifiable Credentials**
-- **Digital ITMO certificates**
-- **Proof of outcome claims**
-- **Selective disclosure**
+<Accordion title="Verifiable Credentials">
+- **W3C Standards**: Standardized credential format
+- **ITMO Certificates**: Digital carbon credit certification
+- **Verifiable Claims**: Verifiable outcome documentation
+- **Selective Disclosure**: Privacy-preserving verification
 </Accordion>
 
-<Accordion title="Verification">
-- **Data provenance (Verifiable Claims)**
-- **Cryptographic proofs**
-- **Web of Trust (Verifiable Credentials)**
-- **Revocation checking**
+<Accordion title="Trust Framework">
+- **Data Provenance**: Verifiable claims and audit trails
+- **Cryptographic Proofs**: Tamper-evident documentation
+- **Web of Trust**: Distributed verification network
+- **Revocation Management**: Certificate lifecycle control
 </Accordion>
 
 </AccordionGroup>
 
-### Digital Registry
+## Digital Registry
 
 <AccordionGroup>
 
 <Accordion title="Asset Management">
-- **Climate impact tracking**
-- **Ownership records**
-- **Transfer history**
-- **Compliance with international standards**
+- **Project Registration**: Climate impact initiative tracking
+- **Device Registration**: IoT device enrollment and monitoring
+- **Household Registration**: Beneficiary tracking and verification
+- **Claims Processing**: Impact measurement and certification
 </Accordion>
 
-<Accordion title="Integration">
-- **Carbon markets**
-- **National registries**
-- **Trading platforms**
-- **Digital Finance Applications**
+<Accordion title="Market Integration">
+- **Carbon Markets**: Trading platform connectivity
+- **National Registries**: Cross-border compliance
+- **Payment Systems**: Digital finance integration
+- **Impact Credits**: Tokenized outcome trading
 </Accordion>
 
 </AccordionGroup>
 
 ## Data Model
 
-<ResponseField name="Entities" type="object">
-  Digital twins of real-world objects (households, devices, organizations).
-</ResponseField>
+### Core Entities
 
-<ResponseField name="Claims" type="object">
-  Verifiable statements about entities (measurements, events).
-</ResponseField>
+<CardGroup>
 
-<ResponseField name="Credentials" type="object">
-  Certified collections of claims (certificates, authorizations).
-</ResponseField>
+<Card title="Cognitive Digital Twins" icon="brain">
+  Digital representations of physical devices, households, and organizations with unique DIDs
+</Card>
 
-## Authentication
+<Card title="Claims" icon="file-signature">
+  Verifiable statements about measurements, events, and outcomes
+</Card>
 
-```bash
-# All API requests require authentication
-Authorization: Bearer YOUR_API_KEY
-```
+<Card title="Credentials" icon="certificate">
+  Certified collections of claims with cryptographic proofs
+</Card>
 
-<Note>
-Get your API key from the [Emerging Portal](https://portal.emerging.eco).
-</Note>
+<Card title="Oracles" icon="sparkles">
+  AI-powered verification services for automated validation
+</Card>
+
+</CardGroup>
+
+### Domain Properties
+
+<AccordionGroup>
+
+<Accordion title="Domain Configuration">
+- **Unique Identifiers**: W3C DIDs for each entity
+- **Controller Assignments**: Access and update rights
+- **Service Endpoints**: API and data connections
+- **Resource Links**: Related asset references
+</Accordion>
+
+<Accordion title="Data Management">
+- **Usage Metrics**: Device performance tracking
+- **Impact Data**: Environmental measurements
+- **Financial Records**: Transaction history
+- **Verification Status**: Claim validation state
+</Accordion>
+
+</AccordionGroup>
+
+## Implementation Guide
+
+<AccordionGroup title="Implementation Steps" icon="list-check">
+<Accordion title="Domain Setup">
+<Steps>
+- Register Entity Domains for Projects, Households, and Devices
+- Register User DIDs with Mobile Wallets
+- Issue Veriable Credentials for households and devices
+- Configure Protocols, or select existing ones
+</Steps>
+</Accordion>
+
+<Accordion title="Data Collection">
+<Steps>
+- Configure Claim Collections, using Protocols
+- Authorize Agents to submit Claims
+- Connect IoT devices to Matrix API
+- Submit Veriable Claims
+</Steps>
+</Accordion>
+
+<Accordion title="Verification Process">
+<Steps>
+- Set up automated checks
+- Configure oracle services
+- Validate with manual reviews
+- Generate verification reports
+- Audit with cryptographic proofs
+</Steps>
+</Accordion>
+
+<Accordion title="Market Integration">
+<Steps>
+- Connect to marketplaces
+- Enable credit trading
+- Set up payment systems
+- Integrate with registries
+
+</Steps>
+</Accordion>
+</AccordionGroup>
 
 ## Next Steps
 
 <CardGroup>
 
-<Card title="Digital MRV" icon="chart-line" href="guides/dmrv">
-  Learn about measurement and verification.
+<Card title="Digital MRV" icon="chart-line" href="/platforms/Emerging/dmrv">
+  Learn about measurement and verification implementation
 </Card>
 
-<Card title="Digital Certification" icon="certificate" href="guides/digital-certification">
-  Explore credential issuance for ITMO certificates.
+<Card title="Digital Certification" icon="certificate" href="/platforms/Emerging/digital-certification">
+  Explore credential issuance for ITMO certificates
 </Card>
 
-<Card title="Digital Registry" icon="database" href="guides/registry">
-  Understand data asset management.
+<Card title="Digital Registry" icon="database" href="/platforms/Emerging/registry">
+  Understand data asset management
 </Card>
 
-<Card title="SDG Monitoring" icon="globe" href="guides/sdg-monitoring">
-  Track development goals and verify outcomes.
+<Card title="SDG Monitoring" icon="globe" href="/platforms/Emerging/sdg-monitoring">
+  Track development goals and verify outcomes
 </Card>
 
 </CardGroup>
 
-## Related Documentation
+## Developer Resources
 
 <CardGroup>
 
-<Card title="API Reference" icon="book" href="api-reference/introduction">
-  Complete API documentation and Playground.
+<Card title="API Reference" icon="code" href="/api-docs/emerging-api/emerging-api">
+  Complete API documentation
 </Card>
 
-<Card title="SDKs" icon="code" href="spatial-web-stack/spatial-web-sdks">
-  Client libraries and tools.
+<Card title="SDKs" icon="box" href="/spatial-web-stack/spatial-web-sdks">
+  Development tools and libraries
 </Card>
 
-<Card title="Tutorials" icon="graduation-cap" href="wip">
-  Step-by-step guides.
+<Card title="Tutorials" icon="graduation-cap" href="/guides/dev/introduction">
+  Step-by-step implementation guides
 </Card>
 
-<Card title="Examples" icon="code-branch" href="wip">
-  Sample applications.
+<Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+  Developer community assistance
 </Card>
 
 </CardGroup>

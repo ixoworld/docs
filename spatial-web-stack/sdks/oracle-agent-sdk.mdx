@@ -3,19 +3,19 @@ title: 'Oracle Agent SDK'
 description: 'Build intelligent AI agents for the Spatial Web with conversational capabilities, dynamic UI components, and verifiable outputs'
 ---
 
-<Note>
-  The Oracle Agent SDK enables developers to create AI-powered oracles that can interact with users, process data, and provide verifiable attestations through IXO Protocol networks.
-</Note>
+<Tip>
+  The Oracle Agent SDK enables developers to create AI-powered oracles that can interact with users through dynamic conversational interfaces, process data in real-time, and provide verifiable attestations through IXO Protocol networks. It supports both web and mobile platforms through React integration.
+</Tip>
 
 ## Key Features
 
 <CardGroup>
   <Card title="AI Integration" icon="brain">
-    LLM-powered conversational agents
+    LLM-powered conversational agents with real-time message streaming
   </Card>
 
   <Card title="Dynamic UI" icon="window">
-    Reactive component rendering
+    Platform-agnostic reactive component rendering for web and mobile
   </Card>
 
   <Card title="Verification" icon="shield-check">
@@ -23,7 +23,7 @@ description: 'Build intelligent AI agents for the Spatial Web with conversationa
   </Card>
 
   <Card title="Matrix Integration" icon="network-wired">
-    Secure data rooms and messaging
+    Secure data rooms and real-time messaging
   </Card>
 </CardGroup>
 
@@ -47,7 +47,8 @@ yarn add @ixo/oracle-agent-sdk
   const agent = await createOracleAgent({
     did: "did:ixo:oracle/123",
     capabilities: ["verification", "conversation"],
-    model: "gpt-4"
+    model: "gpt-4",
+    streaming: true // Enable real-time streaming
   });
 
   // Configure verification rules
@@ -57,63 +58,66 @@ yarn add @ixo/oracle-agent-sdk
   });
   ```
 
-  ```typescript Matrix Integration
-  // Create secure data room
-  const room = await agent.createDataRoom({
-    name: "Oracle Workspace",
-    encryption: true,
-    members: ["@user:ixo.world"]
+  ```typescript Session Management
+  // Create and manage multiple chat sessions
+  const session = await agent.createSession({
+    sessionId: "session-123",
+    context: {
+      user: "did:ixo:user/456",
+      preferences: userPrefs
+    }
   });
 
-  // Store verification results
-  await agent.storeResult(room.roomId, {
-    type: "Verification",
-    result: verificationResult,
-    evidence: proofs
-  });
+  // Switch between active sessions
+  await agent.setActiveSession("session-123");
   ```
 </CodeGroup>
 
-### Conversation Management
+### React Integration
 
 <CodeGroup>
-  ```typescript Chat Integration
-  import { useOracleChat } from "@ixo/oracle-agent-sdk/react";
+  ```typescript Web Components
+  import { useOracleChat, useMessages } from "@ixo/oracle-agent-sdk/react";
 
-  function OracleChat() {
+  function WebChatInterface() {
+    const { messages, sendMessage, isLoading } = useOracleChat({
+      oracleId: "did:ixo:oracle/123",
+      sessionId: "session-456"
+    });
+
+    const { messageList, hasMore } = useMessages({
+      sessionId: "session-456",
+      limit: 50
+    });
+
+    return (
+      <div className="chat-container">
+        <MessageList messages={messageList} />
+        <ChatInput onSend={sendMessage} disabled={isLoading} />
+        {isLoading && <LoadingIndicator />}
+      </div>
+    );
+  }
+  ```
+
+  ```typescript Mobile Components
+  import { View, Text } from 'react-native';
+  import { useOracleChat } from "@ixo/oracle-agent-sdk/react-native";
+
+  function MobileChatInterface() {
     const { messages, sendMessage, isLoading } = useOracleChat({
       oracleId: "did:ixo:oracle/123",
       sessionId: "session-456"
     });
 
     return (
-      <div>
-        {messages.map(msg => (
-          <ChatMessage key={msg.id} {...msg} />
-        ))}
-        <MessageInput onSend={sendMessage} />
-      </div>
+      <View style={styles.container}>
+        <MessageList messages={messages} />
+        <ChatInput onSend={sendMessage} />
+        {isLoading && <ActivityIndicator />}
+      </View>
     );
   }
-  ```
-
-  ```typescript Tool Calls
-  // Register custom tools
-  agent.registerTool("locationVerify", async (params) => {
-    const { latitude, longitude } = params;
-    const proof = await agent.verifyLocation({
-      coordinates: [latitude, longitude],
-      timestamp: Date.now()
-    });
-    return proof;
-  });
-
-  // Handle tool responses
-  agent.onToolCall(async (call) => {
-    if (call.type === "locationVerify") {
-      return await agent.tools.locationVerify(call.params);
-    }
-  });
   ```
 </CodeGroup>
 
@@ -125,16 +129,19 @@ import { OracleUI } from "@ixo/oracle-agent-sdk/ui";
 // Register custom components
 OracleUI.register("VerificationCard", VerificationCard);
 OracleUI.register("LocationProof", LocationProof);
+OracleUI.register("DataVisualizer", DataVisualizer);
 
-// Render dynamic content
+// Dynamic component resolver
 function DynamicContent({ content }) {
   return (
     <OracleUI.Renderer
       content={content}
       components={{
         VerificationCard,
-        LocationProof
+        LocationProof,
+        DataVisualizer
       }}
+      platform="web" // or 'mobile'
     />
   );
 }
@@ -220,31 +227,49 @@ function OracleInterface() {
   Verification conflict
 </ResponseField>
 
+## Use Cases
+
+<CardGroup>
+  <Card title="AI Chat Interfaces" icon="comments">
+    Build interactive conversational experiences with real-time responses
+  </Card>
+  
+  <Card title="Dynamic Content" icon="wand-magic-sparkles">
+    Create AI-driven dynamic UI components and workflows
+  </Card>
+  
+  <Card title="Data Verification" icon="shield-check">
+    Implement secure data verification with cryptographic proofs
+  </Card>
+  
+  <Card title="Cross-Platform Apps" icon="mobile">
+    Deploy on both web and mobile platforms
+  </Card>
+</CardGroup>
+
 ## Best Practices
 
-<Note>
+<Tip>
   Follow these guidelines for robust oracle implementation
-</Note>
+</Tip>
 
 ### Security
 
 * Validate all inputs
-
 * Implement rate limiting
-
 * Store sensitive data in encrypted rooms
-
 * Monitor verification accuracy
+* Implement proper session management
+* Use secure WebSocket connections
 
 ### Performance
 
 * Cache verification results
-
 * Implement retry logic
-
 * Handle offline scenarios
-
 * Monitor resource usage
+* Optimize message batching
+* Implement proper error boundaries
 
 ## Next Steps
 
@@ -259,5 +284,9 @@ function OracleInterface() {
 
   <Card title="Integration Guide" icon="plug">
     Connect with AI Models
+  </Card>
+
+  <Card title="Platform Guide" icon="mobile-screen">
+    Deploy across platforms
   </Card>
 </CardGroup>

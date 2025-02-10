@@ -1,9 +1,66 @@
 ---
 title: 'Kitchen Performance Tests'
-description: 'Integrate KPT methodologies using the Emerging Platform.'
+icon: 'flask'
+description: 'Integrate KPT methodologies using the Emerging Household Energy for accurate household fuel consumption measurement.'
 ---
 
-Kitchen Performance Tests measure and validate real-world fuel consumption in household cooking environments through direct observation.
+Kitchen Performance Tests (KPTs) are field-based procedures that measure and validate real-world fuel consumption in household cooking environments through direct observation. These tests follow strict methodological requirements to ensure accurate quantification of emission reductions and prevent over-crediting.
+
+## Methodological Requirements
+
+<AccordionGroup>
+  <Accordion title="Test Design">
+    * **Random Selection**: 
+      - Households must be randomly selected
+      - Selection methodology must be documented in MADD
+      - Platform provides tools for random selection and documentation
+    * **Test Groups**:
+      - Reference group (old stove users)
+      - Intervention group (new stove users)
+      - Both groups must be tested simultaneously
+      - Reference group must be representative of target population
+    * **Participant Motivation**:
+      - Clear strategy for engaging reference households
+      - Documentation of incentive structures
+      - Compliance monitoring tools
+  </Accordion>
+
+  <Accordion title="Test Duration">
+    * **Minimum Duration**: 3 days required
+    * **Test Period Selection**:
+      - Must capture representative cooking patterns
+      - Documentation of test day determination
+      - Justification of period appropriateness
+    * **Timing Considerations**:
+      - Seasonal cooking variations
+      - Cultural factors affecting cooking habits
+      - Local event calendars
+  </Accordion>
+
+  <Accordion title="Data Collection Frequency">
+    * **Climate Variations**:
+      - Account for spatial and temporal climate differences
+      - Track seasonal impacts on fuel consumption
+    * **External Factors**:
+      - Monitor traditional cooking patterns
+      - Track occupational influences
+      - Document cultural events
+    * **Continuous Monitoring**:
+      - Ongoing coverage is best practice
+      - Any gaps require detailed justification
+      - Regular data validation checks
+  </Accordion>
+
+  <Accordion title="Sample Size Requirements">
+    * **Population Coverage**:
+      - Full population testing preferred
+      - Sampling allowed with proper design
+    * **Sample Determination**:
+      - Follow [sampling design guidelines](/platforms/Emerging/sample-size)
+      - Statistical significance requirements
+      - Documentation of selection process
+  </Accordion>
+</AccordionGroup>
 
 ## Quick Start
 
@@ -14,23 +71,56 @@ Kitchen Performance Tests measure and validate real-world fuel consumption in ho
     -d '{
       "type": "KPTClaim",
       "householdId": "did:ixo:household/123",
+      "testGroup": "intervention",
+      "testPeriod": {
+        "startDate": "2024-02-01",
+        "endDate": "2024-02-04",
+        "durationDays": 3
+      },
       "fuelMeasurements": {
         "total": 11.9,
         "dailyLogs": [3.2, 2.8, 3.0, 2.9]
+      },
+      "externalFactors": {
+        "season": "dry",
+        "culturalEvents": ["none"],
+        "occupationalFactors": ["typical_workweek"]
       }
     }'
   ```
 
   ```python
-  from emerging import Client
+  from emerging import Client, KPTDesign
 
+  # Configure test design
+  design = KPTDesign.create(
+      population_size=1000,
+      confidence_level=0.95,
+      margin_error=0.05
+  )
+
+  # Get random household selection
+  selected_households = design.get_random_selection()
+
+  # Submit KPT data
   client = Client('YOUR_API_KEY')
   kpt = client.claims.create(
       type="KPTClaim",
       household_id="did:ixo:household/123",
+      test_group="intervention",
+      test_period={
+          "start_date": "2024-02-01",
+          "end_date": "2024-02-04",
+          "duration_days": 3
+      },
       fuel_measurements={
           "total": 11.9,
           "daily_logs": [3.2, 2.8, 3.0, 2.9]
+      },
+      external_factors={
+          "season": "dry",
+          "cultural_events": ["none"],
+          "occupational_factors": ["typical_workweek"]
       }
   )
   ```
@@ -40,19 +130,19 @@ Kitchen Performance Tests measure and validate real-world fuel consumption in ho
 
 <CardGroup>
   <Card title="Household Registration" icon="house">
-    Register households and devices for KPT tracking
+    Register and randomly select households following protocol requirements
   </Card>
 
   <Card title="Data Collection" icon="clipboard">
-    Record daily fuel consumption and cooking patterns
+    Record daily fuel consumption with minimum 3-day observation period
   </Card>
 
   <Card title="Verification" icon="check-double">
-    Validate KPT results against protocols
+    Validate KPT results against protocols and control group data
   </Card>
 
   <Card title="Credentials" icon="certificate">
-    Issue verifiable KPT credentials
+    Issue verifiable KPT credentials with emission reduction data
   </Card>
 </CardGroup>
 
@@ -67,7 +157,11 @@ Kitchen Performance Tests measure and validate real-world fuel consumption in ho
 </ResponseField>
 
 <ResponseField name="fuelMeasurements" type="object" required>
-  Daily fuel consumption measurements
+  Daily fuel consumption measurements (minimum 3 days)
+</ResponseField>
+
+<ResponseField name="testGroup" type="string" required>
+  Indicates whether household is in "reference" or "intervention" group
 </ResponseField>
 
 ## Optional Parameters
@@ -77,24 +171,28 @@ Kitchen Performance Tests measure and validate real-world fuel consumption in ho
 </ResponseField>
 
 <ResponseField name="evidence" type="array">
-  Photos or documentation links
+  Photos, documentation links, and selection methodology evidence
+</ResponseField>
+
+<ResponseField name="externalFactors" type="object">
+  Documentation of climate and other variables affecting consumption
 </ResponseField>
 
 ## Validation Rules
 
 <AccordionGroup>
   <Accordion title="Data Consistency">
-    * Daily measurements must be present
-
+    * Daily measurements must span minimum 3-day period
     * Total must match sum of daily logs
-
     * Values must be positive numbers
+    * Seasonal variations must be documented
   </Accordion>
 
-  <Accordion title="Device Correlation">
-    * IoT data (if available) must align with KPT logs
-
-    * Significant deviations trigger alerts
+  <Accordion title="Methodology Compliance">
+    * Random selection must be verified
+    * Control group data must be present
+    * Test timing must align between groups
+    * External factors must be documented
   </Accordion>
 </AccordionGroup>
 
@@ -130,33 +228,63 @@ Kitchen Performance Tests measure and validate real-world fuel consumption in ho
 
 ## Integration Examples
 
-### Combining with IoT Data
+### Combining with IoT Data and Control Groups
 
 ```python
-# Get KPT baseline
-kpt_baseline = client.kpt.get_baseline("household-123")
+# Get KPT baseline for both groups
+reference_baseline = client.kpt.get_baseline("reference-group")
+intervention_baseline = client.kpt.get_baseline("intervention-group")
 
 # Compare with IoT readings
 iot_data = client.devices.get_usage("device-456")
-reduction = calculate_reduction(kpt_baseline, iot_data)
+reduction = calculate_reduction(reference_baseline, intervention_baseline, iot_data)
+
+# Validate seasonal factors
+seasonal_impact = client.kpt.analyze_seasonal_variations(reduction)
 ```
 
-<Note>
-  Always cross-reference KPT data with available IoT measurements for accuracy.
-</Note>
+<Tip>
+  Always ensure compliance with minimum 3-day testing period and proper control group implementation.
+</Tip>
 
 ## Next Steps
 
 <CardGroup>
   <Card title="Protocol Guide" icon="book">
-    Learn about KPT measurement protocols
+    Detailed KPT measurement protocols and methodological requirements
   </Card>
 
   <Card title="Field Manual" icon="clipboard-list">
-    Best practices for data collection
+    Best practices for data collection and control group management
   </Card>
 
   <Card title="Verification Guide" icon="shield-check">
-    Understanding the validation process
+    Understanding the validation process and emission reduction quantification
   </Card>
 </CardGroup>
+
+## Best Practices
+
+### Test Design
+* Document random selection process
+* Ensure simultaneous testing of groups
+* Validate group representativeness
+* Monitor participant engagement
+
+### Data Collection
+* Maintain minimum 3-day duration
+* Track external influencing factors
+* Document seasonal variations
+* Ensure continuous monitoring coverage
+
+### Quality Control
+* Validate measurement consistency
+* Cross-reference with other data sources
+* Monitor dropout rates
+* Track data completeness
+
+### Documentation
+* Record selection methodology
+* Document test period justification
+* Track external factors
+* Maintain compliance evidence

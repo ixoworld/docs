@@ -1,4 +1,228 @@
 ---
-title: Work in Progress
-description: "This page is under development. Please check back later"
+title: 'IXO Matrix'
+description: 'Secure data storage and messaging for the Spatial Web'
 ---
+
+<Note>
+The IXO Matrix provides encrypted data storage and secure messaging capabilities for the Spatial Web through Matrix protocol integration. It enables private data rooms, real-time communication, and secure file storage with end-to-end encryption.
+</Note>
+
+## Core Components
+
+<CardGroup>
+  <Card title="Data Rooms" icon="vault">
+    Encrypted spaces for storing sensitive data with controlled access
+  </Card>
+  
+  <Card title="Messaging" icon="comments">
+    Secure real-time communication channels between entities
+  </Card>
+  
+  <Card title="File Storage" icon="file-shield">
+    End-to-end encrypted file storage with access control
+  </Card>
+  
+  <Card title="State Management" icon="database">
+    Room state and configuration management through State Bot
+  </Card>
+</CardGroup>
+
+## Data Room Architecture
+
+<AccordionGroup>
+  <Accordion title="Room Types" icon="door-open">
+    - **Entity Rooms**: Digital twin data storage
+    - **Project Rooms**: Collaboration spaces
+    - **Device Rooms**: IoT device telemetry
+    - **Verification Rooms**: Oracle processing
+  </Accordion>
+
+  <Accordion title="Security Features" icon="shield-check">
+    - **End-to-End Encryption**: All data encrypted by default
+    - **Access Control**: Role-based permissions
+    - **Key Management**: Secure key distribution
+    - **Audit Trails**: Activity logging
+  </Accordion>
+</AccordionGroup>
+
+## Implementation Guide
+
+### Creating Data Rooms
+
+```typescript
+import { MatrixClient } from '@ixo/matrixclient-sdk'
+
+// Initialize Matrix client
+const matrix = new MatrixClient({
+  baseUrl: 'https://matrix.ixo.world',
+  accessToken: 'YOUR_ACCESS_TOKEN'
+})
+
+// Create encrypted room
+const room = await matrix.createRoom({
+  name: 'Project Data Room',
+  encryption: true,
+  preset: 'private_chat',
+  initialState: [{
+    type: 'm.room.encryption',
+    state_key: '',
+    content: { algorithm: 'm.megolm.v1.aes-sha2' }
+  }]
+})
+
+// Set room permissions
+await matrix.setRoomPermissions(room.id, {
+  readAccess: ['@alice:ixo.world'],
+  writeAccess: ['@bob:ixo.world']
+})
+```
+
+### Storing Data
+
+```typescript
+// Store encrypted data
+await matrix.sendEvent(room.id, 'data.store', {
+  type: 'ProjectMetrics',
+  data: encryptedData,
+  metadata: {
+    timestamp: Date.now(),
+    version: '1.0'
+  }
+})
+
+// Store file
+const fileEvent = await matrix.sendFile(room.id, {
+  file: fileData,
+  filename: 'metrics.json',
+  mimetype: 'application/json'
+})
+```
+
+### Real-Time Messaging
+
+```typescript
+// Send secure message
+await matrix.sendMessage(room.id, {
+  msgtype: 'm.text',
+  body: encryptedMessage
+})
+
+// Listen for messages
+matrix.on('room.message', (event) => {
+  if (event.getType() === 'm.room.message') {
+    console.log('New message:', event.getContent().body)
+  }
+})
+```
+
+### State Management
+
+```typescript
+import { StateBot } from '@ixo/matrixclient-sdk'
+
+// Initialize state bot
+const stateBot = new StateBot({
+  baseUrl: 'https://matrix.ixo.world',
+  accessToken: 'BOT_TOKEN'
+})
+
+// Set room state
+await stateBot.setState(room.id, 'custom.state.type', {
+  key: 'value',
+  timestamp: Date.now()
+})
+
+// Get room state
+const state = await stateBot.getState(room.id, 'custom.state.type')
+```
+
+## Use Cases
+
+<CardGroup>
+  <Card title="Digital Twin Data" icon="database">
+    Store and manage digital twin state and history
+  </Card>
+  
+  <Card title="IoT Telemetry" icon="microchip">
+    Collect and process device data streams
+  </Card>
+  
+  <Card title="Verification Data" icon="check-double">
+    Store verification results and evidence
+  </Card>
+  
+  <Card title="Collaboration" icon="users">
+    Enable secure team communication
+  </Card>
+</CardGroup>
+
+## Security Considerations
+
+<AccordionGroup>
+  <Accordion title="Encryption" icon="lock">
+    - Use end-to-end encryption for all rooms
+    - Implement proper key management
+    - Rotate encryption keys regularly
+    - Secure key backup and recovery
+  </Accordion>
+
+  <Accordion title="Access Control" icon="shield">
+    - Implement role-based access
+    - Regular permission audits
+    - Monitor room membership
+    - Enforce least privilege
+  </Accordion>
+
+  <Accordion title="Data Protection" icon="database">
+    - Encrypt sensitive data
+    - Implement data retention
+    - Regular security audits
+    - Backup critical data
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### Room Management
+
+- Create separate rooms for different purposes
+- Use clear naming conventions
+- Document room purposes
+- Regular access reviews
+- Monitor room sizes
+
+### Data Handling
+
+- Validate data before storage
+- Implement error handling
+- Use appropriate event types
+- Monitor storage usage
+- Regular data cleanup
+
+### Performance
+
+- Batch operations when possible
+- Implement caching
+- Handle rate limits
+- Monitor API usage
+- Optimize file sizes
+
+## Next Steps
+
+<CardGroup>
+  <Card title="SDK Guide" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+    Learn more about the Matrix SDK
+  </Card>
+
+  <Card title="State Bot" icon="robot" href="/api-docs/matrix-api/matrix-statebot-api">
+    Explore state management
+  </Card>
+
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
+    View example implementations
+  </Card>
+
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Get developer assistance
+  </Card>
+</CardGroup>

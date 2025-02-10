@@ -1,0 +1,236 @@
+---
+title: 'SignX SDK'
+description: 'Sign blockchain transactions on mobile with secure mobile-to-web authentication and multi-transaction processing'
+---
+
+<Tip>
+  The SignX SDK offers developers an easy and secure way to integrate mobile-to-web authentication and transaction signing using the IXO blockchain. It orchestrates interactions between client applications, mobile apps, and servers, abstracting complex blockchain operations into a user-friendly interface.
+</Tip>
+
+## Overview
+
+The SignX SDK simplifies the complexities of authentication, data handling, and multi-transaction processing by providing:
+
+- Secure QR-based authentication flows
+- Encrypted data transmission
+- Multi-transaction session management
+- Real-time status updates through polling
+- Cross-platform compatibility
+
+## Key Features
+
+<CardGroup>
+  <Card title="Mobile-to-Web Auth" icon="qrcode">
+    Secure QR code-based authentication with real-time status updates
+  </Card>
+
+  <Card title="Secure Data" icon="shield-check">
+    AES-256-CBC encryption for sensitive data transmission
+  </Card>
+
+  <Card title="Multi-Transaction" icon="layer-group">
+    Dynamic session management for sequential transactions
+  </Card>
+
+  <Card title="Real-Time Updates" icon="bolt">
+    Long polling mechanisms for live status tracking
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+npm install @ixo/signx-sdk
+# or
+yarn add @ixo/signx-sdk
+```
+
+## Quick Start
+
+### Authentication Flow
+
+<CodeGroup>
+  ```typescript QR Login
+  import { SignX } from "@ixo/signx-sdk";
+
+  // Initialize SignX
+  const signx = new SignX({
+    baseUrl: "https://signx.ixo.world",
+    chainId: "ixo-5"
+  });
+
+  // Generate login request
+  const loginRequest = await signx.createLoginRequest({
+    callback: "https://app.example.com/callback",
+    expires: 300 // 5 minutes
+  });
+
+  // Generate QR code data
+  const qrData = loginRequest.toQRCode();
+  
+  // Start polling for auth status
+  const status = await signx.pollAuthStatus(loginRequest.id);
+  ```
+
+  ```typescript Status Handling
+  // Handle authentication status
+  signx.onAuthStatus((status) => {
+    switch (status.type) {
+      case 'pending':
+        console.log('Waiting for mobile scan...');
+        break;
+      case 'scanned':
+        console.log('QR code scanned!');
+        break;
+      case 'completed':
+        console.log('Authentication successful!', status.user);
+        break;
+      case 'expired':
+        console.log('Login request expired');
+        break;
+    }
+  });
+  ```
+</CodeGroup>
+
+### Secure Data Exchange
+
+<CodeGroup>
+  ```typescript Encryption
+  // Encrypt sensitive data
+  const encryptedData = await signx.encryptData({
+    type: 'kyc',
+    data: userData,
+    recipientDid: 'did:ixo:user/123'
+  });
+
+  // Generate QR code for encrypted data
+  const dataQR = signx.generateDataQR(encryptedData);
+  ```
+
+  ```typescript Decryption
+  // Handle decrypted data
+  signx.onDecryptedData((data) => {
+    if (data.type === 'kyc') {
+      // Process KYC data
+      processUserData(data);
+    }
+  });
+  ```
+</CodeGroup>
+
+### Multi-Transaction Processing
+
+<CodeGroup>
+  ```typescript Transaction Session
+  // Create transaction session
+  const session = await signx.createTransactionSession({
+    transactions: [tx1, tx2, tx3],
+    metadata: {
+      title: 'Batch Operation',
+      description: 'Process multiple transactions'
+    }
+  });
+
+  // Monitor transaction progress
+  session.onProgress((status) => {
+    console.log(`Completed: ${status.completed}/${status.total}`);
+  });
+  ```
+
+  ```typescript Transaction Handling
+  // Handle transaction results
+  session.onComplete((results) => {
+    results.forEach((result, index) => {
+      console.log(`Transaction ${index + 1}:`, result.hash);
+    });
+  });
+
+  // Handle errors
+  session.onError((error) => {
+    console.error('Transaction failed:', error);
+  });
+  ```
+</CodeGroup>
+
+## Error Handling
+
+<ResponseField name="400" type="error">
+  Invalid request parameters
+</ResponseField>
+
+<ResponseField name="401" type="error">
+  Unauthorized access
+</ResponseField>
+
+<ResponseField name="408" type="error">
+  Request timeout
+</ResponseField>
+
+<ResponseField name="409" type="error">
+  Transaction conflict
+</ResponseField>
+
+## Use Cases
+
+<CardGroup>
+  <Card title="Secure Authentication" icon="shield-check">
+    Implement QR-based login flows with real-time status updates
+  </Card>
+  
+  <Card title="Data Exchange" icon="exchange">
+    Handle encrypted data transmission in decentralized applications
+  </Card>
+  
+  <Card title="Transaction Management" icon="list-check">
+    Process complex multi-step blockchain transactions
+  </Card>
+  
+  <Card title="Identity Verification" icon="id-card">
+    Secure KYC and identity verification workflows
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Tip>
+  Follow these guidelines for secure and efficient SignX integration
+</Tip>
+
+### Security
+
+* Implement proper error handling
+* Set appropriate request timeouts
+* Validate all user inputs
+* Monitor authentication attempts
+* Implement rate limiting
+* Use secure callback URLs
+
+### Performance
+
+* Handle connection interruptions
+* Implement proper retry logic
+* Cache transaction metadata
+* Monitor session states
+* Optimize polling intervals
+* Handle expired sessions gracefully
+
+## Next Steps
+
+<CardGroup>
+  <Card title="Authentication Guide" icon="key">
+    Learn QR-based authentication
+  </Card>
+
+  <Card title="Transaction Guide" icon="money-bill-transfer">
+    Implement multi-transaction flows
+  </Card>
+
+  <Card title="Security Guide" icon="shield-check">
+    Secure your implementation
+  </Card>
+
+  <Card title="Integration Guide" icon="puzzle-piece">
+    Connect with your application
+  </Card>
+</CardGroup>

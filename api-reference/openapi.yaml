@@ -4,7 +4,7 @@ info:
     email: ixo@ixo.world
     name: IXO Team
   description: |
-    The Emerging Platform API is designed to facilitate seamless communication between the dMRV system and the registry system. It enables the registry system to retrieve accurate and timely data from the dMRV system, supporting efficient monitoring, reporting, and verification processes. By ensuring reliable data exchange and integration, the API plays a critical role in maintaining data integrity and streamlining workflows between these interconnected systems.
+    The Emerging Household Energy API is designed to facilitate seamless communication between the dMRV system and the registry system. It enables the registry system to retrieve accurate and timely data from the dMRV system, supporting efficient monitoring, reporting, and verification processes. By ensuring reliable data exchange and integration, the API plays a critical role in maintaining data integrity and streamlining workflows between these interconnected systems.
   license:
     name: Apache License 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0

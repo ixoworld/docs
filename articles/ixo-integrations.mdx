@@ -1,0 +1,316 @@
+---
+title: 'IXO Integrations'
+description: 'Connect external services to the IXO Spatial Web stack'
+---
+
+<Note>
+The IXO Spatial Web stack provides multiple integration points for connecting external services, devices, and systems through standardized APIs and SDKs. This guide explains the key integration patterns and provides examples.
+</Note>
+
+## Integration Architecture
+
+<CardGroup>
+  <Card title="MultiClient SDK" icon="plug">
+    Core SDK for blockchain interactions and digital twin management
+  </Card>
+  <Card title="Matrix SDK" icon="database">
+    Data storage and messaging integration layer
+  </Card>
+  <Card title="Oracle SDK" icon="brain">
+    AI-powered verification and automation services
+  </Card>
+  <Card title="JAMBO SDK" icon="wallet">
+    Authentication and key management
+  </Card>
+</CardGroup>
+
+## Core Integration Patterns
+
+### Device Integration
+
+<AccordionGroup>
+  <Accordion title="IoT Device Connection" icon="microchip">
+    Connect IoT devices and sensors to the Spatial Web:
+
+    ```typescript
+    import { MatrixClient } from '@ixo/matrixclient-sdk'
+    import { DeviceRegistry } from '@ixo/impactxclient-sdk'
+
+    // Initialize Matrix client for device data
+    const matrix = new MatrixClient({
+      baseUrl: 'https://matrix.ixo.world',
+      accessToken: 'YOUR_ACCESS_TOKEN'
+    })
+
+    // Register device on blockchain
+    const registry = new DeviceRegistry({
+      chainId: 'ixo-5',
+      rpcEndpoint: 'https://rpc.ixo.world'
+    })
+
+    // Create device digital twin
+    const deviceDid = await registry.registerDevice({
+      type: 'IoTDevice',
+      manufacturer: 'DeviceCo',
+      model: 'Sensor-2000',
+      controller: ownerDid
+    })
+
+    // Create secure data room
+    const room = await matrix.createRoom({
+      name: `Device ${deviceDid}`,
+      encryption: true,
+      topic: 'Device telemetry'
+    })
+
+    // Stream device data
+    device.on('data', async (telemetry) => {
+      await matrix.sendEvent(room.id, 'device.telemetry', telemetry)
+    })
+    ```
+  </Accordion>
+
+  <Accordion title="Data Validation" icon="shield-check">
+    Validate device data using Oracle services:
+
+    ```typescript
+    import { OracleClient } from '@ixo/assistant-sdk'
+
+    // Initialize Oracle client
+    const oracle = new OracleClient({
+      endpoint: 'https://oracle.ixo.world',
+      apiKey: 'YOUR_API_KEY'
+    })
+
+    // Validate device data
+    matrix.on('room.event', async (event) => {
+      if (event.type === 'device.telemetry') {
+        const validation = await oracle.validate({
+          deviceId: deviceDid,
+          data: event.content,
+          schema: 'telemetry-schema'
+        })
+
+        if (validation.isValid) {
+          // Create verified claim
+          await registry.createClaim({
+            type: 'TelemetryClaim',
+            deviceId: deviceDid,
+            data: event.content,
+            proof: validation.proof
+          })
+        }
+      }
+    })
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### External System Integration
+
+<AccordionGroup>
+  <Accordion title="Registry Integration" icon="database">
+    Connect to external registries and databases:
+
+    ```typescript
+    import { RegistryClient } from '@ixo/impactxclient-sdk'
+
+    // Initialize registry client
+    const registry = new RegistryClient({
+      endpoint: 'https://registry.example.com',
+      credentials: {
+        apiKey: 'REGISTRY_API_KEY'
+      }
+    })
+
+    // Sync asset data
+    async function syncAssets() {
+      const assets = await registry.getAssets()
+      
+      for (const asset of assets) {
+        await createDigitalTwin({
+          type: 'ExternalAsset',
+          externalId: asset.id,
+          metadata: asset.metadata,
+          proof: asset.proof
+        })
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Payment Integration" icon="credit-card">
+    Integrate with payment and financial systems:
+
+    ```typescript
+    import { PaymentClient } from '@ixo/impactxclient-sdk'
+
+    // Initialize payment client
+    const payments = new PaymentClient({
+      chainId: 'ixo-5',
+      wallet: 'YOUR_WALLET_ADDRESS'
+    })
+
+    // Process payment for verified claim
+    async function processPayment(claim) {
+      const payment = await payments.createPayment({
+        recipient: claim.beneficiary,
+        amount: calculateAmount(claim),
+        currency: 'IXO',
+        memo: `Payment for claim ${claim.id}`
+      })
+
+      await payments.executePayment(payment.id)
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Data Exchange Integration
+
+<AccordionGroup>
+  <Accordion title="Secure Data Rooms" icon="lock">
+    Create encrypted data sharing channels:
+
+    ```typescript
+    import { MatrixClient } from '@ixo/matrixclient-sdk'
+
+    // Create data room for partners
+    const room = await matrix.createRoom({
+      name: 'Project Data Room',
+      encryption: true,
+      preset: 'private_chat',
+      initialState: [{
+        type: 'm.room.encryption',
+        state_key: '',
+        content: { algorithm: 'm.megolm.v1.aes-sha2' }
+      }]
+    })
+
+    // Invite participants
+    await matrix.inviteToRoom(room.id, [
+      'did:ixo:partner1',
+      'did:ixo:partner2'
+    ])
+
+    // Share data securely
+    await matrix.sendEvent(room.id, 'data.share', {
+      type: 'ProjectMetrics',
+      data: encryptedData,
+      access: {
+        roles: ['auditor', 'verifier'],
+        expires: '2024-12-31'
+      }
+    })
+    ```
+  </Accordion>
+
+  <Accordion title="Data Streaming" icon="wave-square">
+    Set up real-time data streams:
+
+    ```typescript
+    import { StreamClient } from '@ixo/matrixclient-sdk'
+
+    // Create data stream
+    const stream = new StreamClient({
+      room: dataRoom,
+      type: 'metrics.stream'
+    })
+
+    // Stream processor
+    stream.on('data', async (data) => {
+      // Process incoming data
+      const processed = await processMetrics(data)
+      
+      // Forward to verification oracle
+      await oracle.verify({
+        streamId: stream.id,
+        data: processed,
+        schema: 'metrics-schema'
+      })
+    })
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration Types
+
+### Supported Integrations
+
+<CardGroup>
+  <Card title="IoT Platforms" icon="microchip">
+    - Device management systems
+    - Sensor networks
+    - Smart meters
+    - Environmental monitors
+  </Card>
+
+  <Card title="External Registries" icon="database">
+    - Carbon registries
+    - Asset databases
+    - National registries
+    - Trading platforms
+  </Card>
+
+  <Card title="Financial Systems" icon="money-bill">
+    - Payment processors
+    - Banking systems
+    - Trading platforms
+    - Token networks
+  </Card>
+
+  <Card title="Data Providers" icon="cloud">
+    - Weather services
+    - Market data feeds
+    - Geographic data
+    - Social impact data
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Security" icon="shield-check">
+    - Use secure communication channels
+    - Implement proper authentication
+    - Encrypt sensitive data
+    - Follow key management best practices
+    - Regular security audits
+  </Accordion>
+
+  <Accordion title="Data Management" icon="database">
+    - Validate data integrity
+    - Implement error handling
+    - Use appropriate data formats
+    - Monitor data quality
+    - Regular backups
+  </Accordion>
+
+  <Accordion title="Performance" icon="gauge">
+    - Optimize data transfers
+    - Implement caching
+    - Use batch processing
+    - Monitor system health
+    - Scale resources as needed
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Explore the complete API documentation
+  </Card>
+
+  <Card title="SDK Guides" icon="code" href="/spatial-web-stack/spatial-web-sdks">
+    Learn more about using the SDKs
+  </Card>
+
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
+    View example integrations
+  </Card>
+
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Get help from the developer community
+  </Card>
+</CardGroup>
