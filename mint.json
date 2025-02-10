@@ -95,7 +95,8 @@
         "guides/dev/spatial-web-sdks",
         "guides/dev/domain-settings",
         "guides/dev/domain-privacy",
-        "guides/dev/authentication"
+        "guides/dev/authentication",
+        "guides/dev/distributor-onboarding"
       ]
     },
     {
