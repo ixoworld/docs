@@ -20,7 +20,7 @@ The process is orchestrated by the `index.spec.ts` file, which sequentially exec
    - [B. DAO and Group Initialization](#b-dao-and-group-initialization)
    - [C. Emerging Ecosystem Setup](#c-emerging-ecosystem-setup)
    - [D. Prospect Flow Configuration](#d-prospect-flow-configuration)
-   - [E. ECS Setup and Asset Registration](#e-ecs-setup-and-asset-registration)
+   - [E. Setup and Asset Registration](#e-setup-and-asset-registration)
    - [F. Cookstoves Distributor Onboarding](#f-cookstoves-distributor-onboarding)
    - [G. Entity Verification](#g-entity-verification)
    - [H. Web3 Storage Integration](#h-web3-storage-integration)
@@ -39,7 +39,7 @@ Onboarding a new cookstoves distributor involves several coordinated steps:
 - Funding blockchain test users,
 - Creating fundamental classes and DAOs,
 - Configuring emerging protocols and oracles,
-- Registering ECS assets and projects,
+- Registering assets and projects,
 - Onboarding the cookstoves distributor,
 - Verifying all created entities,
 - Integrating with decentralized storage (Web3),
@@ -56,7 +56,7 @@ Before proceeding, ensure that:
 - **Development Environment:**
 
   - Node.js, TypeScript, and all project dependencies are installed.
-  - You have a properly configured `.env` file with necessary environment variables (e.g., `ROOT_IMPACTS`, `ROOT_EMERGING`, `ROOT_ECS`, `ROOT_PROSPECT`, `ASSERT_USER_ECS`, etc.).
+  - You have a properly configured `.env` file with necessary environment variables (e.g., `ROOT_IMPACTS`, `ROOT_EMERGING`, `ROOT_*`, `ROOT_PROSPECT`, `ASSERT_USER_*`, etc.).
 
 - **Blockchain Network:**
 
@@ -86,8 +86,8 @@ The onboarding process leverages a modular architecture, with each module handli
 - **Prospect Flow Configuration:**  
   Sets up additional organizational structures and oracles tailored for the prospect use case via `propectFlow`.
 
-- **ECS Setup and Asset Registration:**  
-  Creates ECS-specific DAOs and registers asset collections or projects using `ecsDaoFlow`, `ecsFlow`, and `ecsProjectFlow`, with token transfers ensuring operational funding.
+- **Setup and Asset Registration:**  
+  Creates the specific DAOs and registers asset collections or projects using `*DaoFlow`, `*Flow`, and `*ProjectFlow`, with token transfers ensuring operational funding.
 
 - **Cookstoves Distributor Onboarding:**  
   Central to this guide is the `cookstovesFlow` which handles the onboarding process of the cookstoves distributor for testnet/mainnet deployments (distinct from the devnet variant).
@@ -136,16 +136,16 @@ The onboarding process leverages a modular architecture, with each module handli
 - **Prospect Organization Setup:**  
   Run `propectFlow` to handle configuration for prospect-specific DAOs and oracles, ensuring additional dependencies are isolated and managed.
 
-### E. ECS Setup and Asset Registration
+### E. Setup and Asset Registration
 
-1. **ECS DAO Initialization:**  
-   `ecsDaoFlow` is responsible for creating the ECS-specific DAO.
-2. **Extended ECS Configuration:**  
-   Execute `ecsFlow` to configure further ECS system settings.
+1. **DAO Initialization:**  
+   `*DaoFlow` is responsible for creating the specific DAO.
+2. **Extended Configuration:**  
+   Execute `*Flow` to configure further system settings.
 3. **Funding Adjustment:**  
-   Call `sendTokens(5)` to ensure that the ECS user account has enough tokens to cover gas fees.
+   Call `*SendTokens(5)` to ensure that the user account has enough tokens to cover gas fees.
 4. **Project/Asset Collection Registration:**  
-   Run `ecsProjectFlow` to register projects or asset collections necessary for the ECS module.
+   Run `*ProjectFlow` to register projects or asset collections necessary for the module.
 
 ### F. Cookstoves Distributor Onboarding
 
