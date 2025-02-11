@@ -1,7 +1,6 @@
 ---
-title: 'Registry Server'
-icon: 'server'
-description: 'RESTful API server for integrations with registries'
+title: "Registry API old"
+openapi: "api-reference/openapi.yaml"
 ---
 
 <Tip>
@@ -9,36 +8,6 @@ description: 'RESTful API server for integrations with registries'
 </Tip>
 
 ## Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Run tests
-npm test
-```
-
-## Environment Setup
-
-Create a `.env` file in your project root:
-
-```bash
-cp .env.example .env
-```
-
-| Variable | Description | Default |
-| --- | --- | --- |
-| `PORT` | Server port | `8080` |
-| `NODE_ENV` | Environment mode | `development` |
-| `API_URL` | Base API URL | `https://api.ixo.world` |
-| `API_VERSION` | API version path | `/emerging-platform` |
-| `ALLOWED_ORIGINS` | CORS origins | `*` |
-| `LOG_LEVEL` | Logging level | `info` |
-
-## API Endpoints
 
 ## Logging
 
@@ -157,7 +126,7 @@ The API uses standard HTTP status codes:
 ## Additional Resources
 
 <CardGroup>
-<Card title="OpenAPI Specification" icon="file-code" href="/api/openapi.yaml">
+<Card title="OpenAPI Specification" icon="file-code" href="/api-reference/openapi.yaml">
   View the complete API specification
 </Card>
 

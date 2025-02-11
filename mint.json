@@ -121,15 +121,19 @@
             "platforms/Emerging/domain-registration",
             "platforms/Emerging/digital-certification",
             "platforms/Emerging/registry",
-            "platforms/Emerging/registry-server",
             "platforms/Emerging/digital-vouchers",
             "platforms/Emerging/kpt",
             "platforms/Emerging/data-integrity",
             "platforms/Emerging/itmo-schema",
-            "platforms/Emerging/distributor-onboarding",
-            "platforms/Emerging/emerging-api"
+            "platforms/Emerging/distributor-onboarding"
           ]
         }
+      ]
+    },
+    {
+      "group": "APIs",
+      "pages": [
+        "api-reference/index"
       ]
     },
     {
