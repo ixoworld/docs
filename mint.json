@@ -95,8 +95,7 @@
         "guides/dev/spatial-web-sdks",
         "guides/dev/domain-settings",
         "guides/dev/domain-privacy",
-        "guides/dev/authentication",
-        "guides/dev/distributor-onboarding"
+        "guides/dev/authentication"
       ]
     },
     {
@@ -127,6 +126,7 @@
             "platforms/Emerging/kpt",
             "platforms/Emerging/data-integrity",
             "platforms/Emerging/itmo-schema",
+            "platforms/Emerging/distributor-onboarding",
             "platforms/Emerging/emerging-api"
           ]
         }
