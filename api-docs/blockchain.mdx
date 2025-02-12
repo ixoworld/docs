@@ -1,0 +1,228 @@
+---
+title: 'Blockchain API'
+description: 'Interact with the IXO Protocol blockchain networks'
+---
+
+<Note>
+The Blockchain API provides direct access to IXO Protocol networks, enabling transaction broadcasting, state queries, and smart contract interactions.
+</Note>
+
+## Overview
+
+<CardGroup>
+  <Card title="Transactions" icon="arrow-right-arrow-left">
+    Submit and track blockchain transactions
+  </Card>
+  
+  <Card title="Queries" icon="magnifying-glass">
+    Query blockchain state and data
+  </Card>
+  
+  <Card title="Smart Contracts" icon="file-code">
+    Interact with CosmWasm contracts
+  </Card>
+  
+  <Card title="Accounts" icon="user">
+    Manage blockchain accounts and keys
+  </Card>
+</CardGroup>
+
+## Authentication
+
+<AccordionGroup>
+  <Accordion title="Key-based Authentication" icon="key">
+    - Private key signing
+    - Key management
+    - Signature verification
+    - Account recovery
+  </Accordion>
+
+  <Accordion title="DID Authentication" icon="id-card">
+    - DID-based signatures
+    - Verification methods
+    - Key rotation
+    - Multi-signature support
+  </Accordion>
+</AccordionGroup>
+
+## Core Endpoints
+
+### Transaction Endpoints
+
+```typescript
+POST /txs
+GET /txs/{hash}
+GET /txs/search
+```
+
+### Query Endpoints
+
+```typescript
+GET /blocks/latest
+GET /bank/balances/{address}
+GET /auth/accounts/{address}
+GET /staking/validators
+```
+
+### Smart Contract Endpoints
+
+```typescript
+GET /wasm/code/{code_id}
+GET /wasm/contract/{contract_address}
+POST /wasm/contract/{contract_address}/execute
+```
+
+## Implementation Guide
+
+<Steps>
+  1. **Setup Client**
+     ```typescript
+     import { IxoClient } from '@ixo/client'
+     
+     const client = new IxoClient({
+       rpcUrl: 'https://rpc.ixo.earth',
+       chainId: 'ixo-4'
+     })
+     ```
+
+  2. **Create Transaction**
+     ```typescript
+     const tx = await client.createTx({
+       messages: [/* transaction messages */],
+       memo: 'Optional memo',
+       fee: {
+         amount: [{ amount: '5000', denom: 'uixo' }],
+         gas: '200000'
+       }
+     })
+     ```
+
+  3. **Sign & Broadcast**
+     ```typescript
+     const signedTx = await client.sign(tx, signer)
+     const result = await client.broadcast(signedTx)
+     ```
+
+  4. **Query State**
+     ```typescript
+     const balance = await client.getBalance(address)
+     const validator = await client.getValidator(valAddress)
+     ```
+</Steps>
+
+## Transaction Types
+
+<AccordionGroup>
+  <Accordion title="Bank Transactions" icon="money-bill-transfer">
+    - Send tokens
+    - Multi-send
+    - Delegate tokens
+    - Undelegate tokens
+  </Accordion>
+
+  <Accordion title="Entity Transactions" icon="cube">
+    - Create entity
+    - Update entity
+    - Transfer entity
+    - Delete entity
+  </Accordion>
+
+  <Accordion title="Claims Transactions" icon="file-check">
+    - Submit claim
+    - Evaluate claim
+    - Dispute claim
+    - Resolve dispute
+  </Accordion>
+
+  <Accordion title="Smart Contract Transactions" icon="file-code">
+    - Deploy contract
+    - Execute contract
+    - Query contract
+    - Migrate contract
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="Transaction Errors" icon="triangle-exclamation">
+    - Insufficient funds
+    - Invalid signatures
+    - Gas estimation
+    - Timeout handling
+  </Accordion>
+
+  <Accordion title="Query Errors" icon="circle-exclamation">
+    - Invalid parameters
+    - Node connection
+    - Rate limiting
+    - Data validation
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Security" icon="shield">
+    - Secure key storage
+    - Transaction signing
+    - Parameter validation
+    - Error handling
+  </Accordion>
+
+  <Accordion title="Performance" icon="gauge">
+    - Gas optimization
+    - Batch transactions
+    - Query caching
+    - Connection pooling
+  </Accordion>
+
+  <Accordion title="Monitoring" icon="chart-line">
+    - Transaction tracking
+    - Error logging
+    - Performance metrics
+    - Alert systems
+  </Accordion>
+</AccordionGroup>
+
+## Network Environments
+
+<CardGroup>
+  <Card title="Mainnet" icon="server">
+    ```
+    https://rpc.ixo.earth
+    ```
+  </Card>
+  
+  <Card title="Testnet" icon="vial">
+    ```
+    https://testnet-rpc.ixo.earth
+    ```
+  </Card>
+  
+  <Card title="Local" icon="laptop-code">
+    ```
+    http://localhost:26657
+    ```
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="SDK Reference" icon="book" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
+    Client SDK documentation
+  </Card>
+  
+  <Card title="Examples" icon="code" href="/guides/hands-on">
+    Implementation examples
+  </Card>
+  
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer community
+  </Card>
+</CardGroup>
+
+<Tip>
+  For technical support or questions about the Blockchain API, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip> 

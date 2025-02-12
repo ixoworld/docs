@@ -1,0 +1,241 @@
+---
+title: 'Claims API'
+description: 'Manage verifiable claims and evaluation workflows'
+---
+
+<Note>
+The Claims API enables the creation, verification, and management of verifiable claims within the IXO ecosystem. It supports automated verification workflows, payment processing, and dispute resolution.
+</Note>
+
+## Overview
+
+<CardGroup>
+  <Card title="Claim Creation" icon="file-circle-plus">
+    Submit and manage verifiable claims
+  </Card>
+  
+  <Card title="Verification" icon="check-double">
+    Automated and manual verification workflows
+  </Card>
+  
+  <Card title="Payments" icon="money-bill">
+    Integrated payment processing
+  </Card>
+  
+  <Card title="Disputes" icon="scale-balanced">
+    Dispute management and resolution
+  </Card>
+</CardGroup>
+
+## Core Concepts
+
+<AccordionGroup>
+  <Accordion title="Claim Structure" icon="file-lines">
+    - Claim identifier
+    - Claim type
+    - Subject DID
+    - Issuer DID
+    - Claim content
+    - Evidence attachments
+    - Status tracking
+  </Accordion>
+
+  <Accordion title="Verification Process" icon="check-double">
+    - Automated checks
+    - Manual verification
+    - Multi-party consensus
+    - Oracle integration
+    - Status updates
+  </Accordion>
+
+  <Accordion title="Payment Integration" icon="money-bill-transfer">
+    - Payment triggers
+    - Token transfers
+    - Fee calculation
+    - Payment verification
+    - Refund handling
+  </Accordion>
+</AccordionGroup>
+
+## API Endpoints
+
+### Claim Management
+
+```typescript
+POST /claims
+GET /claims/{id}
+PUT /claims/{id}
+DELETE /claims/{id}
+GET /claims/search
+```
+
+### Verification
+
+```typescript
+POST /claims/{id}/verify
+GET /claims/{id}/verification-status
+POST /claims/{id}/reject
+POST /claims/{id}/approve
+```
+
+### Payments
+
+```typescript
+POST /claims/{id}/initiate-payment
+GET /claims/{id}/payment-status
+POST /claims/{id}/process-refund
+```
+
+## Implementation Guide
+
+<Steps>
+  1. **Create Claim**
+     ```typescript
+     const claim = await claimsClient.createClaim({
+       type: 'ImpactClaim',
+       subject: 'did:ixo:123',
+       content: {
+         // claim details
+       },
+       evidence: [
+         // evidence attachments
+       ]
+     })
+     ```
+
+  2. **Submit for Verification**
+     ```typescript
+     const verification = await claimsClient.submitForVerification(claim.id, {
+       verifier: 'did:ixo:verifier',
+       method: 'AutomatedCheck'
+     })
+     ```
+
+  3. **Process Payment**
+     ```typescript
+     const payment = await claimsClient.processPayment(claim.id, {
+       amount: '100',
+       denom: 'uixo',
+       recipient: 'did:ixo:recipient'
+     })
+     ```
+
+  4. **Track Status**
+     ```typescript
+     const status = await claimsClient.getClaimStatus(claim.id)
+     console.log(status.verification, status.payment)
+     ```
+</Steps>
+
+## Claim Types
+
+<AccordionGroup>
+  <Accordion title="Impact Claims" icon="chart-line">
+    - Environmental impact
+    - Social impact
+    - Economic impact
+    - SDG alignment
+  </Accordion>
+
+  <Accordion title="Verification Claims" icon="check">
+    - Identity verification
+    - Document verification
+    - Asset verification
+    - Location verification
+  </Accordion>
+
+  <Accordion title="Payment Claims" icon="money-check">
+    - Service delivery
+    - Asset transfer
+    - Token distribution
+    - Reward claims
+  </Accordion>
+</AccordionGroup>
+
+## Verification Methods
+
+<AccordionGroup>
+  <Accordion title="Automated Verification" icon="robot">
+    - AI/ML models
+    - Data validation
+    - Pattern matching
+    - Rule engines
+  </Accordion>
+
+  <Accordion title="Manual Verification" icon="user-check">
+    - Expert review
+    - Document inspection
+    - Physical verification
+    - Multi-party consensus
+  </Accordion>
+
+  <Accordion title="Oracle Verification" icon="satellite">
+    - IoT data
+    - External APIs
+    - Market data
+    - Location data
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="Validation Errors" icon="triangle-exclamation">
+    - Invalid claim format
+    - Missing evidence
+    - Unauthorized access
+    - Duplicate claims
+  </Accordion>
+
+  <Accordion title="Processing Errors" icon="circle-exclamation">
+    - Verification failure
+    - Payment failure
+    - Network issues
+    - Timeout errors
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Security" icon="shield">
+    - DID authentication
+    - Evidence validation
+    - Access control
+    - Audit logging
+  </Accordion>
+
+  <Accordion title="Performance" icon="gauge">
+    - Batch processing
+    - Caching
+    - Rate limiting
+    - Async operations
+  </Accordion>
+
+  <Accordion title="Integration" icon="plug">
+    - Webhook support
+    - Event streaming
+    - State management
+    - Error recovery
+  </Accordion>
+</AccordionGroup>
+
+## Developer Resources
+
+<CardGroup>
+  <Card title="SDK Reference" icon="book" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
+    Claims SDK documentation
+  </Card>
+  
+  <Card title="Examples" icon="code" href="/guides/dev/claims-examples">
+    Implementation examples
+  </Card>
+  
+  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer community
+  </Card>
+</CardGroup>
+
+<Tip>
+  For technical support or questions about the Claims API, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip> 
