@@ -54,10 +54,6 @@
       "openapi": "/api-reference/Emerging-Platform-API.yaml"
     },
     {
-      "name": "Guides",
-      "url": "guides/users"
-    },
-    {
       "name": "Changelog",
       "url": "changelog/overview.mdx"
     }
