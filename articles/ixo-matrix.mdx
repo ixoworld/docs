@@ -23,7 +23,7 @@ The IXO Matrix provides encrypted data storage and secure messaging capabilities
   </Card>
   
   <Card title="State Management" icon="database">
-    Room state and configuration management through State Bot
+    Room state and configuration management through IXO Matrix State Bot
   </Card>
 </CardGroup>
 
@@ -118,41 +118,43 @@ matrix.on('room.message', (event) => {
 ### State Management
 
 ```typescript
-import { StateBot } from '@ixo/matrixclient-sdk'
+import { createMatrixStateBotClient } from "@ixo/matrixclient-sdk";
 
-// Initialize state bot
-const stateBot = new StateBot({
-  baseUrl: 'https://matrix.ixo.world',
-  accessToken: 'BOT_TOKEN'
-})
-
-// Set room state
-await stateBot.setState(room.id, 'custom.state.type', {
-  key: 'value',
-  timestamp: Date.now()
-})
+// Initialize IXO Matrix State Bot
+const stateBot = await createMatrixStateBotClient({
+  baseUrl: "https://matrix.ixo.world",
+  accessToken: "BOT_TOKEN"
+});
 
 // Get room state
-const state = await stateBot.getState(room.id, 'custom.state.type')
+const state = await stateBot.getRoomState(room.id);
+
+// Update state
+await stateBot.setState(
+  room.id,
+  "custom.state.type",
+  "",
+  { key: "value" }
+);
 ```
 
 ## Use Cases
 
 <CardGroup>
   <Card title="Digital Twin Data" icon="database">
-    Store and manage digital twin state and history
+    Store and manage digital twin state and history with secure access controls
   </Card>
   
   <Card title="IoT Telemetry" icon="microchip">
-    Collect and process device data streams
+    Collect and process device data streams with real-time updates
   </Card>
   
   <Card title="Verification Data" icon="check-double">
-    Store verification results and evidence
+    Store verification results and evidence for audit and compliance
   </Card>
   
   <Card title="Collaboration" icon="users">
-    Enable secure team communication
+    Enable secure team communication with end-to-end encryption
   </Card>
 </CardGroup>
 
@@ -207,6 +209,22 @@ const state = await stateBot.getState(room.id, 'custom.state.type')
 - Monitor API usage
 - Optimize file sizes
 
+## Related Resources
+
+<CardGroup>
+  <Card title="IXO Matrix SDK" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+    Client library for Matrix integration
+  </Card>
+  
+  <Card title="IXO Matrix State Bot API" icon="robot" href="/api-docs/matrix-api/matrix-statebot-api">
+    Room state management API
+  </Card>
+  
+  <Card title="IXO MultiClient SDK" icon="network-wired" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
+    Unified SDK with Matrix integration
+  </Card>
+</CardGroup>
+
 ## Next Steps
 
 <CardGroup>
@@ -214,7 +232,7 @@ const state = await stateBot.getState(room.id, 'custom.state.type')
     Learn more about the Matrix SDK
   </Card>
 
-  <Card title="State Bot" icon="robot" href="/api-docs/matrix-api/matrix-statebot-api">
+  <Card title="IXO Matrix State Bot" icon="robot" href="/api-docs/matrix-api/matrix-statebot-api">
     Explore state management
   </Card>
 

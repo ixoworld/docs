@@ -1,29 +1,37 @@
 ---
-title: 'Blockchain API'
+title: 'IXO Blockchain API'
 description: 'Interact with the IXO Protocol blockchain networks'
 ---
 
 <Note>
-The Blockchain API provides direct access to IXO Protocol networks, enabling transaction broadcasting, state queries, and smart contract interactions.
+The IXO Blockchain API provides direct access to IXO Protocol networks, enabling transaction broadcasting, state queries, and smart contract interactions.
 </Note>
 
 ## Overview
 
+The IXO Blockchain API allows developers to interact with IXO Protocol blockchain networks through standardized endpoints. It provides capabilities for:
+
+- Transaction creation and broadcasting
+- Blockchain state queries
+- Smart contract deployment and execution
+- Account management and authentication
+- Digital twin and entity operations
+
 <CardGroup>
   <Card title="Transactions" icon="arrow-right-arrow-left">
-    Submit and track blockchain transactions
+    Submit and track blockchain transactions with secure signing
   </Card>
   
   <Card title="Queries" icon="magnifying-glass">
-    Query blockchain state and data
+    Query blockchain state and data with efficient filtering
   </Card>
   
   <Card title="Smart Contracts" icon="file-code">
-    Interact with CosmWasm contracts
+    Interact with CosmWasm contracts for custom logic
   </Card>
   
   <Card title="Accounts" icon="user">
-    Manage blockchain accounts and keys
+    Manage blockchain accounts and cryptographic keys
   </Card>
 </CardGroup>
 
@@ -50,26 +58,26 @@ The Blockchain API provides direct access to IXO Protocol networks, enabling tra
 ### Transaction Endpoints
 
 ```typescript
-POST /txs
-GET /txs/{hash}
-GET /txs/search
+POST /txs                 // Submit a signed transaction
+GET /txs/{hash}           // Get transaction by hash
+GET /txs/search           // Search transactions by criteria
 ```
 
 ### Query Endpoints
 
 ```typescript
-GET /blocks/latest
-GET /bank/balances/{address}
-GET /auth/accounts/{address}
-GET /staking/validators
+GET /blocks/latest        // Get the latest block
+GET /bank/balances/{address}  // Get account balances
+GET /auth/accounts/{address}  // Get account information
+GET /staking/validators   // Get validator list
 ```
 
 ### Smart Contract Endpoints
 
 ```typescript
-GET /wasm/code/{code_id}
-GET /wasm/contract/{contract_address}
-POST /wasm/contract/{contract_address}/execute
+GET /wasm/code/{code_id}  // Get contract code
+GET /wasm/contract/{contract_address}  // Get contract info
+POST /wasm/contract/{contract_address}/execute  // Execute contract
 ```
 
 ## Implementation Guide
@@ -77,7 +85,7 @@ POST /wasm/contract/{contract_address}/execute
 <Steps>
   1. **Setup Client**
      ```typescript
-     import { IxoClient } from '@ixo/client'
+     import { IxoClient } from '@ixo/impactxclient-sdk'
      
      const client = new IxoClient({
        rpcUrl: 'https://rpc.ixo.earth',
@@ -114,31 +122,31 @@ POST /wasm/contract/{contract_address}/execute
 
 <AccordionGroup>
   <Accordion title="Bank Transactions" icon="money-bill-transfer">
-    - Send tokens
-    - Multi-send
-    - Delegate tokens
-    - Undelegate tokens
+    - Send tokens between accounts
+    - Multi-send to multiple recipients
+    - Delegate tokens to validators
+    - Undelegate tokens from validators
   </Accordion>
 
   <Accordion title="Entity Transactions" icon="cube">
-    - Create entity
-    - Update entity
-    - Transfer entity
-    - Delete entity
+    - Create digital twin entities
+    - Update entity properties
+    - Transfer entity ownership
+    - Delete entity records
   </Accordion>
 
   <Accordion title="Claims Transactions" icon="file-check">
-    - Submit claim
-    - Evaluate claim
-    - Dispute claim
-    - Resolve dispute
+    - Submit verification claims
+    - Evaluate claim evidence
+    - Dispute invalid claims
+    - Resolve claim disputes
   </Accordion>
 
   <Accordion title="Smart Contract Transactions" icon="file-code">
-    - Deploy contract
-    - Execute contract
-    - Query contract
-    - Migrate contract
+    - Deploy new contracts
+    - Execute contract functions
+    - Query contract state
+    - Migrate contract versions
   </Accordion>
 </AccordionGroup>
 
@@ -146,42 +154,62 @@ POST /wasm/contract/{contract_address}/execute
 
 <AccordionGroup>
   <Accordion title="Transaction Errors" icon="triangle-exclamation">
-    - Insufficient funds
-    - Invalid signatures
-    - Gas estimation
-    - Timeout handling
+    - Insufficient funds for gas fees
+    - Invalid signature formats
+    - Gas estimation failures
+    - Transaction timeout handling
   </Accordion>
 
   <Accordion title="Query Errors" icon="circle-exclamation">
-    - Invalid parameters
-    - Node connection
-    - Rate limiting
-    - Data validation
+    - Invalid parameter formats
+    - Node connection failures
+    - Rate limiting restrictions
+    - Data validation errors
   </Accordion>
 </AccordionGroup>
+
+## Use Cases
+
+<CardGroup>
+  <Card title="Digital Twin Management" icon="cubes">
+    Create and manage verifiable digital representations of real-world assets
+  </Card>
+  
+  <Card title="Decentralized Verification" icon="check-double">
+    Implement verification workflows with on-chain evidence and claims
+  </Card>
+  
+  <Card title="Token Operations" icon="coins">
+    Execute token transfers, staking, and custom token operations
+  </Card>
+  
+  <Card title="Smart Contract Applications" icon="file-code">
+    Deploy and interact with custom business logic through smart contracts
+  </Card>
+</CardGroup>
 
 ## Best Practices
 
 <AccordionGroup>
   <Accordion title="Security" icon="shield">
-    - Secure key storage
-    - Transaction signing
-    - Parameter validation
-    - Error handling
+    - Implement secure key storage
+    - Validate transaction signing
+    - Verify parameter inputs
+    - Handle errors properly
   </Accordion>
 
   <Accordion title="Performance" icon="gauge">
-    - Gas optimization
-    - Batch transactions
-    - Query caching
-    - Connection pooling
+    - Optimize gas usage
+    - Batch related transactions
+    - Implement query caching
+    - Use connection pooling
   </Accordion>
 
   <Accordion title="Monitoring" icon="chart-line">
-    - Transaction tracking
-    - Error logging
-    - Performance metrics
-    - Alert systems
+    - Track transaction status
+    - Log errors systematically
+    - Monitor performance metrics
+    - Set up alert systems
   </Accordion>
 </AccordionGroup>
 
@@ -207,22 +235,38 @@ POST /wasm/contract/{contract_address}/execute
   </Card>
 </CardGroup>
 
+## Related Resources
+
+<CardGroup>
+  <Card title="IXO MultiClient SDK" icon="network-wired" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
+    Client SDK for blockchain integration
+  </Card>
+  
+  <Card title="IXO Matrix" icon="database" href="/articles/ixo-matrix">
+    Secure data storage with blockchain verification
+  </Card>
+  
+  <Card title="IXO Protocol" icon="link" href="/articles/ixo-protocol">
+    Overview of the IXO Protocol blockchain
+  </Card>
+</CardGroup>
+
 ## Developer Resources
 
 <CardGroup>
-  <Card title="SDK Reference" icon="book" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
-    Client SDK documentation
+  <Card title="Examples" icon="code" href="/guides/dev/examples">
+    Implementation examples and tutorials
   </Card>
   
-  <Card title="Examples" icon="code" href="/guides/hands-on">
-    Implementation examples
+  <Card title="API Reference" icon="book" href="/api-docs/introduction">
+    Detailed API endpoint documentation
   </Card>
   
   <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
-    Developer community
+    Developer community and assistance
   </Card>
 </CardGroup>
 
 <Tip>
-  For technical support or questions about the Blockchain API, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+  For technical support or questions about the IXO Blockchain API, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
 </Tip> 

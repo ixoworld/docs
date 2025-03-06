@@ -1,0 +1,204 @@
+---
+title: 'IXO SDKs Overview'
+description: "Build powerful Spatial Web applications with IXO's comprehensive suite of development tools"
+---
+
+# IXO SDKs
+
+<Tip>
+  IXO provides a comprehensive suite of Software Development Kits (SDKs) that enable developers to build powerful applications for the Spatial Web. These SDKs offer seamless integration with blockchain networks, decentralized data storage, Agentic Oracles, and secure digital identity systems.
+</Tip>
+
+## Core SDKs
+
+<CardGroup>
+  <Card title="IXO MultiClient SDK" icon="network-wired" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
+    Unified interface for interchain networks, IXO Matrix data storage, and Agentic Oracles
+  </Card>
+  
+  <Card title="IXO Matrix SDK" icon="database" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+    Build secure data rooms and encrypted communication channels
+  </Card>
+  
+  <Card title="Oracle Agent SDK" icon="brain" href="/spatial-web-stack/sdks/oracle-agent-sdk">
+    Create Agentic Oracles for verification, automations, and decision-support
+  </Card>
+  
+  <Card title="JAMBO Wallet SDK" icon="wallet" href="/spatial-web-stack/sdks/jambo-wallet-sdk">
+    Manage digital assets and credentials in the JAMBO wallet
+  </Card>
+
+  <Card title="SignX SDK" icon="key" href="/spatial-web-stack/sdks/signx-sdk">
+    Secure authentication and key management for Spatial Web applications
+  </Card>
+
+</CardGroup>
+
+## Key Capabilities
+
+<AccordionGroup>
+  <Accordion title="Cognitive Digital Twins" icon="globe">
+    Create and manage digital representations of real-world entities:
+    - Entity lifecycle management
+    - State tracking and updates
+    - Relationship mapping
+    - Verification workflows
+  </Accordion>
+  
+  <Accordion title="Secure Data Management" icon="lock">
+    Store and process data with enterprise-grade security:
+    - End-to-end encryption
+    - Decentralized storage
+    - Access control lists
+    - Verifiable data integrity
+  </Accordion>
+  
+  <Accordion title="Interchain Operations" icon="link">
+    Connect with multiple blockchain networks:
+    - Cross-chain transactions
+    - IBC protocol support
+    - Multi-wallet integration
+    - Token management
+  </Accordion>
+  
+  <Accordion title="Agentic Intelligence" icon="robot">
+    Leverage Agentic Oracles for automation and insights:
+    - Verification agents
+    - Data analytics
+    - Predictive modeling
+    - Decision support
+  </Accordion>
+</AccordionGroup>
+
+## Installation
+
+You can install IXO SDKs individually or together depending on your application requirements.
+
+### Installing Individual SDKs
+
+<CodeGroup>
+  ```bash IXO MultiClient SDK
+  # Using npm
+  npm install @ixo/impactxclient-sdk
+
+  # Using yarn
+  yarn add @ixo/impactxclient-sdk
+  ```
+
+  ```bash IXO Matrix SDK
+  # Using npm
+  npm install @ixo/matrixclient-sdk
+
+  # Using yarn
+  yarn add @ixo/matrixclient-sdk
+  ```
+
+  ```bash Oracle Agent SDK
+  # Using npm
+  npm install @ixo/oracle-agent-sdk
+
+  # Using yarn
+  yarn add @ixo/oracle-agent-sdk
+  ```
+
+  ```bash JAMBO Wallet SDK
+  # Using npm
+  npm install @ixo/jambo-wallet-sdk
+
+  # Using yarn
+  yarn add @ixo/jambo-wallet-sdk
+  ```
+</CodeGroup>
+
+### Installing Multiple SDKs
+
+```bash
+# Install core SDKs using npm
+npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
+npm install @ixo/oracle-agent-sdk @ixo/jambo-wallet-sdk
+
+# Or using yarn
+yarn add @ixo/impactxclient-sdk @ixo/matrixclient-sdk @ixo/oracle-agent-sdk @ixo/jambo-wallet-sdk
+```
+
+## Getting Started
+
+<Steps>
+  <Step title="Configure Clients">
+    ```typescript
+    import { createClient } from "@ixo/impactxclient-sdk";
+    import { createMatrixClient } from "@ixo/matrixclient-sdk";
+    
+    // Initialize blockchain client
+    const chain = await createClient({
+      rpcEndpoint: "https://rpc.ixo.world",
+      chainId: "ixo-5"
+    });
+    
+    // Initialize Matrix client
+    const matrix = await createMatrixClient({
+      baseUrl: "https://matrix.ixo.world",
+      accessToken: "YOUR_ACCESS_TOKEN"
+    });
+    ```
+  </Step>
+  
+  <Step title="Build Your Application">
+    Leverage the SDKs to implement your application's core functionality:
+    - Create and manage digital twins
+    - Set up secure data rooms
+    - Implement verification workflows
+    - Integrate with wallets and credentials
+  </Step>
+</Steps>
+
+## SDK Architecture
+
+The IXO SDKs are designed with a modular architecture that allows developers to use them independently or in combination, depending on their application requirements.
+
+<Frame>
+  <img src="/docs/images/sdk-architecture.png" alt="IXO SDK Architecture" />
+</Frame>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Digital MRV Systems" icon="chart-line">
+    Build systems for measuring, reporting, and verifying impact data
+  </Card>
+  
+  <Card title="Secure Data Rooms" icon="shield-halved">
+    Create encrypted spaces for sensitive data collaboration
+  </Card>
+  
+  <Card title="Digital Credential Systems" icon="id-card">
+    Implement verifiable credential issuance and verification
+  </Card>
+  
+  <Card title="Impact Marketplaces" icon="store">
+    Develop platforms for trading tokenized impact assets
+  </Card>
+</CardGroup>
+
+## Resources
+
+<CardGroup>
+  <Card title="API Reference" icon="code" href="/api-docs/introduction">
+    Detailed API documentation for all SDKs
+  </Card>
+  
+  <Card title="GitHub Repositories" icon="github" href="https://github.com/ixofoundation">
+    Access SDK source code and examples
+  </Card>
+  
+  <Card title="Developer Community" icon="users" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Join our community for support and collaboration
+  </Card>
+  
+  <Card title="Tutorials" icon="book" href="/guides/dev/examples">
+    Step-by-step guides for common use cases
+  </Card>
+</CardGroup>
+
+{/* theme: info */}
+> For technical support or questions about the SDKs, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).

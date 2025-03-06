@@ -1,264 +1,246 @@
 ---
 title: 'IXO Oracles'
-description: 'Build intelligent oracle services using agentic AI and the Spatial Web Stack'
+description: 'Agentic verification services for the Spatial Web'
 ---
 
-<Tip>
-  IXO Oracles are autonomous AI agents that provide intelligent services through cognitive workflows, secure data storage, and blockchain integration.
-</Tip>
+<Note>
+  IXO Oracles provide intelligent verification services for digital twins, enabling automated data validation, causal inference, and verifiable attestations through Agentic Oracle technology.
+</Note>
 
-## Overview
+## Key Features
 
-IXO Oracles combine multiple technologies to create intelligent agent networks:
-- Decentralized Identity (DIDs) with verifiable credentials
-- AI-powered cognitive workflows using Langraph
-- Encrypted data storage with Matrix rooms
-- Blockchain integration via MultiClient SDK
+<CardGroup>
+  <Card title="Verification Agents" icon="check-double">
+    Automated validation of data claims with configurable verification rules
+  </Card>
+  
+  <Card title="Causal Inference" icon="brain">
+    Intelligent analysis of cause-effect relationships in impact data
+  </Card>
+  
+  <Card title="Verifiable Attestations" icon="certificate">
+    Cryptographically signed proof of verification results
+  </Card>
+  
+  <Card title="Cognitive Workflows" icon="diagram-project">
+    - Agentic-powered cognitive workflows using Langraph
+    - Customizable verification pipelines
+    - Multi-step validation processes
+  </Card>
+</CardGroup>
 
-## Core Architecture
+## Oracle Architecture
 
 <AccordionGroup>
-  <Accordion title="Identity Layer" icon="fingerprint">
-    ```json
-    {
-      "@context": ["https://www.w3.org/ns/did/v1"],
-      "id": "did:ixo:oracle/123",
-      "service": [{
-        "id": "#ai",
-        "type": "LangraphService",
-        "serviceEndpoint": "https://oracle.emerging.eco/ai"
-      }]
-    }
-    ```
-    - DID-based oracle domains
+  <Accordion title="Verification Agents" icon="robot">
+    - Specialized agents for different verification tasks
+    - Configurable validation rules
+    - Evidence collection and evaluation
+    - Confidence scoring
+  </Accordion>
+
+  <Accordion title="Causal Models" icon="diagram-project">
+    - Bayesian networks for causal inference
+    - Counterfactual analysis
+    - Attribution modeling
+    - Uncertainty quantification
+  </Accordion>
+
+  <Accordion title="Attestation System" icon="signature">
+    - Cryptographic proof generation
+    - Blockchain anchoring
     - Verifiable credentials
-    - Key management system
-    - Access control policies
-  </Accordion>
-
-  <Accordion title="AI Layer" icon="brain">
-    ```python
-    flow = Flow.create(
-        name="cognitive_workflow",
-        capabilities=[
-            "verification",
-            "prediction",
-            "optimization"
-        ]
-    )
-    ```
-    - Langraph framework
-    - Cognitive workflows
-    - Semantic routing
-    - Pattern recognition
-  </Accordion>
-
-  <Accordion title="Storage Layer" icon="database">
-    ```python
-    store = VectorStore.create(
-        type="weaviate",
-        index="oracle_memory"
-    )
-    room = Matrix.create_room(
-        encryption=True
-    )
-    ```
-    - Encrypted Matrix rooms
-    - Vector stores for memory
-    - Event processing
-    - Data integrity proofs
-  </Accordion>
-
-  <Accordion title="Blockchain Layer" icon="cube">
-    ```python
-    client = MultiClient(
-        chain_id="impact-hub-1",
-        key_name="oracle-key"
-    )
-    ```
-    - Impact Hub integration
-    - Transaction handling
-    - Smart contract interaction
-    - Cross-chain messaging
+    - Audit trails
   </Accordion>
 </AccordionGroup>
-
-## Cognitive Capabilities
-
-<CardGroup>
-  <Card title="Intelligent Verification" icon="check-double">
-    - Claims validation with AI
-    - Pattern-based verification
-    - Anomaly detection
-    - Compliance monitoring
-  </Card>
-
-  <Card title="Predictive Analytics" icon="chart-line">
-    - Future state prediction
-    - Risk assessment
-    - Trend analysis
-    - Performance forecasting
-  </Card>
-
-  <Card title="Process Optimization" icon="gears">
-    - Workflow automation
-    - Resource allocation
-    - Efficiency improvement
-    - Cost optimization
-  </Card>
-
-  <Card title="Semantic Understanding" icon="brain-circuit">
-    - Natural language processing
-    - Context interpretation
-    - Intent recognition
-    - Knowledge extraction
-  </Card>
-</CardGroup>
-
-### P-Functions
-
-<CardGroup>
-  <Card title="Proving & Predicting" icon="magnifying-glass-chart">
-    - Verification of claims accuracy and validity
-    - Statistical probability forecasting
-    - Outcome prediction models
-    - Evidence-based validation
-  </Card>
-
-  <Card title="Prescribing & Planning" icon="chart-gantt">
-    - Data-driven intervention programming
-    - Strategic outcome optimization
-    - Resource allocation planning
-    - Impact maximization strategies
-  </Card>
-
-  <Card title="Prevention & Protection" icon="shield-halved">
-    - Risk calculation and mitigation
-    - Threat detection and response
-    - Data security safeguards
-    - Process protection measures
-  </Card>
-
-  <Card title="Personalization & Participation" icon="users-gear">
-    - Individual service customization
-    - Human-in-the-loop decision making
-    - Adaptive interaction models
-    - Collaborative validation processes
-  </Card>
-</CardGroup>
 
 ## Implementation Guide
 
-<Steps>
-  <Step title="Oracle Domain Setup">
-    Configure the foundational identity and security layer for your oracle:
-    - Generate oracle DID
-    - Configure service endpoints
-    - Set up key management
-    - Initialize Matrix rooms
-  </Step>
+### Oracle Configuration
 
-  <Step title="AI Workflow Configuration">
-    Set up the cognitive processing capabilities:
-    - Define Langraph flows
-    - Configure semantic routing
-    - Set up vector stores
-    - Implement cognitive models
-  </Step>
+```typescript
+import { createOracle } from "@ixo/oracle-agent-sdk";
 
-  <Step title="Integration Setup">
-    Connect your oracle to the blockchain and external services:
-    - Connect to Impact Hub
-    - Configure API endpoints
-    - Set up event handlers
-    - Enable cross-chain messaging
-  </Step>
+// Initialize oracle
+const oracle = await createOracle({
+  type: "VerificationOracle",
+  model: "causal-inference-v1",
+  confidence: 0.95,
+  evidenceTypes: ["telemetry", "image", "location"]
+});
 
-  <Step title="Security Configuration">
-    Implement security measures and monitoring:
-    - Implement key rotation
-    - Configure encryption
-    - Set up backup strategy
-    - Enable monitoring
-  </Step>
-</Steps>
+// Configure verification rules
+await oracle.setVerificationRules({
+  requiredEvidence: ["deviceId", "timestamp", "location"],
+  thresholds: {
+    minimumConfidence: 0.9,
+    maximumDeviation: 0.05
+  },
+  constraints: {
+    timeWindow: "24h",
+    locationPrecision: 6
+  }
+});
+```
+
+### Verification Flow
+
+```typescript
+// Create verification session
+const session = await oracle.createVerification({
+  subject: "did:ixo:entity/123",
+  context: {
+    location: {
+      latitude: 51.5074,
+      longitude: -0.1278,
+      precision: 6
+    },
+    timestamp: Date.now()
+  }
+});
+
+// Process data
+const result = await session.verify(data, {
+  evidence: supportingEvidence,
+  rules: customRules
+});
+
+// Generate attestation
+const attestation = await session.generateAttestation({
+  result,
+  method: "Ed25519Signature2020"
+});
+```
+
+### Causal Analysis
+
+```typescript
+// Create causal model
+const model = await oracle.createCausalModel({
+  variables: ["intervention", "outcome", "context"],
+  relationships: [
+    { from: "intervention", to: "outcome" },
+    { from: "context", to: "outcome" }
+  ]
+});
+
+// Train model
+await model.train(historicalData);
+
+// Analyze causality
+const analysis = await model.analyze({
+  intervention: interventionData,
+  outcome: outcomeData,
+  context: contextData
+});
+
+// Generate insights
+const insights = await model.generateInsights(analysis);
+```
 
 ## Use Cases
 
-### Intelligent Verification
+<CardGroup>
+  <Card title="Impact Verification" icon="chart-line">
+    Validate impact claims with causal inference and evidence evaluation
+  </Card>
+  
+  <Card title="Data Validation" icon="shield-check">
+    Automated validation of data integrity and compliance with standards
+  </Card>
+  
+  <Card title="Credential Issuance" icon="id-card">
+    Issue verifiable credentials based on verification results
+  </Card>
+  
+  <Card title="Decision Support" icon="lightbulb">
+    Provide intelligent insights for decision-making processes
+  </Card>
+</CardGroup>
+
+## Security Considerations
 
 <AccordionGroup>
-  <Accordion title="Claims Processing" icon="file-check">
-    - AI-powered validation
-    - Pattern matching
+  <Accordion title="Data Protection" icon="lock">
+    - End-to-end encryption
+    - Secure evidence storage
+    - Access control
+    - Data minimization
+  </Accordion>
+
+  <Accordion title="Oracle Security" icon="shield">
+    - Secure key management
+    - Tamper-proof execution
+    - Audit logging
+    - Intrusion detection
+  </Accordion>
+
+  <Accordion title="Verification Integrity" icon="check-double">
+    - Multi-factor verification
+    - Cross-validation
     - Anomaly detection
-    - Automated compliance checks
-  </Accordion>
-
-  <Accordion title="Impact Assessment" icon="chart-line">
-    - Predictive modeling
-    - Performance analytics
-    - Risk evaluation
-    - Outcome forecasting
-  </Accordion>
-</AccordionGroup>
-
-### Process Automation
-
-<AccordionGroup>
-  <Accordion title="Workflow Optimization" icon="gears">
-    - Smart routing
-    - Resource scheduling
-    - Task automation
-    - Performance monitoring
-  </Accordion>
-
-  <Accordion title="Decision Support" icon="brain">
-    - Intelligent recommendations
-    - Risk assessment
-    - Strategy optimization
-    - Pattern recognition
+    - Consensus mechanisms
   </Accordion>
 </AccordionGroup>
 
 ## Best Practices
 
-<AccordionGroup>
-  <Accordion title="Security" icon="shield">
-    - Regular key rotation
-    - Input validation
-    - Encrypted storage
-    - Attack monitoring
-  </Accordion>
+### Oracle Design
 
-  <Accordion title="Observability" icon="chart-mixed">
-    - Performance metrics
-    - Accuracy tracking
-    - Operation logging
-    - Alert systems
-  </Accordion>
-</AccordionGroup>
+- Define clear verification criteria
+- Implement proper error handling
+- Design for auditability
+- Consider edge cases
+- Implement fallback mechanisms
 
-## Developer Resources
+### Verification Workflows
+
+- Use multi-stage verification
+- Implement confidence scoring
+- Provide detailed evidence
+- Enable manual review for edge cases
+- Maintain verification history
+
+### Performance
+
+- Optimize for latency
+- Implement caching
+- Handle high volumes
+- Monitor resource usage
+- Implement rate limiting
+
+## Related Resources
 
 <CardGroup>
-  <Card title="Oracle SDK" icon="code" href="/spatial-web-stack/oracle-agent-sdk">
-    Build intelligent Oracle services
+  <Card title="Oracle Agent SDK" icon="code" href="/spatial-web-stack/sdks/oracle-agent-sdk">
+    Developer toolkit for building custom oracles
   </Card>
   
-  <Card title="Architecture Guide" icon="diagram-project" href="/guides/ixo-oracles-architecture">
-    Learn about oracle design patterns
+  <Card title="Verification Flows" icon="diagram-project" href="/guides/dev/examples">
+    Example verification workflows
   </Card>
   
-  <Card title="Flow Guide" icon="arrows-split-up-and-left" href="/guides/dev/flows">
-    Create cognitive workflows
-  </Card>
-  
-  <Card title="Security Guide" icon="shield-check" href="/guides/dev/security">
-    Implement security measures
+  <Card title="Security Guide" icon="shield" href="/guides/dev/overview">
+    Security best practices for oracle implementation
   </Card>
 </CardGroup>
 
-<Tip>
-  For implementation support, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
-</Tip>
+## Next Steps
+
+<CardGroup>
+  <Card title="Getting Started" icon="play">
+    Set up your first oracle
+  </Card>
+
+  <Card title="Advanced Verification" icon="wand-magic-sparkles">
+    Implement complex verification flows
+  </Card>
+
+  <Card title="Integration Guide" icon="plug">
+    Connect oracles to your application
+  </Card>
+
+  <Card title="Monitoring" icon="gauge">
+    Monitor oracle performance
+  </Card>
+</CardGroup>

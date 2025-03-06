@@ -1,0 +1,368 @@
+---
+title: 'AI Companion API'
+description: 'Integration between personal sovereign AI agents and client applications'
+---
+
+<Tip>
+  The AI Companion API enables seamless integration between personal sovereign AI agents and client applications, providing users with personalized AI assistance while maintaining data sovereignty and privacy.
+</Tip>
+
+## Overview
+
+The AI Companion API provides a standardized interface for connecting personal sovereign AI agents with various client applications. Each companion agent operates through a dedicated Matrix bot service that connects to the user's Matrix room via the Matrix MCP (Matrix Client-Server Protocol) interface.
+
+<Note>
+  The Matrix MCP interface is currently in development. This documentation serves as a placeholder and will be updated as the implementation progresses.
+</Note>
+
+## Key Capabilities
+
+<CardGroup>
+  <Card title="Sovereign AI Agents" icon="robot">
+    Personal AI assistants that respect user data sovereignty and privacy
+  </Card>
+  
+  <Card title="Matrix Integration" icon="network-wired">
+    Secure communication through Matrix protocol and rooms
+  </Card>
+  
+  <Card title="Multi-Client Support" icon="devices">
+    Connect with web, mobile, and desktop applications
+  </Card>
+  
+  <Card title="Personalization" icon="user-gear">
+    Customizable AI behavior and knowledge base
+  </Card>
+</CardGroup>
+
+## Architecture
+
+<AccordionGroup>
+  <Accordion title="Matrix Bot Service" icon="server">
+    - Dedicated bot for each companion agent
+    - Secure communication channel
+    - Event-driven messaging
+    - End-to-end encryption support
+    - Persistent connection management
+  </Accordion>
+
+  <Accordion title="Matrix MCP Interface" icon="plug">
+    - Client-server protocol implementation
+    - Authentication and authorization
+    - Room management
+    - Message encryption
+    - Media handling
+  </Accordion>
+
+  <Accordion title="Client Integration" icon="code">
+    - SDK libraries for various platforms
+    - WebSocket connections
+    - Event listeners
+    - Message formatting
+    - UI components
+  </Accordion>
+</AccordionGroup>
+
+## Implementation Guide
+
+<Steps>
+  <Step title="Setup Matrix Connection">
+    ```typescript
+    import { MatrixClient } from '@ixo/matrixclient-sdk';
+    
+    // Initialize Matrix client
+    const matrixClient = new MatrixClient({
+      baseUrl: 'https://matrix.ixo.world',
+      userId: '@user:ixo.world',
+      accessToken: 'YOUR_ACCESS_TOKEN'
+    });
+    ```
+  </Step>
+  
+  <Step title="Connect to Companion Bot">
+    ```typescript
+    // Connect to companion bot room
+    const companionRoom = await matrixClient.joinRoom('#companion:ixo.world');
+    
+    // Listen for messages
+    matrixClient.on('Room.timeline', (event, room) => {
+      if (room.roomId === companionRoom.roomId && event.getType() === 'm.room.message') {
+        const content = event.getContent();
+        console.log(`Companion: ${content.body}`);
+      }
+    });
+    ```
+  </Step>
+  
+  <Step title="Send Commands">
+    ```typescript
+    // Send message to companion
+    async function askCompanion(question) {
+      await matrixClient.sendMessage(companionRoom.roomId, {
+        msgtype: 'm.text',
+        body: question
+      });
+    }
+    
+    // Example usage
+    askCompanion('What's the weather forecast for today?');
+    ```
+  </Step>
+  
+  <Step title="Handle Responses">
+    ```typescript
+    // Process companion responses
+    function handleCompanionResponse(response) {
+      // Parse response format
+      const { text, actions, attachments } = parseResponse(response);
+      
+      // Update UI or trigger actions
+      updateUI(text);
+      processActions(actions);
+      displayAttachments(attachments);
+    }
+    ```
+  </Step>
+</Steps>
+
+## API Reference
+
+<AccordionGroup>
+  <Accordion title="Authentication" icon="key">
+    ```typescript
+    // Authenticate with companion service
+    async function authenticateCompanion(credentials) {
+      const response = await fetch('https://api.ixo.world/companion/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      });
+      
+      return await response.json();
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Message Exchange" icon="message">
+    ```typescript
+    // Message format
+    interface CompanionMessage {
+      id: string;           // Unique message ID
+      sender: string;       // Sender identifier
+      content: {
+        type: string;       // Message type (text, action, media)
+        body: string;       // Text content
+        metadata?: any;     // Additional data
+      };
+      timestamp: number;    // Unix timestamp
+    }
+    
+    // Send message
+    async function sendMessage(roomId, message) {
+      return await matrixClient.sendMessage(roomId, {
+        msgtype: message.content.type,
+        body: message.content.body,
+        metadata: message.content.metadata
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Companion Configuration" icon="sliders">
+    ```typescript
+    // Configure companion preferences
+    async function configureCompanion(roomId, preferences) {
+      return await matrixClient.sendStateEvent(
+        roomId,
+        'ixo.companion.config',
+        preferences,
+        ''
+      );
+    }
+    
+    // Example configuration
+    const preferences = {
+      language: 'en',
+      timezone: 'UTC+2',
+      privacyLevel: 'high',
+      responseStyle: 'concise',
+      knowledgeDomains: ['finance', 'health', 'technology']
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+<CardGroup>
+  <Card title="Personal Assistant" icon="user-assistant">
+    Daily task management, reminders, and information retrieval
+  </Card>
+  
+  <Card title="Knowledge Navigator" icon="compass">
+    Guide through complex information and learning resources
+  </Card>
+  
+  <Card title="Data Analyst" icon="chart-simple">
+    Process and analyze personal or organizational data
+  </Card>
+  
+  <Card title="Domain Expert" icon="brain">
+    Specialized knowledge in specific domains like finance or healthcare
+  </Card>
+</CardGroup>
+
+## Privacy & Security
+
+<AccordionGroup>
+  <Accordion title="Data Sovereignty" icon="user-shield">
+    - User maintains control of all data
+    - Local processing options
+    - Selective sharing controls
+    - Data retention policies
+    - Export and deletion capabilities
+  </Accordion>
+
+  <Accordion title="Encryption" icon="lock">
+    - End-to-end encryption
+    - Zero-knowledge protocols
+    - Secure key management
+    - Encrypted storage
+    - Secure communication channels
+  </Accordion>
+
+  <Accordion title="Consent Management" icon="clipboard-check">
+    - Explicit permission controls
+    - Granular access settings
+    - Usage transparency
+    - Audit logging
+    - Revocation mechanisms
+  </Accordion>
+</AccordionGroup>
+
+## Integration Examples
+
+<CodeGroup>
+  ```typescript Web Application
+  import { IxoCompanion } from '@ixo/companion-sdk';
+  
+  // Initialize companion in web app
+  const companion = new IxoCompanion({
+    matrixServer: 'https://matrix.ixo.world',
+    credentials: {
+      userId: '@user:ixo.world',
+      accessToken: 'YOUR_ACCESS_TOKEN'
+    }
+  });
+  
+  // Connect and interact
+  await companion.connect();
+  
+  // Send message and get response
+  const response = await companion.ask('How can I optimize my investment portfolio?');
+  
+  // Display in UI
+  document.getElementById('response').textContent = response.text;
+  ```
+
+  ```typescript Mobile Application
+  import { CompanionClient } from '@ixo/mobile-companion';
+  
+  // Setup in mobile app
+  const companionClient = new CompanionClient({
+    serverUrl: 'https://matrix.ixo.world',
+    authToken: 'MOBILE_AUTH_TOKEN'
+  });
+  
+  // Initialize connection
+  companionClient.initialize();
+  
+  // Send query and handle response
+  companionClient.query('What's my schedule today?')
+    .then(response => {
+      // Update mobile UI
+      this.setState({ 
+        responseText: response.text,
+        actions: response.actions 
+      });
+    })
+    .catch(error => {
+      console.error('Companion error:', error);
+    });
+  ```
+
+  ```typescript Desktop Application
+  const { DesktopCompanion } = require('@ixo/desktop-sdk');
+  
+  // Create companion instance
+  const companion = new DesktopCompanion({
+    configPath: './companion-config.json',
+    matrixConfig: {
+      homeserver: 'https://matrix.ixo.world',
+      userId: '@user:ixo.world',
+      accessToken: 'DESKTOP_TOKEN'
+    }
+  });
+  
+  // Start companion service
+  companion.start().then(() => {
+    console.log('Companion service started');
+    
+    // Register event handlers
+    companion.on('message', handleMessage);
+    companion.on('action', handleAction);
+    companion.on('error', handleError);
+    
+    // Interact with companion
+    companion.sendMessage('Help me analyze this dataset');
+  });
+  ```
+</CodeGroup>
+
+## Development Status
+
+The AI Companion API and Matrix MCP interface are currently under development. Key milestones include:
+
+<Steps>
+  <Step title="Matrix Protocol Integration">
+    Implementation of the Matrix Client-Server Protocol for secure communication
+  </Step>
+  
+  <Step title="Bot Service Development">
+    Creation of the companion bot service architecture
+  </Step>
+  
+  <Step title="Client SDKs">
+    Development of client libraries for web, mobile, and desktop applications
+  </Step>
+  
+  <Step title="Security & Privacy Framework">
+    Implementation of encryption, data sovereignty, and consent management
+  </Step>
+</Steps>
+
+## Resources
+
+<CardGroup>
+  <Card title="Matrix Protocol" icon="link" href="https://matrix.org/docs/spec/">
+    Learn about the Matrix communication protocol
+  </Card>
+  
+  <Card title="IXO Matrix SDK" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+    Matrix client SDK documentation
+  </Card>
+  
+  <Card title="AI Companion Guide" icon="book" href="/guides/dev/ai-companion">
+    Implementation guide for AI companions
+  </Card>
+  
+  <Card title="GitHub Repository" icon="github" href="https://github.com/ixofoundation/ixo-matrix">
+    Source code and examples
+  </Card>
+</CardGroup>
+
+<Tip>
+  For technical support or questions about the AI Companion API, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
+</Tip>

@@ -1,55 +1,136 @@
+---
+title: 'IXO Matrix State Bot API'
+description: 'Manage state objects within IXO Matrix Rooms'
+---
+
 # IXO Matrix State Bot API
 
-The **IXO Matrix State Bot API** is an open-source solution designed for managing state objects within the Impacts Matrix Rooms of the IXO ecosystem. By leveraging the Matrix protocol, this bot enables secure, decentralised storage and management of state events and access control lists (ACLs) for applications, projects, and communities. The API provides both Matrix commands and a RESTful interface for managing state and ACL events efficiently, making it a versatile tool for developers looking to integrate stateful interactions into their decentralised applications (dApps).
+<Tip>
+  The IXO Matrix State Bot API enables secure, decentralized storage and management of state events and access control lists (ACLs) within IXO Matrix Rooms.
+</Tip>
 
-## Purpose of the API
+## Overview
 
-The core purpose of the **IXO Matrix State Bot API** is to enable developers to manage room-specific settings, configurations, and stateful data securely and seamlessly within the Impacts Matrix ecosystem. By abstracting the complexities of Matrix server interactions, the API empowers users to:
+The IXO Matrix State Bot API is an open-source solution for managing state objects within the IXO Matrix ecosystem. By leveraging the Matrix protocol, this bot enables secure, decentralized storage and management of state events and access control lists (ACLs) for applications, projects, and communities.
 
-- Create, read, update, and manage state objects.
-- Define and manage ACLs to control access and permissions.
-- Automate state management tasks using a REST API or Matrix commands.
+<CardGroup>
+  <Card title="REST API" icon="code" href="#rest-api-integration">
+    Programmatic interface for state management
+  </Card>
+  <Card title="Matrix Commands" icon="message" href="#matrix-commands">
+    In-room commands for state operations
+  </Card>
+</CardGroup>
 
 ## Key Features
 
-### 1. Custom State Event Management
-
-The API allows developers to define, store, and manage custom state events in Impacts Matrix Rooms. Each state event can hold application-specific data, stored under unique keys (`state_key`) for organised and secure access.
-
-- **State Events (`ixo.room.state`)**: Represent room settings or configurations, stored as JSON objects.
-- **ACL Events (`ixo.room.state.acl`)**: Define access permissions for state events, ensuring secure data interactions.
-
-### 2. Flexible Access Control
-
-Developers can use ACLs to set granular access and edit permissions for room-specific state events. ACLs are directly tied to the corresponding state events, providing robust security for decentralised applications.
-
-### 3. REST API Integration
-
-The RESTful interface offers a direct way to interact with the bot for managing state and ACL events. It simplifies backend integrations by providing endpoints for:
-
-- Fetching and updating state events.
-- Managing ACLs.
-- Inviting the bot to rooms and configuring its access levels.
-
-### 4. Matrix Commands
-
-The bot also supports Matrix room commands for managing state and ACL events within the Matrix ecosystem. These commands offer a quick and intuitive way to perform state-related tasks directly in chat rooms.
+<AccordionGroup>
+  <Accordion title="Custom State Event Management" icon="database">
+    Define, store, and manage custom state events in IXO Matrix Rooms:
+    - State Events (`ixo.room.state`): Room settings or configurations stored as JSON objects
+    - ACL Events (`ixo.room.state.acl`): Access permissions for state events
+    - Organized storage using unique keys (`state_key`)
+  </Accordion>
+  
+  <Accordion title="Flexible Access Control" icon="lock">
+    Set granular access and edit permissions for room-specific state events:
+    - Direct association between ACLs and state events
+    - Role-based access control
+    - Permission inheritance
+  </Accordion>
+  
+  <Accordion title="REST API Integration" icon="code">
+    Direct programmatic interface for state management:
+    - Fetch and update state events
+    - Manage ACLs
+    - Configure bot access
+  </Accordion>
+  
+  <Accordion title="Matrix Commands" icon="message">
+    In-room commands for state operations:
+    - Intuitive command syntax
+    - Real-time state management
+    - Interactive responses
+  </Accordion>
+</AccordionGroup>
 
 ## Use Cases
 
-The **IXO Matrix State Bot API** is suitable for a variety of applications, including:
+<CardGroup>
+  <Card title="Decentralized Application Settings" icon="gear">
+    Store and manage application-specific configurations securely within IXO Matrix rooms
+  </Card>
+  <Card title="Access Control for Projects" icon="users-gear">
+    Implement fine-grained ACLs for managing permissions within collaborative projects
+  </Card>
+  <Card title="Real-Time State Management" icon="bolt">
+    Automate the management of state objects in decentralized environments
+  </Card>
+  <Card title="Digital Twin Data Governance" icon="database">
+    Manage access controls for digital twin data with verifiable permissions
+  </Card>
+</CardGroup>
 
-- **Decentralised Application Settings**: Store and manage application-specific configurations securely within Matrix rooms.
-- **Access Control for Projects**: Implement fine-grained ACLs for managing permissions within collaborative projects.
-- **Real-Time State Management**: Automate the management of state objects in decentralised environments.
+## REST API Integration
+
+The RESTful interface offers a direct way to interact with the bot for managing state and ACL events. It simplifies backend integrations by providing endpoints for:
+
+- Fetching and updating state events
+- Managing ACLs
+- Inviting the bot to rooms and configuring its access levels
+
+## Matrix Commands
+
+The bot supports Matrix room commands for managing state and ACL events within the IXO Matrix ecosystem. These commands offer a quick and intuitive way to perform state-related tasks directly in chat rooms.
+
+## SDK Integration
+
+The IXO Matrix State Bot can be easily integrated into your applications using the [IXO Matrix SDK](/spatial-web-stack/sdks/ixo-matrix-sdk):
+
+```typescript
+import { createMatrixStateBotClient } from "@ixo/matrixclient-sdk";
+
+// Initialize IXO Matrix State Bot
+const bot = await createMatrixStateBotClient({
+  baseUrl: "https://matrix.ixo.world",
+  accessToken: "BOT_TOKEN"
+});
+
+// Get room state
+const state = await bot.getRoomState(roomId);
+
+// Update state
+await bot.setState(
+  roomId,
+  "custom.state.type",
+  "",
+  { key: "value" }
+);
+```
+
+## Related Resources
+
+<CardGroup>
+  <Card title="IXO Matrix SDK" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+    Client library for Matrix integration with State Bot support
+  </Card>
+  
+  <Card title="IXO Matrix" icon="database" href="/articles/ixo-matrix">
+    Overview of the IXO Matrix ecosystem
+  </Card>
+  
+  <Card title="IXO MultiClient SDK" icon="network-wired" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
+    Unified SDK with Matrix integration
+  </Card>
+</CardGroup>
 
 ## Additional Resources
 
 For more detailed documentation and examples, visit the GitHub repository:
 
-- **GitHub Repository**: [IXO Matrix State Bot](https://github.com/ixofoundation/ixo-matrix-state)
+<Card title="GitHub Repository" icon="github" href="https://github.com/ixofoundation/ixo-matrix-state">
+  IXO Matrix State Bot
+</Card>
 
 {/* theme: info */}
-> This repository is private. [Reach out to us](https://linktr.ee/ixo_world) to be added as a contributor. 
-
-The **IXO Matrix State Bot API** provides a powerful and flexible platform for managing stateful interactions within the IXO ecosystem, enabling developers to build secure, decentralised solutions that scale with their needs.
+> This repository is private. [Reach out to us](https://linktr.ee/ixo_world) to be added as a contributor.

@@ -1,0 +1,379 @@
+---
+title: 'Implementation Examples'
+description: 'Code examples and tutorials for IXO development'
+---
+
+# Implementation Examples
+
+<Tip>
+  This page provides practical code examples and tutorials to help you implement common patterns and use cases with the IXO SDKs.
+</Tip>
+
+## Digital Twin Management
+
+### Creating a Digital Twin
+
+```typescript
+import { createClient } from "@ixo/impactxclient-sdk";
+
+// Initialize client
+const client = await createClient({
+  rpcEndpoint: "https://rpc.ixo.world",
+  chainId: "ixo-5"
+});
+
+// Create digital twin entity
+const entity = await client.createEntity({
+  type: "Asset",
+  name: "Solar Panel Array",
+  description: "Renewable energy installation",
+  location: {
+    latitude: 51.5074,
+    longitude: -0.1278
+  },
+  metadata: {
+    capacity: "5kW",
+    installation_date: "2023-01-15"
+  }
+});
+
+console.log("Entity created:", entity.id);
+
+// Query entity
+const entityData = await client.getEntity(entity.id);
+console.log("Entity data:", entityData);
+```
+
+### Updating Entity State
+
+```typescript
+// Update entity state
+await client.updateEntity(entity.id, {
+  status: "active",
+  metadata: {
+    ...entityData.metadata,
+    last_maintenance: "2023-06-10"
+  }
+});
+
+// Add relationships
+await client.addEntityRelationships(entity.id, [
+  {
+    type: "contains",
+    target: "did:ixo:entity/456",
+    properties: {
+      startDate: Date.now()
+    }
+  }
+]);
+```
+
+## Secure Data Management
+
+### Creating a Data Room
+
+```typescript
+import { createMatrixClient } from "@ixo/matrixclient-sdk";
+
+// Initialize Matrix client
+const matrix = await createMatrixClient({
+  baseUrl: "https://matrix.ixo.world",
+  accessToken: "YOUR_ACCESS_TOKEN"
+});
+
+// Create encrypted room
+const room = await matrix.createRoom({
+  name: "Project Data Room",
+  encryption: true,
+  preset: "private_chat",
+  initialState: [{
+    type: "m.room.encryption",
+    state_key: "",
+    content: { algorithm: "m.megolm.v1.aes-sha2" }
+  }]
+});
+
+console.log("Room created:", room.roomId);
+
+// Set room permissions
+await matrix.setRoomPermissions(room.roomId, {
+  readAccess: ["@alice:ixo.world"],
+  writeAccess: ["@bob:ixo.world"]
+});
+```
+
+### Storing and Retrieving Data
+
+```typescript
+// Store data
+await matrix.sendEvent(room.roomId, "data.store", {
+  type: "ProjectMetrics",
+  data: {
+    energy_produced: "120kWh",
+    timestamp: Date.now()
+  },
+  metadata: {
+    version: "1.0"
+  }
+});
+
+// Store file
+const fileEvent = await matrix.sendFile(room.roomId, {
+  file: fileData,
+  filename: "metrics.json",
+  mimetype: "application/json"
+});
+
+// Retrieve data
+const events = await matrix.getRoomEvents(room.roomId, {
+  types: ["data.store"],
+  limit: 10
+});
+
+events.forEach(event => {
+  console.log("Data:", event.getContent().data);
+});
+```
+
+## Claims and Verification
+
+### Submitting a Claim
+
+```typescript
+// Submit verification claim
+const claim = await client.createClaim({
+  entityId: entity.id,
+  type: "Production",
+  data: {
+    energy_produced: "120kWh",
+    timestamp: Date.now()
+  },
+  evidence: {
+    type: "MeterReading",
+    hash: "Qm...",
+    uri: "https://..."
+  }
+});
+
+console.log("Claim created:", claim.id);
+```
+
+### Verifying a Claim
+
+```typescript
+import { createOracleClient } from "@ixo/oracle-agent-sdk";
+
+// Initialize oracle client
+const oracle = await createOracleClient({
+  did: "did:ixo:oracle/123",
+  endpoint: "https://oracle.ixo.world"
+});
+
+// Verify claim
+const verification = await oracle.verify({
+  claimId: claim.id,
+  data: claimData,
+  context: {
+    location: {
+      latitude: 51.5074,
+      longitude: -0.1278,
+      precision: 6
+    },
+    timestamp: Date.now()
+  }
+});
+
+// Generate attestation
+const attestation = await oracle.generateAttestation({
+  verification,
+  method: "Ed25519Signature2020"
+});
+
+// Submit evaluation
+const evaluation = await client.evaluateClaim(claim.id, {
+  status: "Approved",
+  verifier: oracle.did,
+  evidence: attestation
+});
+```
+
+## Complete Use Cases
+
+### Digital MRV System
+
+This example demonstrates a complete digital MRV (Measurement, Reporting, Verification) system for renewable energy:
+
+```typescript
+// 1. Create project entity
+const project = await client.createEntity({
+  type: "Project",
+  name: "Solar Farm Alpha",
+  description: "10MW Solar Installation",
+  location: { latitude: 51.5074, longitude: -0.1278 }
+});
+
+// 2. Create device entities
+const device = await client.createEntity({
+  type: "Device",
+  name: "Smart Meter 001",
+  description: "Energy production meter",
+  metadata: { serial: "SM001", type: "production" }
+});
+
+// 3. Create relationships
+await client.addEntityRelationships(project.id, [
+  { type: "contains", target: device.id }
+]);
+
+// 4. Create data room
+const room = await matrix.createRoom({
+  name: `${project.name} Data Room`,
+  encryption: true
+});
+
+// 5. Store device data
+await matrix.sendEvent(room.roomId, "data.telemetry", {
+  deviceId: device.id,
+  readings: [
+    { timestamp: Date.now(), value: "120", unit: "kWh" }
+  ]
+});
+
+// 6. Submit claim
+const claim = await client.createClaim({
+  entityId: project.id,
+  type: "EnergyProduction",
+  data: {
+    period: "2023-06",
+    total_production: "3600kWh"
+  }
+});
+
+// 7. Verify with oracle
+const verification = await oracle.verify({
+  claimId: claim.id,
+  data: await matrix.getRoomEvents(room.roomId, {
+    types: ["data.telemetry"],
+    limit: 100
+  })
+});
+
+// 8. Evaluate claim
+await client.evaluateClaim(claim.id, {
+  status: "Approved",
+  verifier: oracle.did,
+  evidence: verification.attestation
+});
+
+// 9. Issue tokens
+const tokens = await client.issueTokens({
+  recipient: projectOwnerAddress,
+  amount: "3600",
+  denom: "carbon.credit",
+  metadata: {
+    project: project.id,
+    claim: claim.id,
+    period: "2023-06"
+  }
+});
+```
+
+### Secure Collaboration Platform
+
+This example demonstrates a secure collaboration platform for sensitive data:
+
+```typescript
+// 1. Create organization
+const org = await client.createEntity({
+  type: "Organization",
+  name: "Research Consortium",
+  description: "Collaborative research group"
+});
+
+// 2. Create project
+const project = await client.createEntity({
+  type: "Project",
+  name: "Climate Research Initiative",
+  description: "Data collection and analysis project"
+});
+
+// 3. Create relationship
+await client.addEntityRelationships(org.id, [
+  { type: "manages", target: project.id }
+]);
+
+// 4. Create data room
+const dataRoom = await matrix.createRoom({
+  name: "Research Data Room",
+  encryption: true
+});
+
+// 5. Create discussion room
+const discussionRoom = await matrix.createRoom({
+  name: "Research Discussion",
+  encryption: true
+});
+
+// 6. Set permissions
+const members = ["@alice:ixo.world", "@bob:ixo.world", "@charlie:ixo.world"];
+
+await matrix.setRoomPermissions(dataRoom.roomId, {
+  readAccess: members,
+  writeAccess: members.slice(0, 2) // Only Alice and Bob can write
+});
+
+await matrix.setRoomPermissions(discussionRoom.roomId, {
+  readAccess: members,
+  writeAccess: members // All can participate in discussion
+});
+
+// 7. Store research data
+await matrix.sendFile(dataRoom.roomId, {
+  file: researchData,
+  filename: "climate_data_2023.csv",
+  mimetype: "text/csv"
+});
+
+// 8. Start discussion
+await matrix.sendMessage(discussionRoom.roomId, {
+  msgtype: "m.text",
+  body: "I've uploaded the latest climate data. Let's discuss the findings."
+});
+
+// 9. Create verification workflow
+const verification = await oracle.createVerification({
+  type: "DataQualityCheck",
+  subject: dataRoom.roomId,
+  rules: {
+    completeness: 0.95,
+    accuracy: 0.9
+  }
+});
+
+// 10. Generate report
+const report = await verification.generateReport();
+await matrix.sendEvent(dataRoom.roomId, "verification.report", report);
+```
+
+## Next Steps
+
+<CardGroup>
+  <Card title="API Reference" icon="book" href="/api-docs/introduction">
+    Detailed API documentation
+  </Card>
+  
+  <Card title="SDK Overview" icon="code" href="/spatial-web-stack/sdks/intro-sdks">
+    Learn more about the IXO SDKs
+  </Card>
+  
+  <Card title="GitHub" icon="github" href="https://github.com/ixofoundation">
+    Source code and examples
+  </Card>
+  
+  <Card title="Community" icon="users" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
+    Developer community and support
+  </Card>
+</CardGroup>
+
+{/* theme: info */}
+> For technical support or questions about these examples, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world). 

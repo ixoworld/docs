@@ -1,10 +1,10 @@
 ---
-title: "MultiClient SDK"
-description: "Build advanced Spatial Web client applications with interchain blockchain networks, data matrix integration, and AI oracles"
+title: "IXO MultiClient SDK"
+description: "Build advanced Spatial Web client applications with interchain blockchain networks, IXO Matrix integration, and Agentic Oracles"
 ---
 
 <Tip>
-  The IXO MultiClient SDK provides a unified interface for building Spatial Web client applications that leverage interchain networks, decentralized data matrix storage, and AI-powered oracles for verifiable digital twins.
+  The IXO MultiClient SDK provides a unified interface for building Spatial Web client applications that leverage interchain networks, decentralized IXO Matrix data storage, and Agentic Oracles for verifiable digital twins.
 </Tip>
 
 ## Key Features
@@ -18,20 +18,22 @@ description: "Build advanced Spatial Web client applications with interchain blo
     Connects IXO Protocol networks with most other blockchains
   </Card>
 
-  <Card title="Matrix Data Nodes" icon="database">
+  <Card title="IXO Matrix Data Nodes" icon="database">
     Encrypts data in sovereign decentralised stores, with secure messaging
   </Card>
 
-  <Card title="AI Oracles" icon="sparkles" href="Guides/ixo-oracles-architecture">
-    Provide intelligent automations, data verification, with agents and  causal AI services
+  <Card title="Agentic Oracles" icon="sparkles" href="/articles/ixo-oracles">
+    Provide intelligent automations, data verification, with agents and causal AI services
   </Card>
 </CardGroup>
 
 ## Installation
 
 ```bash
+# Using npm
 npm install @ixo/impactxclient-sdk
-# or
+
+# Using yarn
 yarn add @ixo/impactxclient-sdk
 ```
 
@@ -206,7 +208,7 @@ yarn add @ixo/impactxclient-sdk
   </Accordion>
 
   <Accordion title="Oracle Services">
-    * AI-powered verification Oracle
+    * Agentic verification Oracle
 
       ```typescript
       // Configure oracle
@@ -411,6 +413,26 @@ const executeMsg = {
   Blockchain node error
 </ResponseField>
 
+## Use Cases
+
+<CardGroup>
+  <Card title="Digital Twin Management" icon="cubes">
+    Create, update, and manage digital representations of real-world assets with verifiable state
+  </Card>
+  
+  <Card title="Secure Data Storage" icon="database">
+    Store sensitive data in encrypted IXO Matrix rooms with controlled access and blockchain verification
+  </Card>
+  
+  <Card title="Interchain Operations" icon="link">
+    Execute transactions across multiple blockchain networks with unified interface and consistent security
+  </Card>
+  
+  <Card title="Agentic Verification" icon="robot">
+    Implement automated verification workflows using Agentic Oracles for data validation and intelligence
+  </Card>
+</CardGroup>
+
 ## Best Practices
 
 <Tip>
@@ -420,22 +442,32 @@ const executeMsg = {
 ### Security
 
 * Validate all user inputs
-
 * Use secure key management
-
 * Implement proper error handling
-
 * Monitor transaction status
 
 ### Performance
 
 * Batch transactions when possible
-
 * Implement proper caching
-
 * Handle offline scenarios
-
 * Monitor gas usage
+
+## Related Resources
+
+<CardGroup>
+  <Card title="IXO Matrix SDK" icon="database" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+    Detailed documentation for IXO Matrix integration
+  </Card>
+  
+  <Card title="IXO Matrix" icon="database" href="/articles/ixo-matrix">
+    Overview of the IXO Matrix ecosystem
+  </Card>
+  
+  <Card title="IXO Oracles" icon="sparkles" href="/articles/ixo-oracles">
+    Learn about Agentic Oracle capabilities
+  </Card>
+</CardGroup>
 
 ## Next Steps
 
@@ -449,6 +481,6 @@ const executeMsg = {
   </Card>
 
   <Card title="Query Guide" icon="magnifying-glass">
-    Using GraphQL to query the Blocksync indexing database  &#x20;
+    Using GraphQL to query the Blocksync indexing database
   </Card>
 </CardGroup>

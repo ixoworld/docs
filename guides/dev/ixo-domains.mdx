@@ -9,13 +9,31 @@ description: 'Create and manage digital domains for entities in the IXO Spatial 
 
 ## Overview
 
-Entity Domains enable:
-- Decentralized identity management
-- Verifiable ownership and control
-- Service endpoint configuration
-- Resource and claim linking
-- Relationship mapping
-- Economic account management
+<AccordionGroup>
+  <Accordion title="Decentralized Identity Management" icon="fingerprint">
+    Create and manage decentralized identifiers (DIDs) for entities, enabling sovereign control and cryptographic verification of identity claims.
+  </Accordion>
+  
+  <Accordion title="Verifiable Ownership and Control" icon="key">
+    Establish and verify ownership rights through cryptographic proofs, with support for multiple controllers and delegated authority.
+  </Accordion>
+  
+  <Accordion title="Service Endpoint Configuration" icon="server">
+    Define and manage service endpoints that connect digital twins to external services, APIs, and data sources.
+  </Accordion>
+  
+  <Accordion title="Resource and Claim Linking" icon="link">
+    Associate verifiable claims, documents, and other resources with entity domains to build comprehensive digital representations.
+  </Accordion>
+  
+  <Accordion title="Relationship Mapping" icon="diagram-project">
+    Create and visualize connections between entities to model real-world relationships and dependencies.
+  </Accordion>
+  
+  <Accordion title="Economic Account Management" icon="wallet">
+    Manage financial accounts and transactions associated with entities, enabling economic interactions within the ecosystem.
+  </Accordion>
+</AccordionGroup>
 
 ## Domain Properties
 
@@ -50,6 +68,40 @@ Entity Domains enable:
       type: string;          // Resource type
       path: string;          // Resource location
       proof?: string;        // Optional cryptographic proof
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Accorded Rights" icon="link">
+    ```typescript
+    interface AccordedRight {
+      type: string; // Right type
+      description?: string; // Optional description
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Linked Claims" icon="link">
+    ```typescript
+    interface LinkedClaim {
+      id: string; // Claim identifier
+      type: string; // Claim type
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Linked Entities" icon="link">
+    ```typescript
+    interface LinkedEntity {
+      id: string; // Entity identifier
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Domain Accounts" icon="link">
+    ```typescript
+    interface DomainAccount {
+      id: string; // Account identifier
     }
     ```
   </Accordion>
