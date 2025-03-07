@@ -1,0 +1,45 @@
+---
+title: 'MCP Servers'
+icon: 'code-simple'
+description: 'Model Context Protocols (MCPs) for the IXO ecosystem'
+---
+
+<Tip>
+Model Context Protocols (MCPs) are specialized server interfaces that enable Large Language Model (LLM) agents to safely interact with IXO ecosystem services. These protocols provide controlled access to capabilities while enforcing robust security mechanisms.
+</Tip>
+
+## Overview
+
+IXO's MCP servers act as secure gateways between AI agents and:
+
+- **IXO Blockchain** - Access to on-chain data and transactions via MultiClient SDK
+- **IXO Matrix** - Secure communication within IXO's decentralized messaging infrastructure
+- **IXO Client Applications** - Integration with user-facing applications like IXO Portal
+
+## Security Architecture
+
+Each MCP server implements:
+
+- **Decentralized Identity (DID)** - For secure, blockchain-verified agent identities
+- **UCAN Tokens** - User Controlled Authorization Network credentials for authentication
+- **Capability Based Access Control (CBAC)** - Fine-grained permissions specifying allowed actions on resources
+
+This architecture ensures LLM agents operate within strictly defined boundaries, with all actions governed by explicit capabilities granted through verifiable credentials.
+
+## Key Features
+
+- **Controlled Data Access** - Strict enforcement of read/write permissions and data scope limitations
+- **Privacy Controls** - Proactive filtering at the point of data access
+- **Comprehensive Audit Logging** - Detailed tracking of all agent actions
+- **Standardized Endpoints** - Consistent API patterns across all MCP servers
+
+## Documentation Structure
+
+The following sections provide detailed specifications for each MCP server in the IXO ecosystem, including available endpoints, capability models, authentication requirements, and integration guidelines.
+
+## MCP Servers
+
+The IXO ecosystem includes the following MCP servers:
+
+- **Blockchain MCP** - Access to on-chain data and transactions via the IXOMultiClient SDK
+- **Matrix MCP** - Secure communication within IXO's decentralized messaging infrastructure

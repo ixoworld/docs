@@ -1,17 +1,52 @@
 ---
 title: 'Domain Settings'
-description: 'Manage your entity Domain settings on IXO blockchains'
+icon: 'gear'
+description: 'Manage entity Domains'
 ---
-## IID Document Management
 
 <Tip>
-  The IXO ID (IID) Module provides a comprehensive set of methods for managing a Domain's properties on IXO blockchains, which includes adding/updating controllers, verification methods, services, linked resources, rights, linked claims, and linked entities. 
-  
-  **The Domain Document resolves to a W3C-standard DID Document for the IXO ID Method.**
+A Domain in IXO represents a decentralized identifier with management capabilities for verification methods, services, and access controls. Managing Domain settings allows you to configure how your entity interacts with other participants and services on the IXO network.
 </Tip>
+
+## IID Document Management
+
+The IXO ID (IID) Module provides a comprehensive set of methods for managing a Domain's properties on IXO blockchains. Each Domain has a unique identifier that resolves to a W3C-standard DID Document following the IXO ID Method specification.
+
+
+## Prerequisites
+
+Before managing Domain settings, ensure you have:
+
+- An IXO wallet with sufficient tokens for transaction fees
+- The Domain's IID (identifier)
+- Appropriate signing authority (you must be a controller of the Domain)
+- The IXO SDK installed (if using programmatically)
+
+<CodeGroup>
+  ```bash npm
+  npm install @ixo/sdk
+  ```
+  
+  ```bash yarn
+  yarn add @ixo/sdk
+  ```
+</CodeGroup>
+
+## Domain Management Operations
+
+The following sections outline the key operations you can perform on your Domain's IID Document.
 
 <AccordionGroup>
   <Accordion title="Document Updates" icon="pen-to-square">
+    Document updates allow you to modify multiple properties of your Domain's IID Document in a single transaction.
+    
+    **When to use**: When you need to make multiple changes to your Domain document at once, such as updating verification methods, controllers, and services simultaneously.
+    
+    **Important considerations**:
+    - Updates replace existing properties, so include all current values you wish to keep
+    - Fields not included in the update will remain unchanged
+    - Document updates are atomic - they either succeed completely or fail
+    
     ```typescript
     interface IIDDocumentUpdate {
       context?: string[];
@@ -50,6 +85,15 @@ description: 'Manage your entity Domain settings on IXO blockchains'
   </Accordion>
 
   <Accordion title="Verification Methods" icon="key">
+    Verification methods define the cryptographic keys and proofs your Domain can use for authentication, authorization, and secure communication.
+    
+    **When to use**: Add verification methods when you need to enable specific cryptographic operations for your Domain, such as digital signatures or key exchange.
+    
+    **Important considerations**:
+    - Each verification method must have a unique ID within the Domain
+    - Different verification types support different cryptographic algorithms
+    - Relationships determine what operations a verification method can be used for
+    
     ```typescript
     interface VerificationMethod {
       id: string;
@@ -110,6 +154,15 @@ description: 'Manage your entity Domain settings on IXO blockchains'
   </Accordion>
 
   <Accordion title="Services" icon="gears">
+    Services allow your Domain to expose functionality to other entities. Each service has an ID, type, and endpoint.
+    
+    **When to use**: Add services when you want to expose APIs, messaging endpoints, or other functionality through your Domain.
+    
+    **Important considerations**:
+    - Service endpoints should be secure and reliable
+    - Service types should follow standards for interoperability
+    - Services can be discovered through the IID Document
+    
     ```typescript
     interface Service {
       id: string;
@@ -150,6 +203,15 @@ description: 'Manage your entity Domain settings on IXO blockchains'
   </Accordion>
 
   <Accordion title="Controllers & Resources" icon="sitemap">
+    Controllers determine who can modify the Domain's IID Document, while linked resources and accorded rights define what resources and rights are associated with the Domain.
+    
+    **When to use**: Add controllers when delegating management permissions, and add resources or rights when declaring assets or capabilities associated with your Domain.
+    
+    **Important considerations**:
+    - Controllers have full management capabilities over the Domain
+    - Linked resources can reference any external asset related to the Domain
+    - Accorded rights represent permissions or capabilities granted by the Domain
+    
     ```typescript
     async function addController(
       id: string,
@@ -199,6 +261,15 @@ description: 'Manage your entity Domain settings on IXO blockchains'
   </Accordion>
 
   <Accordion title="Context & Deactivation" icon="power-off">
+    Context provides semantic meaning to your Domain document, while deactivation allows you to temporarily disable your Domain.
+    
+    **When to use**: Add context to improve interoperability with systems that understand specific vocabularies. Deactivate a Domain when you want to temporarily suspend its operations.
+    
+    **Important considerations**:
+    - Contexts should reference well-known semantic vocabularies
+    - Deactivating a Domain doesn't delete it but prevents its use
+    - Deactivation can be reversed by setting state to false
+    
     ```typescript
     async function addContext(
       id: string,
@@ -233,28 +304,178 @@ description: 'Manage your entity Domain settings on IXO blockchains'
   </Accordion>
 </AccordionGroup>
 
+## Domain Management Workflow
+
+Following these steps will help you effectively manage your Domain settings on IXO blockchains.
+
 <Steps>
-  1. **Update Document Structure**
-     - Modify verification methods
-     - Update service endpoints
-     - Add/remove controllers
-     - Manage linked resources
+  <Step title="Update Document Structure">
+    Update your Domain's IID Document structure by:
+    - Modifying verification methods
+    - Updating service endpoints
+    - Adding or removing controllers
+    - Managing linked resources
+  </Step>
 
-  2. **Manage Verification**
-     - Add verification methods
-     - Set relationships
-     - Handle revocation
-     - Update proofs
+  <Step title="Manage Verification">
+    Handle verification methods and relationships:
+    - Add new verification methods
+    - Set verification relationships
+    - Handle method revocation
+    - Update verification proofs
+  </Step>
 
-  3. **Service Management**
-     - Add new services
-     - Update endpoints
-     - Remove services
-     - Configure mediators
+  <Step title="Service Management">
+    Configure and manage Domain services:
+    - Add new service endpoints
+    - Update existing services
+    - Remove deprecated services
+    - Configure service mediators
+  </Step>
 
-  4. **Access Control**
-     - Add controllers
-     - Grant rights
-     - Set capabilities
-     - Manage delegation
+  <Step title="Access Control">
+    Manage Domain access and permissions:
+    - Add Domain controllers
+    - Grant specific rights
+    - Set capability invocations
+    - Configure capability delegation
+  </Step>
 </Steps>
+
+## Implementation Guide
+
+Each step in the process above corresponds to specific API calls in the IXO SDK. Expand the accordions above to see the code examples for each operation, or follow the detailed guides below for common domain management tasks.
+
+## Common Domain Management Tasks
+
+### Example: Creating a Service-Oriented Domain
+
+<Steps>
+  <Step title="Create the Domain IID Document">
+    First, initialize a basic Domain document with a controller:
+    ```typescript
+    // Example of IID Document creation
+    const domain = await createIidDocument({
+      controllers: [myWalletAddress],
+      // other initial properties
+    });
+    ```
+  </Step>
+  
+  <Step title="Add Service Endpoints">
+    Add service endpoints to make your Domain functional:
+    ```typescript
+    await addService(
+      domain.id,
+      {
+        id: `${domain.id}#messaging`,
+        type: "MessagingService",
+        serviceEndpoint: "https://messaging.example.com"
+      }
+    );
+    ```
+  </Step>
+  
+  <Step title="Set Up Verification Methods">
+    Add verification methods to enable authentication:
+    ```typescript
+    const verificationMethod = {
+      id: `${domain.id}#keys-1`,
+      type: "Ed25519VerificationKey2020",
+      controller: domain.id,
+      publicKeyMultibase: "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    };
+    
+    await addVerificationMethod(
+      domain.id,
+      verificationMethod,
+      ["authentication", "assertionMethod"]
+    );
+    ```
+  </Step>
+</Steps>
+
+### Example: Updating Domain Controllers
+
+<Steps>
+  <Step title="Retrieve Current Controllers">
+    First, get the current list of controllers:
+    ```typescript
+    const document = await queryIidDocument(domainId);
+    const currentControllers = document.controller;
+    ```
+  </Step>
+  
+  <Step title="Add New Controller">
+    Add a new controller to the Domain:
+    ```typescript
+    await addController(
+      domainId,
+      "did:ixo:123456789abcdefghi"
+    );
+    ```
+  </Step>
+  
+  <Step title="Update Verification Relationships">
+    Ensure the new controller has appropriate verification relationships:
+    ```typescript
+    await setVerificationRelationships(
+      domainId,
+      `${domainId}#keys-1`,
+      ["authentication", "capabilityInvocation"]
+    );
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Transaction Failed: Unauthorized">
+    This typically means you're not a controller of the Domain. Only controllers can modify Domain settings.
+    
+    **Solution**: Check if your wallet address is in the controllers list, or ask an existing controller to add you.
+  </Accordion>
+  
+  <Accordion title="Invalid Verification Method">
+    Verification methods must follow W3C DID specifications.
+    
+    **Solution**: Ensure your verification method has all required fields and follows the correct format.
+  </Accordion>
+  
+  <Accordion title="Service Endpoint Unreachable">
+    Services added to your Domain should be operational.
+    
+    **Solution**: Verify that your service endpoint is publicly accessible before adding it to your Domain.
+  </Accordion>
+</AccordionGroup>
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="IXO Identity" icon="id-card" href="/guides/concepts/identity">
+    Learn about the IXO identity system and how Domains fit into the broader identity framework.
+  </Card>
+  
+  <Card title="Verification Methods" icon="key" href="/guides/dev/verification">
+    Explore different verification method types and their cryptographic properties.
+  </Card>
+  
+  <Card title="Service Types" icon="gears" href="/guides/dev/services">
+    Discover standard service types and how to implement custom services for your Domain.
+  </Card>
+  
+  <Card title="W3C DID Specification" icon="globe" href="https://www.w3.org/TR/did-core/">
+    Review the W3C standard that defines the Decentralized Identifier specification.
+  </Card>
+</CardGroup>
+
+<CardGroup cols={2}>
+  <Card title="IXO SDK Reference" icon="code" href="/sdk/reference">
+    Access comprehensive API documentation for the IXO SDK.
+  </Card>
+  
+  <Card title="Domain Examples" icon="lightbulb" href="/guides/dev/examples">
+    See real-world examples of Domains in action with sample code.
+  </Card>
+</CardGroup>

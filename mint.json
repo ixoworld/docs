@@ -88,10 +88,16 @@
     {
       "group": "Guides",
       "pages": [
-        "guides/dev/spatial-web-sdks",
-        "guides/dev/domain-settings",
-        "guides/dev/domain-privacy",
-        "guides/dev/authentication"
+        {
+          "group": "Developer Guides",
+          "icon": "code",
+          "pages": [
+            "guides/dev/spatial-web-sdks",
+            "guides/dev/domain-settings",
+            "guides/dev/domain-privacy",
+            "guides/dev/authentication"
+          ]
+        }
       ]
     },
     {
@@ -138,6 +144,7 @@
         "guides/domain-registration",
         "guides/registry",
         "guides/ixo-oracles-architecture",
+        "mcp/model-context-protocol",
         "guides/dev/ixo-claims",
         "guides/dev/domain-privacy",
         {
