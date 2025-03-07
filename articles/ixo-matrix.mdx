@@ -3,9 +3,39 @@ title: 'IXO Matrix'
 description: 'Secure data storage and messaging for the Spatial Web'
 ---
 
-<Note>
+<Tip>
 The IXO Matrix provides encrypted data storage and secure messaging capabilities for the Spatial Web through Matrix protocol integration. It enables private data rooms, real-time communication, and secure file storage with end-to-end encryption.
-</Note>
+</Tip>
+
+## Spatial Web Architecture
+
+IXO Matrix functions as the data persistence and communication layer within the broader Spatial Web Stack architecture, providing sovereign data storage for digital twins and secure communication channels between entity domains and users.
+
+<AccordionGroup>
+  <Accordion title="Position in the Stack" icon="layer-group">
+    IXO Matrix serves as the secure data layer that:
+    - Stores digital twin data in encrypted rooms
+    - Enables secure communication between entity domains and users
+    - Provides file storage with access control
+    - Manages state through specialized bots
+  </Accordion>
+
+  <Accordion title="Federated Server Architecture" icon="network-wired">
+    IXO Matrix leverages the Matrix protocol's federation capabilities to create a network of interconnected servers:
+    - **Homeservers**: Individual Matrix servers that store user data and room state
+    - **Federation Protocol**: Allows communication between different homeservers
+    - **Identity Servers**: Optional servers that help users discover each other
+    - **Enhanced Security**: DID-based identity integration and trusted server networks
+  </Accordion>
+  
+  <Accordion title="Integration Components" icon="puzzle-piece">
+    - **IXO MultiClient SDK**: Unified interface for the entire Spatial Web Stack
+    - **IXO Matrix SDK**: Direct access to Matrix functionality
+    - **IXO Matrix Room Bot**: Automates room management tasks
+    - **IXO Matrix State Bot**: Manages room state and access control
+    - **Matrix MCP Server**: AI Agent interface using Model Context Protocol (upcoming)
+  </Accordion>
+</AccordionGroup>
 
 ## Core Components
 
@@ -138,6 +168,137 @@ await stateBot.setState(
 );
 ```
 
+## Integration Components
+
+### IXO MultiClient SDK
+
+```typescript
+import { IxoClient } from '@ixo/impactxclient-sdk';
+
+// Initialize the client
+const client = new IxoClient({
+  matrix: {
+    baseUrl: 'https://matrix.ixo.world',
+    accessToken: 'YOUR_ACCESS_TOKEN'
+  },
+  blockchain: {
+    rpcUrl: 'https://rpc.ixo.earth'
+  },
+  oracles: {
+    baseUrl: 'https://oracles.ixo.earth'
+  }
+});
+
+// Create a data room for a digital twin
+const room = await client.matrix.createRoom({
+  name: 'Digital Twin Data Room',
+  encryption: true,
+  visibility: 'private'
+});
+
+// Store data in the room
+await client.matrix.sendEvent(room.roomId, 'data.store', {
+  type: 'TwinState',
+  data: encryptedData
+});
+```
+
+### IXO Matrix Room Bot
+
+```typescript
+import { createMatrixRoomBotClient } from '@ixo/matrixclient-sdk';
+
+// Initialize room bot
+const bot = await createMatrixRoomBotClient({
+  baseUrl: 'https://matrix.ixo.world',
+  accessToken: 'BOT_TOKEN'
+});
+
+// Create entity room
+const entityRoom = await bot.createEntityRoom({
+  entityDid: 'did:ixo:entity/123',
+  name: 'Entity Data Room',
+  members: ['@alice:ixo.world', '@bob:ixo.world']
+});
+
+// Handle invites
+await bot.handleInvites();
+```
+
+## Automated Room Creation
+
+IXO Matrix provides automated room creation for domain entities registered on the IXO blockchain. This process is managed by the Matrix Server Bot, which monitors the blockchain for new entity registrations and creates corresponding Matrix rooms.
+
+## Matrix MCP Server and AuthIXO
+
+<AccordionGroup>
+  <Accordion title="Matrix MCP Server" icon="server">
+    The upcoming Matrix MCP (Model Context Protocol) Server is a custom Anthropic-based server that enables AI Agents to interface with Matrix Servers:
+    - **AI Agent Integration**: Allows AI agents to participate in Matrix rooms and process data
+    - **Context-Aware Processing**: Maintains conversation context for intelligent interactions
+    - **Secure Agent Communication**: Enables secure communication between AI agents and users
+    - **Multi-Modal Support**: Processes various data types including text, images, and structured data
+  </Accordion>
+
+  <Accordion title="AuthIXO Authorization Framework" icon="key">
+    AuthIXO is IXO's implementation of decentralized delegated authorization using Cabaility-based Access Control (CBAC):
+    - **Capability Tokens**: Cryptographically signed tokens that grant specific permissions
+    - **Delegation Chains**: Allow for secure delegation of capabilities across entities
+    - **Revocation Mechanisms**: Enable immediate revocation of granted capabilities
+    - **Blockchain Integration**: References Parent Capability on the IXO blockchain (under the `accordedRight` property of an entity's DID document) and uses the `Capability Delegation` and `Capability Invocation` keys that are listed as **Verification Methods** and **Verification Relationships** in an entity's DID document.
+  </Accordion>
+
+  <Accordion title="Implementation Example" icon="code">
+    ```typescript
+    // Create a capability token (AuthCAP)
+    const capabilityToken = await AuthIXO.createCapability({
+      issuer: 'did:ixo:entity/issuer',
+      subject: 'did:ixo:entity/subject',
+      action: 'matrix:sendMessage',
+      resource: 'matrix:room:!roomId:ixo.world',
+      constraints: {
+        expiry: Date.now() + 86400000, // 24 hours
+        maxUses: 10
+      }
+    });
+
+    // Use the capability token to authorize an action
+    const result = await matrix.sendMessageWithCapability(
+      roomId,
+      { msgtype: 'm.text', body: 'Hello, world!' },
+      capabilityToken
+    );
+    ```
+  </Accordion>
+  
+  <Accordion title="AI Agent Integration" icon="robot">
+    ```typescript
+    import { MatrixClient, MCPAgentClient } from '@ixo/matrixclient-sdk';
+    
+    // Initialize Matrix client
+    const matrix = new MatrixClient({
+      baseUrl: 'https://matrix.ixo.world',
+      accessToken: 'YOUR_ACCESS_TOKEN'
+    });
+    
+    // Initialize MCP Agent client
+    const agent = new MCPAgentClient({
+      baseUrl: 'https://mcp.ixo.world',
+      agentId: 'verification-agent',
+      capabilities: ['data-analysis', 'verification']
+    });
+    
+    // Connect agent to a Matrix room
+    await agent.joinRoom(roomId);
+    
+    // Configure agent to process specific event types
+    await agent.subscribeToEvents(roomId, ['m.room.message', 'data.verification.request']);
+    
+    // Agent automatically processes events and responds in the room
+    ```
+  </Accordion>
+</AccordionGroup>
+
 ## Use Cases
 
 <CardGroup>
@@ -180,6 +341,14 @@ await stateBot.setState(
     - Implement data retention
     - Regular security audits
     - Backup critical data
+  </Accordion>
+  
+  <Accordion title="Federation Security" icon="globe">
+    - Limit federation to trusted homeservers
+    - Implement server access control lists
+    - Verify encryption status across federated rooms
+    - Monitor federation traffic for anomalies
+    - Implement proper server authentication
   </Accordion>
 </AccordionGroup>
 

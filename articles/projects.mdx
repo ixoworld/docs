@@ -2,3 +2,167 @@
 title: Projects
 description: "Projects with Agent protocols"
 ---
+
+# IXO Projects
+
+<Tip>
+Projects are a specialized Entity Type within the IXO ecosystem designed for managing agents and resources according to defined protocols. They serve as operational domains for coordinating activities, processing claims, and delivering services through a structured governance framework.
+</Tip>
+
+## Project Domain Overview
+
+Projects, like all IXO domains, are defined by a standard set of properties in their Domain Document (DID Document) that is stored on-chain and resolved using the IXO DID Resolver. However, Projects have unique characteristics that distinguish them from other entity types.
+
+<AccordionGroup>
+  <Accordion title="Core Characteristics">
+  * Configured for managing agents and resources
+  * Linked to specific Protocols that define operational rules
+  * May utilize PODs (Programmable Organisational Domains) for automation
+  * Employ Oracle service providers for data and decision support
+  * Typically include Deed Request and Deed Offer domains
+  * Feature Group governance and DAO functionality
+  * Maintain dedicated Domain Accounts for financial tracking
+  * Have an automatically created IXO Matrix room
+  </Accordion>
+
+  <Accordion title="Project Structure">
+  * **Domain Document**: On-chain DID Document with standard properties
+  * **Protocols**: Linked operational rules governing project activities
+  * **Agents**: Entities performing tasks within the project
+  * **Resources**: Assets and services managed by the project
+  * **Governance**: Group-based control with DAO capabilities
+  * **Accounts**: Multiple domain-specific module accounts
+  * **Communication**: Dedicated Matrix room for project coordination
+  </Accordion>
+</AccordionGroup>
+
+## Project Components and Functions
+
+### Agent Management
+
+Projects are specifically designed to coordinate and manage agents who perform various tasks and functions. These agents may include:
+
+* Human participants performing specific roles
+* Autonomous AI agents operating through PODs
+* Oracle service providers feeding data into the project
+* External service providers delivering specialized functions
+
+Agents interact with the project through structured protocols that define their roles, responsibilities, and the processes they follow.
+
+### Protocol Integration
+
+Projects are linked to one or more Protocols that define the operational rules and processes. These protocols specify:
+
+* How agents interact with the project
+* What tasks can be performed
+* How claims are submitted and processed
+* What resources can be offered or requested
+* How decisions are made within the project
+
+The linked protocols provide a standardized framework that ensures consistency and interoperability across different projects.
+
+### POD Integration
+
+Projects may utilize PODs (Programmable Organisational Domains) to automate various functions:
+
+* Financial operations and treasury management
+* Agent task assignment and monitoring
+* Data processing and analytics
+* Decision support and recommendation systems
+* Compliance and reporting functions
+
+PODs employ autonomous AI agents that operate according to predefined rules and objectives, enhancing the efficiency and capabilities of the project.
+
+### Oracle Services
+
+Projects typically employ Oracle service providers to:
+
+* Feed external data into the project
+* Process and validate claims
+* Provide specialized decision-support
+* Verify outcomes and results
+* Support various other P-functions (Prediction Functions)
+
+Oracles serve as trusted intermediaries that bridge the gap between the project and external systems or data sources.
+
+## Deed Management
+
+Projects incorporate specialized domains for managing deeds:
+
+### Deed Request Domains
+
+* Used to define tasks to be performed by agents
+* Specify requirements for claims submission
+* Establish validation criteria for submitted claims
+* Track the status and progress of requests
+* Instantiate a Claim Collection
+
+### Deed Offer Domains
+
+* Manage offers of resources or services
+* Define terms and conditions for offers
+* Track the fulfillment and delivery of offers
+* Facilitate the exchange of value
+* Instantiate a Claim Collection
+
+
+These deed domains provide structured mechanisms for coordinating activities and managing exchanges within the project.
+
+## Governance and DAO Functionality
+
+Projects implement powerful governance capabilities through:
+
+* **Project Owner Group**: Primary controller of the Domain
+* **Group-based Governance**: Distributed decision-making
+* **DAO Capabilities**: Decentralized autonomous organization functions
+* **Delegated Authorizations**: Granular permission management
+
+This governance structure leverages the full capabilities of the IXO Spatial Web stack, enabling flexible and decentralized control of project resources and activities.
+
+## Financial Management
+
+Projects maintain financial integrity through:
+
+* **Multiple Domain Accounts**: Separate accounts for different purposes
+* **Ownership-based Control**: Accounts owned by the project domain
+* **Delegated Authorizations**: Specific transaction permissions
+* **Ownership Transfer Protection**: Automatic revocation of authorizations upon ownership change
+
+This financial architecture ensures transparent tracking of funds and assets while maintaining appropriate controls and accountability.
+
+## Communication Infrastructure
+
+Each project domain has its own dedicated IXO Matrix room that:
+
+* Is created automatically upon project instantiation
+* Provides a secure communication channel for project participants
+* Integrates with project activities and notifications
+* Maintains a persistent record of project communications
+* Stores state objects for the project, such as a Settings file and the Project Profile
+
+This integrated communication infrastructure ensures effective coordination among project participants.
+
+## Project Lifecycle Management
+
+Projects follow a structured lifecycle that includes:
+
+1. **Instantiation**: Creation of the Project Domain on the IXO blockchain
+2. **Configuration**: Setting up protocols, agents, and resources
+3. **Operation**: Execution of project activities and processes
+4. **Monitoring**: Tracking progress and outcomes
+5. **Adaptation**: Adjusting configurations and processes as needed
+6. **Completion or Evolution**: Concluding the project or transforming it
+
+Throughout this lifecycle, the project maintains its integrity as a domain while adapting to changing requirements and conditions.
+
+## Integration with the Spatial Web Stack
+
+Projects leverage the full capabilities of the IXO Spatial Web stack, including:
+
+* **Blockchain-based Identity**: Secure and verifiable digital identity
+* **Decentralized Data Storage**: Resilient and accessible data management
+* **Smart Contract Functionality**: Automated execution of agreements
+* **Token Economics**: Incentive mechanisms and value exchange
+* **Interoperability**: Seamless interaction with other domains and systems
+
+This integration enables projects to operate as powerful coordination mechanisms within the broader digital ecosystem.
