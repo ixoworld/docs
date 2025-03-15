@@ -19,19 +19,11 @@ const entityDid = utils.common.getValueFromEvents(response, "wasm", "token_id");
 console.log({ entityDid });
 ```
 
-<Accordion title="Entity Creation Parameters">
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `entityType` | string | Type of entity (default: "asset") |
-| `context` | array | Array of key-value pairs defining class and properties |
-| `relayerNodeDid` | string | (Optional) DID of the relayer node |
-| `relayerNode` | WalletUsers | (Optional) Relayer wallet user |
-| `signer` | WalletUsers | (Optional) Wallet user signing the transaction |
-</Accordion>
+<Info>
+ #### Protocols as canonical classes
 
-<Tip>
-  There are different types of entities and these are defined in the Protocols module.
-</Tip>
+ Entities can be of different types (e.g., "asset") and include context information that defines their class and properties. The context helps establish the entity's relationship to protocols and inherited properties.
+</Info>
 
 ## Transferring Entity Ownership
 

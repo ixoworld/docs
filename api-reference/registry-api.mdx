@@ -1,0 +1,575 @@
+---
+title: "Registry API"
+openapi: "api-reference/openapi.yaml"
+---
+
+<Tip>
+    The IXO Registry Server provides an API interface for registry systems, to manage Mitigation Activity reporting for Carbon Credits and ITMOs.
+</Tip>
+
+## High-Level Overview
+
+The Registry API provides a robust interface for interacting with registry systems to monitor and report on mitigation activities. Designed for simplicity and integration, this API supports endpoints for household statistics, device monitoring, fuel usage metrics, carbon credit management, and various claims processing. It connects seamlessly with systems like blockchain registries, ensuring transparent, verifiable, and secure operations.
+
+## Core Components
+
+<CardGroup>
+  <Card title="Projects" icon="diagram-project">
+    Registration and tracking of mitigation efforts.
+  </Card>
+  <Card title="Households" icon="house">
+    Identification and monitoring of households.
+  </Card>
+  <Card title="Devices" icon="fire">
+    Monitor cookstove devices and fuel sources.
+  </Card>
+  <Card title="Agents" icon="users">
+    Validation and management of registry participants.
+  </Card>
+  <Card title="Claims & Certificates" icon="certificate">
+    Digital reporting and verification of activities and outcomes.
+  </Card>
+  <Card title="Credits" icon="coins">
+    Issuance and management of tokenized carbon credits.
+  </Card>
+</CardGroup>
+
+## API Endpoints Overview
+
+The Registry API is organized into various functional groups:
+- **System Health:** Verify server status and access the complete API documentation.
+- **Household Information:** Retrieve statistics and stove stacking data.
+- **Device Monitoring:** Get real-time status of connected devices.
+- **Fuel Management:** Access fuel usage metrics.
+- **Carbon Credits:** Manage issuance, cancellation, transfer, and retirement of credits.
+- **Claims Management:** Process and retrieve various claims including fuel delivery, fuel purchase, emission reductions, and household onboarding.
+
+## API Environments
+
+The Registry API is available in the following environments:
+
+- **Production:** https://api.emerging.eco (currently not available)
+- **Staging:** https://stage.api.emerging.eco (currently not available)
+- **Development:** https://dev.api.emerging.eco 
+
+## Developer Integration
+
+For seamless integration, developers can use the following examples to interact with the Registry API. You can either run these cURL commands directly from your terminal or import the provided Postman collection into your Postman client.
+
+### cURL Command Examples
+
+```bash cURL Commands [expandable]
+# Registry API cURL Commands
+# Replace these variables with your values:
+# BASE_URL=https://dev.api.emerging.eco/emerging-platform
+# API_VERSION=v1
+# USERNAME=user
+# PASSWORD=password
+# PROJECT_ID=project-123
+# TIME_PERIOD=2024-Q1
+
+# System Health
+# -------------
+# 1. Health Check
+curl -v -X GET "${BASE_URL}/${API_VERSION}/hello" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 2. OpenAPI Documentation
+curl -v -X GET "${BASE_URL}/${API_VERSION}/api-docs" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# Household Information
+# ---------------------
+# 3. Get Household Stats
+curl -v -X GET "${BASE_URL}/${API_VERSION}/households/stats" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 4. Get Stove Stacking Data
+curl -v -X GET "${BASE_URL}/${API_VERSION}/households/stove-stacking" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# Device Monitoring
+# -----------------
+# 5. Get Device Status
+curl -v -X GET "${BASE_URL}/${API_VERSION}/devices/status" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# Fuel Management
+# ---------------
+# 6. Get Fuel Usage
+curl -v -X GET "${BASE_URL}/${API_VERSION}/fuel/usage" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# Carbon Credits
+# --------------
+# 7. Get Issued Credits
+curl -v -X GET "${BASE_URL}/${API_VERSION}/credits/issued?project_id=${PROJECT_ID}&time_period=${TIME_PERIOD}" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 8. Get Cancelled Credits
+curl -v -X GET "${BASE_URL}/${API_VERSION}/credits/cancelled" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 9. Get Transferred Credits
+curl -v -X GET "${BASE_URL}/${API_VERSION}/credits/transferred" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 10. Get Retired Credits
+curl -v -X GET "${BASE_URL}/${API_VERSION}/credits/retired" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# Claims Management
+# -----------------
+# 11. Get Fuel Delivery Claims
+curl -v -X GET "${BASE_URL}/${API_VERSION}/claims/fuel-delivery?project_id=${PROJECT_ID}&time_period=${TIME_PERIOD}" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 12. Get Fuel Purchase Claims
+curl -v -X GET "${BASE_URL}/${API_VERSION}/claims/fuel-purchase?project_id=${PROJECT_ID}&time_period=${TIME_PERIOD}" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 13. Get Emission Reduction Claims
+curl -v -X GET "${BASE_URL}/${API_VERSION}/claims/emission-reduction?project_id=${PROJECT_ID}&time_period=${TIME_PERIOD}" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# 14. Get Household Onboarding Claims
+curl -v -X GET "${BASE_URL}/${API_VERSION}/claims/household-onboarding?project_id=${PROJECT_ID}&time_period=${TIME_PERIOD}" \
+  -u "${USERNAME}:${PASSWORD}" \
+  -H "Accept: application/json"
+
+# Example usage:
+# 1. Export your variables:
+#    export BASE_URL=https://dev.api.emerging.eco/emerging-platform
+#    export API_VERSION=v1
+#    export USERNAME=user
+#    export PASSWORD=password
+#    export PROJECT_ID=project-123
+#    export TIME_PERIOD=2024-Q1
+#
+# 2. Run any command by copying and pasting it into your terminal
+#
+# 3. To save output to a file, add "> output.json" to any command
+#    Example: curl ... > response.json
+#
+# 4. To pretty-print JSON responses, pipe to jq:
+#    Example: curl ... | jq
+#
+# Note: Some endpoints require query parameters (project_id and time_period)
+# The OpenAPI documentation endpoint provides the full API specification
+```
+
+### Postman Collection
+
+Below is the JSON configuration for the Registry API Postman Collection. Import this collection into your Postman client to quickly access all the endpoints with pre-configured authentication and example queries.
+
+```json Postman Collection [expandable]
+{
+  "info": {
+    "name": "Registry API",
+    "description": "Public API collection for the Registry service. This API provides endpoints for monitoring devices, households, fuel usage, carbon credits, and various claims in the clean cooking ecosystem.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{username}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{password}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Server Health",
+      "description": "Health check endpoint",
+      "item": [
+        {
+          "name": "Health Check",
+          "description": "Simple health check endpoint to verify server status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/hello",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "hello"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Credit Management",
+      "description": "Endpoints for managing carbon credits lifecycle",
+      "item": [
+        {
+          "name": "Get Issued Credits",
+          "description": "Retrieve issued carbon credits for a specific project and time period",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/credits/issued",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "credits", "issued"],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{projectId}}",
+                  "description": "Project ID to filter credits by",
+                  "required": true
+                },
+                {
+                  "key": "time_period",
+                  "value": "{{timePeriod}}",
+                  "description": "Time period to filter credits by (e.g. 2024-Q1)",
+                  "required": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Cancelled Credits",
+          "description": "Retrieve cancelled carbon credits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/credits/cancelled",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "credits", "cancelled"]
+            }
+          }
+        },
+        {
+          "name": "Get Transferred Credits",
+          "description": "Retrieve transferred carbon credits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/credits/transferred",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "credits", "transferred"]
+            }
+          }
+        },
+        {
+          "name": "Get Retired Credits",
+          "description": "Retrieve retired carbon credits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/credits/retired",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "credits", "retired"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Claims Management",
+      "description": "Endpoints for managing various claims",
+      "item": [
+        {
+          "name": "Get Fuel Delivery Claims",
+          "description": "Retrieve fuel delivery claims",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/claims/fuel-delivery",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "claims", "fuel-delivery"],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{projectId}}",
+                  "description": "Project ID to filter claims by",
+                  "required": true
+                },
+                {
+                  "key": "time_period",
+                  "value": "{{timePeriod}}",
+                  "description": "Time period to filter claims by",
+                  "required": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Fuel Purchase Claims",
+          "description": "Retrieve fuel purchase claims",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/claims/fuel-purchase",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "claims", "fuel-purchase"],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{projectId}}",
+                  "required": true
+                },
+                {
+                  "key": "time_period",
+                  "value": "{{timePeriod}}",
+                  "required": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Emission Reduction Claims",
+          "description": "Retrieve emission reduction claims",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/claims/emission-reduction",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "claims", "emission-reduction"],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{projectId}}",
+                  "required": true
+                },
+                {
+                  "key": "time_period",
+                  "value": "{{timePeriod}}",
+                  "required": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Household Onboarding Claims",
+          "description": "Retrieve household onboarding claims",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/claims/household-onboarding",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "claims", "household-onboarding"],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{projectId}}",
+                  "required": true
+                },
+                {
+                  "key": "time_period",
+                  "value": "{{timePeriod}}",
+                  "required": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Device & Household Monitoring",
+      "description": "Endpoints for monitoring devices and households",
+      "item": [
+        {
+          "name": "Get Device Status",
+          "description": "Retrieve status information for all registered devices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/devices/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "devices", "status"]
+            }
+          }
+        },
+        {
+          "name": "Get Household Stats",
+          "description": "Retrieve statistics for monitored households",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/households/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "households", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Stove Stacking Data",
+          "description": "Retrieve stove stacking information",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/households/stove-stacking",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "households", "stove-stacking"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fuel Management",
+      "description": "Endpoints for fuel usage monitoring",
+      "item": [
+        {
+          "name": "Get Fuel Usage",
+          "description": "Retrieve fuel usage statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiVersion}}/fuel/usage",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiVersion}}", "fuel", "usage"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.registry.example.com",
+      "type": "string",
+      "description": "Base URL for the Registry API"
+    },
+    {
+      "key": "apiVersion",
+      "value": "v1",
+      "type": "string",
+      "description": "API version"
+    },
+    {
+      "key": "projectId",
+      "value": "project-123",
+      "type": "string",
+      "description": "Example project ID for filtering"
+    },
+    {
+      "key": "timePeriod",
+      "value": "2024-Q1",
+      "type": "string",
+      "description": "Example time period for filtering (YYYY-Q#)"
+    },
+    {
+      "key": "username",
+      "value": "your-username",
+      "type": "string",
+      "description": "Your API username"
+    },
+    {
+      "key": "password",
+      "value": "your-password",
+      "type": "string",
+      "description": "Your API password"
+    }
+  ]
+}
+```
+
+---
+
+This documentation offers a high-level overview and practical examples for integrating with the Registry API. For more technical details, refer to the OpenAPI specification linked in the header.
+
+
