@@ -1,12 +1,13 @@
-# Managing Claims and Collections
+---
+title: 'Managing Claims and Collections'
+description: 'Create, submit, and evaluate claims and collections on the IXO blockchain using the Spatial Web Multiclient SDK'
+---
 
-## Step-by-Step Guide
+Claims and collections are central to managing interactions and transactions on the IXO blockchain. This guide shows you how to implement common claim operations.
 
-This guide will walk you through creating and managing claim collections using the **IXO Spatial Web Multiclient SDK**. It covers creating collections, submitting claims, and evaluating them on the IXO blockchain.
+## Creating a Collection
 
-### Step 1: Create a Collection
-
-To create a new collection, use the `CreateCollection` function. Here's an example in TypeScript:
+Set up a new collection for submitting and evaluating claims.
 
 ```typescript
 const response = await CreateCollection(
@@ -16,15 +17,17 @@ const response = await CreateCollection(
 );
 ```
 
-In this example, the `CreateCollection` function is invoked to set up a collection where claims can be submitted, evaluated, and finalized. The parameters include:
+| Parameter | Description |
+| --------- | ----------- |
+| `entityDid` | DID of the entity creating the collection |
+| `protocolDid` | DID of the protocol under which the collection falls |
+| `paymentsAccount` | Account to handle collection-related payments |
+| `signer` | (Optional) Transaction signer |
+| `cw20Address` | (Optional) CW20 token address for payments |
 
-- **entityDid**: The DID of the entity creating the collection.
-- **protocolDid**: The DID of the protocol under which the collection falls.
-- **paymentsAccount**: Account to handle collection-related payments.
+## Querying Collections
 
-### Step 2: Retrieve Collection Data Using GraphQL
-
-After creating a collection, you can retrieve its data using the IXO Blocksync GraphQL API. Here's an example query:
+Retrieve collection data using the IXO Blocksync GraphQL API.
 
 ```graphql
 query MyQuery {
@@ -49,11 +52,15 @@ query MyQuery {
 }
 ```
 
-Replace the `id` field with the **collection ID** obtained during creation to get specific details.
+<Tip>
+  Replace the `id` field with your specific collection ID to get detailed information about that collection.
+</Tip>
 
-### Step 3: Submit a Claim to the Collection
+## Managing Claims
 
-To submit a claim, use the `MsgExecAgentSubmit` function:
+### Submitting a Claim
+
+Submit a new claim to an existing collection.
 
 ```typescript
 const response = await MsgExecAgentSubmit(
@@ -63,33 +70,9 @@ const response = await MsgExecAgentSubmit(
 );
 ```
 
-This function submits a claim for evaluation. The parameters include:
+### Evaluating a Claim
 
-- **claimId**: A unique identifier for the claim.
-- **collectionId**: The collection to which the claim belongs.
-- **adminAddress**: The admin address authorizing the submission.
-
-### Step 4: Retrieve Claim Data Using GraphQL
-
-To view claim details, use the following GraphQL query:
-
-```graphql
-query MyQuery {
-  claim(claimId: "bafkreihzugslzexyu2c6o6nmtm7vxbsyelo7pzmcppsmqawj2s6blmgojy") {
-    schemaType
-    claimId
-    agentAddress
-    agentDid
-    collectionId
-    paymentsStatus
-    submissionDate
-  }
-}
-```
-
-### Step 5: Evaluate a Claim
-
-Evaluate a claim using the `MsgExecAgentEvaluate` function:
+Assess and evaluate a submitted claim.
 
 ```typescript
 const response = await MsgExecAgentEvaluate(
@@ -99,11 +82,9 @@ const response = await MsgExecAgentEvaluate(
 );
 ```
 
-This function allows an agent to assess the claim and determine its status.
+## Querying Claims
 
-### Step 6: View the Claim Using GraphQL
-
-After evaluation, use the IXO Blocksync GraphQL API to view claim details, including its evaluation status:
+Retrieve detailed information about claims using GraphQL.
 
 ```graphql
 query MyQuery {
@@ -127,58 +108,40 @@ query MyQuery {
 }
 ```
 
-## Claims Module Reference
+## Claims Function Reference
 
-### Core Functions:
+| Function | Description | Parameters |
+| -------- | ----------- | ---------- |
+| `CreateCollection` | Creates a new collection | `entityDid, protocolDid, paymentsAccount, signer?, cw20Address?` |
+| `UpdateCollectionState` | Updates collection state | `collectionId, adminAddress, signer?` |
+| `MsgClaimIntent` | Submits a claim intent | `claimId, collectionId, adminAddress` |
+| `MsgExecAgentSubmit` | Submits a claim | `claimId, collectionId, adminAddress` |
+| `MsgExecAgentEvaluate` | Evaluates a claim | `claimId, collectionId, adminAddress` |
+| `GrantEntityAccountClaimsSubmitAuthz` | Grants submission authorization | *Varies by implementation* |
+| `GrantEntityAccountClaimsEvaluateAuthz` | Grants evaluation authorization | *Varies by implementation* |
+| `DisputeClaim` | Initiates a claim dispute | *Varies by implementation* |
+| `MsgExecWithdrawal` | Executes payment withdrawal | *Varies by implementation* |
 
-- **CreateCollection**: Sets up a new collection on the IXO blockchain.
-  ```typescript
-  CreateCollection(entityDid, protocolDid, paymentsAccount, signer?, cw20Address?)
-  ```
+## Troubleshooting
 
-- **UpdateCollectionState**: Modifies the state of a collection.
-  ```typescript
-  UpdateCollectionState(collectionId, adminAddress, signer?)
-  ```
+<Accordion title="Invalid Collection Parameters">
+  - Ensure all DIDs and account addresses are correct
+  - Verify payment account details are accurate
+  - Check that the protocol DID exists and is valid
+</Accordion>
 
-- **MsgClaimIntent**: Submits an intent for a claim against a collection.
-  ```typescript
-  MsgClaimIntent(claimId, collectionId, adminAddress)
-  ```
+<Accordion title="Claim Submission Errors">
+  - Check that the claim ID is unique and valid
+  - Ensure the admin address has the necessary permissions
+  - Verify the collection is in a state that accepts claims
+</Accordion>
 
-- **MsgExecAgentSubmit**: Executes the submission of a claim by an agent.
-  ```typescript
-  MsgExecAgentSubmit(claimId, collectionId, adminAddress)
-  ```
+<Accordion title="Evaluation Issues">
+  - Confirm the claim is in a state ready for evaluation
+  - Verify the evaluator has the correct authorization
+  - Check that the collection is still active and valid
+</Accordion>
 
-- **MsgExecAgentEvaluate**: Evaluates a claim, determining its approval status.
-  ```typescript
-  MsgExecAgentEvaluate(claimId, collectionId, adminAddress)
-  ```
-
-### Additional Functions:
-
-- **GrantEntityAccountClaimsSubmitAuthz**: Grants claim submission authorization.
-- **GrantEntityAccountClaimsEvaluateAuthz**: Grants claim evaluation authorization.
-- **DisputeClaim**: Initiates a dispute for a specific claim.
-- **MsgExecWithdrawal**: Executes a withdrawal of a payment related to a claim.
-
-## Common Issues and Solutions
-
-1. **Invalid Collection Parameters**
-   - Ensure all DIDs and account addresses are correct.
-   - Verify payment account details are accurate.
-
-2. **Claim Submission Errors**
-   - Check that the claim ID is unique and valid.
-   - Ensure the admin address has the necessary permissions.
-
-3. **Evaluation Issues**
-   - Confirm the claim is in a state ready for evaluation.
-   - Verify the evaluator has the correct authorization.
-
-## Additional Notes
-
-- Collections and claims are central to managing interactions and transactions on the blockchain.
-- Always verify the status and details of claims and collections through appropriate query mechanisms.
-- Authorizations can be specific to certain actions and time-limited.
+<Tip>
+  Always verify the status and details of claims and collections through the GraphQL API before performing operations on them.
+</Tip>

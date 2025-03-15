@@ -1,12 +1,50 @@
-# Managing Liquid Staking
+---
+title: 'Managing Liquid Staking'
+description: 'Stake and unstake tokens while maintaining liquidity on the IXO blockchain using the Spatial Web Multiclient SDK'
+---
 
-## Step-by-Step Guide
+<Tip>
+Liquid staking allows users to stake their tokens while maintaining liquidity through receipt tokens. This enables participation in network security while preserving the ability to transfer or use staked assets.
+</Tip>
 
-This guide will walk you through managing liquid staking operations using the **IXO Spatial Web Multiclient SDK**. Liquid staking allows for flexible management of staked assets on the IXO blockchain.
+## Performing Liquid Staking
 
-### Step 1: Submit Proposal to Update Liquid Staking Parameters
+Stake your tokens and receive liquid staking tokens in return.
 
-To submit a proposal for updating liquid staking parameters, use the `MsgSubmitProposalUpdateLiquidStakeParams` function. Here's an example in TypeScript:
+```typescript
+const response = await MsgLiquidStake(
+  "1000000uixo", // Amount to stake
+  "staker_address" // Address of the staker
+);
+```
+
+<Tip>
+  When you liquid stake IXO tokens, you receive ZERO liquid staking tokens that represent your staked position. These tokens are used in the IXO Perpetual Carbon Offsetting Protocol.
+</Tip>
+
+## Performing Liquid Unstaking
+
+Convert your liquid staking tokens back to the original tokens.
+
+```typescript
+const response = await MsgLiquidUnstake(
+  "1000000uixo", // Amount to unstake
+  "staker_address" // Address of the staker
+);
+```
+
+<Accordion title="Unstaking Parameters">
+  | Parameter | Type | Description |
+  | --------- | ---- | ----------- |
+  | `amount` | string | Amount of liquid tokens to unstake |
+  | `staker` | string | Address of the staker performing the unstaking |
+</Accordion>
+
+## Governance and Administration
+
+### Submitting Parameter Update Proposals
+
+Create a governance proposal to update liquid staking parameters.
 
 ```typescript
 const response = await MsgSubmitProposalUpdateLiquidStakeParams(
@@ -16,15 +54,9 @@ const response = await MsgSubmitProposalUpdateLiquidStakeParams(
 );
 ```
 
-The parameters include:
+### Managing Whitelisted Validators
 
-- **title**: The title of the proposal
-- **description**: A brief description of the proposal
-- **proposer**: The address of the proposer
-
-### Step 2: Update Whitelisted Validators
-
-To update the list of whitelisted validators, use the `MsgUpdateWhitelistedValidators` function:
+Update the list of validators that can receive delegations from the liquid staking pool.
 
 ```typescript
 const response = await MsgUpdateWhitelistedValidators(
@@ -33,73 +65,44 @@ const response = await MsgUpdateWhitelistedValidators(
 );
 ```
 
-### Step 3: Perform Liquid Staking
+<Tip>
+  Only whitelisted validators can receive delegations from the liquid staking module. This helps maintain security and reliability of the staking pool.
+</Tip>
 
-To perform a liquid staking operation, use the `MsgLiquidStake` function:
+## Liquid Staking Function Reference
 
-```typescript
-const response = await MsgLiquidStake(
-  "1000000uixo", // Amount to stake
-  "staker_address" // Address of the staker
-);
-```
+| Function | Description | Parameters |
+| -------- | ----------- | ---------- |
+| `MsgLiquidStake` | Stakes tokens and receives liquid tokens | `amount: string, staker: string` |
+| `MsgLiquidUnstake` | Unstakes liquid tokens back to original tokens | `amount: string, staker: string` |
+| `MsgSubmitProposalUpdateLiquidStakeParams` | Submits parameter update proposal | `title: string, description: string, proposer: string` |
+| `MsgUpdateWhitelistedValidators` | Updates the list of allowed validators | `validators: string[], admin: string` |
 
-### Step 4: Perform Liquid Unstaking
+## Module Parameters
 
-To perform a liquid unstaking operation, use the `MsgLiquidUnstake` function:
+<Accordion title="Liquid Staking Parameters">
+  - **Whitelisted Validators**: List of validators eligible to receive delegations
+  - **Liquid Bonding Period**: Time required for unbonding liquid staked tokens
+  - **Fee Parameters**: Protocol fees for staking/unstaking operations
+  - **Minimum Stake**: Minimum amount that can be liquid staked
+</Accordion>
 
-```typescript
-const response = await MsgLiquidUnstake(
-  "1000000uixo", // Amount to unstake
-  "staker_address" // Address of the staker
-);
-```
+## Troubleshooting
 
-## LiquidStake Module Reference
+<Accordion title="Staking and Unstaking Issues">
+  - Ensure the staker has sufficient balance for the operation
+  - Verify the amount is within allowed limits (above minimum stake)
+  - Check that the staking token is supported by the module
+</Accordion>
 
-### Core Functions:
+<Accordion title="Validator Management Issues">
+  - Confirm the validator addresses are correctly formatted
+  - Verify the admin has the necessary permissions to update validators
+  - Ensure the validators are active on the network
+</Accordion>
 
-- **MsgSubmitProposalUpdateLiquidStakeParams**: Submits a proposal to update liquid staking parameters.
-
-  ```typescript
-  MsgSubmitProposalUpdateLiquidStakeParams(title: string, description: string, proposer: string)
-  ```
-
-- **MsgUpdateWhitelistedValidators**: Updates the list of whitelisted validators.
-
-  ```typescript
-  MsgUpdateWhitelistedValidators(validators: string[], admin: string)
-  ```
-
-- **MsgLiquidStake**: Performs a liquid staking operation.
-
-  ```typescript
-  MsgLiquidStake(amount: string, staker: string)
-  ```
-
-- **MsgLiquidUnstake**: Performs a liquid unstaking operation.
-  ```typescript
-  MsgLiquidUnstake(amount: string, staker: string)
-  ```
-
-## Common Issues and Solutions
-
-1. **Invalid Proposal Parameters**
-
-   - Ensure the title and description are correctly formatted.
-   - Verify the proposer address is valid.
-
-2. **Validator Update Errors**
-
-   - Confirm the validator addresses are correct.
-   - Verify the admin has the necessary permissions.
-
-3. **Staking and Unstaking Issues**
-   - Ensure the staker has sufficient balance.
-   - Verify the amount is within allowed limits.
-
-## Additional Notes
-
-- Liquid staking allows for flexible management of staked assets.
-- Always verify the status of proposals and validators.
-- Monitor staking and unstaking operations for any discrepancies.
+<Accordion title="Governance Proposal Issues">
+  - Check that the proposal title and description meet required formats
+  - Verify the proposer has sufficient tokens for proposal deposit
+  - Ensure the parameters being proposed are valid
+</Accordion>

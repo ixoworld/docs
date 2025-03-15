@@ -1,12 +1,15 @@
-# Managing Tokens
+---
+title: 'Managing Tokens'
+description: 'Create, mint, transfer, and manage EIP-1155 compatible tokens on the IXO blockchain using the Spatial Web Multiclient SDK'
+---
 
-## Step-by-Step Guide
+<Tip>
+The Token module implements EIP-1155 compatible multi-token smart contracts on the IXO blockchain. This standard supports both fungible and non-fungible tokens within a single contract, allowing for efficient batch operations and versatile token management.
+</Tip>
 
-This guide will walk you through creating, minting, transferring, and managing tokens using the **IXO Spatial Web Multiclient SDK**. Tokens represent digital assets that can be programmatically managed on the IXO blockchain.
+## Creating a Token Domain
 
-### Step 1: Create a Token
-
-To create a new token, use the `CreateToken` function. Here's an example in TypeScript:
+Create a new token domain with defined properties and parameters.
 
 ```typescript
 const response = await CreateToken(
@@ -17,16 +20,23 @@ const response = await CreateToken(
 );
 ```
 
-In this example, the `CreateToken` function is invoked to set up a new token. The parameters include:
+<Accordion title="Token Domain Creation Parameters">
+  | Parameter | Type | Description |
+  | --------- | ---- | ----------- |
+  | `name` | string | The name of the token |
+  | `description` | string | A brief description of the token |
+  | `cap` | number | The maximum supply of the token |
+  | `tokenClass` | string | The class or category of the token |
+  | `signer` | WalletUsers | (Optional) Wallet user signing the transaction |
+</Accordion>
 
-- **name**: The name of the token.
-- **description**: A brief description of the token.
-- **cap**: The maximum supply of the token.
-- **tokenClass**: The class or category of the token.
+<Tip>
+  Token classes determine the behavior and properties of tokens. Common classes include "carbon", "impact", and "governance".
+</Tip>
 
-### Step 2: Mint Tokens
+## Minting Tokens
 
-To mint new tokens, use the `MintToken` function:
+Issue new tokens for a specified contract in batches.
 
 ```typescript
 const response = await MintToken(
@@ -42,14 +52,18 @@ const response = await MintToken(
 );
 ```
 
-This function mints tokens for a specified contract. The parameters include:
+<Accordion title="Batch Minting Structure">
+  | Property | Type | Description |
+  | -------- | ---- | ----------- |
+  | `name` | string | Identifier for the batch |
+  | `index` | string | Unique index within the collection |
+  | `amount` | number | Quantity of tokens to mint |
+  | `collection` | string | Collection the batch belongs to |
+</Accordion>
 
-- **contractAddress**: The address of the token contract.
-- **batches**: An array of batches to mint, each with a name, index, amount, and collection.
+## Transferring Tokens
 
-### Step 3: Transfer Tokens
-
-To transfer tokens to another address, use the `TransferToken` function:
+Transfer tokens to another address individually or in batches.
 
 ```typescript
 const response = await TransferToken(
@@ -63,14 +77,56 @@ const response = await TransferToken(
 );
 ```
 
-This function transfers tokens to a specified address. The parameters include:
+### Batch Transfers
 
-- **tokens**: An array of tokens to transfer, each with an ID and amount.
-- **toAddress**: The address of the recipient.
+For transferring multiple tokens in a single transaction:
 
-### Step 4: Retrieve Token Data Using GraphQL
+```typescript
+const response = await TransferTokenBatch(
+  [
+    { id: "tokenId1", amount: 100 },
+    { id: "tokenId2", amount: 50 }
+  ],
+  "recipientAddress1234"
+);
+```
 
-To view token details, use the IXO Blocksync GraphQL API. Here's an example query:
+## Token Lifecycle Management
+
+### Retiring Tokens
+
+Retire tokens to remove them from circulation while maintaining their transaction history.
+
+```typescript
+const response = await RetireToken(
+  "tokenId1234", // ID of the token
+  100            // Amount to retire
+);
+```
+
+### Stopping Tokens
+
+Permanently halt all operations for a token.
+
+```typescript
+const response = await StopToken(
+  "tokenId1234" // ID of the token
+);
+```
+
+### Transferring Tokens
+Put tokens into a "transferred" state when these are moved to a different registry system. This specifically applies to Internationally Transferred Mitigation Outcomes (ITMOs).
+
+```typescript
+const response = await TransferToken(
+  "tokenId1234", // ID of the token
+  100            // Amount to transfer
+);
+
+
+## Querying Token Data
+
+Retrieve token information using the IXO Blocksync GraphQL API.
 
 ```graphql
 query MyQuery {
@@ -87,66 +143,53 @@ query MyQuery {
 }
 ```
 
-### Step 5: Retire Tokens
+## Token Function Reference
 
-To retire tokens, use the `RetireToken` function:
+| Function | Description | Parameters |
+| -------- | ----------- | ---------- |
+| `CreateToken` | Creates a new token | `name: string, description: string, cap: number, tokenClass: string, signer?: WalletUser` |
+| `MintToken` | Mints new tokens | `contractAddress: string, batches: MintBatch[]` |
+| `TransferToken` | Transfers tokens | `tokens: TokenBatch[], toAddress?: string` |
+| `TransferTokenBatch` | Transfers multiple tokens | `tokens: TokenBatch[], toAddress: string` |
+| `RetireToken` | Retires tokens | `tokenId: string, amount: number` |
+| `StopToken` | Stops token operations | `tokenId: string` |
+| `TransferToken` | Transfers tokens | `tokens: TokenBatch[], toAddress?: string` |
+| `MsgGrantContract` | Grants contract authorization | `granter: string, grantee: string, contractId: string, msgTypeUrl: string` |
+| `MsgExecContract` | Executes contract operations | *Varies by implementation* |
 
-```typescript
-const response = await RetireToken(
-  "tokenId1234", // ID of the token
-  100            // Amount to retire
-);
-```
+## Token Properties
 
-This function retires a specified amount of tokens, effectively removing them from circulation.
+<Accordion title="Token Attributes">
+  - **ID**: Unique identifier for the token
+  - **Name**: Human-readable name
+  - **Description**: Detailed description
+  - **Cap**: Maximum supply limit
+  - **Class**: Category determining behavior
+  - **Owner**: Address controlling the token
+  - **Minted**: Amount already created
+  - **Transferred**: Amount sent to other addresses
+  - **Retired**: Amount removed from circulation
+</Accordion>
 
-## Tokens Module Reference
+## Troubleshooting
 
-### Core Functions:
+<Accordion title="Token Creation Issues">
+  - Ensure the token name is unique
+  - Verify the cap is a positive number
+  - Check that the token class is supported
+  - Confirm the signer has sufficient permissions
+</Accordion>
 
-- **CreateToken**: Sets up a new token on the IXO blockchain.
-  ```typescript
-  CreateToken(name, description, cap, tokenClass, signer?)
-  ```
+<Accordion title="Minting Problems">
+  - Verify the contract address is correct
+  - Ensure the batch details are properly formatted
+  - Check that minting won't exceed the token cap
+  - Confirm you have authorization to mint
+</Accordion>
 
-- **MintToken**: Mints new tokens for a specified contract.
-  ```typescript
-  MintToken(contractAddress, batches)
-  ```
-
-- **TransferToken**: Transfers tokens to another address.
-  ```typescript
-  TransferToken(tokens, toAddress?)
-  ```
-
-- **RetireToken**: Retires a specified amount of tokens.
-  ```typescript
-  RetireToken(tokenId, amount)
-  ```
-
-### Additional Functions:
-
-- **TransferTokenBatch**: Transfers a batch of tokens.
-- **StopToken**: Stops token operations.
-- **MsgGrantContract**: Grants contract authorization.
-- **MsgExecContract**: Executes contract operations.
-
-## Common Issues and Solutions
-
-1. **Invalid Token Parameters**
-   - Ensure all token details are correct and valid.
-   - Verify the contract address is accurate.
-
-2. **Minting Errors**
-   - Check that the batch details are properly formatted.
-   - Ensure the contract address is authorized for minting.
-
-3. **Transfer Issues**
-   - Confirm the recipient address is valid.
-   - Verify the token ID and amount are correct.
-
-## Additional Notes
-
-- Tokens are essential for representing and managing digital assets on the blockchain.
-- Always verify the status and details of tokens through appropriate query mechanisms.
-- Authorizations can be specific to certain actions and time-limited.
+<Accordion title="Transfer Failures">
+  - Verify the recipient address is valid
+  - Ensure sufficient token balance
+  - Check that the token ID exists
+  - Confirm the token is not paused or stopped
+</Accordion>

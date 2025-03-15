@@ -1,87 +1,146 @@
-# Managing Smart Accounts
+---
+title: 'Managing Smart Accounts'
+description: 'Create and configure accounts with advanced authentication capabilities on the IXO blockchain using the Spatial Web Multiclient SDK'
+---
 
-## Step-by-Step Guide
+<Tip>
+Smart accounts provide a robust and extensible framework for authenticating transactions on the IXO blockchain. Unlike traditional authentication methods, smart accounts allow you to use multiple types of authenticators, each with their own set of rules and conditions for transaction approval.
+</Tip>
 
-This guide will walk you through managing smart accounts using the **IXO Spatial Web Multiclient SDK**. Smart accounts enhance security and flexibility in managing blockchain transactions.
+## Understanding Smart Accounts
 
-### Step 1: Add an Authenticator
+<Accordion title="Smart Account Architecture">
+  Smart accounts operate as a replacement for the default Cosmos SDK authentication mechanism through an ante handler (executed before transaction messages are processed). Key components include:
+  
+  - **Circuit Breaker**: Allows the module to be disabled if necessary
+  - **Authenticator Selection**: Users opt-in to using authenticators for each message
+  - **Authenticator Execution**: Multiple authenticators can be combined to create complex authentication logic
+</Accordion>
 
-To add an authenticator to a smart account, use the `MsgAddAuthenticator` function. Here's an example in TypeScript:
+<Tip>
+  If no authenticators are selected, transactions default to the classic Cosmos SDK authentication method using standard signatures.
+</Tip>
+
+## Managing Authenticators
+
+### Adding an Authenticator
+
+Add a new authenticator to a smart account to enhance its security capabilities.
 
 ```typescript
 const response = await MsgAddAuthenticator(
   "smart_account_address", // Address of the smart account
-  "authenticator_address" // Address of the authenticator
+  "authenticator_address"  // Address of the authenticator
 );
 ```
 
-The parameters include:
+### Removing an Authenticator
 
-- **smartAccount**: The address of the smart account
-- **authenticator**: The address of the authenticator
-
-### Step 2: Remove an Authenticator
-
-To remove an authenticator from a smart account, use the `MsgRemoveAuthenticator` function:
+Remove an authenticator from a smart account when it's no longer needed.
 
 ```typescript
 const response = await MsgRemoveAuthenticator(
   "smart_account_address", // Address of the smart account
-  "authenticator_address" // Address of the authenticator
+  "authenticator_address"  // Address of the authenticator
 );
 ```
 
-### Step 3: Send Transaction with Authenticator
+## Using Smart Accounts
 
-To send a transaction using an authenticator, use the `MsgSendWithAuthenticator` function:
+### Sending Transactions with Authenticators
+
+Execute a transaction that uses the smart account's authenticator for verification.
 
 ```typescript
 const response = await MsgSendWithAuthenticator(
   "smart_account_address", // Address of the smart account
-  "recipient_address", // Address of the recipient
-  "1000000uixo" // Amount to send
+  "recipient_address",     // Address of the recipient
+  "1000000uixo"            // Amount to send
 );
 ```
 
-## Smartaccount Module Reference
+## Composite Authenticators
 
-### Core Functions:
+Smart accounts support composite authenticators that combine multiple authentication methods for enhanced security and flexibility.
 
-- **MsgAddAuthenticator**: Adds an authenticator to a smart account.
+<Accordion title="Composite Authenticator Types">
+  | Type | Description | Logic |
+  | ---- | ----------- | ----- |
+  | `AllOf` | Requires all sub-authenticators to approve | `authenticate(a) && authenticate(b) && ...` |
+  | `AnyOf` | Requires at least one sub-authenticator to approve | `authenticate(a) || authenticate(b) || ...` |
+</Accordion>
 
-  ```typescript
-  MsgAddAuthenticator(smartAccount: string, authenticator: string)
+### Example Configurations
+
+<Accordion title="One-Click Trading">
   ```
-
-- **MsgRemoveAuthenticator**: Removes an authenticator from a smart account.
-
-  ```typescript
-  MsgRemoveAuthenticator(smartAccount: string, authenticator: string)
+  AllOf(
+    SignatureVerification(usersPubKey),
+    AnyOf(
+      MessageFilter(SwapMsg1),
+      MessageFilter(SwapMsg2)
+    ),
+    CosmwasmAuthenticator(spendLimitContract, params)
+  )
   ```
+  This configuration allows a hot key to execute only swap messages and fails if the transaction would leave the user with a balance below a certain threshold.
+</Accordion>
 
-- **MsgSendWithAuthenticator**: Sends a transaction using an authenticator.
-  ```typescript
-  MsgSendWithAuthenticator(smartAccount: string, recipient: string, amount: string)
+<Accordion title="Multi-signature">
   ```
+  PartitionedAllOf(pubkey1, pubkey2, pubkey3)
+  ```
+  This creates a simple multi-signature scheme requiring signatures from multiple keys to authorize transactions.
+</Accordion>
 
-## Common Issues and Solutions
+<Accordion title="Cosigner Protection">
+  ```
+  AllOf(
+    SignatureVerification(cosignerPubKey),
+    AnyOf(...user_authenticators)
+  )
+  ```
+  This requires an off-chain cosigner service to approve all transactions, providing an additional layer of security.
+</Accordion>
 
-1. **Invalid Authenticator Parameters**
+## Smart Account Function Reference
 
-   - Ensure the smart account and authenticator addresses are correctly formatted.
-   - Verify the authenticator is authorized for the operation.
+| Function | Description | Parameters |
+| -------- | ----------- | ---------- |
+| `MsgAddAuthenticator` | Adds an authenticator to a smart account | `smartAccount: string, authenticator: string` |
+| `MsgRemoveAuthenticator` | Removes an authenticator from a smart account | `smartAccount: string, authenticator: string` |
+| `MsgSendWithAuthenticator` | Sends a transaction using an authenticator | `smartAccount: string, recipient: string, amount: string` |
 
-2. **Transaction Failures**
+## Authentication Lifecycle
 
-   - Confirm the smart account has sufficient balance.
-   - Verify the recipient address is valid.
+Smart account authentication follows a three-phase process to ensure security and flexibility:
 
-3. **Authorization Issues**
-   - Ensure the authenticator has the necessary permissions.
-   - Check for any restrictions on the smart account.
+<Accordion title="Authentication Phases">
+  1. **Authenticate**: Verifies the transaction is authorized
+  2. **Track**: Records any state changes required for authentication, committed regardless of transaction success
+  3. **Confirm Execution**: Allows authenticators to validate the transaction's effects post-execution
+</Accordion>
 
-## Additional Notes
+## Troubleshooting
 
-- Smart accounts enhance security and flexibility in managing transactions.
-- Always verify the status of authenticators and smart accounts.
-- Monitor transactions for any discrepancies or unauthorized access.
+<Accordion title="Invalid Authenticator Issues">
+  - Ensure the smart account and authenticator addresses are correctly formatted
+  - Verify the authenticator is authorized for the operation
+  - Check that the authenticator ID is valid and exists on the account
+</Accordion>
+
+<Accordion title="Transaction Failures">
+  - Confirm the smart account has sufficient balance for the transaction and fees
+  - Verify the recipient address is valid
+  - Check that the authentication logic is correctly configured
+</Accordion>
+
+<Accordion title="Composite Authenticator Problems">
+  - Ensure all required signatures are provided for partitioned authenticators
+  - Verify the composition logic matches your security requirements
+  - Check that each sub-authenticator is correctly configured
+</Accordion>
+
+<Tip>
+  Smart accounts are currently controlled by a "circuit breaker" parameter (`is_smart_account_active`). If this parameter is set to false, the module will not be used and transactions will fall back to classic Cosmos SDK authentication.
+</Tip>

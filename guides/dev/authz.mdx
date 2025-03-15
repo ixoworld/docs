@@ -1,12 +1,15 @@
-# Managing Authorization
+---
+title: 'Managing Authorization'
+description: 'Learn how to manage permissions and authorizations using the IXO Spatial Web Multiclient SDK'
+---
 
-## Step-by-Step Guide
+<tip>
+  Authorization (AuthZ) allows accounts to grant permissions to other accounts for executing specific types of transactions. This guide shows you how to implement common authorization scenarios.
+</tip>
 
-This guide will walk you through managing authorizations using the **IXO Spatial Web Multiclient SDK**. Authorization (AuthZ) allows accounts to grant permissions to other accounts for executing specific types of transactions.
+## Granting Send Authorization
 
-### Step 1: Grant Send Authorization
-
-To grant send authorization to another account, use the `MsgGrantSend` function. Here's an example in TypeScript:
+Grant permission to another account to send tokens on your behalf.
 
 ```typescript
 const response = await MsgGrantSend(
@@ -16,14 +19,15 @@ const response = await MsgGrantSend(
 );
 ```
 
-The parameters include:
-- **amount**: The amount and denomination to authorize
-- **granter**: The address granting the authorization
-- **grantee**: The address receiving the authorization
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `amount` | string | Token amount and denomination to authorize |
+| `granter` | string | Address granting the authorization |
+| `grantee` | string | Address receiving the authorization |
 
-### Step 2: Execute IBC Send with Authorization
+## Executing IBC Send with Authorization
 
-To execute an IBC send using granted authorization, use the `MsgExecSendIbc` function:
+Send tokens through IBC channels using previously granted authorization.
 
 ```typescript
 const response = await MsgExecSendIbc(
@@ -33,9 +37,11 @@ const response = await MsgExecSendIbc(
 );
 ```
 
-### Step 3: Grant Fee Allowance
+## Managing Fee Allowances
 
-To grant a fee allowance to another account, use the `MsgGrantAllowanceFeegrant` function:
+### Granting Fee Allowance
+
+Authorize another account to use your tokens for transaction fees.
 
 ```typescript
 const response = await MsgGrantAllowanceFeegrant(
@@ -44,9 +50,9 @@ const response = await MsgGrantAllowanceFeegrant(
 );
 ```
 
-### Step 4: Revoke Allowance
+### Revoking Fee Allowance
 
-To revoke a previously granted allowance, use the `MsgRevokeAllowance` function:
+Remove a previously granted fee allowance.
 
 ```typescript
 const response = await MsgRevokeAllowance(
@@ -55,55 +61,38 @@ const response = await MsgRevokeAllowance(
 );
 ```
 
-## AuthZ Module Reference
+## AuthZ Function Reference
 
-### Core Functions:
+### Core Functions
 
-- **MsgGrantSend**: Grants send authorization to a specified grantee.
-  ```typescript
-  MsgGrantSend(amount: string, granter: string, grantee: string)
-  ```
+| Function | Description | Parameters |
+| -------- | ----------- | ---------- |
+| `MsgGrantSend` | Grants send authorization | `amount: string, granter: string, grantee: string` |
+| `MsgExecSendIbc` | Executes IBC send with authorization | `channel: string, grantee: string, amount: string` |
+| `MsgGrantAllowanceFeegrant` | Grants fee allowance | `granter: string, grantee: string` |
+| `MsgRevokeAllowance` | Revokes a fee allowance | `granter: string, grantee: string` |
+| `MsgExecAuthz` | Executes a transaction with granted authorization | *Varies by transaction type* |
 
-- **MsgExecSendIbc**: Executes an IBC send with authorization.
-  ```typescript
-  MsgExecSendIbc(channel: string, grantee: string, amount: string)
-  ```
+## Troubleshooting
 
-- **MsgGrantAllowanceFeegrant**: Grants fee allowance to a grantee.
-  ```typescript
-  MsgGrantAllowanceFeegrant(granter: string, grantee: string)
-  ```
+<Accordion title="Invalid Authorization Parameters">
+  - Ensure addresses are correctly formatted
+  - Verify the amount is within allowed limits
+  - Check that the denomination is supported
+</Accordion>
 
-- **MsgRevokeAllowance**: Revokes a previously granted allowance.
-  ```typescript
-  MsgRevokeAllowance(granter: string, grantee: string)
-  ```
+<Accordion title="Execution Failures">
+  - Confirm the authorization hasn't expired
+  - Verify the grantee has sufficient permissions
+  - Check that the authorization type matches the operation
+</Accordion>
 
-### Additional Functions:
+<Accordion title="Fee Allowance Issues">
+  - Ensure the granter has sufficient balance
+  - Verify the allowance hasn't been exceeded
+  - Check for any time-based restrictions
+</Accordion>
 
-- **MsgExecAuthz**: Executes a transaction with granted authorization.
-
-## Common Issues and Solutions
-
-1. **Invalid Authorization Parameters**
-   - Ensure addresses are correctly formatted.
-   - Verify the amount is within allowed limits.
-   - Check that the denomination is supported.
-
-2. **Execution Failures**
-   - Confirm the authorization hasn't expired.
-   - Verify the grantee has sufficient permissions.
-   - Check that the authorization type matches the operation.
-
-3. **Fee Allowance Issues**
-   - Ensure the granter has sufficient balance.
-   - Verify the allowance hasn't been exceeded.
-   - Check for any time-based restrictions.
-
-## Additional Notes
-
-- Authorizations can be time-limited.
-- Different message types require specific authorization types.
-- Fee allowances can be capped or periodic.
-- Always verify authorization status before executing transactions.
-- Monitor authorization expiration and renewal requirements.
+<Tip>
+  Authorizations can be time-limited. Monitor expiration dates and renewal requirements for critical permissions.
+</Tip>

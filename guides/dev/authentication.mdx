@@ -5,7 +5,7 @@ description: 'Secure your applications with IXO authentication mechanisms'
 ---
 
 <Tip>
-  The IXO Spatial Web uses industry-standard authentication mechanisms to ensure secure access to APIs and services while maintaining compatibility with decentralized identity systems.
+  The IXO Spatial Web uses both industry-standard authentication mechanisms and decentralized identity systems to ensure secure access to APIs and services.
 </Tip>
 
 ## Authentication Methods
@@ -46,6 +46,22 @@ description: 'Secure your applications with IXO authentication mechanisms'
     - Limited-access endpoints
     - Service-to-service calls
     - Testing and integration
+  </Accordion>
+
+  <Accordion title="SignX Authentication" icon="mobile">
+    ```json
+    {
+      "matrix": true,
+      "session_id": "<unique_session_id>",
+      "login_token": "<one_time_token>"
+    }
+    ```
+    Mobile-to-web authentication using IXO Impacts X:
+    - QR code or deep link initiation
+    - Cryptographic key-based authentication
+    - No password entry required
+    - Matrix credentials retrieval
+    - Secure device-based identity verification
   </Accordion>
 </AccordionGroup>
 
@@ -88,6 +104,7 @@ description: 'Secure your applications with IXO authentication mechanisms'
      - Bearer token for web applications
      - DID auth for blockchain operations
      - API keys for development
+     - SignX for mobile-to-web authentication
 
   2. **Configure Security Settings**
      - Enable HTTPS
@@ -159,6 +176,14 @@ description: 'Secure your applications with IXO authentication mechanisms'
     - Validate challenge
     - Monitor DID status
   </Accordion>
+
+  <Accordion title="SignX Authentication" icon="mobile">
+    - Generate secure one-time QR codes
+    - Implement event listeners for login events
+    - Securely store received Matrix credentials
+    - Handle session expiration gracefully
+    - Consider auto-provisioning Matrix accounts
+  </Accordion>
 </AccordionGroup>
 
 ## Code Examples
@@ -198,7 +223,62 @@ description: 'Secure your applications with IXO authentication mechanisms'
     headers
   });
   ```
+
+  ```typescript SignX Authentication
+  // Web application side
+  import { SignXClient } from '@ixo/sign-x-sdk';
+
+  // Initialize SignX client
+  const signXClient = new SignXClient({
+    appId: 'your-app-id',
+    redirectUrl: 'https://your-app.com/callback'
+  });
+
+  // Generate login request with Matrix option enabled
+  const loginRequest = await signXClient.generateLoginRequest({
+    matrix: true,
+    sessionId: uniqueSessionId
+  });
+
+  // Display QR code with loginRequest.qrCodeData
+  displayQRCode(loginRequest.qrCodeData);
+
+  // Listen for authentication events
+  signXClient.on('SIGN_X_MATRIX_LOGIN_SUCCESS', (event) => {
+    const { accessToken, userId, deviceId } = event;
+    
+    // Store Matrix credentials securely
+    sessionStorage.setItem('matrixAccessToken', accessToken);
+    
+    // Initialize Matrix client with retrieved credentials
+    const matrixClient = createMatrixApiClient({
+      homeServerUrl: 'https://matrix.emerging.eco',
+      accessToken
+    });
+    
+    // Proceed with authenticated Matrix operations
+  });
+  ```
 </CodeGroup>
+
+## SignX Authentication Flow
+
+```mermaid
+sequenceDiagram
+  Web App->>SignX SDK: Generate Login Request (matrix: true)
+  SignX SDK->>Web App: Return QR Code Data
+  Web App->>User: Display QR Code
+  User->>Impacts X App: Scan QR Code
+  Impacts X App->>User: Prompt for Authentication Confirmation
+  User->>Impacts X App: Confirm Login
+  Impacts X App->>IXO Backend: Authenticate with Cryptographic Keys
+  IXO Backend->>Matrix Server: Get/Create Matrix Credentials
+  Matrix Server->>IXO Backend: Return Matrix Access Token
+  IXO Backend->>Impacts X App: Return Matrix Credentials
+  Impacts X App->>SignX SDK: Send Authentication Result
+  SignX SDK->>Web App: Emit SIGN_X_MATRIX_LOGIN_SUCCESS Event
+  Web App->>Matrix API: Use Access Token for Matrix Operations
+```
 
 ## Developer Resources
 
@@ -218,8 +298,8 @@ description: 'Secure your applications with IXO authentication mechanisms'
   <Card title="Examples" icon="lightbulb" href="/guides/hands-on">
     Implementation examples
   </Card>
+  
+  <Card title="SignX SDK" icon="mobile-screen" href="/spatial-web-stack/sdks/sign-x-sdk">
+    Mobile authentication integration
+  </Card>
 </CardGroup>
-
-<Tip>
-  For security-related questions or support, contact our [Security Team](mailto:security@ixo.world) or join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT).
-</Tip>

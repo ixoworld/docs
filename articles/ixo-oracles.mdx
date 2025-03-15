@@ -1,17 +1,54 @@
 ---
-title: 'IXO Oracles'
+title: 'Prediction Oracles'
 icon: 'sparkles'
-description: 'Agentic verification services for the Spatial Web'
+description: 'Intelligent services for cognitive digital twin systems.'
 ---
 
 <Tip>
-  IXO Oracles provide intelligent verification services for digital twins, enabling automated data validation, causal inference, and verifiable attestations through Agentic Oracle technology.
+IXO Prediction Oracles are autonomous AI agents that provide intelligent services with decentralized identity, secure data storage, and blockchain integration. These oracles go beyond traditional data feeds by offering predictive and prescriptive capabilities that enable cognitive digital twins to anticipate future states and recommend optimal actions. By combining verifiable credentials with advanced analytics, IXO Oracles create trusted intelligence networks that can transform raw data into actionable insights across various domains.
+
 </Tip>
+
+## Types of Oracles
+
+<AccordionGroup>
+  <Accordion title="Data Oracles" icon="database">
+    Traditional oracles that serve as data pipelines, bridging off-chain data onto blockchain networks to tell smart contracts "what is true" about the world. These provide validated external information but don't foresee or influence future outcomes.
+  </Accordion>
+  
+  <Accordion title="Prediction Oracles" icon="chart-line">
+    Advanced agentic systems that leverage AI and data across the entire data maturity lifecycle. Unlike data oracles, they anticipate future outcomes and can prescribe or initiate actions to achieve desired results.
+  </Accordion>
+</AccordionGroup>
+
+## Analytics Maturity Stages
+
+<Steps>
+  <Step title="Ad Hoc & Reactive">
+    Oracle acts on-demand, retrieving or publishing data only when called or when specific events trigger it. This establishes the foundation by collecting and validating raw data.
+  </Step>
+  
+  <Step title="Descriptive Reporting">
+    Oracle aggregates historical data to tell the story of what has happened. It produces reports or on-chain records of events, establishing a reliable source of truth.
+  </Step>
+  
+  <Step title="Diagnostic Analysis">
+    Beyond reporting events, the oracle analyzes causal factors and correlates data points to explain why something happened, providing deeper insights.
+  </Step>
+  
+  <Step title="Predictive Analytics">
+    Using machine learning and statistical models, the oracle forecasts future events or trends, delivering probabilistic predictions based on learned patterns.
+  </Step>
+  
+  <Step title="Prescriptive Analytics">
+    At the highest maturity level, the oracle suggests or initiates actions to shape future outcomes, functioning as an autonomous decision-maker.
+  </Step>
+</Steps>
 
 ## Key Features
 
 <CardGroup>
-  <Card title="Verification Agents" icon="check-double">
+  <Card title="AI Agents" icon="sparkles">
     Automated validation of data claims with configurable verification rules
   </Card>
   
@@ -24,7 +61,7 @@ description: 'Agentic verification services for the Spatial Web'
   </Card>
   
   <Card title="Cognitive Workflows" icon="diagram-project">
-    - Agentic-powered cognitive workflows using Langraph
+    - Agentic-powered cognitive workflows
     - Customizable verification pipelines
     - Multi-step validation processes
   </Card>
@@ -33,7 +70,7 @@ description: 'Agentic verification services for the Spatial Web'
 ## Oracle Architecture
 
 <AccordionGroup>
-  <Accordion title="Verification Agents" icon="robot">
+  <Accordion title="AI Agents" icon="sparkles">
     - Specialized agents for different verification tasks
     - Configurable validation rules
     - Evidence collection and evaluation
@@ -52,6 +89,61 @@ description: 'Agentic verification services for the Spatial Web'
     - Blockchain anchoring
     - Verifiable credentials
     - Audit trails
+  </Accordion>
+</AccordionGroup>
+
+## The P-Functions of Prediction Oracles
+
+<AccordionGroup>
+  <Accordion title="Proofing & Verification" icon="check-double">
+    Validating data and outcomes for accuracy and trustworthiness
+  </Accordion>
+  <Accordion title="Prediction" icon="chart-line">
+    Forecasting future events based on data patterns and models
+  </Accordion>
+  <Accordion title="Prescribing Interventions" icon="wand-magic-sparkles">
+    Recommending actions to achieve desired outcomes
+  </Accordion>
+  <Accordion title="Problem Detection & Resolution" icon="exclamation-triangle">
+    Proactively identifying and resolving issues
+  </Accordion>
+  <Accordion title="Performance Monitoring" icon="gauge">
+    Tracking metrics and indicators continuously
+  </Accordion>
+  <Accordion title="Personalisation" icon="user-pen">
+    Tailoring insights to specific contexts
+  </Accordion>
+  <Accordion title="Payment Automation" icon="money-bill-trend-up">
+    Triggering payments when verified conditions are met
+  </Accordion>
+  <Accordion title="Planning" icon="calendar-days">
+    Creating optimized action sequences and strategies
+  </Accordion>
+  <Accordion title="Privacy Protection" icon="shield-halved">
+    Ensuring sensitive data is handled confidentially
+  </Accordion>
+  <Accordion title="Prevention of Risks" icon="exclamation-triangle">
+    Anticipating and mitigating potential problems
+  </Accordion>
+  <Accordion title="Pattern Recognition" icon="chart-line">
+    Detecting important signals in large datasets
+  </Accordion>
+  <Accordion title="Participation of People" icon="user-group">
+    Maintaining human oversight and feedback
+  </Accordion>
+  <Accordion title="Policy Enforcement" icon="gavel">
+    Ensuring compliance with rules and governance
+  </Accordion>
+  <Accordion title="Portfolio Management" icon="chart-line">
+    Continuously assessing and predicting asset performance
+  </Accordion>
+  <Accordion title="Process Optimisation" icon="gears">
+    Finding efficiencies in workflows and supply chains
+  </Accordion>
+  <Accordion title="Protocol Adherence" icon="certificate">
+    Monitoring and enforcing decentralized protocol operations
+  </Accordion>
+  <Accordion title="Pathfinding" icon="compass">
   </Accordion>
 </AccordionGroup>
 
@@ -137,6 +229,15 @@ const analysis = await model.analyze({
 
 // Generate insights
 const insights = await model.generateInsights(analysis);
+
+// Get prescriptive recommendations
+const recommendations = await model.generateRecommendations({
+  goal: "Increase outcome by 20%",
+  constraints: {
+    budget: 100000,
+    timeframe: "3 months"
+  }
+});
 ```
 
 ## Use Cases
@@ -156,6 +257,14 @@ const insights = await model.generateInsights(analysis);
   
   <Card title="Decision Support" icon="lightbulb">
     Provide intelligent insights for decision-making processes
+  </Card>
+  
+  <Card title="Predictive Insights" icon="crystal-ball">
+    Forecast future trends and outcomes based on historical data
+  </Card>
+  
+  <Card title="Automated Interventions" icon="gears">
+    Initiate actions to optimize outcomes based on predictions
   </Card>
 </CardGroup>
 
@@ -224,6 +333,10 @@ const insights = await model.generateInsights(analysis);
   <Card title="Security Guide" icon="shield" href="/guides/dev/overview">
     Security best practices for oracle implementation
   </Card>
+  
+  <Card title="Prediction Oracle Guide" icon="chart-line" href="/guides/dev/prediction-oracles">
+    Building advanced predictive capabilities
+  </Card>
 </CardGroup>
 
 ## Next Steps
@@ -245,3 +358,7 @@ const insights = await model.generateInsights(analysis);
     Monitor oracle performance
   </Card>
 </CardGroup>
+
+<Tip>
+  Learn more about the technology behind Prediction Oracles in our article [The Prophets of Web3 + AI](https://chronicle.impacts.network/the-prophets-of-web3-ai/).
+</Tip>
