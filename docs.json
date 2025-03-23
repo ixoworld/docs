@@ -39,15 +39,11 @@
           },
           {
             "group": "User Guides",
-            "pages": [
-              "guides/users/intro-users"
-            ]
+            "pages": ["guides/users/intro-users"]
           },
           {
             "group": "Platforms",
-            "pages": [
-              "articles/intro-platforms"
-            ]
+            "pages": ["articles/intro-platforms"]
           },
           {
             "group": "Developers",
@@ -117,6 +113,25 @@
                 ]
               }
             ]
+          }
+        ]
+      },
+      {
+        "tab": "APIs",
+        "groups": [
+          {
+            "group": "API Reference",
+            "pages": ["api-reference/index"]
+          },
+          {
+            "group": "Registry API Overview",
+            "pages": ["api-reference/registry-api"]
+          },
+          {
+            "group": "Registry API Endpoints",
+            "openapi": {
+              "source": "api-reference/openapi.yaml"
+            }
           }
         ]
       }
