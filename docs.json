@@ -119,13 +119,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "APIs",
-        "openapi": {
-          "source": "/api-reference/Emerging-Platform-API.yaml",
-          "directory": "api-reference"
-        }
       }
     ],
     "global": {

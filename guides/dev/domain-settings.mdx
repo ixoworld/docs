@@ -5,13 +5,18 @@ description: 'Manage entity Domains'
 ---
 
 <Tip>
-A Domain in IXO represents a decentralized identifier with management capabilities for verification methods, services, and access controls. Managing Domain settings allows you to configure how your entity interacts with other participants and services on the IXO network.
+A Domain in IXO represents the on-chain identity record (DID Document) of a Digital Entity, providing management capabilities for verification methods, services, and access controls. Each Digital Entity is anchored by its Domain, which forms a core component of its Digital Twin implementation. Managing Domain settings allows you to configure how your Digital Entity interacts with other participants and services on the IXO network.
 </Tip>
 
 ## IID Document Management
 
-The IXO ID (IID) Module provides a comprehensive set of methods for managing a Domain's properties on IXO blockchains. Each Domain has a unique identifier that resolves to a W3C-standard DID Document following the IXO ID Method specification.
+The IXO ID (IID) Module provides a comprehensive set of methods for managing a Domain's properties on IXO blockchains. Each Domain has a unique identifier that resolves to a W3C-standard DID Document following the IXO ID Method specification. IIDs are IXO's implementation of the W3C DID standard, extending it with specific features for cross-chain identity and interoperability in the Interchain ecosystem while maintaining full compatibility with the DID specification.
 
+Key differences from standard DIDs:
+- Cross-chain resolution through IBC (Inter-Blockchain Communication)
+- Native integration with Cosmos SDK modules
+- Extended verification methods for blockchain-specific operations
+- Built-in support for IXO's domain-specific digital twin features, such as Linked Resources, Linked Entities, Linked Claims, Accorded Rights, and Accounts
 
 ## Prerequisites
 

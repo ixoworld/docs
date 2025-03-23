@@ -115,14 +115,14 @@ const response = await StopToken(
 ```
 
 ### Transferring Tokens
-Put tokens into a "transferred" state when these are moved to a different registry system. This specifically applies to Internationally Transferred Mitigation Outcomes (ITMOs).
+Put tokens into a "transferred" state when these are moved to a different registry system. This specifically applies to Internationally Transferred Mitigation Outcomes (ITMOs) - standardized units representing greenhouse gas emission reductions that can be transferred between countries under Article 6.2 of the Paris Agreement.
 
 ```typescript
 const response = await TransferToken(
   "tokenId1234", // ID of the token
   100            // Amount to transfer
 );
-
+```
 
 ## Querying Token Data
 

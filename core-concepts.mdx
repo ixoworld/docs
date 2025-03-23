@@ -1,12 +1,19 @@
 ---
 title: 'Core Concepts'
 icon: 'lightbulb-exclamation-on'
-description: 'Learn the fundamental concepts of the IXO Spatial Web Platform'
+description: 'Learn the fundamental concepts of the IXO Spatial Web Stack'
 ---
 
 <Tip>
   The IXO Spatial Web is a decentralized platform that enables you to create and manage cognitive digital twins of real-world systems, powered by blockchain networks, secure data storage, and Agentic Oracles.
 </Tip>
+
+<Note>
+**Key Terminology**
+- A **Digital Entity** is the foundational representation of any real-world actor or system in the IXO Spatial Web.
+- A **Domain** is the on-chain identity record (DID Document) that anchors a Digital Entity, containing its verification methods, services, and properties.
+- A **Digital Twin** is the complete functional system combining a Digital Entity, its Domain record, associated data, and operational logic.
+</Note>
 
 ## Digital Identity
 
@@ -32,6 +39,7 @@ description: 'Learn the fundamental concepts of the IXO Spatial Web Platform'
 
 <AccordionGroup>
   <Accordion title="Entity Domains" icon="brain">
+    A Domain serves as the on-chain identity record for a Digital Entity, containing:
     - Entity Type and Class Inheritance
     - Entity Metadata
     - Domain Controllers
@@ -45,28 +53,29 @@ description: 'Learn the fundamental concepts of the IXO Spatial Web Platform'
     - Data fusion and Event tracking
   </Accordion>
 
-  <Accordion title="Entity Domain Types" icon="sitemap">
-    - Decentralized Autonomous Organization (DAO)
+  <Accordion title="Digital Entity Types" icon="sitemap">
+    Digital Entities can be instantiated as different types of Digital Twins:
+    - Decentralized Autonomous Organisation (DAO)
     - Project Domain
     - Investment Domain
     - Oracle Domain
     - Asset Domain
     - Protocol Domain
     - Deed Domain
-    - Programmable Organizational Domain (POD)
+    - Programmable Organisational Domain (POD)
     - Location Domain
   </Accordion>
 
   <Accordion title="Entity Requirements" icon="list-check">
     - Non-fungible token implementation using IXO Tokens Module
-    - Interchain Identifier (IID) for unique identification
-    - On-chain IID Document in Registry Module
+    - Interchain Identifier (IID) for unique identification - an IXO-specific implementation of the W3C DID standard optimized for cross-chain identity and interoperability in the Interchain ecosystem
+    - On-chain IID Document in Registry Module - stores DID Document data following W3C standards with IXO-specific extensions
     - Off-chain IID Document storage
     - Transferable ownership and control
     - Financial composability
   </Accordion>
 
-  <Accordion title="Organizational Model" icon="building">
+  <Accordion title="Organisational Model" icon="building">
     - DAO governance structure
     - Group-based ownership and control
     - Asset and project management capabilities
@@ -89,95 +98,48 @@ description: 'Learn the fundamental concepts of the IXO Spatial Web Platform'
   </Accordion>
 </AccordionGroup>
 
-## Impacts Hub Ecosystem
+## Impact Hub Ecosystem
+
+<Tip>
+The Impact Hub Network is the public deployment of IXO Blockchain technology. While IXO Blockchain refers to the underlying technology and protocol stack, the Impact Hub Network is its primary public network implementation, serving as the main chain for impact verification, tokenization, and cross-chain coordination.
+</Tip>
+
+The Impact Hub Ecosystem consists of several integrated layers that work together to enable impact verification and management at scale:
 
 <AccordionGroup>
-  <Accordion title="Impacts Hub Blockchain" icon="cube">
-    - Purpose-built Layer-1 blockchain
-    - Based on IXO Protocols
-    - Governing, financing, implementing, and verifying Impacts at Internet scale
-    - Cosmos SDK foundation
-    - Specialized modules for impact verification
-    - Proof-of-Stake consensus
+  <Accordion title="Blockchain Foundation" icon="cube">
+    The Impact Hub Network is built on:
+    - IXO Blockchain technology ([see IXO Blockchain article](/articles/ixo-blockchain) for details)
+    - Cosmos SDK with Inter-Blockchain Communication (IBC)
+    - Specialized modules for impact verification and tokenization
   </Accordion>
 
-  <Accordion title="Blockchain Layer" icon="layer-group">
-    - IXO Protocol networks built on Cosmos SDK
-    - Interchain messaging through IBC
-    - Smart contracts (CosmWasm)
-    - Network Governance
-    - State management
-    - Transaction processing
+  <Accordion title="Data & Intelligence" icon="database">
+    Secure data management and processing through:
+    - Matrix Protocol-based decentralized data storage ([see Data Matrix Layer](/guides/matrix/overview))
+    - Agentic Oracles for automated verification ([see Oracle Services](#oracle-services))
+    - Knowledge graphs and semantic processing ([see Intelligence Systems](#intelligence-systems))
   </Accordion>
 
-  <Accordion title="Interchain Ecosystem" icon="link">
-    - Integration with Internet of Blockchains
-    - Access to services across connected networks
-    - Cross-chain asset transfers
-    - Interoperability standards
-    - IBC (Inter-Blockchain Communication) protocol
-    - Cross-chain identity and data resolution
+  <Accordion title="Development Stack" icon="code">
+    Tools and interfaces for building on Impact Hub:
+    - SDKs and APIs ([see Development Tools](#development-tools))
+    - JAMBO developer platform for decentralized applications
+    - IXO Studio for visual development
+    - IXO Graph for entity relationship exploration
   </Accordion>
 
-  <Accordion title="Data Matrix Layer" icon="database">
-    - DID-based Identity Management
-    - Encrypted data storage rooms
-    - Secure messaging channels
-    - Access control and Authentication
-    - File storage capabilities
-    - Federated database architecture
+  <Accordion title="User Applications" icon="browser">
+    End-user interfaces including:
+    - Web and mobile applications
+    - Digital Twin dashboards
+    - Governance and administrative interfaces
+    - AI Agent interfaces (MCPs)
+    For implementation details, see our [Developer Guide](/guides/dev/overview).
   </Accordion>
-
-  <Accordion title="Federated Databases" icon="database-lock">
-    - End-to-end encryption for data privacy
-    - Matrix Protocol-based data-sharing
-    - Decentralized control and ownership
-    - Secure data rooms with selective access
-    - Cryptographic access controls
-    - Privacy-preserving queries
-  </Accordion>
-
-  <Accordion title="Intelligence Layer" icon="sparkles">
-    - Intelligent Oracles
-    - Encrypted Data Rooms
-    - Agentic Automations
-    - Predictive Analytics
-    - Causal Inference Models
-    - Knowledge graphs
-    - Semantic processing
-  </Accordion>
-
-  <Accordion title="Modular Services Layer" icon="code">
-    - Node.js SDKs
-    - RESTful APIs
-    - WebSockets
-    - Event-driven architecture
-    - Microservices
-  </Accordion>
-  
-  <Accordion title="Client Application Layer" icon="browser">
-    - Web Portals
-    - Mobile Apps
-    - Software Development Kits (SDKs)
-    - API integrations
-    - UI components in Storybook
-    - JAMBO developer platform
-    - IXO Studio
-    - IXO Graph
-  </Accordion>
-
-<Accordion title="User Interfaces Layer" icon="person-rays">
-  - Decentralized Autonomous Organizations (DAOs)
-  - Web-based Portals and Applications
-  - Mobile Applications (iOS/Android)
-  - AI Agent Interfaces (MCPs)
-  - Digital Twin Dashboards
-  - Governance Interfaces
-  - Credential Management Interfaces
-  - Analytics and Reporting Dashboards
-  - Administrative Control Panels
-</Accordion>
 </AccordionGroup>
+
+Each component of the Impact Hub Ecosystem is designed to work seamlessly together while remaining modular. This allows developers to leverage specific components as needed for their use cases. For detailed documentation on each component, follow the links to their dedicated sections.
 
 ## Intelligence Systems
 
@@ -280,7 +242,7 @@ description: 'Learn the fundamental concepts of the IXO Spatial Web Platform'
   <Accordion title="Smart Contracts" icon="code">
     - Crypto-economic systems
     - Smart Accounts
-    - Decentralized Autonomous Organizations (DAOs)
+    - Decentralized Autonomous Organisations (DAOs)
     - Decentralized Exchanges (DEXs)
     - Automated Market Makers (AMMs)
     - Permissionless networks
@@ -363,7 +325,7 @@ description: 'Learn the fundamental concepts of the IXO Spatial Web Platform'
     - Data validation
   </Accordion>
 
-  <Accordion title="Intelligent Oracles" icon="sparkles">
+  <Accordion title="Agentic Oracles" icon="sparkles">
     - AI-powered verification
     - Automated decisions
     - Pattern recognition

@@ -114,7 +114,10 @@
           "group": "Emerging",
           "pages": [
             "platforms/Emerging/intro-emerging",
-            "platforms/Emerging/concepts",
+            {
+              "group": "Platform Guide",
+              "pages": ["platforms/Emerging/concepts"]
+            },
             "platforms/Emerging/digital-identifiers",
             "platforms/Emerging/credential-issuance",
             "platforms/Emerging/dmrv",
