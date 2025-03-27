@@ -120,18 +120,63 @@
         "tab": "APIs",
         "groups": [
           {
-            "group": "API Reference",
+            "group": " ",
             "pages": ["api-reference/index"]
           },
           {
-            "group": "Registry API Overview",
+            "group": " ",
+            "pages": ["api-reference/blocksync-graphql-api"]
+          },
+          {
+            "group": " ",
+            "pages": ["api-reference/grpc-gateway-api"]
+          },
+          {
+            "group": " ",
+            "pages": ["api-reference/matrix-state-bot-api"]
+          },
+          {
+            "group": " ",
+            "pages": ["api-reference/rpc-api"]
+          },
+          {
+            "group": " ",
             "pages": ["api-reference/registry-api"]
           },
           {
-            "group": "Registry API Endpoints",
+            "group": " ",
             "openapi": {
               "source": "api-reference/openapi.yaml"
             }
+          }
+        ]
+      },
+      {
+        "tab": "SDKs",
+        "groups": [
+          {
+            "group": " ",
+            "pages": ["sdk-reference/index"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/multiclient-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/signx-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/matrix-client-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/oracle-ai-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/jambo-wallet-sdk"]
           }
         ]
       }
