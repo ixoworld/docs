@@ -1,0 +1,164 @@
+---
+title: Pagination
+icon: layers
+description: Guide to pagination in the IXO Blocksync GraphQL API
+---
+
+<Tip>
+Pagination is crucial for managing large datasets efficiently, ensuring smooth navigation and data retrieval without overwhelming clients or servers.
+</Tip>
+
+## Default Pagination
+
+The IXO Blocksync GraphQL API uses a default pagination value of 10 items across all queries.
+
+## Pagination Parameters
+
+<AccordionGroup>
+  <Accordion title="first" icon="arrow-right">
+    Defines the number of records to return in each query.
+    
+    <CardGroup>
+      <Card title="Usage" icon="code">
+        ```graphql
+        query {
+          entities(first: 50) {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+        }
+        ```
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="last" icon="arrow-left">
+    Defines the number of records to return, starting from the end of the dataset.
+    
+    <CardGroup>
+      <Card title="Usage" icon="code">
+        ```graphql
+        query {
+          entities(last: 10) {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+        }
+        ```
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="after" icon="arrow-right">
+    Cursor to indicate the point in the dataset from which to continue fetching results.
+    
+    <CardGroup>
+      <Card title="Usage" icon="code">
+        ```graphql
+        query {
+          entities(first: 20, after: "YXJyYXljb25uZWN0aW9uOjEw") {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+        }
+        ```
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="before" icon="arrow-left">
+    Cursor to navigate backward from a specific point in the dataset.
+    
+    <CardGroup>
+      <Card title="Usage" icon="code">
+        ```graphql
+        query {
+          entities(last: 10, before: "YXJyYXljb25uZWN0aW9uOjIw") {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+        }
+        ```
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Response Structure
+
+A paginated response includes metadata for navigation:
+
+```json
+{
+  "data": {
+    "entities": {
+      "edges": [
+        {
+          "node": {
+            "id": "did:ixo:entity:001",
+            "name": "Entity One"
+          }
+        }
+      ],
+      "pageInfo": {
+        "endCursor": "YXJyYXljb25uZWN0aW9uOjIw",
+        "hasNextPage": true
+      }
+    }
+  }
+}
+```
+
+### Response Fields
+- **edges**: Array of results
+- **pageInfo.endCursor**: Reference point for next results
+- **pageInfo.hasNextPage**: Indicates more data availability
+
+## Best Practices
+
+<CardGroup>
+  <Card title="Set Reasonable Limits" icon="sliders">
+    Use 20-100 items per query for optimal performance
+  </Card>
+  <Card title="Handle End of Data" icon="check">
+    Check `hasNextPage` to determine if more data is available
+  </Card>
+  <Card title="Avoid Hardcoding" icon="code">
+    Use cursor values from responses, don't hardcode them
+  </Card>
+  <Card title="Monitor Rate Limits" icon="clock">
+    Implement rate limiting strategies to avoid 429 errors
+  </Card>
+</CardGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="400 Bad Request" icon="alert-circle">
+    Occurs with invalid cursor values. Always use cursors from previous responses.
+  </Accordion>
+
+  <Accordion title="429 Too Many Requests" icon="clock">
+    Implement retry logic with exponential backoff when rate limits are reached.
+  </Accordion>
+</AccordionGroup>
+
+<Tip type="info">
+For optimal performance, implement client-side caching of paginated results when appropriate.
+</Tip> 

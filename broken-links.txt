@@ -1,0 +1,28 @@
+# Broken Links Report
+
+## Social Media Links
+- https://x.com/ixoworld (HTTP_403) - Appears in multiple files
+- https://www.linkedin.com/company/ixoworld (HTTP_403) - Appears in multiple files
+
+## GitHub Repository Links
+- https://github.com/ixofoundation/ixo-matrix-state (HTTP_404)
+- https://github.com/ixofoundation/ixo-matrix (HTTP_404)
+- https://github.com/ixofoundation/ixo-dappstore (HTTP_404)
+
+## API Endpoints
+- https://api.emerging.eco/ (HTTP_404)
+- https://stage.api.emerging.eco/ (HTTP_404)
+- https://dev.api.emerging.eco/ (HTTP_404)
+
+## Analysis
+1. Social Media Links (HTTP_403):
+   - These are likely rate-limited by the platforms
+   - Consider using alternative links or implementing a caching mechanism
+
+2. GitHub Repository Links (HTTP_404):
+   - These repositories might be private or moved
+   - Need to verify correct repository paths
+
+3. API Endpoints (HTTP_404):
+   - These endpoints might be under development or moved
+   - Need to verify correct API endpoints

@@ -5,5 +5,8 @@
   },
   "scripts": {
     "lint:mdx": "eslint '**/*.mdx'"
+  },
+  "dependencies": {
+    "broken-link-checker": "^0.7.8"
   }
 }

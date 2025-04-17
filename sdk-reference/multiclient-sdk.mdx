@@ -1,11 +1,129 @@
 ---
-title: "Multiclient SDK"
+title: IXO Spatial Web Multiclient SDK
+icon: server
+description: A comprehensive toolkit for interacting with the IXO blockchain and its core modules
 ---
 
 <Tip>
-    The Multiclient SDK provides an interface for interacting with blockchain data in the IXO ecosystem.
+The IXO Spatial Web Multiclient SDK provides a comprehensive set of tools for interacting with the IXO blockchain. It offers test helper functions and modules for managing various aspects of the blockchain, including authorization, bonds, claims, entities, liquid staking, smart accounts, and token operations.
 </Tip>
 
-## High-Level Overview
+<AccordionGroup>
+  <Accordion title="Authz Module" icon="shield">
+    Handles authorization and permission management on the blockchain.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Authorization Grants**: Manage send and fee allowances
+        - **IBC Operations**: Execute cross-chain transactions
+        - **Permission Control**: Grant and revoke access rights
+      </Card>
+    </CardGroup>
+  </Accordion>
 
-The Multiclient SDK enables developers to interface with blockchain data, manage transactions, and interact with the IXO network. 
+  <Accordion title="Bond Module" icon="link">
+    Manages bond creation, trading, and lifecycle operations.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Bond Management**: Create and edit bonds
+        - **Trading Operations**: Buy and sell bond tokens
+        - **State Control**: Update bond states and parameters
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Claims Module" icon="file-check">
+    Handles claim creation, evaluation, and state management.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Claim Processing**: Create and evaluate claims
+        - **State Management**: Update collection states
+        - **Authorization**: Manage evaluation permissions
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Entity Module" icon="building">
+    Manages entity creation, transfer, and account operations.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Entity Management**: Create and transfer entities
+        - **Account Control**: Manage entity accounts
+        - **Verification**: Handle entity verification status
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="LiquidStake Module" icon="lock">
+    Handles liquid staking operations and validator management.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Staking Operations**: Perform liquid staking/unstaking
+        - **Parameter Updates**: Manage staking parameters
+        - **Validator Management**: Update whitelisted validators
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Smartaccount Module" icon="user-shield">
+    Manages smart account authentication and operations.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Authentication**: Add/remove authenticators
+        - **Secure Transactions**: Send transactions with authenticators
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Token Module" icon="coins">
+    Handles token creation, transfer, and lifecycle management.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Token Operations**: Create, mint, and transfer tokens
+        - **Credit Management**: Handle credit transfers
+        - **Contract Control**: Manage token contracts
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+The SDK follows consistent patterns for blockchain interactions:
+
+1. Create a client instance
+2. Get user accounts/addresses
+3. Construct message with appropriate type URL
+4. Sign and broadcast transaction
+5. Return response
+
+## Dependencies
+
+The SDK relies on several key dependencies:
+- Cosmos SDK
+- IXO blockchain modules
+- Long
+- base58
+- Various crypto and encoding utilities
+
+<Tip type="info">
+For detailed API documentation and examples, refer to the [Multiclient SDK Module Reference](https://github.com/ixofoundation/ixo-multiclient-sdk).
+</Tip>
+
+<CardGroup>
+  <Card title="NPM Package" href="https://www.npmjs.com/package/@ixo/multiclient-sdk" icon="npm">
+    View on NPM
+  </Card>
+  <Card title="GitHub Repository" href="https://github.com/ixofoundation/ixo-multiclient-sdk" icon="github">
+    View the source code
+  </Card>
+  <Card title="Getting Started" href="/guides/dev/introduction" icon="rocket">
+    Start building with our developer guides
+  </Card>
+</CardGroup> 

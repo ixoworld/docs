@@ -1,13 +1,124 @@
 ---
-title: "Blocksync GraphQL API"
+title: Blocksync GraphQL API
+icon: graphql
+description: Comprehensive guide to the IXO Blocksync GraphQL API for interacting with blockchain data
 ---
 
 <Tip>
-    The Blocksync GraphQL API provides a GraphQL interface for querying blockchain data.
+The IXO Blocksync GraphQL API provides a flexible and efficient way to interact with the IXO blockchain, offering powerful querying capabilities and high-precision data handling.
 </Tip>
 
-## High-Level Overview
+## Overview
 
-The Blocksync GraphQL API provides a GraphQL interface for querying blockchain data.
+The Blocksync GraphQL API enables developers to:
+- Query blockchain data efficiently
+- Filter information with precision
+- Interact with decentralized features
+- Handle high-precision financial data
+
+<AccordionGroup>
+  <Accordion title="Key Components" icon="puzzle">
+    Core elements of the Blocksync GraphQL API
+    
+    <CardGroup>
+      <Card title="Scalars" icon="type">
+        - `BigFloat`: High-precision floating point numbers
+        - `BigInt`: Large integer values
+      </Card>
+      <Card title="Filters" icon="filter">
+        - Input filters for complex queries
+        - Logical operations support
+      </Card>
+      <Card title="Types" icon="database">
+        - Entity types
+        - Bond types
+        - Claim types
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Query Capabilities" icon="search">
+    Available query operations
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Read-only operations (no mutations)
+        - Complex filtering
+        - Pagination support
+        - Nested queries
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Example Queries
+
+### Basic Entity Query
+```graphql
+query {
+  entities(first: 10) {
+    edges {
+      node {
+        id
+        name
+        type
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+### Filtered Query
+```graphql
+query {
+  entities(
+    filter: {
+      type: { equalTo: "ORGANIZATION" }
+      status: { equalTo: "ACTIVE" }
+    }
+  ) {
+    edges {
+      node {
+        id
+        name
+        status
+      }
+    }
+  }
+}
+```
+
+## Development Resources
+
+<CardGroup>
+  <Card title="GraphQL Playground" href="https://blocksync-graphql.ixo.earth/graphiql" icon="play">
+    Mainnet Playground
+  </Card>
+  <Card title="Testnet Playground" href="https://testnet-blocksync-graphql.ixo.earth/graphiql" icon="play">
+    Test Environment
+  </Card>
+  <Card title="Devnet Playground" href="https://devnet-blocksync-graphql.ixo.earth/graphiql" icon="play">
+    Development Environment
+  </Card>
+</CardGroup>
+
+## GitHub Repositories
+
+<CardGroup>
+  <Card title="Blocksync Core" href="https://github.com/ixofoundation/ixo-blocksync-core" icon="github">
+    Core Components
+  </Card>
+  <Card title="Blocksync" href="https://github.com/ixofoundation/ixo-blocksync" icon="github">
+    Implementation
+  </Card>
+</CardGroup>
+
+<Tip type="info">
+For detailed schema documentation and type definitions, refer to the [GraphQL Schema Reference](/api-reference/blocksync-graphql-schema).
+</Tip>
 
 

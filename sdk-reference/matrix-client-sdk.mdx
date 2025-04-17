@@ -1,11 +1,103 @@
 ---
-title: "Matrix Client SDK"
+title: Matrix Client SDK
+icon: message
+description: A comprehensive toolkit for interacting with Matrix servers and bot services
 ---
 
 <Tip>
-    The Matrix Client SDK provides an interface for interacting with Matrix data rooms and services.
+The IXO Matrix Client SDK is a comprehensive toolkit that enables developers to interact seamlessly with a Matrix server and associated bot services. This SDK helps in managing user profiles, room details, and room states, leveraging both pre-configured and custom Matrix home servers.
 </Tip>
 
-## High-Level Overview
+<AccordionGroup>
+  <Accordion title="Matrix API Client" icon="server">
+    Facilitates direct interaction with the Matrix API to manage media, user profiles, and room properties.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Media Management**: Upload files to the Matrix server
+        - **User Profile Handling**: Retrieve and modify user profile data
+        - **Room Operations**: Manage room visibility and memberships
+      </Card>
+    </CardGroup>
+  </Accordion>
 
-The Matrix Client SDK enables developers to connect to Matrix servers, manage rooms, and handle secure data communications. 
+  <Accordion title="Room Bot Client" icon="robot">
+    Provides automation capabilities for managing rooms and simplifying workflows.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Entity Room Management**: Automatically create entity-specific rooms
+        - **Room Automation**: Use bots to manage room invitations and memberships
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="State Bot Client" icon="lock">
+    Handles room states and access control lists (ACLs) for secure room management.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Access Control Management**: Configure ACLs for rooms
+        - **State Management**: Fetch and adjust room states
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Utility Functions" icon="tools">
+    Provides helper functions for working within the Matrix ecosystem.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **MXC Utilities**: Convert Matrix Content URLs
+        - **Validators**: Validate room IDs, user IDs, and aliases
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Installation
+
+The IXO Matrix Client SDK can be installed via npm or yarn:
+
+```bash
+npm install @ixo/matrixclient-sdk
+# or
+yarn add @ixo/matrixclient-sdk
+```
+
+## Quick Start
+
+Import the required components into your project:
+
+```typescript
+import {
+  createMatrixApiClient,
+  createMatrixRoomBotClient,
+  createMatrixStateBotClient,
+  utils
+} from '@ixo/matrixclient-sdk';
+```
+
+## Use Cases
+
+The IXO Matrix Client SDK is highly versatile and can be used in multiple scenarios:
+
+- **Real-Time Communication**: Manage real-time user communication using Matrix rooms
+- **Automated Room Management**: Leverage bot clients to automate room management
+- **Access Control**: Use ACLs and state management tools to control room access
+
+<Tip type="info">
+This GitHub repository is private. Request access by contacting the IXO World team.
+</Tip>
+
+<CardGroup>
+  <Card title="NPM Package" href="https://www.npmjs.com/package/@ixo/matrixclient-sdk" icon="npm">
+    View on NPM
+  </Card>
+  <Card title="GitHub Repository" href="https://github.com/ixofoundation/ixo-matrixclient-sdk" icon="github">
+    View the source code
+  </Card>
+  <Card title="Getting Started" href="/guides/dev/introduction" icon="rocket">
+    Start building with our developer guides
+  </Card>
+</CardGroup> 

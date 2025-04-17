@@ -1,13 +1,138 @@
 ---
-title: "RPC API"
+title: RPC API
+icon: server
+description: Protocol documentation for the IXO blockchain's RPC API
 ---
 
 <Tip>
-    A RPC API for interfacing with blockchain data.
+The IXO RPC API provides protobuf-based interfaces for interacting with the blockchain, defining key message types and services for transactions, events, and state queries.
 </Tip>
 
-## High-Level Overview
+## Core Components
 
-The RPC API provides a RPC interface for querying blockchain data.
+<AccordionGroup>
+  <Accordion title="Messages" icon="message">
+    Protocol messages for blockchain interactions
+    
+    <CardGroup>
+      <Card title="Types" icon="list">
+        - Transaction messages
+        - Query messages
+        - State modification messages
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Events" icon="bell">
+    Blockchain state change notifications
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - State change tracking
+        - Transaction monitoring
+        - Real-time updates
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Queries" icon="search">
+    State enquiry operations
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Blockchain state queries
+        - Parameter queries
+        - Historical data access
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Available Modules
+
+<AccordionGroup>
+  <Accordion title="Claims Module" icon="file-check">
+    Manage verifiable claims and disputes
+    
+    <CardGroup>
+      <Card title="Operations" icon="list">
+        - Submit claims
+        - Evaluate claims
+        - Process disputes
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Entities Module" icon="building">
+    Handle entity operations
+    
+    <CardGroup>
+      <Card title="Operations" icon="list">
+        - Create entities
+        - Update records
+        - Link resources
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="IID Module" icon="fingerprint">
+    Manage decentralized identifiers
+    
+    <CardGroup>
+      <Card title="Operations" icon="list">
+        - Create DIDs
+        - Update metadata
+        - Verify identifiers
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Bonds Module" icon="link">
+    Handle bond operations
+    
+    <CardGroup>
+      <Card title="Operations" icon="list">
+        - Create bonds
+        - Buy/sell orders
+        - Swap operations
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Example Messages
+
+### Create Entity
+```protobuf
+message MsgCreateEntity {
+  string creator = 1;
+  string entity_type = 2;
+  string entity_status = 3;
+}
+```
+
+### Submit Claim
+```protobuf
+message MsgSubmitClaim {
+  string creator = 1;
+  string collection_id = 2;
+  string claim_id = 3;
+}
+```
+
+## Development Resources
+
+<CardGroup>
+  <Card title="IXO Blockchain" href="https://github.com/ixofoundation/ixo-blockchain" icon="github">
+    Core blockchain repository
+  </Card>
+  <Card title="Multiclient SDK" href="https://github.com/ixofoundation/ixo-MultiClient-SDK" icon="code">
+    TypeScript SDK for RPC interactions
+  </Card>
+</CardGroup>
+
+<Tip type="info">
+The RPC API provides the foundation for all blockchain interactions, enabling developers to build decentralized applications that leverage IXO's core functionalities.
+</Tip>
 
 

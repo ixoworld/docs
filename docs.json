@@ -133,11 +133,11 @@
           },
           {
             "group": " ",
-            "pages": ["api-reference/matrix-state-bot-api"]
+            "pages": ["api-reference/rpc-api"]
           },
           {
             "group": " ",
-            "pages": ["api-reference/rpc-api"]
+            "pages": ["api-reference/matrix-state-bot-api"]
           },
           {
             "group": " ",
@@ -223,7 +223,7 @@
     "socials": {
       "x": "https://x.com/ixoworld",
       "github": "https://github.com/ixofoundation",
-      "linkedin": "https://linkedin.com/company/ixoworld"
+      "linkedin": "https://www.linkedin.com/company/ixoworld"
     }
   },
   "integrations": {

@@ -1,26 +1,89 @@
 ---
-title: "API Reference Overview"
+title: API Reference
+icon: api
+description: Comprehensive documentation for the IXO Spatial Web API ecosystem
 ---
 
-Welcome to the IXO API documentation. 
+<Tip>
+The IXO Spatial Web API is comprehensive and spans multiple layers of the software stack, providing various functions to interact with different components of the IXO ecosystem.
+</Tip>
 
-<Card title="Blocksync GraphQL API" icon="server" href="/api-reference/blocksync-graphql-api">
-    A GraphQL API for interfacing with blockchain data.
-</Card>
+<AccordionGroup>
+  <Accordion title="IXO Protocol Blockchain RPC API" icon="server">
+    Manages on-chain data and transactions via direct RPC communication.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Direct blockchain interaction
+        - Transaction management
+        - On-chain data access
+      </Card>
+    </CardGroup>
+  </Accordion>
 
-<Card title="gRPC Gateway API" icon="server" href="/api-reference/grpc-gateway-api">
-    A gRPC Gateway API for interfacing with blockchain data.
-</Card>
+  <Accordion title="IXO Protocol Blockchain gRPC Gateway API" icon="gateway">
+    Provides a gRPC REST interface for direct blockchain queries.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - RESTful interface
+        - Protocol buffer support
+        - Efficient data transfer
+      </Card>
+    </CardGroup>
+  </Accordion>
 
-<Card title="Matrix State Bot API" icon="server" href="/api-reference/matrix-state-bot-api">
-    A Matrix State Bot API for interfacing with data.
-</Card>
+  <Accordion title="IXO Blocksync GraphQL API" icon="graphql">
+    Provides a GraphQL interface for efficient and flexible querying of indexed blockchain data.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Flexible query language
+        - Nested queries
+        - Filtering and pagination
+      </Card>
+    </CardGroup>
+  </Accordion>
 
-<Card title="RPC API" icon="server" href="/api-reference/rpc-api">
-    A RPC API for querying blockchain data.
-</Card>
+  <Accordion title="IXO Matrix State Bot API" icon="matrix">
+    An interface to the private and secure data vaults stored in Matrix.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Secure data storage
+        - Access control
+        - State management
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
 
-<Card title="Registry API" icon="server" href="/api-reference/registry-api">
-    A server providing a REST API for interfacing with the blockchain registry and integrate with other systems, such as National Carbon Registries.
-</Card>
+## API Design Principles
+
+The IXO Spatial Web API is organized around REST principles:
+- Predictable resource-oriented URLs
+- Form-encoded request bodies
+- JSON-encoded responses
+- Standard HTTP response codes
+- Consistent authentication mechanisms
+- Standard HTTP verbs
+
+<Tip type="info">
+### Test Mode
+You can use the IXO Spatial Web API in test mode by directing server endpoints to our testnet blockchain.  
+Transactions on the testnet do not involve real tokens or data, and they are not guaranteed to be available in the future.  
+It is advisable to use anonymous or mock data during testing to ensure data privacy and integrity.
+</Tip>
+
+<CardGroup>
+  <Card title="Authentication" href="/api-reference/authentication" icon="shield">
+    Learn about API authentication methods
+  </Card>
+  <Card title="Error Handling" href="/api-reference/errors" icon="alert-triangle">
+    Understand API error responses
+  </Card>
+  <Card title="Pagination" href="/api-reference/pagination" icon="layers">
+    Learn about data pagination
+  </Card>
+</CardGroup>
 

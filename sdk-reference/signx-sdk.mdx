@@ -1,11 +1,86 @@
 ---
-title: "SignX SDK"
+title: SignX SDK
+icon: qr-code
+description: A secure toolkit for mobile-to-web authentication and transaction signing on the IXO blockchain
 ---
 
 <Tip>
-    The SignX SDK provides secure transaction signing and key management capabilities for applications in the IXO ecosystem.
+The SignX SDK provides developers with an easy and secure way to integrate mobile-to-web authentication and transaction signing using the IXO blockchain. It orchestrates interactions between client applications, mobile apps, and servers, simplifying authentication, data handling, and multi-transaction processing.
 </Tip>
 
-## High-Level Overview
+<AccordionGroup>
+  <Accordion title="Mobile-to-Web Authentication" icon="smartphone">
+    Enables seamless authentication through secure QR code mechanisms.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **QR Code Login**: Secure QR-based login for users
+        - **Polling Mechanism**: Real-time updates for login status
+      </Card>
+    </CardGroup>
+  </Accordion>
 
-The SignX SDK enables developers to implement secure transaction signing, key management, and cryptographic operations. 
+  <Accordion title="Secure Data Handling" icon="shield">
+    Supports encrypted data exchange between client applications and mobile apps.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **AES-256-CBC Encryption**: Secure transmission of sensitive data
+        - **Data Flow Management**: Safe exchange and processing of encrypted information
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Multi-Transaction Processing" icon="layers">
+    Manages multiple transactions within a single session.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Transaction Sessions**: Handle multiple transactions sequentially
+        - **Long Polling**: Real-time status updates for transactions
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Installation
+
+The SignX SDK can be installed via npm or yarn:
+
+```bash
+npm install @ixo/signx-sdk
+# or
+yarn add @ixo/signx-sdk
+```
+
+## Quick Start
+
+Import the SignX SDK into your project:
+
+```typescript
+import { SignX } from '@ixo/signx-sdk';
+```
+
+## Use Cases
+
+The SignX SDK is versatile and can be used in various scenarios:
+
+- **Secure User Authentication**: Implement QR-based login systems
+- **Data Exchange in dApps**: Securely transmit sensitive information
+- **Complex Transaction Handling**: Manage multiple sequential transactions
+
+<Tip type="info">
+For detailed API documentation and examples, refer to the [SignX SDK README](https://github.com/ixofoundation/ixo-signx/blob/master/README.md#%EF%B8%8F-api-reference).
+</Tip>
+
+<CardGroup>
+  <Card title="NPM Package" href="https://www.npmjs.com/package/@ixo/signx-sdk" icon="npm">
+    View on NPM
+  </Card>
+  <Card title="GitHub Repository" href="https://github.com/ixofoundation/ixo-signx" icon="github">
+    View the source code
+  </Card>
+  <Card title="Getting Started" href="/guides/dev/introduction" icon="rocket">
+    Start building with our developer guides
+  </Card>
+</CardGroup> 
