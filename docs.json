@@ -23,18 +23,19 @@
             ]
           },
           {
-            "group": "Guides",
+            "group": "Developers",
             "pages": [
-              {
-                "group": "Developer Guides",
-                "icon": "code",
-                "pages": [
-                  "guides/dev/spatial-web-sdks",
-                  "guides/dev/domain-settings",
-                  "guides/dev/domain-privacy",
-                  "guides/dev/authentication"
-                ]
-              }
+              "guides/dev/spatial-web-sdks",
+              "guides/dev/domain-settings",
+              "guides/digital-twins",
+              "guides/domain-registration",
+              "guides/dev/domain-privacy",
+              "guides/dev/authentication",
+              "guides/dev/ixo-claims",
+              "guides/registry",
+              "guides/digital-mrv",
+              "guides/ixo-oracles-architecture",
+              "mcp/model-context-protocol"
             ]
           },
           {
@@ -44,29 +45,6 @@
           {
             "group": "Platforms",
             "pages": ["articles/intro-platforms"]
-          },
-          {
-            "group": "Developers",
-            "pages": [
-              "guides/dev/introduction",
-              "guides/digital-mrv",
-              "guides/digital-twins",
-              "guides/domain-registration",
-              "guides/registry",
-              "guides/ixo-oracles-architecture",
-              "mcp/model-context-protocol",
-              "guides/dev/ixo-claims",
-              "guides/dev/domain-privacy",
-              {
-                "group": "SDKs",
-                "pages": [
-                  "spatial-web-stack/sdks/intro-sdks",
-                  "spatial-web-stack/sdks/ixo-multiclient-sdk",
-                  "spatial-web-stack/sdks/ixo-matrix-sdk",
-                  "spatial-web-stack/sdks/oracle-agent-sdk"
-                ]
-              }
-            ]
           },
           {
             "group": "Articles",
@@ -104,7 +82,6 @@
                   "platforms/Emerging/domain-registration",
                   "platforms/Emerging/digital-certification",
                   "platforms/Emerging/registry",
-                  "platforms/Emerging/registry-server",
                   "platforms/Emerging/digital-vouchers",
                   "platforms/Emerging/kpt",
                   "platforms/Emerging/data-integrity",
@@ -125,7 +102,7 @@
           },
           {
             "group": " ",
-            "pages": ["api-reference/blocksync-graphql-api"]
+            "pages": ["api-reference/rpc-api"]
           },
           {
             "group": " ",
@@ -133,7 +110,7 @@
           },
           {
             "group": " ",
-            "pages": ["api-reference/rpc-api"]
+            "pages": ["api-reference/blocksync-graphql-api"]
           },
           {
             "group": " ",
