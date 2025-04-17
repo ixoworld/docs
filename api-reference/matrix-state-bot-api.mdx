@@ -1,0 +1,105 @@
+---
+title: Matrix State Bot API
+icon: snowflake
+description: API for managing state objects and access control in Matrix rooms
+---
+
+<Tip>
+The IXO Matrix State Bot API enables secure, decentralized storage and management of state events and access control lists (ACLs) within Matrix rooms, providing both REST endpoints and Matrix commands.
+</Tip>
+
+## Core Features
+
+<AccordionGroup>
+  <Accordion title="State Event Management" icon="database">
+    Handle custom state events in Matrix rooms
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Create and update state events
+        - Store JSON objects with unique keys
+        - Manage room configurations
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Access Control" icon="shield">
+    Manage permissions and access rights
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Define granular ACLs
+        - Control state event access
+        - Set edit permissions
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Integration Methods" icon="plug">
+    Multiple ways to interact with the bot
+    
+    <CardGroup>
+      <Card title="Methods" icon="list">
+        - RESTful API endpoints
+        - Matrix room commands
+        - Direct bot interactions
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Event Types
+
+### State Events
+```json
+{
+  "type": "ixo.room.state",
+  "state_key": "unique_identifier",
+  "content": {
+    // Application-specific data
+  }
+}
+```
+
+### ACL Events
+```json
+{
+  "type": "ixo.room.state.acl",
+  "state_key": "state_event_key",
+  "content": {
+    "read": ["@user:domain.com"],
+    "write": ["@admin:domain.com"]
+  }
+}
+```
+
+## Use Cases
+
+<CardGroup>
+  <Card title="dApp Settings" icon="gear">
+    Store application configurations securely
+  </Card>
+  <Card title="Project Access" icon="key">
+    Implement fine-grained access control
+  </Card>
+  <Card title="State Management" icon="database">
+    Automate state object handling
+  </Card>
+</CardGroup>
+
+## Development Resources
+
+<CardGroup>
+  <Card title="GitHub Repository" href="https://github.com/ixofoundation/ixo-matrix-state" icon="github">
+    Core repository (private access)
+  </Card>
+  <Card title="Contact Us" href="https://linktr.ee/ixo_world" icon="envelope">
+    Request repository access
+  </Card>
+</CardGroup>
+
+<Tip type="warning">
+The Matrix State Bot repository is private. Contact the IXO team to request access for development.
+</Tip>
+
+

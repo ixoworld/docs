@@ -1,0 +1,99 @@
+---
+title: Blockchain REST API
+icon: cloud
+description: RESTful interface for accessing IXO blockchain's gRPC services
+---
+
+<Tip>
+The IXO Blockchain REST API provides a RESTful interface to access IXO blockchain's gRPC services, bridging the gap between high-performance gRPC and web-friendly REST APIs.
+</Tip>
+
+## How It Works
+
+<AccordionGroup>
+  <Accordion title="Request Flow" icon="arrow-right-arrow-left">
+    The process of handling API requests
+    
+    <CardGroup>
+      <Card title="Steps" icon="list">
+        1. Client makes RESTful HTTP request
+        2. Gateway translates to gRPC request
+        3. gRPC server processes request
+        4. Response converted back to HTTP/JSON
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Key Features" icon="stars">
+    Main benefits of using the gRPC Gateway
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - REST access to gRPC services
+        - Simplified blockchain integration
+        - JSON response format
+        - Extensive endpoint coverage
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## Available Endpoints
+
+<AccordionGroup>
+  <Accordion title="Entity Management" icon="building">
+    Endpoints for managing entities
+    
+    ```http
+    GET /ixo/entity/{id}
+    ```
+  </Accordion>
+
+  <Accordion title="Claims" icon="file-check">
+    Endpoints for handling claims
+    
+    ```http
+    GET /ixo/claims/claims
+    ```
+  </Accordion>
+
+  <Accordion title="Token Operations" icon="coins">
+    Endpoints for token management
+    
+    ```http
+    GET /ixo/token/params
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Response Structure
+
+All responses are returned in JSON format and follow a consistent structure:
+
+```json
+{
+  "data": {
+    // Response data specific to the endpoint
+  },
+  "metadata": {
+    // Additional information about the response
+  }
+}
+```
+
+## Development Resources
+
+<CardGroup>
+  <Card title="IXO Blockchain" href="https://github.com/ixofoundation/ixo-blockchain" icon="github">
+    Core blockchain repository with custom modules
+  </Card>
+  <Card title="Multiclient SDK" href="https://github.com/ixofoundation/ixo-MultiClient-SDK" icon="code">
+    TypeScript SDK for blockchain interaction
+  </Card>
+</CardGroup>
+
+<Tip type="info">
+The gRPC Gateway simplifies blockchain integration by allowing developers to use familiar REST APIs instead of implementing gRPC-specific libraries.
+</Tip>
+
+

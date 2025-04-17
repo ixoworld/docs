@@ -23,18 +23,19 @@
             ]
           },
           {
-            "group": "Guides",
+            "group": "Developers",
             "pages": [
-              {
-                "group": "Developer Guides",
-                "icon": "code",
-                "pages": [
-                  "guides/dev/spatial-web-sdks",
-                  "guides/dev/domain-settings",
-                  "guides/dev/domain-privacy",
-                  "guides/dev/authentication"
-                ]
-              }
+              "guides/dev/spatial-web-sdks",
+              "guides/dev/domain-settings",
+              "guides/digital-twins",
+              "guides/domain-registration",
+              "guides/dev/domain-privacy",
+              "guides/dev/authentication",
+              "guides/dev/ixo-claims",
+              "guides/registry",
+              "guides/digital-mrv",
+              "guides/ixo-oracles-architecture",
+              "mcp/model-context-protocol"
             ]
           },
           {
@@ -44,29 +45,6 @@
           {
             "group": "Platforms",
             "pages": ["articles/intro-platforms"]
-          },
-          {
-            "group": "Developers",
-            "pages": [
-              "guides/dev/introduction",
-              "guides/digital-mrv",
-              "guides/digital-twins",
-              "guides/domain-registration",
-              "guides/registry",
-              "guides/ixo-oracles-architecture",
-              "mcp/model-context-protocol",
-              "guides/dev/ixo-claims",
-              "guides/dev/domain-privacy",
-              {
-                "group": "SDKs",
-                "pages": [
-                  "spatial-web-stack/sdks/intro-sdks",
-                  "spatial-web-stack/sdks/ixo-multiclient-sdk",
-                  "spatial-web-stack/sdks/ixo-matrix-sdk",
-                  "spatial-web-stack/sdks/oracle-agent-sdk"
-                ]
-              }
-            ]
           },
           {
             "group": "Articles",
@@ -119,18 +97,63 @@
         "tab": "APIs",
         "groups": [
           {
-            "group": "API Reference",
+            "group": " ",
             "pages": ["api-reference/index"]
           },
           {
-            "group": "Registry API Overview",
+            "group": " ",
+            "pages": ["api-reference/rpc-api"]
+          },
+          {
+            "group": " ",
+            "pages": ["api-reference/grpc-gateway-api"]
+          },
+          {
+            "group": " ",
+            "pages": ["api-reference/blocksync-graphql-api"]
+          },
+          {
+            "group": " ",
+            "pages": ["api-reference/matrix-state-bot-api"]
+          },
+          {
+            "group": " ",
             "pages": ["api-reference/registry-api"]
           },
           {
-            "group": "Registry API Endpoints",
+            "group": " ",
             "openapi": {
               "source": "api-reference/openapi.yaml"
             }
+          }
+        ]
+      },
+      {
+        "tab": "SDKs",
+        "groups": [
+          {
+            "group": " ",
+            "pages": ["sdk-reference/index"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/multiclient-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/signx-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/matrix-client-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/oracle-ai-sdk"]
+          },
+          {
+            "group": " ",
+            "pages": ["sdk-reference/jambo-wallet-sdk"]
           }
         ]
       }
@@ -177,7 +200,7 @@
     "socials": {
       "x": "https://x.com/ixoworld",
       "github": "https://github.com/ixofoundation",
-      "linkedin": "https://linkedin.com/company/ixoworld"
+      "linkedin": "https://www.linkedin.com/company/ixoworld"
     }
   },
   "integrations": {

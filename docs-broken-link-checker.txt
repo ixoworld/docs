@@ -1,0 +1,661 @@
+blc http://localhost:3000 --recursive
+(node:58175) [DEP0040] DeprecationWarning: The `punycode` module is deprec
+ated. Please use a userland alternative instead.                          (Use `node --trace-deprecation ...` to show where the warning was created)
+Getting links from: http://localhost:3000/
+├───OK─── http://localhost:3000/logo/light.svg
+├───OK─── http://localhost:3000/logo/dark.svg
+├───OK─── http://localhost:3000/platforms/Emerging/intro-emerging
+├───OK─── http://localhost:3000/api-reference/index
+├───OK─── http://localhost:3000/sdk-reference/index
+├───OK─── https://chronicle.impacts.network/
+├───OK─── http://localhost:3000/core-concepts
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/articles/ixo-protocol
+├───OK─── http://localhost:3000/guides/hands-on
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├───OK─── http://localhost:3000/guides/users/intro-users
+├───OK─── http://localhost:3000/articles/intro-platforms
+├───OK─── http://localhost:3000/guides/dev/introduction
+├───OK─── http://localhost:3000/guides/digital-mrv
+├───OK─── http://localhost:3000/guides/digital-twins
+├───OK─── http://localhost:3000/guides/domain-registration
+├───OK─── https://ixofoundation.slack.com/archives/C04UERAUHQT
+├───OK─── http://localhost:3000/guides/registry
+├───OK─── https://github.com/ixofoundation
+├───OK─── https://mintlify.com/preview-request?utm_campaign=poweredBy&utm_
+medium=docs&utm_source=undefined                                          ├───OK─── http://localhost:3000/guides/ixo-oracles-architecture
+├───OK─── http://localhost:3000/mcp/model-context-protocol
+├───OK─── http://localhost:3000/guides/dev/ixo-claims
+├───OK─── http://localhost:3000/guides/dev/domain-privacy
+├───OK─── http://localhost:3000/articles/intro-articles
+├───OK─── http://localhost:3000/articles/cdt-systems
+├───OK─── http://localhost:3000/articles/ixo-blockchain
+├───OK─── http://localhost:3000/articles/ixo-matrix
+├───OK─── http://localhost:3000/articles/ixo-blocksync
+├───OK─── http://localhost:3000/articles/ixo-oracles
+├───OK─── http://localhost:3000/articles/pods
+├───OK─── http://localhost:3000/articles/projects
+├───OK─── http://localhost:3000/guides/dev/ixo-domains
+├───OK─── http://localhost:3000/guides/dev/overview
+├───OK─── http://localhost:3000/spatial-web-stack/core-concepts
+├───OK─── http://localhost:3000/guides/dev/examples
+├───OK─── http://localhost:3000/spatial-web-stack/sdks/oracle-agent-sdk
+├───OK─── http://localhost:3000/images/ixo-mobile.png
+├───OK─── http://localhost:3000/guides/users/ai-companion
+├───OK─── http://localhost:3000/api-docs/introduction
+├───OK─── https://ixo.world/
+├───OK─── https://mobile.impacts.download/
+├─BROKEN─ https://ixo.world/studio (HTTP_404)
+└─BROKEN─ https://ixo.world/daos (HTTP_404)
+Finished! 113 links found. 68 excluded. 4 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/intro-emergin
+g                                                                         ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/concepts
+├───OK─── http://localhost:3000/platforms/Emerging/digital-identifiers
+├───OK─── http://localhost:3000/platforms/Emerging/credential-issuance
+├───OK─── http://localhost:3000/platforms/Emerging/dmrv
+├───OK─── https://app.emerging.eco/
+├───OK─── http://localhost:3000/platforms/Emerging/household-monitoring
+├───OK─── http://localhost:3000/platforms/Emerging/stove-use-monitoring
+├───OK─── http://localhost:3000/platforms/Emerging/qualitative-surveys
+├───OK─── http://localhost:3000/platforms/Emerging/sdg-monitoring
+├───OK─── http://localhost:3000/platforms/Emerging/domain-registration
+├───OK─── http://localhost:3000/platforms/Emerging/digital-certification
+├───OK─── http://localhost:3000/platforms/Emerging/registry
+├───OK─── http://localhost:3000/platforms/Emerging/registry-server
+├───OK─── http://localhost:3000/platforms/Emerging/digital-vouchers
+├───OK─── http://localhost:3000/platforms/Emerging/kpt
+├───OK─── http://localhost:3000/platforms/Emerging/data-integrity
+├───OK─── http://localhost:3000/platforms/Emerging/itmo-schema
+├───OK─── http://localhost:3000/platforms/Emerging/emerging-api
+├───OK─── http://localhost:3000/api-docs/emerging-api/emerging-api
+├───OK─── http://localhost:3000/platforms/Emerging/emerging-dmrv
+├───OK─── http://localhost:3000/platforms/Emerging/ai-assistant
+├───OK─── http://localhost:3000/articles/introduction
+├───OK─── http://localhost:3000/spatial-web-stack/spatial-web-sdks
+├───OK─── http://localhost:3000/platforms/Emerging/platforms/Emerging/ener
+gy-systems.mdx                                                            ├───OK─── http://localhost:3000/platforms/Emerging/device-registration
+Finished! 91 links found. 64 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/index
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-reference/blocksync-graphql-api
+├───OK─── http://localhost:3000/api-reference/grpc-gateway-api
+├───OK─── http://localhost:3000/api-reference/rpc-api
+├───OK─── http://localhost:3000/api-reference/matrix-state-bot-api
+├───OK─── http://localhost:3000/api-reference/registry-api
+Finished! 52 links found. 45 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/sdk-reference/index
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/sdk-reference/multiclient-sdk
+├───OK─── http://localhost:3000/sdk-reference/signx-sdk
+├───OK─── http://localhost:3000/sdk-reference/matrix-client-sdk
+├───OK─── http://localhost:3000/sdk-reference/oracle-ai-sdk
+├───OK─── http://localhost:3000/sdk-reference/jambo-wallet-sdk
+Finished! 52 links found. 45 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/core-concepts
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 94 links found. 92 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/ixo-protocol
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/use-cases/intro-usecases
+├───OK─── http://localhost:3000/api-reference
+└───OK─── https://ixofoundation.slack.com/
+Finished! 93 links found. 88 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/hands-on
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+└───OK─── http://localhost:3000/guides/dev/spatial-web-sdks
+Finished! 67 links found. 64 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/users/intro-users
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├─BROKEN─ https://ixo.world/studio (HTTP_404)
+├───OK─── http://localhost:3000/guides/users/faqs
+├───OK─── http://localhost:3000/guides/dev/authentication
+Finished! 83 links found. 78 excluded. 3 broken.
+
+Getting links from: http://localhost:3000/articles/intro-platforms
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/spatial-web-stack/sdks/spatial-web-sdks
+Finished! 99 links found. 96 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/introduction
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/spatial-web-stack/sdks/ixo-multiclient-sdk
+├───OK─── http://localhost:3000/api-docs/blocksync-api/blocksync-graphql
+└───OK─── https://www.npmjs.com/package/@ixo/impactxclient-sdk#signing-cli
+ent                                                                       Finished! 86 links found. 81 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/digital-mrv
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 96 links found. 94 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/digital-twins
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 87 links found. 85 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/domain-registration
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 86 links found. 84 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/registry
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 101 links found. 99 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/ixo-oracles-architecture
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 77 links found. 75 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/mcp/model-context-protocol
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 75 links found. 73 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/ixo-claims
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-docs/claims
+├───OK─── https://github.com/ixofoundation/ixo-blockchain/tree/main/x/clai
+ms                                                                        Finished! 94 links found. 90 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/domain-privacy
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/dev/domain-settings
+├───OK─── http://localhost:3000/api-reference/iid
+├───OK─── http://localhost:3000/guides/dev/privacy
+├───OK─── http://localhost:3000/guides/dev/resources
+├───OK─── http://localhost:3000/api-docs/iid
+├─BROKEN─ https://github.com/ixofoundation/ixo-protocol/blob/main/intercha
+in-identifiers/v1.md (HTTP_404)                                           Finished! 102 links found. 94 excluded. 3 broken.
+
+Getting links from: http://localhost:3000/articles/intro-articles
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/articles/ixo-integrations
+└─BROKEN─ https://ixo.world/newsletter (HTTP_404)
+Finished! 78 links found. 74 excluded. 3 broken.
+
+Getting links from: http://localhost:3000/articles/cdt-systems
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 81 links found. 79 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/ixo-blockchain
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-docs/blockchain
+└───OK─── https://explorer.ixo.earth/
+Finished! 102 links found. 98 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/ixo-matrix
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/spatial-web-stack/sdks/ixo-matrix-sdk
+├───OK─── http://localhost:3000/api-docs/matrix-api/matrix-statebot-api
+Finished! 114 links found. 110 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/ixo-blocksync
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-docs/blocksync-api/schema
+├───OK─── http://localhost:3000/api-docs/blocksync-api/examples
+Finished! 88 links found. 84 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/ixo-oracles
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/dev/prediction-oracles
+└───OK─── https://chronicle.impacts.network/the-prophets-of-web3-ai/
+Finished! 104 links found. 100 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/pods
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 113 links found. 111 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/projects
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 92 links found. 90 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/ixo-domains
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-reference/entity
+├───OK─── http://localhost:3000/guides/dev/entity-sdk
+├───OK─── http://localhost:3000/guides/dev/entity-examples
+├───OK─── https://github.com/ixofoundation/ixo-blockchain/tree/main/x/enti
+ty                                                                        Finished! 83 links found. 77 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/overview
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/spatial-web-stack/sdks/intro-sdks
+├───OK─── http://localhost:3000/guides/dev/IXO-Spatial-Web-Multiclient-SDK
+.md                                                                       ├───OK─── http://localhost:3000/guides/dev/Blocksync-GraphQL-API-Overview.
+md                                                                        Finished! 95 links found. 90 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/spatial-web-stack/core-concepts
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 93 links found. 91 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/examples
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 95 links found. 93 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/spatial-web-stack/sdks/oracle-ag
+ent-sdk                                                                   ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 104 links found. 102 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/users/ai-companion
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+└───OK─── http://localhost:3000/api-docs/ai-companion-api/companion-api
+Finished! 85 links found. 82 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-docs/introduction
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-docs/registry
+├───OK─── http://localhost:3000/api-docs/authentication
+Finished! 70 links found. 66 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/concepts
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/articles/ixo-blockchain
+├───OK─── http://localhost:3000/platforms/Emerging/articles/ixo-matrix
+├───OK─── http://localhost:3000/platforms/Emerging/articles/ixo-integratio
+ns                                                                        Finished! 91 links found. 86 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/digital-ident
+ifiers                                                                    ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 158 links found. 156 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/credential-is
+suance                                                                    ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/protocol-domains
+├───OK─── http://localhost:3000/platforms/Emerging/verification
+├───OK─── http://localhost:3000/platforms/Emerging/privacy-framework
+Finished! 170 links found. 165 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/dmrv
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/articles/ixo-protocols
+└───OK─── https://emerging.eco/
+Finished! 107 links found. 103 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/household-mon
+itoring                                                                   ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/household-reporting
+Finished! 99 links found. 96 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/stove-use-mon
+itoring                                                                   ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/sample-size
+Finished! 102 links found. 99 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/qualitative-s
+urveys                                                                    ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 111 links found. 109 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/sdg-monitorin
+g                                                                         ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/protocols
+Finished! 84 links found. 81 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/domain-regist
+ration                                                                    ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/service-configuration
+├───OK─── http://localhost:3000/platforms/Emerging/monitoring
+Finished! 93 links found. 89 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/digital-certi
+fication                                                                  ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── https://www.w3.org/TR/vc-data-model/
+├───OK─── https://www.ipcc.ch/report/2006-ipcc-guidelines-for-national-gre
+enhouse-gas-inventories/                                                  ├───OK─── https://www.w3.org/TR/json-ld11/
+└─BROKEN─ https://unfccc.int/process/the-paris-agreement/cooperative-imple
+mentation (ERRNO_ECONNRESET)                                              Finished! 96 links found. 90 excluded. 3 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/registry
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 69 links found. 67 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/digital-vouch
+ers                                                                       ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/supplier-integration
+├───OK─── http://localhost:3000/guides/monitoring
+├───OK─── http://localhost:3000/api-reference/vouchers
+Finished! 92 links found. 87 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/kpt
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 103 links found. 101 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/data-integrit
+y                                                                         ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/dev/security
+├───OK─── http://localhost:3000/platforms/Emerging/authentication
+├───OK─── http://localhost:3000/platforms/Emerging/validation
+Finished! 88 links found. 83 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/itmo-schema
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/itmo-credentials
+├───OK─── http://localhost:3000/platforms/Emerging/digital-mrv
+├───OK─── http://localhost:3000/api-reference/credentials
+Finished! 92 links found. 87 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/emerging-api
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/data-matrix
+├───OK─── http://localhost:3000/platforms/Emerging/service-endpoints
+├───OK─── http://localhost:3000/guides/dev/error-handling
+Finished! 93 links found. 88 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-docs/emerging-api/emerging-a
+pi                                                                        ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 46 links found. 44 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/emerging-dmrv
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/platforms/Emerging/clean-cooking
+├───OK─── http://localhost:3000/platforms/Emerging/carbon-credits
+Finished! 66 links found. 62 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/blocksync-graphql-
+api                                                                       ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 50 links found. 48 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/grpc-gateway-api
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 50 links found. 48 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/rpc-api
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 50 links found. 48 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/matrix-state-bot-a
+pi                                                                        ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 50 links found. 48 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/registry-api
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-reference/household-information/get-ho
+usehold-statistics                                                        ├─BROKEN─ https://api.emerging.eco/ (HTTP_404)
+├─BROKEN─ https://stage.api.emerging.eco/ (HTTP_404)
+└─BROKEN─ https://dev.api.emerging.eco/ (HTTP_404)
+Finished! 65 links found. 59 excluded. 5 broken.
+
+Getting links from: http://localhost:3000/sdk-reference/multiclient-sdk
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 50 links found. 48 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/sdk-reference/signx-sdk
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── https://github.com/ixofoundation/ixo-signx
+├───OK─── https://github.com/ixofoundation/ixo-signx/blob/main/README.md#%
+EF%B8%8F-api-reference                                                    └───OK─── https://www.npmjs.com/package/@ixo/signx-sdk
+Finished! 59 links found. 54 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/sdk-reference/matrix-client-sdk
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 50 links found. 48 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/sdk-reference/oracle-ai-sdk
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 50 links found. 48 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/sdk-reference/jambo-wallet-sdk
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 49 links found. 47 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/use-cases/intro-usecases
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/use-cases/articles/impact-hub
+Finished! 56 links found. 53 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/spatial-web-sdks
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/dev/sdk-reference/multiclient-sdk.m
+dx                                                                        ├───OK─── https://www.npmjs.com/package/@ixo/matrixclient-sdk
+├───OK─── https://www.npmjs.com/package/@ixo/assistant-sdk
+└───OK─── https://www.npmjs.com/package/@ixo/jambo-wallet-sdk
+Finished! 91 links found. 85 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/authentication
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/dev/sdk-reference/signx-sdk.mdx
+Finished! 90 links found. 87 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/spatial-web-stack/sdks/ixo-multi
+client-sdk                                                                ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 116 links found. 114 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-docs/blocksync-api/blocksync
+-graphql                                                                  ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── https://github.com/ixofoundation/ixo-blocksync-core
+├───OK─── https://github.com/ixofoundation/ixo-blocksync
+├───OK─── https://blocksync-graphql.ixo.earth/graphiql
+├───OK─── https://testnet-blocksync-graphql.ixo.earth/graphiql
+└───OK─── https://devnet-blocksync-graphql.ixo.earth/graphiql
+Finished! 75 links found. 68 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-docs/claims
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+└───OK─── http://localhost:3000/guides/dev/claims-examples
+Finished! 75 links found. 72 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/guides/dev/domain-settings
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/concepts/identity
+├───OK─── http://localhost:3000/guides/dev/verification
+├───OK─── http://localhost:3000/guides/dev/services
+├───OK─── http://localhost:3000/sdk/reference
+└───OK─── https://www.w3.org/TR/did-core/
+Finished! 95 links found. 88 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/articles/ixo-integrations
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-reference/introduction
+Finished! 85 links found. 82 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-docs/blockchain
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 82 links found. 80 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/spatial-web-stack/sdks/ixo-matri
+x-sdk                                                                     ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 111 links found. 109 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-docs/matrix-api/matrix-state
+bot-api                                                                   ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├─BROKEN─ https://github.com/ixofoundation/ixo-matrix-state (HTTP_404)
+└───OK─── https://linktr.ee/ixo_world
+Finished! 72 links found. 68 excluded. 3 broken.
+
+Getting links from: http://localhost:3000/spatial-web-stack/sdks/intro-sdk
+s                                                                         ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/spatial-web-stack/sdks/jambo-wallet-sdk
+├───OK─── http://localhost:3000/spatial-web-stack/sdks/signx-sdk
+Finished! 96 links found. 92 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-docs/ai-companion-api/compan
+ion-api                                                                   ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/guides/dev/ai-companion
+├─BROKEN─ https://github.com/ixofoundation/ixo-matrix (HTTP_404)
+└───OK─── https://matrix.org/docs/spec/
+Finished! 72 links found. 67 excluded. 3 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/household-rep
+orting                                                                    ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 102 links found. 100 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/sample-size
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 83 links found. 81 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/platforms/Emerging/itmo-credenti
+als                                                                       ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 70 links found. 68 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/household-informat
+ion/get-household-statistics                                              ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-reference/household-information/get-st
+ove-stacking-data                                                         Finished! 55 links found. 52 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/spatial-web-stack/sdks/jambo-wal
+let-sdk                                                                   ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── https://github.com/ixofoundation/jambo
+├───OK─── https://github.com/ixofoundation/jambo-wallet-sdk
+├───OK─── https://github.com/ixofoundation/jambo-cookstoves
+├───OK─── https://github.com/ixofoundation/jambo-gov
+├─BROKEN─ https://github.com/ixofoundation/jambo-p2pSend (HTTP_404)
+├─BROKEN─ https://github.com/ixofoundation/jambo-stake (HTTP_404)
+├─BROKEN─ https://github.com/ixofoundation/ixo-dappstore (HTTP_404)
+├─BROKEN─ https://github.com/ixofoundation/jambo-p2pSend (HTTP_404)
+├─BROKEN─ https://github.com/ixofoundation/jambo-stake (HTTP_404)
+├─BROKEN─ https://github.com/ixofoundation/ixo-dappstore (HTTP_404)
+Finished! 100 links found. 88 excluded. 8 broken.
+
+Getting links from: http://localhost:3000/spatial-web-stack/sdks/signx-sdk
+├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 93 links found. 91 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/household-informat
+ion/get-stove-stacking-data                                               ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+└───OK─── http://localhost:3000/api-reference/device-monitoring/get-device
+-status-and-activity                                                      Finished! 52 links found. 49 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/device-monitoring/
+get-device-status-and-activity                                            ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+└───OK─── http://localhost:3000/api-reference/fuel-management/get-fuel-usa
+ge-metrics                                                                Finished! 52 links found. 49 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/fuel-management/ge
+t-fuel-usage-metrics                                                      ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+└───OK─── http://localhost:3000/api-reference/carbon-credits/get-issued-cr
+edits                                                                     Finished! 52 links found. 49 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/carbon-credits/get
+-issued-credits                                                           ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-reference/carbon-credits/get-cancelled
+-credits                                                                  ├───OK─── http://localhost:3000/api-reference/carbon-credits/get-transferr
+ed-credits                                                                ├───OK─── http://localhost:3000/api-reference/carbon-credits/get-retired-c
+redits                                                                    Finished! 57 links found. 52 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/carbon-credits/get
+-cancelled-credits                                                        ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 54 links found. 52 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/carbon-credits/get
+-transferred-credits                                                      ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 56 links found. 54 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/carbon-credits/get
+-retired-credits                                                          ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+└───OK─── http://localhost:3000/api-reference/claims-management/view-fuel-
+purchase-claims                                                           Finished! 55 links found. 52 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/claims-management/
+view-fuel-purchase-claims                                                 ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+├───OK─── http://localhost:3000/api-reference/claims-management/view-fuel-
+delivery-claims                                                           ├───OK─── http://localhost:3000/api-reference/claims-management/view-emiss
+ion-reduction-claims                                                      ├───OK─── http://localhost:3000/api-reference/claims-management/get-househ
+old-onboarding-claims                                                     Finished! 55 links found. 50 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/claims-management/
+view-fuel-delivery-claims                                                 ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 55 links found. 53 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/claims-management/
+view-emission-reduction-claims                                            ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 55 links found. 53 excluded. 2 broken.
+
+Getting links from: http://localhost:3000/api-reference/claims-management/
+get-household-onboarding-claims                                           ├─BROKEN─ https://x.com/ixoworld (HTTP_403)
+├─BROKEN─ https://linkedin.com/company/ixoworld (HTTP_999)
+Finished! 53 links found. 51 excluded. 2 broken.
+
+Finished! 7443 links found. 7060 excluded. 199 broken.
+Elapsed time: 1 minute, 5 seconds

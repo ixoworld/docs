@@ -1,9 +1,116 @@
 ---
-title: "API Reference Overview"
+title: IXO Spatial Web APIs
+icon: code
+description: Comprehensive documentation for the IXO Spatial Web API ecosystem
 ---
 
-Welcome to the IXO API documentation. 
+<Tip>
+The IXO Spatial Web API is comprehensive and spans multiple layers of the software stack, providing various functions to interact with different components of the IXO ecosystem.
+</Tip>
 
-<Card title="Registry API" icon="server" href="/api-reference/registry-api">
- A server providing a REST API for interfacing with the blockchain registry and integrate with other systems, such as National Carbon Registries.
-</Card>
+<AccordionGroup>
+  <Accordion title="Blockchain RPC API" icon="server">
+    Manages on-chain data and transactions via direct RPC communication.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Direct blockchain interaction
+        - Transaction management
+        - On-chain data access
+      </Card>
+      <Card title="Documentation" href="/api-reference/rpc-api" icon="book">
+        Learn how to use the RPC API
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Blockchain REST API" icon="cloud">
+    Provides a gRPC REST interface for direct blockchain queries.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - RESTful interface
+        - Protocol buffer support
+        - Efficient data transfer
+      </Card>
+      <Card title="Documentation" href="/api-reference/grpc-gateway-api" icon="book">
+        Learn how to use the REST API
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Blocksync GraphQL API" icon="compass">
+    Provides a GraphQL interface for efficient and flexible querying of indexed blockchain data.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Flexible query language
+        - Nested queries
+        - Filtering and pagination
+      </Card>
+      <Card title="Documentation" href="/api-reference/blocksync-graphql-api" icon="book">
+        Learn how to use the GraphQL API
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Matrix State Bot API" icon="snowflake">
+    An interface to the private and secure data vaults stored in Matrix.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Secure data storage
+        - Access control
+        - State management
+      </Card>
+      <Card title="Documentation" href="/api-reference/matrix-state-bot-api" icon="book">
+        Learn how to use the Matrix State Bot API
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Registry API" icon="database">
+    Manages the registration and verification of entities, claims, and assets in the IXO ecosystem.
+    
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - Entity registration
+        - Claim verification
+        - Asset management
+      </Card>
+      <Card title="Documentation" href="/api-reference/registry-api" icon="book">
+        Learn how to use the Registry API
+      </Card>
+    </CardGroup>
+  </Accordion>
+</AccordionGroup>
+
+## API Design Principles
+
+The IXO Spatial Web API is organized around REST principles:
+- Predictable resource-oriented URLs
+- Form-encoded request bodies
+- JSON-encoded responses
+- Standard HTTP response codes
+- Consistent authentication mechanisms
+- Standard HTTP verbs
+
+<Tip type="info">
+### Test Mode
+You can use the IXO Spatial Web API in test mode by directing server endpoints to our testnet blockchain.  
+Transactions on the testnet do not involve real tokens or data, and they are not guaranteed to be available in the future.  
+It is advisable to use anonymous or mock data during testing to ensure data privacy and integrity.
+</Tip>
+
+<CardGroup>
+  <Card title="Authentication" href="/api-reference/authentication" icon="shield">
+    Learn about API authentication methods
+  </Card>
+  <Card title="Error Handling" href="/api-reference/errors" icon="bell">
+    Understand API error responses
+  </Card>
+  <Card title="Pagination" href="/api-reference/pagination" icon="rectangle-list">
+    Learn about data pagination
+  </Card>
+</CardGroup>
+
