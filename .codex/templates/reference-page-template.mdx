@@ -1,0 +1,55 @@
+---
+title: "<Canonical reference title>"
+description: "<One-sentence description of the exact interface or behavior documented here>"
+---
+
+## Overview
+
+State the exact scope of the reference.
+Say what is included and what is not included.
+
+## Authentication
+
+Describe the auth method used by this interface.
+If there are multiple modes, list them explicitly.
+
+## Base URL or endpoint
+
+```text
+https://<endpoint>
+```
+
+## Request shape
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `field` | `string` | yes | Meaning |
+
+## Response shape
+
+| Field | Type | Description |
+|---|---|---|
+| `field` | `string` | Meaning |
+
+## Errors
+
+| Status / code | Meaning | What to do |
+|---|---|---|
+| `401` | Unauthorized | Verify credentials |
+
+## Example
+
+```bash
+curl -X GET "https://<endpoint>"
+```
+
+```json
+{
+  "example": true
+}
+```
+
+## Related guides
+
+- Link to the relevant task guide
+- Link to the canonical overview page
