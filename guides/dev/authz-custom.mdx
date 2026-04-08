@@ -1,0 +1,75 @@
+---
+title: 'Authorization (Authz)'
+description: 'Understanding the core concepts and implementation of authorization in the IXO ecosystem'
+---
+
+import { Steps, Card, Tabs } from '@mintlify/components';
+
+# Authorization (Authz)
+
+The authorization (authz) system is a fundamental concept in the IXO ecosystem, built on top of the Cosmos SDK's authz module. This guide explains the core concepts and implementation details that developers need to understand when working with authorization.
+
+## Core Concepts
+
+### Basic Structure
+
+Authorization in IXO follows the Cosmos SDK's authz module implementation (ADR 30), which enables one account (granter) to grant specific privileges to another account (grantee). Each authorization is stored on-chain with three key components:
+
+```json
+{
+  "granter": "address",
+  "grantee": "address",
+  "msg_type_url": "message_type"
+}
+```
+
+This structure means there can only be one authorization for a specific message type between any two accounts. If a new authorization is granted for the same message type between the same accounts, it will override the previous one.
+
+### Authorization Interface
+
+Authorizations are implemented using the Authorization interface, which allows for customization of grant parameters and limits. The most basic implementation is `GenericAuthorization`, which provides unlimited rights to execute a specific message type.
+
+## Built-in Authorization Types
+
+The Cosmos SDK provides three built-in authorization implementations:
+
+<Card title="GenericAuthorization">
+  Provides unlimited rights to execute a specific message type without any restrictions.
+</Card>
+
+<Card title="SendAuthorization">
+  Allows sending tokens with specific limits (amount restrictions) for the `/cosmos.bank.v1beta1.MsgSend` message type.
+</Card>
+
+<Card title="StakeAuthorization">
+  Provides authorization for staking-related operations with specific parameters.
+</Card>
+
+## IXO Custom Authorizations
+
+IXO implements several custom authorization types for specific message types:
+
+| Authorization Type | Message Type | Description |
+|-------------------|--------------|-------------|
+| `SubmitClaimAuthorization` | `/ixo.claims.v1beta1.MsgSubmitClaim` | Authorization for submitting claims |
+| `EvaluateClaimAuthorization` | `/ixo.claims.v1beta1.MsgEvaluateClaim` | Authorization for evaluating claims |
+| `WithdrawPaymentAuthorization` | `/ixo.claims.v1beta1.MsgWithdrawPayment` | Authorization for withdrawing payments |
+| `CreateClaimAuthorization` | `/ixo.claims.v1beta1.MsgCreateClaimAuthorization` | Authorization for creating claims |
+
+### Constraints and Lists
+
+Custom authorizations in IXO use lists for constraints because there can only be one grant between accounts for a specific message type. For example, if an admin (granter) wants to grant a user (grantee) the right to submit claims for multiple collections, they must include all constraints in a single authorization.
+
+## Important Considerations
+
+1. **Authorization Override**: When granting a new authorization for the same message type between the same accounts, it will override any existing authorization, including its constraints.
+
+2. **Query Requirements**: When querying authorizations, you need the actual message type (e.g., `/ixo.claims.v1beta1.MsgSubmitClaim`), not the authorization type.
+
+3. **Revocation**: To revoke an authorization, you need to specify the correct message type URL, not the authorization type.
+
+## Related Resources
+
+- [Cosmos SDK Authz Module Documentation](https://docs.cosmos.network/main/build/modules/authz)
+- [IXO Claims Module Documentation](/guides/dev/claims)
+- [IXO Payment Module Documentation](/guides/dev/payments)

@@ -1,0 +1,156 @@
+---
+title: 'Image Handling'
+description: 'Learn how to use Cloudflare Image transformations for optimizing and serving images in the IXO client applications'
+---
+
+<Tip>
+Cloudflare Image transformations enable on-the-fly image optimization, resizing, and format conversion for ixo.world domain. This service improves performance across all IXO client applications.
+</Tip>
+
+## Configuration
+
+- **Domain**: ixo.world
+- **Status**: Enabled
+- **Allowed Origins**: ipfs.gateway.ixo.world
+
+## Usage
+
+Transform images using the following URL format:
+
+```bash
+https://ixo.world/cdn-cgi/image/[OPTIONS]/[SOURCE-IMAGE-CID]
+```
+
+### Example
+
+```bash
+https://ixo.world/cdn-cgi/image/width=300,quality=80/[SOURCE-IMAGE-CID]
+```
+
+## Responsive Images
+
+### Using width=auto
+
+Automatically selects the best image size based on device:
+
+```bash
+https://ixo.world/cdn-cgi/image/width=auto/[SOURCE-IMAGE-CID]
+```
+
+Available sizes:
+- 320px (mobile)
+- 640px (tablet)
+- 960px (laptop)
+- 1920px (desktop)
+
+### Using srcset (Recommended)
+
+```html
+<img
+  srcset="
+    https://ixo.world/cdn-cgi/image/width=640/[SOURCE-IMAGE-CID]   640w,
+    https://ixo.world/cdn-cgi/image/width=960/[SOURCE-IMAGE-CID]   960w,
+    https://ixo.world/cdn-cgi/image/width=1920/[SOURCE-IMAGE-CID] 1920w
+  "
+  sizes="(max-width: 767px) 640px,
+         (max-width: 1023px) 960px,
+         1920px"
+  src="https://ixo.world/cdn-cgi/image/width=960/[SOURCE-IMAGE-CID]"
+  alt="Responsive image"
+/>
+```
+
+## Parameters
+
+### Resizing
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `width` | Image width in pixels | `width=300` |
+| `height` | Image height in pixels | `height=200` |
+| `fit` | Resizing method | `fit=cover` |
+| `gravity` | Focus point when cropping | `gravity=auto` |
+
+### Fit Options
+
+- `scale-down`: Resize to fit within dimensions, never enlarge
+- `contain`: Resize to fit within dimensions, preserving aspect ratio
+- `cover`: Resize and crop to fill dimensions
+- `crop`: Crop without scaling
+- `pad`: Resize and add padding to match dimensions
+
+### Quality and Format
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `quality` | JPEG/WebP quality (1-100) | `quality=80` |
+| `format` | Output image format | `format=auto` |
+| `sharpen` | Sharpen level (0.0-10.0) | `sharpen=1.0` |
+
+### Format Options
+
+- `auto`: Best format based on browser
+- `webp`: WebP format
+- `avif`: AVIF format
+- `json`: Return image metadata
+
+## Limitations
+
+- Maximum image area: 100 megapixels
+- Maximum GIF/WebP animation: 50 megapixels
+- Maximum file size: 70 MB
+- AVIF format: Limited to 1,600 pixels max
+- HEIC/HEIF formats: Not supported
+
+## Security
+
+- Only images from allowed origins can be transformed
+- SVG files are automatically sanitized
+- Source image URLs must be from allowed origins
+
+## Examples
+
+### Thumbnail
+
+```bash
+https://ixo.world/cdn-cgi/image/width=150,height=150,fit=cover,gravity=auto/[SOURCE-IMAGE-CID]
+```
+
+### Responsive Profile Image
+
+```bash
+https://ixo.world/cdn-cgi/image/width=auto,fit=cover,gravity=auto/[SOURCE-IMAGE-CID]
+```
+
+### Optimized Banner
+
+```bash
+https://ixo.world/cdn-cgi/image/width=1200,height=400,fit=cover,quality=80,format=auto/[SOURCE-IMAGE-CID]
+```
+
+### High-DPI Image
+
+```bash
+https://ixo.world/cdn-cgi/image/width=600,dpr=2,quality=75/[SOURCE-IMAGE-CID]
+```
+
+## Troubleshooting
+
+1. Verify source URL is in allowed origins
+2. Check image exists at source URL
+3. Ensure transformation parameters are correctly formatted
+4. Verify image size is within limits
+
+## Developer Resources
+
+<CardGroup>
+  
+  <Card title="Security Guide" icon="shield-check" href="/guides/dev/domain-privacy">
+    Security best practices
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/guides/hands-on">
+    Implementation examples
+  </Card>
+  
+</CardGroup>
