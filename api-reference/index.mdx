@@ -1,116 +1,54 @@
 ---
-title: IXO Spatial Web APIs
+title: API reference
 icon: code
-description: Comprehensive documentation for IXO API ecosystem
+description: Interface reference for IXO Protocol gateways and IXO application services.
 ---
 
-<Tip>
-IXO API is comprehensive and spans multiple layers of the software stack, providing various functions to interact with different components of the IXO ecosystem.
-</Tip>
+This section documents API interfaces only. It does not define protocol concepts, product positioning, or canonical endpoint literals.
 
-<AccordionGroup>
-  <Accordion title="Blockchain RPC API" icon="server">
-    Manages on-chain data and transactions via direct RPC communication.
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - Direct blockchain interaction
-        - Transaction management
-        - On-chain data access
-      </Card>
-      <Card title="Documentation" href="/api-reference/rpc-api" icon="book">
-        Learn how to use the RPC API
-      </Card>
-    </CardGroup>
-  </Accordion>
+## API surfaces
 
-  <Accordion title="Blockchain REST API" icon="cloud">
-    Provides a gRPC REST interface for direct blockchain queries.
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - RESTful interface
-        - Protocol buffer support
-        - Efficient data transfer
-      </Card>
-      <Card title="Documentation" href="/api-reference/grpc-gateway-api" icon="book">
-        Learn how to use the REST API
-      </Card>
-    </CardGroup>
-  </Accordion>
+<CardGroup cols={2}>
+  <Card title="Blockchain RPC API" href="/api-reference/rpc-api" icon="server">
+    Direct node-level interface for IXO Protocol transaction and state access.
+  </Card>
+  <Card title="Blockchain REST API" href="/api-reference/grpc-gateway-api" icon="cloud">
+    HTTP/JSON gateway over gRPC query services for IXO Protocol modules.
+  </Card>
+  <Card title="IXO Blocksync GraphQL API" href="/api-reference/blocksync-graphql-api" icon="compass">
+    Indexed query interface for chain data through IXO Blocksync.
+  </Card>
+  <Card title="Matrix state bot API" href="/api-reference/matrix-state-bot-api" icon="snowflake">
+    Service API for state and ACL operations in IXO Matrix rooms.
+  </Card>
+  <Card title="Registry API" href="/api-reference/registry-api" icon="database">
+    Application API for Impact Hub Registry service workflows.
+  </Card>
+</CardGroup>
 
-  <Accordion title="Blocksync GraphQL API" icon="compass">
-    Provides a GraphQL interface for efficient and flexible querying of indexed blockchain data.
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - Flexible query language
-        - Nested queries
-        - Filtering and pagination
-      </Card>
-      <Card title="Documentation" href="/api-reference/blocksync-graphql-api" icon="book">
-        Learn how to use the GraphQL API
-      </Card>
-    </CardGroup>
-  </Accordion>
+## Boundary between protocol and services
 
-  <Accordion title="Matrix State Bot API" icon="snowflake">
-    An interface to the private and secure data vaults stored in Matrix.
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - Secure data storage
-        - Access control
-        - State management
-      </Card>
-      <Card title="Documentation" href="/api-reference/matrix-state-bot-api" icon="book">
-        Learn how to use the Matrix State Bot API
-      </Card>
-    </CardGroup>
-  </Accordion>
+- IXO Protocol APIs: `rpc-api` and `grpc-gateway-api`.
+- Service APIs: `blocksync-graphql-api`, `matrix-state-bot-api`, and `registry-api`.
+- Protocol concepts and module behavior belong in protocol documentation, not API operation pages.
 
-  <Accordion title="Registry API" icon="database">
-    Manages the registration and verification of entities, claims, and assets in the IXO ecosystem.
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - Entity registration
-        - Claim verification
-        - Asset management
-      </Card>
-      <Card title="Documentation" href="/api-reference/registry-api" icon="book">
-        Learn how to use the Registry API
-      </Card>
-    </CardGroup>
-  </Accordion>
-</AccordionGroup>
+## Shared references
 
-## API Design Principles
+- Networks and endpoints: `/reference/networks-and-endpoints`
+- Authentication matrix: `/reference/authentication-matrix`
+- Product and SDK map: `/reference/product-and-sdk-map`
 
-The IXO API is organized around REST principles:
-- Predictable resource-oriented URLs
-- Form-encoded request bodies
-- JSON-encoded responses
-- Standard HTTP response codes
-- Consistent authentication mechanisms
-- Standard HTTP verbs
-
-<Tip type="info">
-### Test Mode
-You can use The IXO API in test mode by directing server endpoints to our testnet blockchain.  
-Transactions on the testnet do not involve real tokens or data, and they are not guaranteed to be available in the future.  
-It is advisable to use anonymous or mock data during testing to ensure data privacy and integrity.
-</Tip>
+## Related API guidance
 
 <CardGroup>
   <Card title="Authentication" href="/api-reference/authentication" icon="shield">
-    Learn about API authentication methods
+    Compare authentication schemes by API surface.
   </Card>
-  <Card title="Error Handling" href="/api-reference/errors" icon="bell">
-    Understand API error responses
+  <Card title="Error handling" href="/api-reference/errors" icon="bell">
+    Handle common API and transport failures.
   </Card>
   <Card title="Pagination" href="/api-reference/pagination" icon="rectangle-list">
-    Learn about data pagination
+    Use cursor and page patterns for large result sets.
   </Card>
 </CardGroup>
 

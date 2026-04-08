@@ -1,416 +1,76 @@
 ---
-title: 'IXO Matrix'
-icon: 'database'
-description: 'Secure data storage and messaging for the Spatial Web'
+title: "IXO Matrix"
+icon: "database"
+description: "Conceptual overview of IXO Matrix as the secure data and communication layer in IXO."
 ---
 
 <Tip>
-The IXO Matrix provides encrypted data storage and secure messaging capabilities for the Spatial Web through Matrix protocol integration. It enables private data rooms, real-time communication, and secure file storage with end-to-end encryption.
+IXO Matrix provides encrypted data rooms and communication channels for IXO applications. This page explains the architecture model; setup details belong to SDK and API reference pages.
 </Tip>
 
-## Spatial Web Architecture
+## Architecture role
 
-IXO Matrix functions as the data persistence and communication layer within the broader Spatial Web Stack architecture, providing sovereign data storage for digital twins and secure communication channels between entity domains and users.
+IXO Matrix is the data and communication layer in the IXO architecture. It supports domain collaboration, evidence exchange, and stateful workflows with encryption and explicit access controls.
 
 <AccordionGroup>
-  <Accordion title="Position in the Stack" icon="layer-group">
-    IXO Matrix serves as the secure data layer that:
-    - Stores digital twin data in encrypted rooms
-    - Enables secure communication between entity domains and users
-    - Provides file storage with access control
-    - Manages state through specialized bots
+  <Accordion title="Position in the stack" icon="layer-group">
+    IXO Matrix supports encrypted rooms, event-based communication, and verifiable room history across users and services.
   </Accordion>
-
-  <Accordion title="Federated Server Architecture" icon="network-wired">
-    IXO Matrix leverages the Matrix protocol's federation capabilities to create a network of interconnected servers:
-    - **Homeservers**: Individual Matrix servers that store user data and room state
-    - **Federation Protocol**: Allows communication between different homeservers
-    - **Identity Servers**: Optional servers that help users discover each other
-    - **Enhanced Security**: DID-based identity integration and trusted server networks
+  <Accordion title="Federated topology" icon="network-wired">
+    IXO Matrix uses federated Matrix-compatible server topology, so participants can exchange events across trusted homeservers while retaining room-level controls.
   </Accordion>
-  
-  <Accordion title="Integration Components" icon="puzzle-piece">
-    - **IXO MultiClient SDK**: Unified interface for the entire Spatial Web Stack
-    - **IXO Matrix SDK**: Direct access to Matrix functionality
-    - **IXO Matrix Room Bot**: Automates room management tasks
-    - **IXO Matrix State Bot**: Manages room state and access control
-    - **Matrix MCP Server**: AI Agent interface using Model Context Protocol (upcoming)
+  <Accordion title="Integration surfaces" icon="puzzle-piece">
+    - **IXO MultiClient SDK** (`@ixo/impactxclient-sdk`) for cross-service integration
+    - **IXO Matrix Client SDK** (`@ixo/matrixclient-sdk`) for Matrix-specific operations
+    - room and state bot services for automation and policy-driven updates
+    - Model Context Protocol (MCP) integrations where available
   </Accordion>
 </AccordionGroup>
 
-## Core Components
+## Concept model
 
 <CardGroup>
-  <Card title="Data Rooms" icon="vault">
-    Encrypted spaces for storing sensitive data with controlled access
+  <Card title="Data rooms" icon="vault">
+    Encrypted collaboration spaces with explicit membership and permissions.
   </Card>
-  
   <Card title="Messaging" icon="comments">
-    Secure real-time communication channels between entities
+    Event-driven communication between users, apps, and service actors.
   </Card>
-  
-  <Card title="File Storage" icon="file-shield">
-    End-to-end encrypted file storage with access control
+  <Card title="File exchange" icon="file-shield">
+    Protected file sharing connected to room state and audit history.
   </Card>
-  
-  <Card title="State Management" icon="database">
-    Room state and configuration management through IXO Matrix State Bot
+  <Card title="State coordination" icon="database">
+    Stateful workflows through room events and automation bots.
   </Card>
 </CardGroup>
 
-## Data Room Architecture
-
-<AccordionGroup>
-  <Accordion title="Room Types" icon="door-open">
-    - **Entity Rooms**: Digital twin data storage
-    - **Project Rooms**: Collaboration spaces
-    - **Device Rooms**: IoT device telemetry
-    - **Verification Rooms**: Oracle processing
-  </Accordion>
-
-  <Accordion title="Security Features" icon="shield-check">
-    - **End-to-End Encryption**: All data encrypted by default
-    - **Access Control**: Role-based permissions
-    - **Key Management**: Secure key distribution
-    - **Audit Trails**: Activity logging
-  </Accordion>
-</AccordionGroup>
-
-## Implementation Guide
-
-### Creating Data Rooms
-
-```typescript
-import { MatrixClient } from '@ixo/matrixclient-sdk'
-
-// Initialize Matrix client
-const matrix = new MatrixClient({
-  baseUrl: 'https://matrix.ixo.world',
-  accessToken: 'YOUR_ACCESS_TOKEN'
-})
-
-// Create encrypted room
-const room = await matrix.createRoom({
-  name: 'Project Data Room',
-  encryption: true,
-  preset: 'private_chat',
-  initialState: [{
-    type: 'm.room.encryption',
-    state_key: '',
-    content: { algorithm: 'm.megolm.v1.aes-sha2' }
-  }]
-})
-
-// Set room permissions
-await matrix.setRoomPermissions(room.id, {
-  readAccess: ['@alice:ixo.world'],
-  writeAccess: ['@bob:ixo.world']
-})
-```
-
-### Storing Data
-
-```typescript
-// Store encrypted data
-await matrix.sendEvent(room.id, 'data.store', {
-  type: 'ProjectMetrics',
-  data: encryptedData,
-  metadata: {
-    timestamp: Date.now(),
-    version: '1.0'
-  }
-})
-
-// Store file
-const fileEvent = await matrix.sendFile(room.id, {
-  file: fileData,
-  filename: 'metrics.json',
-  mimetype: 'application/json'
-})
-```
-
-### Real-Time Messaging
-
-```typescript
-// Send secure message
-await matrix.sendMessage(room.id, {
-  msgtype: 'm.text',
-  body: encryptedMessage
-})
-
-// Listen for messages
-matrix.on('room.message', (event) => {
-  if (event.getType() === 'm.room.message') {
-    console.log('New message:', event.getContent().body)
-  }
-})
-```
-
-### State Management
-
-```typescript
-import { createMatrixStateBotClient } from "@ixo/matrixclient-sdk";
-
-// Initialize IXO Matrix State Bot
-const stateBot = await createMatrixStateBotClient({
-  baseUrl: "https://matrix.ixo.world",
-  accessToken: "BOT_TOKEN"
-});
-
-// Get room state
-const state = await stateBot.getRoomState(room.id);
-
-// Update state
-await stateBot.setState(
-  room.id,
-  "custom.state.type",
-  "",
-  { key: "value" }
-);
-```
-
-## Integration Components
-
-### IXO MultiClient SDK
-
-```typescript
-import { IxoClient } from '@ixo/impactxclient-sdk';
-
-// Initialize the client
-const client = new IxoClient({
-  matrix: {
-    baseUrl: 'https://matrix.ixo.world',
-    accessToken: 'YOUR_ACCESS_TOKEN'
-  },
-  blockchain: {
-    rpcUrl: 'https://rpc.ixo.earth'
-  },
-  oracles: {
-    baseUrl: 'https://oracles.ixo.earth'
-  }
-});
-
-// Create a data room for a digital twin
-const room = await client.matrix.createRoom({
-  name: 'Digital Twin Data Room',
-  encryption: true,
-  visibility: 'private'
-});
-
-// Store data in the room
-await client.matrix.sendEvent(room.roomId, 'data.store', {
-  type: 'TwinState',
-  data: encryptedData
-});
-```
-
-### IXO Matrix Room Bot
-
-```typescript
-import { createMatrixRoomBotClient } from '@ixo/matrixclient-sdk';
-
-// Initialize room bot
-const bot = await createMatrixRoomBotClient({
-  baseUrl: 'https://matrix.ixo.world',
-  accessToken: 'BOT_TOKEN'
-});
-
-// Create entity room
-const entityRoom = await bot.createEntityRoom({
-  entityDid: 'did:ixo:entity/123',
-  name: 'Entity Data Room',
-  members: ['@alice:ixo.world', '@bob:ixo.world']
-});
-
-// Handle invites
-await bot.handleInvites();
-```
-
-## Automated Room Creation
-
-IXO Matrix provides automated room creation for domain entities registered on the IXO blockchain. This process is managed by the Matrix Server Bot, which monitors the blockchain for new entity registrations and creates corresponding Matrix rooms.
-
-## Matrix MCP Server and AuthIXO
-
-<AccordionGroup>
-  <Accordion title="Matrix MCP Server" icon="server">
-    The upcoming Matrix MCP (Model Context Protocol) Server is a custom Anthropic-based server that enables AI Agents to interface with Matrix Servers:
-    - **AI Agent Integration**: Allows AI agents to participate in Matrix rooms and process data
-    - **Context-Aware Processing**: Maintains conversation context for intelligent interactions
-    - **Secure Agent Communication**: Enables secure communication between AI agents and users
-    - **Multi-Modal Support**: Processes various data types including text, images, and structured data
-  </Accordion>
-
-  <Accordion title="AuthIXO Authorization Framework" icon="key">
-    AuthIXO is IXO's implementation of decentralized delegated authorization using Cabaility-based Access Control (CBAC):
-    - **Capability Tokens**: Cryptographically signed tokens that grant specific permissions
-    - **Delegation Chains**: Allow for secure delegation of capabilities across entities
-    - **Revocation Mechanisms**: Enable immediate revocation of granted capabilities
-    - **Blockchain Integration**: References Parent Capability on the IXO blockchain (under the `accordedRight` property of an entity's DID document) and uses the `Capability Delegation` and `Capability Invocation` keys that are listed as **Verification Methods** and **Verification Relationships** in an entity's DID document.
-  </Accordion>
-
-  <Accordion title="Implementation Example" icon="code">
-    ```typescript
-    // Create a capability token (AuthCAP)
-    const capabilityToken = await AuthIXO.createCapability({
-      issuer: 'did:ixo:entity/issuer',
-      subject: 'did:ixo:entity/subject',
-      action: 'matrix:sendMessage',
-      resource: 'matrix:room:!roomId:ixo.world',
-      constraints: {
-        expiry: Date.now() + 86400000, // 24 hours
-        maxUses: 10
-      }
-    });
-
-    // Use the capability token to authorize an action
-    const result = await matrix.sendMessageWithCapability(
-      roomId,
-      { msgtype: 'm.text', body: 'Hello, world!' },
-      capabilityToken
-    );
-    ```
-  </Accordion>
-  
-  <Accordion title="AI Agent Integration" icon="robot">
-    ```typescript
-    import { MatrixClient, MCPAgentClient } from '@ixo/matrixclient-sdk';
-    
-    // Initialize Matrix client
-    const matrix = new MatrixClient({
-      baseUrl: 'https://matrix.ixo.world',
-      accessToken: 'YOUR_ACCESS_TOKEN'
-    });
-    
-    // Initialize MCP Agent client
-    const agent = new MCPAgentClient({
-      baseUrl: 'https://mcp.ixo.world',
-      agentId: 'verification-agent',
-      capabilities: ['data-analysis', 'verification']
-    });
-    
-    // Connect agent to a Matrix room
-    await agent.joinRoom(roomId);
-    
-    // Configure agent to process specific event types
-    await agent.subscribeToEvents(roomId, ['m.room.message', 'data.verification.request']);
-    
-    // Agent automatically processes events and responds in the room
-    ```
-  </Accordion>
-</AccordionGroup>
-
-## Use Cases
+## Typical use cases
 
 <CardGroup>
-  <Card title="Digital Twin Data" icon="database">
-    Store and manage digital twin state and history with secure access controls
+  <Card title="Digital twin operations" icon="cube">
+    Coordinate entity and project state with secure shared context.
   </Card>
-  
-  <Card title="IoT Telemetry" icon="microchip">
-    Collect and process device data streams with real-time updates
+  <Card title="Verification workflows" icon="check-double">
+    Keep evidence and review conversations linked to verifiable events.
   </Card>
-  
-  <Card title="Verification Data" icon="check-double">
-    Store verification results and evidence for audit and compliance
+  <Card title="IoT data collaboration" icon="microchip">
+    Exchange and process telemetry in governed data rooms.
   </Card>
-  
-  <Card title="Collaboration" icon="users">
-    Enable secure team communication with end-to-end encryption
+  <Card title="Multi-party coordination" icon="users">
+    Run cross-team workflows with encrypted communication channels.
   </Card>
 </CardGroup>
 
-## Security Considerations
-
-<AccordionGroup>
-  <Accordion title="Encryption" icon="lock">
-    - Use end-to-end encryption for all rooms
-    - Implement proper key management
-    - Rotate encryption keys regularly
-    - Secure key backup and recovery
-  </Accordion>
-
-  <Accordion title="Access Control" icon="shield">
-    - Implement role-based access
-    - Regular permission audits
-    - Monitor room membership
-    - Enforce least privilege
-  </Accordion>
-
-  <Accordion title="Data Protection" icon="database">
-    - Encrypt sensitive data
-    - Implement data retention
-    - Regular security audits
-    - Backup critical data
-  </Accordion>
-  
-  <Accordion title="Federation Security" icon="globe">
-    - Limit federation to trusted homeservers
-    - Implement server access control lists
-    - Verify encryption status across federated rooms
-    - Monitor federation traffic for anomalies
-    - Implement proper server authentication
-  </Accordion>
-</AccordionGroup>
-
-## Best Practices
-
-### Room Management
-
-- Create separate rooms for different purposes
-- Use clear naming conventions
-- Document room purposes
-- Regular access reviews
-- Monitor room sizes
-
-### Data Handling
-
-- Validate data before storage
-- Implement error handling
-- Use appropriate event types
-- Monitor storage usage
-- Regular data cleanup
-
-### Performance
-
-- Batch operations when possible
-- Implement caching
-- Handle rate limits
-- Monitor API usage
-- Optimize file sizes
-
-## Related Resources
+## Go here next
 
 <CardGroup>
-  <Card title="IXO Matrix SDK" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
-    Client library for Matrix integration
+  <Card title="IXO Matrix Client SDK" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+    Use package-level documentation for implementation details.
   </Card>
-  
-  <Card title="IXO Matrix State Bot API" icon="robot" href="/api-docs/matrix-api/matrix-statebot-api">
-    Room state management API
+  <Card title="IXO Matrix APIs" icon="server" href="/api-docs/introduction">
+    Use canonical API reference pages for exact interfaces and parameters.
   </Card>
-  
-  <Card title="IXO MultiClient SDK" icon="network-wired" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
-    Unified SDK with Matrix integration
-  </Card>
-</CardGroup>
-
-## Next Steps
-
-<CardGroup>
-  <Card title="SDK Guide" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
-    Learn more about the Matrix SDK
-  </Card>
-
-  <Card title="IXO Matrix State Bot" icon="robot" href="/api-docs/matrix-api/matrix-statebot-api">
-    Explore state management
-  </Card>
-
-  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
-    View example implementations
-  </Card>
-
-  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
-    Get developer assistance
+  <Card title="Developer guides" icon="hand-pointer" href="/guides/dev/overview">
+    Follow task-oriented workflows after this architecture overview.
   </Card>
 </CardGroup>

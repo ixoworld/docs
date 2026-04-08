@@ -1,401 +1,56 @@
 ---
-title: 'Core Concepts'
-icon: 'lightbulb-exclamation-on'
-description: 'Learn the fundamental concepts of the IXO Stack'
+title: "Core concepts"
+icon: "lightbulb-exclamation-on"
+description: "Understand the IXO architecture model and where to go for implementation details."
 ---
 
 <Tip>
-  IXO is a decentralized platform that enables you to create and manage cognitive digital twins of real-world systems, powered by blockchain networks, secure data storage, and Agentic Oracles.
+IXO combines verifiable identity, programmable coordination, secure data exchange, and AI-assisted services so you can run digital workflows against real-world outcomes.
 </Tip>
 
-<Note>
-**Key Terminology**
-- A **Digital Entity** is the foundational representation of any real-world actor or system in IXO.
-- A **Domain** is the on-chain identity record (DID Document) that anchors a Digital Entity, containing its verification methods, services, and properties.
-- A **Digital Twin** is the complete functional system combining a Digital Entity, its Domain record, associated data, and operational logic.
-</Note>
+## Core vocabulary
 
-## Digital Identity
+- **Digital entity**: a real-world actor or system represented in IXO.
+- **Domain**: the identity anchor for an entity, based on a Decentralized Identifier (DID).
+- **Digital twin**: a working system that combines identity, data, state, and executable logic.
+- **Claim**: a verifiable statement that can be reviewed, attested, and linked to evidence.
+
+## System layers
 
 <AccordionGroup>
-  <Accordion title="Decentralized Identifiers (DIDs)" icon="fingerprint">
-    - W3C DID (Decentralized Identifier) for unique identification
-    - Self-sovereign identity management
-    - Cryptographic verification
-    - Resolution across networks
-    - On-chain Domain Record (DID Document)
+  <Accordion title="Identity and trust" icon="fingerprint">
+    Domains use Decentralized Identifier (DID) records, verification methods, and delegated rights to establish who can act and what they can do.
   </Accordion>
-  
-  <Accordion title="Digital Authentication" icon="key">
-    - Authenticate agents with secure digital IDs
-    - Verifiable credentials for authorization
-    - Cryptographic proof of identity
-    - Role-based access control
-    - Cross-chain identity resolution
+  <Accordion title="Coordination and execution" icon="gears">
+    IXO Protocol modules and workflows coordinate requests, offers, claims, and value transfer across participants.
+  </Accordion>
+  <Accordion title="Data and communication" icon="database">
+    IXO Matrix provides encrypted rooms, messaging, and shared state channels for applications and operators.
+  </Accordion>
+  <Accordion title="Intelligence and automation" icon="sparkles">
+    Agentic Oracles add automated evaluation and decision support to domain and claim workflows.
   </Accordion>
 </AccordionGroup>
 
-## Cognitive Digital Twins
+## How concepts map to docs
 
-<AccordionGroup>
-  <Accordion title="Entity Domains" icon="brain">
-    A Domain serves as the on-chain identity record for a Digital Entity, containing:
-    - Entity Type and Class Inheritance
-    - Entity Metadata
-    - Domain Controllers
-    - Verification Methods and Relationships
-    - Service Endpoints
-    - Accorded Rights
-    - Linked Resources and Claims
-    - Linked Entities Graph
-    - Domain Accounts
-    - State management and synchronization
-    - Data fusion and Event tracking
-  </Accordion>
-
-  <Accordion title="Digital Entity Types" icon="sitemap">
-    Digital Entities can be instantiated as different types of Digital Twins:
-    - Decentralized Autonomous Organisation (DAO)
-    - Project Domain
-    - Investment Domain
-    - Oracle Domain
-    - Asset Domain
-    - Protocol Domain
-    - Deed Domain
-    - Programmable Organisational Domain (POD)
-    - Location Domain
-  </Accordion>
-
-  <Accordion title="Entity Requirements" icon="list-check">
-    - Non-fungible token implementation using IXO Tokens Module
-    - Interchain Identifier (IID) for unique identification - an IXO-specific implementation of the W3C DID standard optimized for cross-chain identity and interoperability in the Interchain ecosystem
-    - On-chain IID Document in Registry Module - stores DID Document data following W3C standards with IXO-specific extensions
-    - Off-chain IID Document storage
-    - Transferable ownership and control
-    - Financial composability
-  </Accordion>
-
-  <Accordion title="Organisational Model" icon="building">
-    - DAO governance structure
-    - Group-based ownership and control
-    - Asset and project management capabilities
-    - Agent authorization system
-    - Multi-role agent system:
-      - Governance Agents
-      - Investment Agents
-      - Service Agents
-      - Oracle Agents
-    - Value distribution mechanisms
-  </Accordion>
-  
-  <Accordion title="Real-World Systems Digitization" icon="cube-transparent">
-    - Digital representation of physical systems
-    - Real-time state synchronization
-    - Impact measurement and verification
-    - Integration with IoT devices and sensors
-    - Assisted operation through Impact Oracles
-    - System monitoring and optimization
-  </Accordion>
-</AccordionGroup>
-
-## Impact Hub Ecosystem
-
-<Tip>
-The Impact Hub Network is the public deployment of IXO Blockchain technology. While IXO Blockchain refers to the underlying technology and protocol stack, the Impact Hub Network is its primary public network implementation, serving as the main chain for impact verification, tokenization, and cross-chain coordination.
-</Tip>
-
-The Impact Hub Ecosystem consists of several integrated layers that work together to enable impact verification and management at scale:
-
-<AccordionGroup>
-  <Accordion title="Blockchain Foundation" icon="cube">
-    The Impact Hub Network is built on:
-    - IXO Blockchain technology ([see IXO Blockchain article](/articles/ixo-blockchain) for details)
-    - Cosmos SDK with Inter-Blockchain Communication (IBC)
-    - Specialized modules for impact verification and tokenization
-  </Accordion>
-
-  <Accordion title="Data & Intelligence" icon="database">
-    Secure data management and processing through:
-    - Matrix Protocol-based decentralized data storage ([see Data Matrix Layer](/guides/matrix/overview))
-    - Agentic Oracles for automated verification ([see Oracle Services](#oracle-services))
-    - Knowledge graphs and semantic processing ([see Intelligence Systems](#intelligence-systems))
-  </Accordion>
-
-  <Accordion title="Development Stack" icon="code">
-    Tools and interfaces for building on Impact Hub:
-    - SDKs and APIs ([see Development Tools](#development-tools))
-    - JAMBO developer platform for decentralized applications
-    - IXO Studio for visual development
-    - IXO Graph for entity relationship exploration
-  </Accordion>
-
-  <Accordion title="User Applications" icon="browser">
-    End-user interfaces including:
-    - Web and mobile applications
-    - Digital Twin dashboards
-    - Governance and administrative interfaces
-    - AI Agent interfaces (MCPs)
-    For implementation details, see our [Developer Guide](/guides/dev/overview).
-  </Accordion>
-</AccordionGroup>
-
-Each component of the Impact Hub Ecosystem is designed to work seamlessly together while remaining modular. This allows developers to leverage specific components as needed for their use cases. For detailed documentation on each component, follow the links to their dedicated sections.
-
-## Intelligence Systems
-
-<AccordionGroup>
-  <Accordion title="Causal AI Models" icon="diagram-project">
-    - Transform Theories of Change into executable Causal Models
-    - White box, explainable decision-making
-    - Accountable outcome verification
-    - Data-driven causal inference
-    - Counterfactual analysis
-    - Intervention planning and optimization
-  </Accordion>
-
-  <Accordion title="Semantic Data Graphs" icon="diagram-project">
-    - Ontology-driven data structures
-    - Blockchain-sequenced state management
-    - Stateful graph construction
-    - Knowledge representation
-    - Semantic querying capabilities
-    - Linked data principles
-  </Accordion>
-  
-  <Accordion title="Verifiable Machine Learning" icon="code-branch">
-    - Zero-knowledge proofs for ML verification
-    - Giza Protocol integration
-    - Transparent model training and inference
-    - Cryptographic verification of model outputs
-    - Privacy-preserving computation
-    - Trusted execution environments
-  </Accordion>
-</AccordionGroup>
-
-## Protocols
-
-<AccordionGroup>
-  <Accordion title="Protocol Domains" icon="certificate">
-    - Class Inheritance
-    - Ontologies and Types
-    - Data Schemas
-    - Models
-    - Workflows
-  </Accordion>
-  
-  <Accordion title="Programmable Protocols" icon="gears">
-    - Automated structured workflows
-    - Third-party service integrations
-    - Executable code logic
-    - State machine transitions
-    - Event-driven processes
-    - Conditional execution paths
-  </Accordion>
-  
-  <Accordion title="Matrix Protocol Messaging" icon="message">
-    - Secure communication for decentralized agents
-    - End-to-end encrypted messaging
-    - Federated architecture
-    - Decentralized rooms and spaces
-    - Verifiable message delivery
-    - Real-time event streaming
-  </Accordion>
-</AccordionGroup>
-
-## Claims Processing
- 
-<AccordionGroup>
-  <Accordion title="Verifiable Claims" icon="clipboard-check">
-    - Multi-party verification
-    - Dispute resolution
-    - Payment automations
-    - Batch operations
-    - Status tracking
-    - Data pipeline fusion
-    - Semantically structured attestations
-    - Machine-readable formats
-    - Graph-based high-definition data
-  </Accordion>
-
-  <Accordion title="Digital Certificates" icon="seal">
-    - Attestations about entities
-    - Cryptographic proofs
-    - Selective disclosure
-    - Revocation management
-    - Evidence attachments
-  </Accordion>
-</AccordionGroup>
-
-## Crypto-Economic Systems
-
-<AccordionGroup>
-  <Accordion title="Digital Assets" icon="coins">
-    - Tokenization standards
-    - Asset lifecycle management
-    - Ownership rights
-    - Transfer mechanisms
-    - Value representation
-    - Entity-based NFTs
-    - Collateralization capabilities
-  </Accordion>
-
-  <Accordion title="Smart Contracts" icon="code">
-    - Crypto-economic systems
-    - Smart Accounts
-    - Decentralized Autonomous Organisations (DAOs)
-    - Decentralized Exchanges (DEXs)
-    - Automated Market Makers (AMMs)
-    - Permissionless networks
-    - Interchain communication
-    - Interchain governance
-    - Registry Module integration
-    - Token Module integration
-  </Accordion>
-
-  <Accordion title="Market Mechanisms" icon="chart-line">
-    - Price discovery
-    - Supply/demand matching
-    - Settlement processes
-    - Risk management
-    - Market governance
-  </Accordion>
-  
-  <Accordion title="Event-Driven Payments" icon="money-bill-transfer">
-    - Automated payments for verified services
-    - Conditional payment triggers
-    - Multi-party payment flows
-    - Escrow mechanisms
-    - Payment streaming
-    - Fee distribution frameworks
-  </Accordion>
-  
-  <Accordion title="Executable Deeds" icon="file-contract">
-    - Structured requests and offers
-    - Governance proposals with execution
-    - Built-in verification mechanisms
-    - Governance controls
-    - State transitions
-    - Conditional execution
-  </Accordion>
-  
-  <Accordion title="Digital Rights Management" icon="copyright">
-    - Object capabilities model
-    - Access control rights
-    - Rights verification
-    - License management
-    - Usage tracking
-    - Rights transfer mechanisms
-  </Accordion>
-</AccordionGroup>
-
-## Spatial Awareness
-
-<AccordionGroup>
-  <Accordion title="Spatial Context" icon="location-dot">
-    - Location Domain Name (LDNS)
-    - Virtual Private Maps
-    - Precise positioning (1cm pixel)
-    - Graphs of Spatial Relationships
-    - Location Data Exchange
-  </Accordion>
-
-  <Accordion title="Proof of Location" icon="check-double">
-    - Location claims validation
-    - Spatial relationship verification
-    - Location-based Encryption
-  </Accordion>
-  
-  <Accordion title="Universal Navigation Layer" icon="map-location-dot">
-    - Next-generation UNL mapping protocol
-    - Micro-location infrastructure
-    - Enhanced physical world navigation
-    - Spatial interaction framework
-    - Location-aware services
-    - Precision mapping capabilities
-  </Accordion>
-</AccordionGroup>
-
-## Oracle services
-
-<AccordionGroup>
-  <Accordion title="Data Oracles" icon="database">
-    - External data integration
-    - Truth consensus
-    - Real-time feeds
-    - Data validation
-  </Accordion>
-
-  <Accordion title="Agentic Oracles" icon="sparkles">
-    - AI-powered verification
-    - Automated decisions
-    - Pattern recognition
-    - Predictive analytics
-  </Accordion>
-  
-  <Accordion title="Impact Oracles" icon="bullseye">
-    - Specialized for impact verification
-    - Outcome measurement automation
-    - Data collection and validation
-    - Impact reporting
-    - Performance metrics
-    - SDG alignment verification
-  </Accordion>
-</AccordionGroup>
-
-## Security & Privacy
-
-<AccordionGroup>
-  <Accordion title="Cryptographic Security" icon="shield-halved">
-    - Key management
-    - Signature schemes
-    - Encryption standards
-    - Zero-knowledge proofs
-  </Accordion>
-
-  <Accordion title="Data Privacy" icon="lock">
-    - Access control
-    - Data sovereignty
-    - Privacy-preserving computation
-    - Consent management
-  </Accordion>
-  
-  <Accordion title="Decentralized Governance" icon="people-group">
-    - Advanced DAO tooling
-    - AI agent integration in decision-making
-    - Human participation in consensus
-    - Governance frameworks
-    - Proposal and voting mechanisms
-    - Multi-signature controls
-  </Accordion>
-</AccordionGroup>
-
-## Development Tools
-
-<AccordionGroup>
-  <Accordion title="Client SDK" icon="toolbox">
-    - Third-party application integration
-    - JavaScript/TypeScript libraries
-    - React components
-    - API wrappers
-    - Utilities and helpers
-    - Documentation and examples
-  </Accordion>
-</AccordionGroup>
-
-## Next Steps
-
-<CardGroup>
-  <Card title="Quick Start" icon="play" href="/guides/dev/examples">
-    Get started with IXO
+<CardGroup cols={2}>
+  <Card title="Architecture articles" icon="book" href="/articles/intro-articles">
+    Use conceptual pages to understand components and relationships.
   </Card>
-  <Card title="Developer Guide" icon="code" href="/guides/dev/overview">
-    Implementation details
+  <Card title="Developer guides" icon="hand-pointer" href="/guides/dev/overview">
+    Use guides for implementation workflows and operational steps.
   </Card>
-  <Card title="API Reference" icon="book" href="/api-docs/introduction">
-    API documentation
+  <Card title="SDK references" icon="code" href="/spatial-web-stack/sdks/intro-sdks">
+    Use SDK pages for package-specific setup and usage.
+  </Card>
+  <Card title="API reference" icon="server" href="/api-docs/introduction">
+    Use API docs for exact request, response, and parameter details.
   </Card>
 </CardGroup>
 
-<Tip>
-  For technical support or questions about core concepts, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).
-</Tip> 
+## Next steps
+
+- Read `/articles/ixo-protocol` for protocol concepts and governance primitives.
+- Read `/articles/ixo-matrix` for the data-layer architecture model.
+- Continue with `/guides/dev/overview` to implement your first workflow.

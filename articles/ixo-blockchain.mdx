@@ -1,241 +1,43 @@
 ---
-title: 'IXO Blockchain'
-icon: 'link'
-description: 'Sovereign blockchain networks for the Spatial Web'
+title: "IXO Protocol"
+icon: "link"
+description: "Conceptual overview of IXO Protocol and the Impact Hub Network deployment."
 ---
 
 <Tip>
-  The IXO Blockchain is built on Interchain standards and the Cosmos SDK to create secure and scalable networks for the Spatial Web. Its primary public network deployment is known as the Impact Hub Network, which serves as the main chain for impact verification, tokenization, and cross-chain coordination.
+IXO Protocol defines the verifiable identity, claims, and coordination primitives used across IXO services. The Impact Hub Network is the public network deployment of this protocol stack.
 </Tip>
 
-## Core Features
-
-<CardGroup>
-  <Card title="Digital Twin Registry" icon="cube">
-    Decentralized registry for digital representations of real-world entities
-  </Card>
-  
-  <Card title="Impact Claims" icon="file-check">
-    Verifiable claims with cryptographic proofs and oracle attestations
-  </Card>
-  
-  <Card title="Tokenization" icon="coins">
-    Impact tokens with programmable properties and compliance features
-  </Card>
-  
-  <Card title="Interchain Connectivity" icon="link">
-    IBC protocol integration for cross-chain communication and asset transfers
-  </Card>
-</CardGroup>
-
-## Blockchain Architecture
+## Conceptual scope
 
 <AccordionGroup>
-  <Accordion title="Consensus" icon="handshake">
-    - Tendermint-based Proof of Stake
-    - Validator network
-    - Block finality
-    - Governance mechanisms
+  <Accordion title="Protocol primitives" icon="puzzle-piece">
+    IXO Protocol provides modules for identity-bound entities, claims workflows, and programmable coordination.
   </Accordion>
-
-  <Accordion title="Modules" icon="puzzle-piece">
-    - **Entity module** for digital twins
-    - **Claims module** for verification
-    - **Tokens module** for asset management
-    - **Oracle module** for external data
+  <Accordion title="Network deployment" icon="server">
+    Impact Hub Network is the primary public deployment used by applications and services in the IXO ecosystem.
   </Accordion>
-
-  <Accordion title="Smart Contracts" icon="file-code">
-    - **CosmWasm** integration
-    - **Custom contract templates**
-    - **Secure execution environment**
-    - **Governance-controlled upgrades**
+  <Accordion title="Cross-service role" icon="layer-group">
+    IXO Matrix, IXO Blocksync, and Agentic Oracles integrate with IXO Protocol to execute end-to-end workflows.
   </Accordion>
 </AccordionGroup>
 
-## Implementation Guide
+## Why it matters
 
-### Connecting to the Network
+- Anchors identities and rights in verifiable records.
+- Supports claims and attestations that drive downstream workflows.
+- Provides the shared state foundation for tokenized and governed coordination.
 
-```typescript
-import { createClient } from '@ixo/impactxclient-sdk'
-
-// Initialize client
-const client = await createClient({
-  rpcUrl: 'https://rpc.ixo.earth',
-  chainId: 'ixo-4'
-})
-
-// Query chain info
-const chainInfo = await client.getChainInfo()
-console.log('Chain ID:', chainInfo.chain_id)
-console.log('Latest Block:', chainInfo.latest_block_height)
-```
-
-### Digital Twin Management
-
-```typescript
-// Create digital twin entity
-const entity = await client.createEntity({
-  type: 'Asset',
-  name: 'Solar Panel Array',
-  description: 'Renewable energy installation',
-  location: {
-    latitude: 51.5074,
-    longitude: -0.1278
-  },
-  metadata: {
-    capacity: '5kW',
-    installation_date: '2023-01-15'
-  }
-})
-
-// Query entity
-const entityData = await client.getEntity(entity.id)
-```
-
-### Claims Processing
-
-```typescript
-// Submit verification claim
-const claim = await client.createClaim({
-  entityId: entity.id,
-  type: 'Production',
-  data: {
-    energy_produced: '120kWh',
-    timestamp: Date.now()
-  },
-  evidence: {
-    type: 'MeterReading',
-    hash: 'Qm...',
-    uri: 'https://...'
-  }
-})
-
-// Evaluate claim
-const evaluation = await client.evaluateClaim(claim.id, {
-  status: 'Approved',
-  verifier: verifierDid,
-  evidence: verificationProof
-})
-```
-
-### Token Operations
-
-```typescript
-// Create impact token
-const token = await client.createToken({
-  name: 'Carbon Credit',
-  symbol: 'CCRDT',
-  decimals: 6,
-  initial_supply: '1000000',
-  metadata: {
-    standard: 'Gold Standard',
-    vintage: '2023',
-    project: entity.id
-  }
-})
-
-// Transfer tokens
-const tx = await client.sendTokens(
-  recipientAddress,
-  [{ denom: token.denom, amount: '100000' }]
-)
-```
-
-## Use Cases
+## Go here next
 
 <CardGroup>
-  <Card title="Renewable Energy" icon="solar-panel">
-    Track energy production and carbon offsets with verifiable data
+  <Card title="Developer guides" icon="hand-pointer" href="/guides/dev/overview">
+    Follow task-oriented implementation guides.
   </Card>
-  
-  <Card title="Supply Chain" icon="truck">
-    Monitor product lifecycle with transparent provenance tracking
+  <Card title="API reference" icon="server" href="/api-docs/introduction">
+    Use canonical API pages for exact interface details.
   </Card>
-  
-  <Card title="Impact Investing" icon="chart-line">
-    Tokenize and trade verified impact outcomes with transparent reporting
-  </Card>
-  
-  <Card title="Carbon Markets" icon="leaf">
-    Issue and trade carbon credits with verifiable reduction claims
-  </Card>
-</CardGroup>
-
-## Network Information
-
-<AccordionGroup>
-  <Accordion title="Mainnet" icon="server">
-    - Chain ID: `ixo-4`
-    - RPC: `https://rpc.ixo.earth`
-    - REST: `https://rest.ixo.earth`
-    - Explorer: `https://explorer.ixo.earth`
-  </Accordion>
-
-  <Accordion title="Testnet" icon="vial">
-    - Chain ID: `ixo-testnet-1`
-    - RPC: `https://testnet-rpc.ixo.earth`
-    - REST: `https://testnet-rest.ixo.earth`
-    - Explorer: `https://testnet-explorer.ixo.earth`
-  </Accordion>
-</AccordionGroup>
-
-## Best Practices
-
-### Security
-
-- Secure key management
-- Transaction signing best practices
-- Regular security audits
-- Proper error handling
-
-### Performance
-
-- Batch transactions when possible
-- Optimize gas usage
-- Implement caching
-- Monitor network status
-
-### Compliance
-
-- Implement KYC/AML where required
-- Follow regulatory guidelines
-- Document token properties
-- Maintain audit trails
-
-## Related Resources
-
-<CardGroup>
-  <Card title="IXO Blockchain API" icon="code" href="/api-docs/blockchain">
-    API documentation for blockchain interaction
-  </Card>
-  
-  <Card title="IXO MultiClient SDK" icon="puzzle-piece" href="/spatial-web-stack/sdks/ixo-multiclient-sdk">
-    Client SDK for blockchain integration
-  </Card>
-  
-  <Card title="IXO Protocol" icon="book" href="/articles/ixo-protocol">
-    Detailed protocol documentation
-  </Card>
-</CardGroup>
-
-## Next Steps
-
-<CardGroup>
-  <Card title="Developer Guide" icon="code" href="/guides/dev/overview">
-    Comprehensive development guide
-  </Card>
-
-  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
-    Implementation examples
-  </Card>
-
-  <Card title="Network Status" icon="signal" href="https://explorer.ixo.earth">
-    Monitor network status
-  </Card>
-
-  <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
-    Get developer assistance
+  <Card title="IXO Blocksync" icon="magnifying-glass" href="/articles/ixo-blocksync">
+    Understand the indexed query layer that sits above protocol state.
   </Card>
 </CardGroup>

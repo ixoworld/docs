@@ -6,12 +6,12 @@ description: 'A comprehensive guide to encryption and data security in IXO Matri
 # Matrix Encryption and Data Security
 
 <Tip>
-IXO Matrix implements robust end-to-end encryption (E2EE) based on the Matrix protocol's security standards. This guide explains how encryption is implemented in the IXO Spatial Web stack, its limitations, and best practices for maintaining data security.
+IXO Matrix implements end-to-end encryption (E2EE) based on Matrix protocol security standards. This guide explains how encryption is implemented in IXO architecture, its limitations, and best practices for data security.
 </Tip>
 
 ## Overview
 
-IXO Matrix provides a secure foundation for the Spatial Web stack through:
+IXO Matrix provides a secure foundation for IXO architecture through:
 
 - **End-to-end encrypted data rooms** for storing sensitive information
 - **Secure messaging channels** for real-time communication
@@ -47,11 +47,11 @@ Understanding what is and isn't encrypted in Matrix rooms is crucial:
 
 This distinction is important because —by default— **state events remain visible to server administrators** even in encrypted rooms. IXO addressed this fundamental limitation of the Matrix protocol by handling encrption using the client application's keys that are under direct non-custodial control of the user. This means that State Events may be selectively encrypted using the client application's keys.
 
-## Implementation in IXO Spatial Web
+## Implementation in IXO architecture
 
 ### Creating Encrypted Rooms
 
-IXO Matrix SDK provides a straightforward way to create encrypted rooms:
+IXO Matrix Client SDK provides a straightforward way to create encrypted rooms:
 
 ```typescript
 import { MatrixClient } from '@ixo/matrixclient-sdk'
@@ -252,6 +252,6 @@ When operating in a federated environment, additional security considerations ap
 
 ## Conclusion
 
-IXO Matrix provides a robust security foundation for the Spatial Web stack through end-to-end encryption, access controls, and secure data management practices. By understanding the capabilities and limitations of the underlying Matrix protocol, developers can build secure applications that protect sensitive data while enabling collaboration and interoperability.
+IXO Matrix provides a robust security foundation for IXO architecture through end-to-end encryption, access controls, and secure data management practices. By understanding the capabilities and limitations of the underlying Matrix protocol, developers can build secure applications that protect sensitive data while enabling collaboration and interoperability.
 
 While no system can provide absolute security guarantees, the combination of Matrix's encryption protocols and IXO's additional encryption and access control layers creates a strong foundation for secure data management in decentralized applications.

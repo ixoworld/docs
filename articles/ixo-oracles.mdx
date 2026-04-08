@@ -147,98 +147,9 @@ IXO Agentic Oracles are autonomous AI agents that provide intelligent services w
   </Accordion>
 </AccordionGroup>
 
-## Implementation Guide
+## Implementation note
 
-### Oracle Configuration
-
-```typescript
-import { createOracle } from "@ixo/oracle-agent-sdk";
-
-// Initialize oracle
-const oracle = await createOracle({
-  type: "VerificationOracle",
-  model: "causal-inference-v1",
-  confidence: 0.95,
-  evidenceTypes: ["telemetry", "image", "location"]
-});
-
-// Configure verification rules
-await oracle.setVerificationRules({
-  requiredEvidence: ["deviceId", "timestamp", "location"],
-  thresholds: {
-    minimumConfidence: 0.9,
-    maximumDeviation: 0.05
-  },
-  constraints: {
-    timeWindow: "24h",
-    locationPrecision: 6
-  }
-});
-```
-
-### Verification Flow
-
-```typescript
-// Create verification session
-const session = await oracle.createVerification({
-  subject: "did:ixo:entity/123",
-  context: {
-    location: {
-      latitude: 51.5074,
-      longitude: -0.1278,
-      precision: 6
-    },
-    timestamp: Date.now()
-  }
-});
-
-// Process data
-const result = await session.verify(data, {
-  evidence: supportingEvidence,
-  rules: customRules
-});
-
-// Generate attestation
-const attestation = await session.generateAttestation({
-  result,
-  method: "Ed25519Signature2020"
-});
-```
-
-### Causal Analysis
-
-```typescript
-// Create causal model
-const model = await oracle.createCausalModel({
-  variables: ["intervention", "outcome", "context"],
-  relationships: [
-    { from: "intervention", to: "outcome" },
-    { from: "context", to: "outcome" }
-  ]
-});
-
-// Train model
-await model.train(historicalData);
-
-// Analyze causality
-const analysis = await model.analyze({
-  intervention: interventionData,
-  outcome: outcomeData,
-  context: contextData
-});
-
-// Generate insights
-const insights = await model.generateInsights(analysis);
-
-// Get prescriptive recommendations
-const recommendations = await model.generateRecommendations({
-  goal: "Increase outcome by 20%",
-  constraints: {
-    budget: 100000,
-    timeframe: "3 months"
-  }
-});
-```
+Use SDK references and developer guides for setup, package usage, and method-level integration details.
 
 ## Use Cases
 
@@ -322,8 +233,8 @@ const recommendations = await model.generateRecommendations({
 ## Related Resources
 
 <CardGroup>
-  <Card title="Oracle Agent SDK" icon="code" href="/spatial-web-stack/sdks/oracle-agent-sdk">
-    Developer toolkit for building custom oracles
+  <Card title="Agentic Oracles SDK" icon="code" href="/spatial-web-stack/sdks/oracle-agent-sdk">
+    Canonical SDK page for building oracle-powered services.
   </Card>
   
   <Card title="Verification Flows" icon="diagram-project" href="/guides/dev/examples">
@@ -342,20 +253,20 @@ const recommendations = await model.generateRecommendations({
 ## Next Steps
 
 <CardGroup>
-  <Card title="Getting Started" icon="play">
-    Set up your first oracle
+  <Card title="Read developer guides" icon="play" href="/guides/dev/overview">
+    Follow task-oriented oracle integration workflows.
   </Card>
 
-  <Card title="Advanced Verification" icon="wand-magic-sparkles">
-    Implement complex verification flows
+  <Card title="SDK reference" icon="wand-magic-sparkles" href="/spatial-web-stack/sdks/oracle-agent-sdk">
+    Use package-level details for implementation.
   </Card>
 
-  <Card title="Integration Guide" icon="plug">
-    Connect oracles to your application
+  <Card title="API reference" icon="plug" href="/api-docs/introduction">
+    Use canonical API pages for exact interface details.
   </Card>
 
-  <Card title="Monitoring" icon="gauge">
-    Monitor oracle performance
+  <Card title="Read verification examples" icon="gauge" href="/guides/dev/examples">
+    Review oracle workflow examples and integration patterns.
   </Card>
 </CardGroup>
 
