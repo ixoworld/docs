@@ -79,3 +79,23 @@
 - Internal CTA issues (missing target or dead-end): **79**
 - Files with broken internal links: **32**
 - Files with CTA issues: **33**
+
+## Remediation update (Agent 21)
+
+Mechanical fixes applied to high-visibility pages and CTA hotspots without changing page purpose:
+
+- Updated broken internal links in:
+  - `platforms/Emerging/emerging-api.mdx`
+  - `platforms/Emerging/data-integrity.mdx`
+  - `guides/dev/overview.mdx`
+  - `mcp/model-context-protocol.mdx`
+  - `guides/dev/introduction.mdx`
+- Removed dead-end CTA anchors (`href="#"`) in:
+  - `guides/users/ai-companion.mdx`
+- Labeled non-public source links as private access CTAs in:
+  - `sdk-reference/matrix-client-sdk.mdx`
+  - `sdk-reference/oracle-ai-sdk.mdx`
+- Updated stale SDK package CTA target in:
+  - `sdk-reference/multiclient-sdk.mdx` (`@ixo/impactxclient-sdk`)
+
+All touched internal links were mapped to currently existing routes.

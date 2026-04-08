@@ -1,13 +1,18 @@
 {
   "devDependencies": {
+    "cspell": "^8.19.4",
     "eslint": "^8.57.1",
-    "eslint-plugin-mdx": "^3.1.5"
+    "eslint-plugin-mdx": "^3.1.5",
+    "markdownlint-cli2": "^0.18.1"
   },
   "scripts": {
     "preview": "npx mint dev",
     "lint:mdx": "eslint '**/*.mdx'",
-    "lint:links": "echo 'TODO: configure link checker for this repo' && exit 0",
+    "lint:style": "markdownlint-cli2 'guides/**/*.{md,mdx}' 'api-reference/**/*.{md,mdx}' 'sdk-reference/**/*.{md,mdx}' 'platforms/**/*.{md,mdx}' 'mcp/**/*.{md,mdx}' 'reference/**/*.{md,mdx}' 'articles/**/*.{md,mdx}' '.codex/**/*.md' '*.mdx'",
+    "lint:links": "npx mint broken-links",
+    "lint:spelling": "cspell '**/*.{md,mdx}' --no-progress --no-summary",
     "lint:terminology": "node ./scripts/terminology-lint.mjs",
-    "qa:docs": "npm run lint:mdx && npm run lint:links && npm run lint:terminology"
+    "qa:docs": "npm run lint:mdx && npm run lint:terminology",
+    "qa:docs:strict": "npm run qa:docs && npm run lint:style && npm run lint:links && npm run lint:spelling"
   }
 }

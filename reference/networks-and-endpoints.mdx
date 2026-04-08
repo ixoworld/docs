@@ -1,0 +1,40 @@
+---
+title: "Networks and endpoints"
+description: "Canonical environment, network, and endpoint literals currently referenced across IXO docs."
+---
+
+This page is the canonical home for endpoint and network literals used across IXO documentation.
+
+## Scope
+
+- Includes endpoint literals that are currently present in versioned docs files.
+- Does not guarantee runtime availability for every endpoint.
+- Owns endpoint literals so guides and articles can link here instead of repeating them.
+
+## Endpoint matrix
+
+| Surface | Environment/context in docs | Canonical literal in docs | Source |
+|---|---|---|---|
+| IXO Protocol RPC | Developer example | `https://rpc.ixo.world` | `/guides/dev/examples` |
+| IXO Protocol REST (gRPC gateway) | Emerging platform examples | `https://rest.emerging.eco` | `/spatial-web-stack/networks/grpc-gateway` |
+| IXO Matrix service | Developer example | `https://matrix.ixo.world` | `/guides/dev/examples` |
+| Emerging Platform API | OpenAPI development server | `https://dev.api.emerging.eco/emerging-platform/v1` | `/api-reference/openapi.yaml` |
+
+## Chain IDs in current docs
+
+| Literal | Status | Notes |
+|---|---|---|
+| `ixo-5` | Active in examples | Used in multiple developer examples and SDK setup snippets. |
+| `ixo-4` | Legacy/example reference | Present in older API docs pages; treat as historical until explicitly revalidated. |
+
+## Usage rules
+
+- Link to this page when you need endpoint or network literals.
+- Keep page-level guides focused on tasks and workflows.
+- If a service operator publishes a new endpoint, update this page first, then dependent pages.
+
+## Related references
+
+- Authentication matrix: `/reference/authentication-matrix`
+- Product and SDK map: `/reference/product-and-sdk-map`
+- API reference index: `/api-reference`

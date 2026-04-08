@@ -23,7 +23,7 @@ Change a route only if the current route is:
 
 1. Add an entry to the ledger below.
 2. Update all internal links.
-3. Update `mint.json`.
+3. Update `docs.json`.
 4. Add a redirect or a short deprecation stub if the platform supports it.
 5. Mention the route change in the task summary.
 
@@ -50,7 +50,10 @@ Example:
 
 | Status | Old route | New route | Reason | Notes |
 |---|---|---|---|---|
-| proposed | `/sdk-reference/oracle-ai-sdk` | `/sdk-reference/assistant-sdk` | Public surface should match assistant content | Keep old route until nav and links are fully updated or slug stability is preferred |
-| proposed | `/mcp/model-context-protocol` | keep existing route unless a stronger server-focused slug is needed | H1 can be fixed without route change | Prefer stable route first |
+| accepted (stable route) | `/sdk-reference/oracle-ai-sdk` | keep existing route | Slug migration not yet required for canonical naming | Canonical docs name is handled in content and mapping references first |
+| accepted (stable route) | `/mcp/model-context-protocol` | keep existing route | H1 and body fixes are sufficient without slug migration | Prefer stable route first |
+| added | n/a | `/reference/networks-and-endpoints` | Establish canonical home for endpoint and network literals | New reference route |
+| added | n/a | `/reference/authentication-matrix` | Establish canonical home for auth headers and surface-level auth ownership | New reference route |
+| added | n/a | `/reference/product-and-sdk-map` | Establish canonical home for product-to-SDK naming and route mapping | New reference route |
 
 Update this table whenever a decision is made.

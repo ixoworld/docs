@@ -1,0 +1,28 @@
+{
+  "config": {
+    "default": false,
+    "no-trailing-spaces": true,
+    "no-multiple-blanks": true,
+    "single-trailing-newline": true,
+    "blanks-around-fences": true,
+    "fenced-code-language": true
+  },
+  "globs": [
+    "guides/**/*.{md,mdx}",
+    "api-reference/**/*.{md,mdx}",
+    "sdk-reference/**/*.{md,mdx}",
+    "platforms/**/*.{md,mdx}",
+    "mcp/**/*.{md,mdx}",
+    "reference/**/*.{md,mdx}",
+    "articles/**/*.{md,mdx}",
+    ".codex/**/*.md",
+    "*.mdx"
+  ],
+  "ignores": [
+    "node_modules/**",
+    "spatial-web-stack/**",
+    "tutorials/**",
+    "use-cases/**",
+    "api-docs/**"
+  ]
+}

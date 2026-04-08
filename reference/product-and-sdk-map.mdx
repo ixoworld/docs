@@ -1,0 +1,48 @@
+---
+title: "Product and SDK map"
+description: "Canonical mapping between IXO products, SDK docs names, package identifiers, and primary docs routes."
+---
+
+Use this page as the canonical naming and routing map for product and SDK surfaces.
+
+## Scope
+
+- Maps canonical docs-facing names to exact package identifiers.
+- Lists current primary docs routes for each SDK surface.
+- Avoids duplicating package and naming literals across overview pages.
+
+## SDK mapping
+
+| Canonical SDK docs name | Package identifier | Primary docs route | Notes |
+|---|---|---|---|
+| IXO MultiClient SDK | `@ixo/impactxclient-sdk` | `/sdk-reference/multiclient-sdk` | Keep docs name canonical even when legacy aliases appear elsewhere. |
+| IXO Matrix Client SDK | `@ixo/matrixclient-sdk` | `/sdk-reference/matrix-client-sdk` | Use full name on first mention. |
+| Agentic Oracles SDK | `@ixo/oracle-agent-sdk` | Canonical route pending | Canonical name is set; route standardization remains a follow-up. |
+| Personal Agent SDK | `@ixo/assistant-sdk` | `/sdk-reference/oracle-ai-sdk` | Current route is legacy; keep stable route until migration is approved. |
+| IXO SignX SDK | `@ixo/signx-sdk` | `/sdk-reference/signx-sdk` | |
+| JAMBO Wallet SDK | `@ixo/jambo-wallet-sdk` | `/sdk-reference/jambo-wallet-sdk` | |
+| Qi Forge CLI | Not yet verified | Route not yet defined | Add package literal only after verification. |
+
+## Product and service surface map
+
+| Canonical surface | Primary docs route |
+|---|---|
+| IXO Protocol | `/articles/ixo-protocol` |
+| Impact Hub Network | `/articles/ixo-blockchain` |
+| Impact Hub Registry | `/guides/registry` and `/api-reference/registry-api` |
+| IXO Matrix | `/articles/ixo-matrix` and `/api-reference/matrix-state-bot-api` |
+| IXO Blocksync | `/articles/ixo-blocksync` and `/api-reference/blocksync-graphql-api` |
+| Agentic Oracles | `/articles/ixo-oracles` |
+| Emerging Platform | `/platforms/Emerging/intro-emerging` |
+
+## Canonical route policy
+
+- Keep stable routes when naming can be normalized in page titles and nav labels.
+- Record any route change decisions in `.codex/REDIRECTS_AND_DEPRECATIONS.md`.
+- Use transitional stubs only when direct redirects are unavailable.
+
+## Related references
+
+- Networks and endpoints: `/reference/networks-and-endpoints`
+- Authentication matrix: `/reference/authentication-matrix`
+- API reference index: `/api-reference`

@@ -1,0 +1,53 @@
+---
+title: "Authentication matrix"
+description: "Canonical authentication patterns by API surface, including known header formats and ownership boundaries."
+---
+
+Use this matrix to choose authentication behavior by interface instead of applying one auth pattern everywhere.
+
+## Scope
+
+- Includes auth patterns explicitly documented in current IXO docs.
+- Distinguishes protocol gateways from service APIs.
+- Centralizes header examples used across guides and API pages.
+
+## Auth by API surface
+
+| API surface | Auth ownership | Known documented pattern | Header example |
+|---|---|---|---|
+| Blockchain RPC API | Node/operator policy | Deployment-specific | Confirm per endpoint and operator policy |
+| Blockchain REST API (gRPC gateway) | Node/operator policy | Deployment-specific | Confirm per endpoint and operator policy |
+| IXO Blocksync GraphQL API | Service operator policy | Service-specific credential model | Confirm service deployment requirements |
+| Matrix state bot API | Service operator policy | Service-specific credential model | Confirm service deployment requirements |
+| Registry API | Service operator policy | Historical Basic auth example | `Authorization: Basic <base64(username:password)>` |
+| Emerging Platform API (OpenAPI set) | Service operator policy | Unauthorized responses defined in schema | Confirm active header contract for deployment |
+
+## Common header formats in docs
+
+```http
+Authorization: Bearer <token>
+```
+
+```http
+X-API-Key: <api_key>
+```
+
+```http
+Authorization: Basic <base64(username:password)>
+```
+
+<Warning>
+Do not treat any one header as globally valid across all IXO interfaces.
+</Warning>
+
+## Credential-source guidance
+
+- Protocol gateways: get access policy from your target node/network operator.
+- Service APIs: get credentials from the service operator for the environment you use.
+- Confirm endpoint and environment mappings in `/reference/networks-and-endpoints`.
+
+## Related references
+
+- Networks and endpoints: `/reference/networks-and-endpoints`
+- Product and SDK map: `/reference/product-and-sdk-map`
+- API authentication overview: `/api-reference/authentication`

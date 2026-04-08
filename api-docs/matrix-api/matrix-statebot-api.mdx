@@ -35,7 +35,7 @@ The IXO Matrix State Bot API is an open-source solution for managing state objec
   <Accordion title="Flexible Access Control" icon="lock">
     Set granular access and edit permissions for room-specific state events:
     - Direct association between ACLs and state events
-    - Role-based access control
+    - Capability-based access control
     - Permission inheritance
   </Accordion>
   
@@ -85,7 +85,7 @@ The bot supports Matrix room commands for managing state and ACL events within t
 
 ## SDK Integration
 
-The IXO Matrix State Bot can be easily integrated into your applications using the [IXO Matrix SDK](/spatial-web-stack/sdks/ixo-matrix-sdk):
+The IXO Matrix State Bot can be easily integrated into your applications using the [IXO Matrix Client SDK](/spatial-web-stack/sdks/ixo-matrix-sdk):
 
 ```typescript
 import { createMatrixStateBotClient } from "@ixo/matrixclient-sdk";
@@ -111,7 +111,7 @@ await bot.setState(
 ## Related Resources
 
 <CardGroup>
-  <Card title="IXO Matrix SDK" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
+  <Card title="IXO Matrix Client SDK" icon="code" href="/spatial-web-stack/sdks/ixo-matrix-sdk">
     Client library for Matrix integration with State Bot support
   </Card>
   

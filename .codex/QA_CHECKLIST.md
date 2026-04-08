@@ -73,6 +73,12 @@ These may not all exist yet. Add them when they are in scope.
 - [ ] optional spell check
 - [ ] nav consistency check against canonical routes
 
+## Baseline debt tracking
+
+- [ ] Gating checks (`qa:docs`) pass in CI.
+- [ ] Strict checks (`qa:docs:strict`) are reviewed in CI logs.
+- [ ] Strict-check failures are tracked and burned down without blocking unrelated docs fixes.
+
 ## Definition of done
 
 A task is done only when:

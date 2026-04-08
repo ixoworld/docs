@@ -11,7 +11,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Spatial Web",
+        "tab": "IXO",
         "groups": [
           {
             "group": "Get Started",
@@ -58,6 +58,14 @@
               "articles/pods",
               "articles/projects"
             ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/networks-and-endpoints",
+              "reference/authentication-matrix",
+              "reference/product-and-sdk-map"
+            ]
           }
         ]
       },
@@ -94,7 +102,7 @@
         ]
       },
       {
-        "tab": "APIs",
+        "tab": "API Reference",
         "groups": [
           {
             "group": " ",
@@ -129,7 +137,7 @@
         ]
       },
       {
-        "tab": "SDKs",
+        "tab": "SDK Reference",
         "groups": [
           {
             "group": " ",
