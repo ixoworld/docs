@@ -4,6 +4,10 @@
     "eslint-plugin-mdx": "^3.1.5"
   },
   "scripts": {
-    "lint:mdx": "eslint '**/*.mdx'"
+    "preview": "npx mint dev",
+    "lint:mdx": "eslint '**/*.mdx'",
+    "lint:links": "echo 'TODO: configure link checker for this repo' && exit 0",
+    "lint:terminology": "node ./scripts/terminology-lint.mjs",
+    "qa:docs": "npm run lint:mdx && npm run lint:links && npm run lint:terminology"
   }
 }
