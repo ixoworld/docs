@@ -18,7 +18,7 @@ description: 'Getting started with IXO development'
     Comprehensive API documentation
   </Card>
   
-  <Card title="Blockchain" icon="cube" href="/articles/ixo-protocol">
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
     IXO Protocol blockchain for digital twins and impact claims
   </Card>
   
@@ -34,7 +34,7 @@ description: 'Getting started with IXO development'
     ```bash
     npm install @ixo/impactxclient-sdk
     ```
-    
+
     The IXO MultiClient SDK provides a unified interface for interacting with:
     - IXO Protocol blockchain
     - IXO Matrix data storage
@@ -48,7 +48,7 @@ description: 'Getting started with IXO development'
     ```bash
     npm install @ixo/matrixclient-sdk
     ```
-    
+
     The IXO Matrix Client SDK enables:
     - Secure data room creation
     - End-to-end encrypted messaging
@@ -62,19 +62,19 @@ description: 'Getting started with IXO development'
     ```bash
     npm install @ixo/oracle-agent-sdk
     ```
-    
+
     The Oracle Agent SDK allows you to build:
     - Verification oracles
     - Data validation services
     - Intelligent automation agents
     - Attestation services
     
-    [Learn more about the Agentic Oracles SDK](/sdk-reference/oracle-ai-sdk)
+    [Learn more about the Agentic Oracles SDK](/ixo-stack/sdks/oracle-agent-sdk)
   </Accordion>
 </AccordionGroup>
 <Info>
-> If you are using the [IXO Spatial Web Multiclient SDK](IXO-Spatial-Web-Multiclient-SDK.md), familiarize yourself with the [Signing Client](https://www.npmjs.com/package/@ixo/impactxclient-sdk#signing-client) to understand how to sign and broadcast transactions.
-Familiarize yourself with the [IXO Blocksync GraphQL](Blocksync-GraphQL-API-Overview.md) queries for retrieving data from the blockchain.
+> If you are using the [IXO MultiClient SDK](/sdk-reference/multiclient-sdk), familiarize yourself with the [Signing Client](https://www.npmjs.com/package/@ixo/impactxclient-sdk#signing-client) to understand how to sign and broadcast transactions.
+Familiarize yourself with the [IXO Blocksync GraphQL API](/api-reference/blocksync-graphql-api) queries for retrieving data from the blockchain.
 </Info>
 
 ## Key Modules
@@ -104,7 +104,7 @@ These modules provide specific functionality that can be used independently or i
 <Steps>
   <Step title="Set Up Development Environment">
     Install the necessary SDKs for your project:
-    
+
     ```bash
     # Install core SDKs
     npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
@@ -115,7 +115,7 @@ These modules provide specific functionality that can be used independently or i
     ```typescript
     import { createClient } from "@ixo/impactxclient-sdk";
     import { createMatrixClient } from "@ixo/matrixclient-sdk";
-    
+
     // Initialize blockchain client
     const chain = await createClient({
       rpcEndpoint: "https://rpc.ixo.world",
@@ -132,7 +132,7 @@ These modules provide specific functionality that can be used independently or i
   
   <Step title="Implement Core Functionality">
     Use the SDKs to implement your application's core features:
-    
+
     ```typescript
     // Create a digital twin entity
     const entity = await chain.createEntity({
@@ -166,7 +166,7 @@ The IXO development stack can be used to build a wide range of applications. Her
 <AccordionGroup>
   <Accordion title="Digital MRV System" icon="chart-line">
     A system for measuring, reporting, and verifying impact data:
-    
+
     - **Digital Twins**: Create entities for projects and devices
     - **Data Rooms**: Store sensor data securely
     - **Claims**: Submit and verify impact claims
@@ -177,7 +177,7 @@ The IXO development stack can be used to build a wide range of applications. Her
   
   <Accordion title="Secure Collaboration Platform" icon="users">
     A platform for secure collaboration on sensitive data:
-    
+
     - **Data Rooms**: Create encrypted spaces for collaboration
     - **Authentication**: Manage user access and permissions
     - **Messaging**: Enable secure communication

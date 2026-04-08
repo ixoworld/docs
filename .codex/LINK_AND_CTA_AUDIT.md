@@ -36,7 +36,7 @@
 - `articles/ixo-integrations.mdx` has 2 broken internal links and 2 missing-target CTAs.
 - `api-docs/introduction.mdx` has 2 broken internal links and 2 missing-target CTAs.
 - `platforms/Emerging/sdg-monitoring.mdx` has 2 broken internal links and 2 missing-target CTAs.
-- `spatial-web-stack/networks/grpc-gateway.mdx` has 2 broken internal links and 2 missing-target CTAs.
+- `ixo-stack/networks/grpc-gateway.mdx` has 2 broken internal links and 2 missing-target CTAs.
 
 ### Dead-end CTA anchors
 
@@ -71,7 +71,7 @@
   - `articles/ixo-integrations.mdx`
 
 - **Wave 3 (legacy parallel trees):**
-  - `/api-docs/**` and `/spatial-web-stack/**` pages should be canonicalized or retired after link migration plan is agreed.
+  - `/api-docs/**` and `/ixo-stack/**` pages should be canonicalized or retired after link migration plan is agreed.
 
 ## Audit totals
 
@@ -94,8 +94,32 @@ Mechanical fixes applied to high-visibility pages and CTA hotspots without chang
   - `guides/users/ai-companion.mdx`
 - Labeled non-public source links as private access CTAs in:
   - `sdk-reference/matrix-client-sdk.mdx`
-  - `sdk-reference/oracle-ai-sdk.mdx`
+  - `sdk-reference/oracle-adk.mdx`
 - Updated stale SDK package CTA target in:
   - `sdk-reference/multiclient-sdk.mdx` (`@ixo/impactxclient-sdk`)
 
 All touched internal links were mapped to currently existing routes.
+
+## Remediation update (execution follow-through)
+
+Additional mechanical fixes completed after the initial Agent 21 pass:
+
+- Wave 1 residual pages fixed:
+  - `platforms/Emerging/intro-emerging.mdx`
+  - `platforms/Emerging/domain-registration.mdx`
+- Wave 2 target pages fixed:
+  - `platforms/Emerging/energy-systems.mdx`
+  - `platforms/Emerging/emerging-dmrv.mdx`
+  - `guides/dev/ixo-domains.mdx`
+  - `articles/ixo-blocksync.mdx`
+  - `articles/ixo-integrations.mdx`
+- SDK CTA truthfulness completed for:
+  - `sdk-reference/signx-sdk.mdx`
+  - `sdk-reference/jambo-wallet-sdk.mdx`
+  - `sdk-reference/index.mdx`
+- Legacy route policy executed with deprecation stubs:
+  - `api-docs/**`
+  - `ixo-stack/**`
+  - Route policy recorded in `.codex/REDIRECTS_AND_DEPRECATIONS.md`.
+
+Final broken-link and CTA totals are now validated through tooling (`npm run lint:links`) rather than static counts in this file.

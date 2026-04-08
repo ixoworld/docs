@@ -1,11 +1,5 @@
 {
     "@context": [
-      /* 
-        This reference points to itself, allowing JSON-LD processors
-        to correctly resolve "itmo" as a prefix within this context file.
-        You can also include additional custom contexts or references 
-        if needed for cross-context relationships.
-      */
       {
         "@version": 1.1
       },
@@ -251,8 +245,6 @@
         "schema:domainIncludes": {
           "@id": "itmo:ITMOCredential"
         }
-        /* Range can be an array of numbers or an object describing annual data, 
-           so no strict schema:rangeIncludes is applied here. */
       },
       {
         "@id": "itmo:annualCorrespondingAdjustments",
@@ -316,7 +308,6 @@
         "schema:domainIncludes": {
           "@id": "itmo:ITMOCredential"
         }
-        /* Could be a list of items, so no strict range is applied here. */
       },
       {
         "@id": "itmo:partyStatusUnderParis",
@@ -350,7 +341,6 @@
         "schema:domainIncludes": {
           "@id": "itmo:ITMOCredential"
         }
-        /* Could be an array of URLs or text references. */
       },
       {
         "@id": "itmo:mostRecentNationalInventory",

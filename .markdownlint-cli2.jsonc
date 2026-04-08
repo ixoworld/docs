@@ -20,7 +20,7 @@
   ],
   "ignores": [
     "node_modules/**",
-    "spatial-web-stack/**",
+    "ixo-stack/**",
     "tutorials/**",
     "use-cases/**",
     "api-docs/**"

@@ -33,7 +33,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
     - package identifiers are shown in code font
     - no mixed-generation naming remains
 
-- [ ] Normalize `guides/dev/overview.mdx`.
+- [x] Normalize `guides/dev/overview.mdx`.
   - Fix:
     - `IXO Matrix SDK` -> `IXO Matrix Client SDK`
     - `Oracle Agent SDK` -> `IXO Oracles SDK`
@@ -56,7 +56,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
   - Done when:
     - page title, description, and adjacent references are canonical
 
-- [ ] Rewrite `sdk-reference/oracle-ai-sdk.mdx`.
+- [ ] Rewrite `sdk-reference/oracle-adk.mdx`.
   - Fix:
     - convert this page to `IXO Assistant SDK`
     - remove Oracle naming from assistant/chat UI content
@@ -77,7 +77,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
 
 ### MCP naming
 
-- [ ] Rewrite `mcp/model-context-protocol.mdx`.
+- [x] Rewrite `mcp/model-context-protocol.mdx`.
   - Fix:
     - `Model Context Protocols (MCPs)` -> `Model Context Protocol (MCP)`
     - add `Server` suffix to server names
@@ -108,7 +108,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
 
 ## Phase 2 — Broken links, false CTAs, and stale references
 
-- [ ] Audit and fix internal links in:
+- [x] Audit and fix internal links in:
   - `platforms/Emerging/emerging-api.mdx`
   - `platforms/Emerging/data-integrity.mdx`
   - `api-reference/blocksync-graphql-api.mdx`
@@ -117,15 +117,15 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
   - Done when:
     - no touched page contains a broken internal link or dead CTA
 
-- [ ] Remove or fix dead-end CTAs in:
+- [x] Remove or fix dead-end CTAs in:
   - `sdk-reference/signx-sdk.mdx`
   - `sdk-reference/jambo-wallet-sdk.mdx`
-  - `sdk-reference/oracle-ai-sdk.mdx`
+  - `sdk-reference/oracle-adk.mdx`
   - any adjacent SDK pages with unlabeled or private source references
   - Done when:
     - every CTA is clickable, accurate, and useful
 
-- [ ] Update stale future-tense wording in:
+- [x] Update stale future-tense wording in:
   - `articles/ixo-matrix.mdx`
   - any page using “upcoming”, “coming soon”, or “new” without a date and owner
   - Done when:
@@ -160,7 +160,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
 
 ## Phase 4 — Shared source-of-truth pages
 
-- [ ] Create `reference/networks-and-endpoints.mdx`.
+- [x] Create `reference/networks-and-endpoints.mdx`.
   - Own:
     - environment names
     - chain IDs
@@ -169,7 +169,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
   - Done when:
     - other pages can link here instead of repeating network literals
 
-- [ ] Create `reference/authentication-matrix.mdx`.
+- [x] Create `reference/authentication-matrix.mdx`.
   - Own:
     - auth method by product/API
     - token/header format
@@ -178,7 +178,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
   - Done when:
     - auth guidance is no longer scattered across guides and APIs
 
-- [ ] Create `reference/product-and-sdk-map.mdx`.
+- [x] Create `reference/product-and-sdk-map.mdx`.
   - Own:
     - products
     - SDK docs names

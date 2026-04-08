@@ -30,10 +30,11 @@
 2. Auth method expectations differ across surfaces (for example, Basic vs Bearer vs API key) and were previously presented as universal in some pages.
 3. `protocols/**/*` scope target has no matching directory/files in this repo state, so protocol-doc consolidation was applied to available API and guide boundaries instead.
 
-## Follow-up recommended
+## Follow-up status
 
-- Create canonical pages:
+- Canonical pages are now present:
   - `reference/networks-and-endpoints.mdx`
   - `reference/authentication-matrix.mdx`
   - `reference/product-and-sdk-map.mdx`
-- Decide whether protocol concept docs should live under a new `protocols/` directory or remain in another canonical location.
+- These routes are included in `docs.json` navigation.
+- Remaining decision: whether protocol concept docs should live under a new `protocols/` directory or remain in another canonical location.

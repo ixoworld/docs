@@ -18,7 +18,7 @@
             "pages": [
               "introduction",
               "core-concepts",
-              "articles/ixo-protocol",
+              "protocols/ixo-protocol",
               "guides/hands-on"
             ]
           },
@@ -47,11 +47,14 @@
             "pages": ["articles/intro-platforms"]
           },
           {
+            "group": "Protocols",
+            "pages": ["protocols/ixo-protocol"]
+          },
+          {
             "group": "Articles",
             "pages": [
               "articles/intro-articles",
               "articles/cdt-systems",
-              "articles/ixo-blockchain",
               "articles/ixo-matrix",
               "articles/ixo-blocksync",
               "articles/ixo-oracles",
@@ -157,7 +160,7 @@
           },
           {
             "group": " ",
-            "pages": ["sdk-reference/oracle-ai-sdk"]
+            "pages": ["sdk-reference/oracle-adk"]
           },
           {
             "group": " ",
@@ -181,6 +184,112 @@
       ]
     }
   },
+  "redirects": [
+    {
+      "source": "/sdk-reference/oracle-ai-sdk",
+      "destination": "/sdk-reference/oracle-adk"
+    },
+    {
+      "source": "/spatial-web-stack/intro-stack",
+      "destination": "/ixo-stack/intro-stack"
+    },
+    {
+      "source": "/spatial-web-stack/core-concepts",
+      "destination": "/ixo-stack/core-concepts"
+    },
+    {
+      "source": "/spatial-web-stack/blockchain/ixo-blockchain",
+      "destination": "/ixo-stack/blockchain/ixo-blockchain"
+    },
+    {
+      "source": "/spatial-web-stack/matrix/ixo-matrix",
+      "destination": "/ixo-stack/matrix/ixo-matrix"
+    },
+    {
+      "source": "/spatial-web-stack/matrix/matrix-encryption",
+      "destination": "/ixo-stack/matrix/matrix-encryption"
+    },
+    {
+      "source": "/spatial-web-stack/networks/intro-networks",
+      "destination": "/ixo-stack/networks/intro-networks"
+    },
+    {
+      "source": "/spatial-web-stack/networks/grpc-gateway",
+      "destination": "/ixo-stack/networks/grpc-gateway"
+    },
+    {
+      "source": "/spatial-web-stack/networks/ibc-relayers",
+      "destination": "/ixo-stack/networks/ibc-relayers"
+    },
+    {
+      "source": "/spatial-web-stack/networks/unl-chain",
+      "destination": "/ixo-stack/networks/unl-chain"
+    },
+    {
+      "source": "/spatial-web-stack/networks/impact-hub",
+      "destination": "/ixo-stack/networks/impact-hub"
+    },
+    {
+      "source": "/spatial-web-stack/networks/energy-chains",
+      "destination": "/ixo-stack/networks/energy-chains"
+    },
+    {
+      "source": "/spatial-web-stack/networks/interchain-bridges",
+      "destination": "/ixo-stack/networks/interchain-bridges"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/intro-sdks",
+      "destination": "/ixo-stack/sdks/intro-sdks"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/modules-sdk",
+      "destination": "/ixo-stack/sdks/modules-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/ixo-multiclient-sdk",
+      "destination": "/ixo-stack/sdks/ixo-multiclient-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/ixo-matrix-sdk",
+      "destination": "/ixo-stack/sdks/ixo-matrix-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/oracle-agent-sdk",
+      "destination": "/ixo-stack/sdks/oracle-agent-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/signx-sdk",
+      "destination": "/ixo-stack/sdks/signx-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/jambo-wallet-sdk",
+      "destination": "/ixo-stack/sdks/jambo-wallet-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/apps/intro-apps",
+      "destination": "/ixo-stack/apps/intro-apps"
+    },
+    {
+      "source": "/spatial-web-stack/apps/jambo/hello-jambo",
+      "destination": "/ixo-stack/apps/jambo/hello-jambo"
+    },
+    {
+      "source": "/spatial-web-stack/apps/mission/hello-mission",
+      "destination": "/ixo-stack/apps/mission/hello-mission"
+    },
+    {
+      "source": "/spatial-web-stack/apps/mobile/hello-mobile",
+      "destination": "/ixo-stack/apps/mobile/hello-mobile"
+    },
+    {
+      "source": "/spatial-web-stack/apps/portal/hello-portal",
+      "destination": "/ixo-stack/apps/portal/hello-portal"
+    },
+    {
+      "source": "/spatial-web-stack/apps/studio/hello-studio",
+      "destination": "/ixo-stack/apps/studio/hello-studio"
+    }
+  ],
   "styling": {
     "codeblocks": "system"
   },

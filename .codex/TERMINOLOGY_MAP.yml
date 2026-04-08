@@ -1,3 +1,6 @@
+# terminology-lint merges each term's `deprecated_aliases` into CI checks (see
+# scripts/terminology-lint.mjs). Aliases that map to more than one canonical are skipped.
+# `banned_aliases` override the merged list for the same surface string.
 
 version: 2
 terms:
@@ -33,6 +36,17 @@ terms:
       - Oracles SDK
       - Oracle SDK
       - Agentic Oracles ADK
+
+  - canonical: Personal Agent ADK
+    type: sdk
+    first_mention: "Personal Agent ADK (`@ixo/assistant-sdk`)"
+    package: "@ixo/assistant-sdk"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - IXO Assistant SDK
+      - IXO Personal Agent SDK
+      - Oracle AI SDK
+      - Personal Agent SDK
 
   - canonical: IXO SignX SDK
     type: sdk

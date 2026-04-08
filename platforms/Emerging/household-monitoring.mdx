@@ -35,7 +35,7 @@ This page documents **Emerging Household Energy** monitoring workflows for house
     "density": "Medium"
   },
   "devices": [{
-    "did": "did:ixo:device/456", 
+    "did": "did:ixo:device/456",
     "type": "ElectricPressureCooker",
     "status": "active"
   }],
@@ -63,6 +63,7 @@ household = Household.create(
 device = Device.get("did:ixo:device/456")
 household.add_device(device)
 ```
+
 </CodeGroup>
 
 ## Data Collection
@@ -196,7 +197,7 @@ Implement comprehensive monitoring to capture the full complexity of cooking beh
   <Card title="Analytics Guide" icon="chart-line">
     Access household insights
   </Card>
-  <Card title="Registry API" icon="brackets-curly" href="/platforms/Emerging/registry-server">
+  <Card title="Registry API" icon="brackets-curly" href="/api-reference/registry-api">
     Integration server
   </Card>
 </CardGroup>

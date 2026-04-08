@@ -22,7 +22,7 @@ all at once, split or rewrite it.
 Use for:
 - IXO Matrix
 - IXO Blocksync
-- IXO Assistant
+- Qi Foundry
 - IXO SignX
 - SDK landing pages
 
@@ -209,7 +209,7 @@ The following page families currently need type correction first:
 - `guides/hands-on.mdx`  
   Should become a runnable quickstart, not a conceptual checklist.
 
-- `sdk-reference/oracle-ai-sdk.mdx`  
+- `sdk-reference/oracle-adk.mdx`  
   Should become a canonical product/SDK page for the assistant surface, or be split if oracle and assistant content are both needed.
 
 - `mcp/model-context-protocol.mdx`  

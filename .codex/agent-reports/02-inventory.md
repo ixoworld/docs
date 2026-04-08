@@ -31,7 +31,7 @@ Supporting artifacts:
 
 - `/sdk-reference/` is the canonical SDK documentation surface.
   - Authoritative home for SDK overviews, install guidance, and SDK usage/reference content.
-  - `/spatial-web-stack/sdks/**` is legacy/duplicate and should be merged into `/sdk-reference/**`, then converted to redirects/stubs per redirect policy.
+  - `/ixo-stack/sdks/**` is legacy/duplicate and should be merged into `/sdk-reference/**`, then converted to redirects/stubs per redirect policy.
 
 ## Priority findings (by severity)
 
@@ -77,10 +77,10 @@ Why P2:
 ## Canonical merge candidates (same concept in multiple homes)
 
 - SDK duplicates:
-  - `sdk-reference/signx-sdk.mdx` vs `spatial-web-stack/sdks/signx-sdk.mdx`
-  - `sdk-reference/jambo-wallet-sdk.mdx` vs `spatial-web-stack/sdks/jambo-wallet-sdk.mdx`
-  - `sdk-reference/matrix-client-sdk.mdx` vs `spatial-web-stack/sdks/ixo-matrix-sdk.mdx` (naming drift)
-  - `sdk-reference/multiclient-sdk.mdx` vs `spatial-web-stack/sdks/ixo-multiclient-sdk.mdx` (naming drift)
+  - `sdk-reference/signx-sdk.mdx` vs `ixo-stack/sdks/signx-sdk.mdx`
+  - `sdk-reference/jambo-wallet-sdk.mdx` vs `ixo-stack/sdks/jambo-wallet-sdk.mdx`
+  - `sdk-reference/matrix-client-sdk.mdx` vs `ixo-stack/sdks/ixo-matrix-sdk.mdx` (naming drift)
+  - `sdk-reference/multiclient-sdk.mdx` vs `ixo-stack/sdks/ixo-multiclient-sdk.mdx` (naming drift)
 
 - API duplicates:
   - `api-reference/blocksync-graphql-api.mdx` vs `api-docs/blocksync-api/blocksync-graphql.mdx`
@@ -132,7 +132,7 @@ Rationale:
   - Goal: resolve broken dev guide links, create/identify canonical guide landing references
 
 - **Agent D - SDK canonicalization**
-  - Own: `sdk-reference/*` and `spatial-web-stack/sdks/*`
+  - Own: `sdk-reference/*` and `ixo-stack/sdks/*`
   - Goal: one concept, one canonical SDK page; convert duplicates to redirects/stubs once links migrate
 
 - **Agent E - User guides + orphan surfacing decisions**
@@ -141,7 +141,7 @@ Rationale:
 
 ## Pages to merge (explicit)
 
-- Merge all `spatial-web-stack/sdks/*` conceptual SDK duplicates into `sdk-reference/*` canonical pages.
+- Merge all `ixo-stack/sdks/*` conceptual SDK duplicates into `sdk-reference/*` canonical pages.
 - Merge `api-docs/*` endpoint duplicates into `api-reference/*` canonical pages (or keep as transitional stubs only).
 - Merge overlapping dMRV/domain-registration concepts by assigning canonical ownership (general guides vs Emerging implementation).
 

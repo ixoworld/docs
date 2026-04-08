@@ -113,6 +113,7 @@ The **Emerging Platform** uses digital twin domains as reusable identity and sta
 ## Query Examples
 
 ### Find Available Protocols
+
 ```graphql
 query EntitiesByRelayerNodeAndType {
   entities(
@@ -131,6 +132,7 @@ query EntitiesByRelayerNodeAndType {
 ```
 
 ### Check Domain Status
+
 ```graphql
 query DomainStatus($did: String!) {
   entity(id: $did) {
@@ -149,17 +151,17 @@ query DomainStatus($did: String!) {
 
 1. [Review available protocols](/platforms/Emerging/registry)
 2. [Prepare entity document](/guides/digital-twins)
-3. [Submit for verification](/platforms/Emerging/verification)
-4. [Configure services](/platforms/Emerging/service-configuration)
-5. [Monitor status](/platforms/Emerging/monitoring)
+3. [Submit for verification](/platforms/Emerging/data-integrity)
+4. [Configure services](/platforms/Emerging/emerging-api)
+5. [Monitor status](/platforms/Emerging/household-monitoring)
 
 ## Developer Resources
 
 <CardGroup>
-  <Card title="API Reference" icon="code" href="/api-docs/emerging-api/emerging-api">
+  <Card title="API Reference" icon="code" href="/platforms/Emerging/emerging-api">
     Domain registration endpoints
   </Card>
-  <Card title="SDK Guide" icon="box" href="/spatial-web-stack/spatial-web-sdks">
+  <Card title="SDK Guide" icon="box" href="/guides/dev/spatial-web-sdks">
     Client libraries and tools
   </Card>
   <Card title="Example Projects" icon="lightbulb" href="/guides/dev/examples">

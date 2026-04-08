@@ -61,7 +61,7 @@ Use these names in H1s, navigation labels, overview pages, and prose.
 | IXO MultiClient SDK | `@ixo/impactxclient-sdk` | Public docs name is MultiClient. Do not call this “ImpactX Client” in headings or prose. |
 | IXO Matrix Client SDK | `@ixo/matrixclient-sdk` | Use “Matrix Client SDK” after first mention if context is clear. |
 | Agentic Oracles SDK | `@ixo/oracle-agent-sdk` | Public docs name is Agentic Oracles SDK. Preserve the current package literal exactly. |
-| Personal Agent SDK | `@ixo/assistant-sdk` | Public docs name is Personal Agent SDK. Preserve the current package literal exactly until the package itself changes. |
+| Personal Agent ADK | `@ixo/assistant-sdk` | Public docs name is Personal Agent ADK. Preserve the current package literal exactly until the package itself changes. |
 | IXO SignX SDK | `@ixo/signx-sdk` | Always use the IXO prefix on first mention. |
 | JAMBO Wallet SDK | `@ixo/jambo-wallet-sdk` | Keep JAMBO as the docs-facing sub-brand. |
 | Qi Forge CLI | — | Canonical docs name for the CLI product used to build Agentic Oracles. Add the package identifier only once it is verified. |
@@ -74,7 +74,7 @@ Use this map to remove naming judgment calls during rewrites.
 |---|---|---|
 | `sdk-reference/multiclient-sdk.mdx` | IXO MultiClient SDK | Keep package literal exact in code blocks. |
 | `sdk-reference/matrix-client-sdk.mdx` | IXO Matrix Client SDK | Do not shorten to "Matrix Client" on first mention. |
-| `sdk-reference/oracle-ai-sdk.mdx` | Personal Agent SDK | Current route is legacy; naming is canonicalized in content first. |
+| `sdk-reference/oracle-adk.mdx` | Personal Agent ADK | Agent development kit route; `/sdk-reference/oracle-ai-sdk` redirects here. |
 | `sdk-reference/signx-sdk.mdx` | IXO SignX SDK | Keep IXO prefix on first mention. |
 | `sdk-reference/jambo-wallet-sdk.mdx` | JAMBO Wallet SDK | Keep JAMBO sub-brand. |
 | `mcp/model-context-protocol.mdx` | Model Context Protocol (MCP) servers | First expansion must be singular. |
@@ -96,10 +96,11 @@ These are the canonical replacements for terms already present in the docs.
 | IXO Oracles SDK | Agentic Oracles SDK | Headings, prose, nav |
 | IXO Agentic Oracles SDK | Agentic Oracles SDK | Headings, prose, nav |
 | Oracles SDK | Agentic Oracles SDK | Headings and first mention |
-| IXO Assistant SDK | Personal Agent SDK | Headings, prose, nav |
-| IXO Personal Agent SDK | Personal Agent SDK | Headings, prose, nav |
+| IXO Assistant SDK | Personal Agent ADK | Headings, prose, nav |
+| IXO Personal Agent SDK | Personal Agent ADK | Headings, prose, nav |
 | IXO Assistant | Personal Agent | End-user/product naming |
-| Oracle AI SDK | Personal Agent SDK | Current page content is assistant-oriented |
+| Oracle AI SDK | Personal Agent ADK | Current page content is assistant-oriented |
+| Personal Agent SDK | Personal Agent ADK | Public docs name for `@ixo/assistant-sdk` |
 | Personal Agent | Personal Agent | Canonical product naming |
 | Qi Personal Agent | Personal Agent | Deprecated product name |
 | Qi Agent | Personal Agent | Singular product naming should resolve to the canonical personal product name unless the multi-agent product is explicitly intended |
@@ -129,7 +130,7 @@ On first mention, use the full canonical product name exactly:
 - `IXO MultiClient SDK` (`@ixo/impactxclient-sdk`)
 - `IXO Matrix Client SDK` (`@ixo/matrixclient-sdk`)
 - `Agentic Oracles SDK` (`@ixo/oracle-agent-sdk`)
-- `Personal Agent SDK` (`@ixo/assistant-sdk`)
+- `Personal Agent ADK` (`@ixo/assistant-sdk`)
 - `IXO SignX SDK` (`@ixo/signx-sdk`)
 - `JAMBO Wallet SDK` (`@ixo/jambo-wallet-sdk`)
 - `Qi Intelligent Cooperating System`
@@ -151,7 +152,7 @@ On first mention, use:
 - `IXO MultiClient SDK` (`@ixo/impactxclient-sdk`)
 - `IXO Matrix Client SDK` (`@ixo/matrixclient-sdk`)
 - `Agentic Oracles SDK` (`@ixo/oracle-agent-sdk`)
-- `Personal Agent SDK` (`@ixo/assistant-sdk`)
+- `Personal Agent ADK` (`@ixo/assistant-sdk`)
 - `IXO SignX SDK` (`@ixo/signx-sdk`)
 - `JAMBO Wallet SDK` (`@ixo/jambo-wallet-sdk`)
 
@@ -204,7 +205,7 @@ Examples:
 
 - `IXO MultiClient SDK`
 - `IXO Matrix Client SDK`
-- `Personal Agent SDK`
+- `Personal Agent ADK`
 - `Agentic Oracles SDK`
 - `IXO SignX SDK`
 - `Emerging Platform`

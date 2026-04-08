@@ -50,8 +50,12 @@ Example:
 
 | Status | Old route | New route | Reason | Notes |
 |---|---|---|---|---|
-| accepted (stable route) | `/sdk-reference/oracle-ai-sdk` | keep existing route | Slug migration not yet required for canonical naming | Canonical docs name is handled in content and mapping references first |
+| changed | `/sdk-reference/oracle-ai-sdk` | `/sdk-reference/oracle-adk` | ADK slug for Personal Agent ADK (`@ixo/assistant-sdk`) | Redirect configured in `docs.json` |
 | accepted (stable route) | `/mcp/model-context-protocol` | keep existing route | H1 and body fixes are sufficient without slug migration | Prefer stable route first |
+| changed | `/articles/ixo-protocol` | `/protocols/ixo-protocol` | Protocol concept docs consolidated under canonical `protocols/` directory | Internal links and nav updated |
+| changed | `/articles/ixo-blockchain` | `/protocols/ixo-protocol` | Duplicate IXO Protocol concept page removed in favor of one canonical protocol page | Internal links and nav updated |
+| deprecated (stub) | `/api-docs/*` | canonical `api-reference/*` routes | Legacy API docs tree replaced with transitional stubs | Stubs point to closest canonical API or guide route by topic |
+| changed | `/spatial-web-stack/*` | `/ixo-stack/*` | Canonical stack route namespace normalized to IXO naming | Directory renamed, internal links updated, and explicit redirects added in `docs.json` |
 | added | n/a | `/reference/networks-and-endpoints` | Establish canonical home for endpoint and network literals | New reference route |
 | added | n/a | `/reference/authentication-matrix` | Establish canonical home for auth headers and surface-level auth ownership | New reference route |
 | added | n/a | `/reference/product-and-sdk-map` | Establish canonical home for product-to-SDK naming and route mapping | New reference route |

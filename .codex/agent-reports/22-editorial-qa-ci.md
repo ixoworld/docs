@@ -60,7 +60,7 @@
 ### High
 
 - `mint broken-links` reports **53 broken links across 23 files**.
-- Broken links include legacy directories (`spatial-web-stack`, `use-cases`, `api-docs`) and some current docs surfaces.
+- Broken links include legacy directories (`ixo-stack`, `use-cases`, `api-docs`) and some current docs surfaces.
 
 ### Medium
 

@@ -31,7 +31,7 @@
 
 ## Route decisions recorded
 
-- Accepted stable route: `/sdk-reference/oracle-ai-sdk` remains unchanged for now.
+- `/sdk-reference/oracle-ai-sdk` redirects to `/sdk-reference/oracle-adk` (Personal Agent ADK).
 - Accepted stable route: `/mcp/model-context-protocol` remains unchanged.
 - Added new canonical reference routes listed above.
 - No redirect stubs required in this pass because no existing route moved.

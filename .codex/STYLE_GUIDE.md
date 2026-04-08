@@ -174,11 +174,13 @@ Do not use malformed placeholders like `<your_toke n>`.
 Use comments to explain intent, not to narrate the obvious.
 
 Good:
+
 ```ts
 // Submit the claim after evidence has been stored
 ```
 
 Bad:
+
 ```ts
 // Create client
 // Set endpoint

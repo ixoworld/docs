@@ -128,33 +128,33 @@
 /sdk-reference/jambo-wallet-sdk
 /sdk-reference/matrix-client-sdk
 /sdk-reference/multiclient-sdk
-/sdk-reference/oracle-ai-sdk
+/sdk-reference/oracle-adk
 /sdk-reference/signx-sdk
-/spatial-web-stack/apps/intro-apps
-/spatial-web-stack/apps/jambo/hello-jambo
-/spatial-web-stack/apps/mission/hello-mission
-/spatial-web-stack/apps/mobile/hello-mobile
-/spatial-web-stack/apps/portal/hello-portal
-/spatial-web-stack/apps/studio/hello-studio
-/spatial-web-stack/blockchain/ixo-blockchain
-/spatial-web-stack/core-concepts
-/spatial-web-stack/intro-stack
-/spatial-web-stack/matrix/ixo-matrix
-/spatial-web-stack/matrix/matrix-encryption
-/spatial-web-stack/networks/energy-chains
-/spatial-web-stack/networks/grpc-gateway
-/spatial-web-stack/networks/ibc-relayers
-/spatial-web-stack/networks/impact-hub
-/spatial-web-stack/networks/interchain-bridges
-/spatial-web-stack/networks/intro-networks
-/spatial-web-stack/networks/unl-chain
-/spatial-web-stack/sdks/intro-sdks
-/spatial-web-stack/sdks/ixo-matrix-sdk
-/spatial-web-stack/sdks/ixo-multiclient-sdk
-/spatial-web-stack/sdks/jambo-wallet-sdk
-/spatial-web-stack/sdks/modules-sdk
-/spatial-web-stack/sdks/oracle-agent-sdk
-/spatial-web-stack/sdks/signx-sdk
+/ixo-stack/apps/intro-apps
+/ixo-stack/apps/jambo/hello-jambo
+/ixo-stack/apps/mission/hello-mission
+/ixo-stack/apps/mobile/hello-mobile
+/ixo-stack/apps/portal/hello-portal
+/ixo-stack/apps/studio/hello-studio
+/ixo-stack/blockchain/ixo-blockchain
+/ixo-stack/core-concepts
+/ixo-stack/intro-stack
+/ixo-stack/matrix/ixo-matrix
+/ixo-stack/matrix/matrix-encryption
+/ixo-stack/networks/energy-chains
+/ixo-stack/networks/grpc-gateway
+/ixo-stack/networks/ibc-relayers
+/ixo-stack/networks/impact-hub
+/ixo-stack/networks/interchain-bridges
+/ixo-stack/networks/intro-networks
+/ixo-stack/networks/unl-chain
+/ixo-stack/sdks/intro-sdks
+/ixo-stack/sdks/ixo-matrix-sdk
+/ixo-stack/sdks/ixo-multiclient-sdk
+/ixo-stack/sdks/jambo-wallet-sdk
+/ixo-stack/sdks/modules-sdk
+/ixo-stack/sdks/oracle-agent-sdk
+/ixo-stack/sdks/signx-sdk
 /tutorials/intro-tutorials
 /use-cases/intro-usecases
 /wip
@@ -215,14 +215,14 @@
 /sdk-reference/multiclient-sdk
 /sdk-reference/signx-sdk
 /sdk-reference/matrix-client-sdk
-/sdk-reference/oracle-ai-sdk
+/sdk-reference/oracle-adk
 /sdk-reference/jambo-wallet-sdk
 ```
 
 ## Hidden route clusters (high signal)
 
 - Legacy/parallel API docs tree: `/api-docs/**` (11 routes, hidden)
-- Legacy/parallel stack tree: `/spatial-web-stack/**` (25 routes, hidden)
+- Legacy/parallel stack tree: `/ixo-stack/**` (25 routes, hidden)
 - Additional developer guides not in nav: `/guides/dev/**` hidden subset
 - Thin but high-value hidden user page: `/guides/users/ai-companion`
 - Hidden platform pages: `/platforms/Emerging/emerging-dmrv`, `/platforms/Emerging/energy-systems`, `/platforms/Emerging/household-reporting`, `/platforms/Emerging/itmo-credentials`, `/platforms/Emerging/sample-size`, `/platforms/Emerging/distributor-onboarding`

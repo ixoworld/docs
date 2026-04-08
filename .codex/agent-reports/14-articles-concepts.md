@@ -7,8 +7,8 @@
 - `articles/intro-platforms.mdx`
 - `introduction.mdx`
 - `core-concepts.mdx`
-- `spatial-web-stack/core-concepts.mdx`
-- `spatial-web-stack/sdks/intro-sdks.mdx`
+- `ixo-stack/core-concepts.mdx`
+- `ixo-stack/sdks/intro-sdks.mdx`
 
 ## What changed
 
@@ -28,8 +28,8 @@
 ## De-duplication outcomes
 
 - `articles/ixo-matrix.mdx` no longer owns setup examples or implementation code blocks.
-- `core-concepts.mdx` and `spatial-web-stack/core-concepts.mdx` are now conceptual maps with outward links, not mixed concept+reference hybrids.
-- `spatial-web-stack/sdks/intro-sdks.mdx` now acts as an SDK routing page rather than a duplicate installation/how-to reference.
+- `core-concepts.mdx` and `ixo-stack/core-concepts.mdx` are now conceptual maps with outward links, not mixed concept+reference hybrids.
+- `ixo-stack/sdks/intro-sdks.mdx` now acts as an SDK routing page rather than a duplicate installation/how-to reference.
 
 ## Second-pass expansion (completed)
 
@@ -45,16 +45,16 @@
 - `articles/cdt-systems.mdx`
 - `articles/pods.mdx`
 - `articles/ixo-oracles.mdx`
-- `spatial-web-stack/sdks/modules-sdk.mdx`
-- `spatial-web-stack/sdks/ixo-multiclient-sdk.mdx`
-- `spatial-web-stack/sdks/ixo-matrix-sdk.mdx`
-- `spatial-web-stack/sdks/oracle-agent-sdk.mdx`
-- `spatial-web-stack/matrix/matrix-encryption.mdx`
+- `ixo-stack/sdks/modules-sdk.mdx`
+- `ixo-stack/sdks/ixo-multiclient-sdk.mdx`
+- `ixo-stack/sdks/ixo-matrix-sdk.mdx`
+- `ixo-stack/sdks/oracle-agent-sdk.mdx`
+- `ixo-stack/matrix/matrix-encryption.mdx`
 
 ### Second-pass outcomes
 
 - Removed remaining stale temporal phrasing in scoped directories.
-- Cleared remaining legacy `Spatial Web` terminology in `articles/**/*` and `spatial-web-stack/**/*`.
+- Cleared remaining legacy `Spatial Web` terminology in `articles/**/*` and `ixo-stack/**/*`.
 - Converted additional article pages from implementation/reference-heavy copy to concept-first pages with canonical pointers.
 - Renamed SDK-facing labels in scoped files to canonical docs names:
   - `Oracle Agent SDK` -> `Agentic Oracles SDK`
@@ -63,4 +63,4 @@
 
 ## Remaining follow-up opportunities in scope
 
-- Some pages in `spatial-web-stack/sdks/*` still include deep examples that may overlap with dedicated reference pages; they are now terminology-normalized, but could be further split if stricter page-type separation is required.
+- Some pages in `ixo-stack/sdks/*` still include deep examples that may overlap with dedicated reference pages; they are now terminology-normalized, but could be further split if stricter page-type separation is required.
