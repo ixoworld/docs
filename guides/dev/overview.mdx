@@ -1,208 +1,72 @@
 ---
-title: 'Developer Overview'
-description: 'Getting started with IXO development'
+title: 'Overview'
+icon: 'code'
+description: 'Find the right starting point for building on IXO.'
 ---
 
 <Tip>
-  This guide provides an overview of the IXO development ecosystem, including available SDKs, APIs, and resources to help you build applications on the Spatial Web Stack.
+IXO provides TypeScript SDKs, REST and RPC APIs, and deployable gateway tools for building on the IXO Protocol. This page points you to the right entry point based on what you want to do.
 </Tip>
 
-## Development Stack
+## Choose your starting point
 
 <CardGroup>
-  <Card title="IXO SDKs" icon="code" href="/sdk-reference/index">
-    Software Development Kits for building Spatial Web applications
+  <Card title="SDKs and tools" icon="toolbox" href="/guides/dev/spatial-web-sdks">
+    Browse TypeScript SDKs and deployable gateway tools, including the IXO MultiClient SDK, IXO Matrix Client SDK, and IXO USSD gateway
   </Card>
-  
-  <Card title="API Reference" icon="book" href="/api-reference/authentication">
-    Comprehensive API documentation
+  <Card title="API reference" icon="server" href="/api-reference">
+    REST, RPC, GraphQL, and service API interfaces for IXO Protocol and application services
   </Card>
-  
-  <Card title="Blockchain" icon="cube" href="/articles/ixo-protocol">
-    IXO Protocol blockchain for digital twins and impact claims
-  </Card>
-  
-  <Card title="IXO Matrix" icon="database" href="/articles/ixo-matrix">
-    Secure data storage and messaging
-  </Card>
-</CardGroup>
-
-## Core SDKs
-
-<AccordionGroup>
-  <Accordion title="IXO MultiClient SDK" icon="network-wired">
-    ```bash
-    npm install @ixo/impactxclient-sdk
-    ```
-    
-    The IXO MultiClient SDK provides a unified interface for interacting with:
-    - IXO Protocol blockchain
-    - IXO Matrix data storage
-    - Agentic Oracles
-    - Digital twin management
-    
-    [Learn more about the IXO MultiClient SDK](/sdk-reference/multiclient-sdk)
-  </Accordion>
-  
-  <Accordion title="IXO Matrix Client SDK" icon="database">
-    ```bash
-    npm install @ixo/matrixclient-sdk
-    ```
-    
-    The IXO Matrix Client SDK enables:
-    - Secure data room creation
-    - End-to-end encrypted messaging
-    - File storage
-    - Access control management
-    
-    [Learn more about the IXO Matrix Client SDK](/sdk-reference/matrix-client-sdk)
-  </Accordion>
-  
-  <Accordion title="Agentic Oracles SDK" icon="brain">
-    ```bash
-    npm install @ixo/oracle-agent-sdk
-    ```
-    
-    The Oracle Agent SDK allows you to build:
-    - Verification oracles
-    - Data validation services
-    - Intelligent automation agents
-    - Attestation services
-    
-    [Learn more about the Agentic Oracles SDK](/sdk-reference/oracle-ai-sdk)
-  </Accordion>
-</AccordionGroup>
-<Info>
-> If you are using the [IXO Spatial Web Multiclient SDK](IXO-Spatial-Web-Multiclient-SDK.md), familiarize yourself with the [Signing Client](https://www.npmjs.com/package/@ixo/impactxclient-sdk#signing-client) to understand how to sign and broadcast transactions.
-Familiarize yourself with the [IXO Blocksync GraphQL](Blocksync-GraphQL-API-Overview.md) queries for retrieving data from the blockchain.
-</Info>
-
-## Key Modules
-
-These modules provide specific functionality that can be used independently or in combination to build your application.
-
-<CardGroup>
-  <Card title="Digital Twins" icon="cube" href="/guides/dev/ixo-domains">
-    Create and manage digital representations of real-world entities
-  </Card>
-  
-  <Card title="Claims" icon="file-check" href="/guides/dev/ixo-claims">
-    Submit and verify impact claims with evidence
-  </Card>
-  
-  <Card title="Data Rooms" icon="vault" href="/articles/ixo-matrix">
-    Set up secure data storage with controlled access
-  </Card>
-  
   <Card title="Authentication" icon="key" href="/guides/dev/authentication">
-    Implement secure authentication and authorization
+    Set up credentials, session keys, and authorization to connect to IXO services
+  </Card>
+  <Card title="Networks and endpoints" icon="network-wired" href="/reference/networks-and-endpoints">
+    Mainnet and testnet connection details, chain IDs, and base URLs
   </Card>
 </CardGroup>
 
-## Getting Started
+## Build specific capabilities
 
-<Steps>
-  <Step title="Set Up Development Environment">
-    Install the necessary SDKs for your project:
-    
-    ```bash
-    # Install core SDKs
-    npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
-    ```
-  </Step>
-  
-  <Step title="Configure Clients">
-    ```typescript
-    import { createClient } from "@ixo/impactxclient-sdk";
-    import { createMatrixClient } from "@ixo/matrixclient-sdk";
-    
-    // Initialize blockchain client
-    const chain = await createClient({
-      rpcEndpoint: "https://rpc.ixo.world",
-      chainId: "ixo-5"
-    });
-    
-    // Initialize Matrix client
-    const matrix = await createMatrixClient({
-      baseUrl: "https://matrix.ixo.world",
-      accessToken: "YOUR_ACCESS_TOKEN"
-    });
-    ```
-  </Step>
-  
-  <Step title="Implement Core Functionality">
-    Use the SDKs to implement your application's core features:
-    
-    ```typescript
-    // Create a digital twin entity
-    const entity = await chain.createEntity({
-      type: "Asset",
-      name: "Solar Panel Array",
-      data: {
-        capacity: "5kW",
-        location: "51.5074,-0.1278"
-      }
-    });
-    
-    // Create a secure data room
-    const room = await matrix.createRoom({
-      name: "Entity Data Room",
-      encryption: true
-    });
-    
-    // Store data securely
-    await matrix.sendEvent(room.roomId, "m.room.message", {
-      msgtype: "m.data",
-      body: JSON.stringify(sensorData)
-    });
-    ```
-  </Step>
-</Steps>
+<CardGroup>
+  <Card title="Digital twins" icon="cube" href="/guides/digital-twins">
+    Create and manage entity domains for real-world systems, assets, and organisations
+  </Card>
+  <Card title="Claims and verification" icon="file-check" href="/guides/dev/ixo-claims">
+    Submit and verify impact claims with evidence using IXO Protocol claims modules
+  </Card>
+  <Card title="Digital MRV" icon="chart-line" href="/guides/digital-mrv">
+    Set up digital measurement, reporting, and verification workflows
+  </Card>
+  <Card title="Agentic Oracles" icon="brain" href="/guides/ixo-oracles-architecture">
+    Build AI-powered oracle services for verification, evaluation, and automation
+  </Card>
+  <Card title="Domain settings" icon="sliders" href="/guides/dev/domain-settings">
+    Configure entity domain permissions, services, and linked resources
+  </Card>
+  <Card title="Model Context Protocol (MCP)" icon="plug" href="/mcp/model-context-protocol">
+    Connect AI tools to IXO services through MCP servers
+  </Card>
+</CardGroup>
 
-## Example Use Cases
-
-The IXO development stack can be used to build a wide range of applications. Here are some example use cases to help you understand how these modules can be used together for specific applications.
+## Core concepts
 
 <AccordionGroup>
-  <Accordion title="Digital MRV System" icon="chart-line">
-    A system for measuring, reporting, and verifying impact data:
-    
-    - **Digital Twins**: Create entities for projects and devices
-    - **Data Rooms**: Store sensor data securely
-    - **Claims**: Submit and verify impact claims
-    - **Oracles**: Validate data and generate attestations
-    
-    [View MRV Example](/guides/dev/examples)
+  <Accordion title="IXO Protocol" icon="cube">
+    The IXO Protocol is a Cosmos SDK blockchain for coordinating, financing, and verifying real-world impacts. Core modules cover entity management, claims, tokens, bonds, and smart accounts. [Read the protocol overview](/articles/ixo-protocol).
   </Accordion>
-  
-  <Accordion title="Secure Collaboration Platform" icon="users">
-    A platform for secure collaboration on sensitive data:
-    
-    - **Data Rooms**: Create encrypted spaces for collaboration
-    - **Authentication**: Manage user access and permissions
-    - **Messaging**: Enable secure communication
-    - **File Storage**: Share documents securely
-    
-    [View Collaboration Example](/guides/dev/examples)
+  <Accordion title="Domains and digital twins" icon="diagram-project">
+    Domains are on-chain representations of real-world entities — organisations, projects, assets, and devices. Each domain has a Decentralized Identifier (DID), controllers, services, and a linked IXO Matrix data room. [Learn about digital twins](/guides/digital-twins).
+  </Accordion>
+  <Accordion title="IXO Matrix" icon="database">
+    IXO Matrix is the encrypted data and communication layer. Applications use it for secure data rooms, evidence storage, and messaging linked to on-chain state. [Read the Matrix overview](/articles/ixo-matrix).
+  </Accordion>
+  <Accordion title="Agentic Oracles" icon="brain">
+    Agentic Oracles are AI-powered services that process impact claims, validate evidence, and write verifiable attestations to the IXO Protocol. [Learn about Agentic Oracles](/articles/ixo-oracles).
   </Accordion>
 </AccordionGroup>
 
-## Resources
+## Developer resources
 
-<CardGroup>
-  <Card title="API Reference" icon="book" href="/api-reference/authentication">
-    Detailed API documentation
-  </Card>
-  
-  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
-    Implementation examples and tutorials
-  </Card>
-  
-  <Card title="GitHub" icon="github" href="https://github.com/ixofoundation">
-    Source code and examples
-  </Card>
-  
-  <Card title="Community" icon="users" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
-    Developer community and support
-  </Card>
-</CardGroup>
+- [IXO open-source repositories](https://github.com/ixofoundation) — source code for SDKs, gateway tools, and reference implementations
+- [Developer community](https://ixofoundation.slack.com/archives/C04UERAUHQT) — questions, discussions, and support
+- [Product and SDK map](/reference/product-and-sdk-map) — canonical list of products, SDKs, and their package identifiers
