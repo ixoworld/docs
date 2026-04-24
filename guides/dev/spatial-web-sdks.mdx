@@ -1,162 +1,55 @@
 ---
-title: 'Spatial Web SDKs'
+title: 'IXO SDKs and tools'
 icon: 'code'
-description: 'Build advanced applications for the Spatial Web using the comprehensive suite of IXO development tools'
+description: 'Libraries and gateway tools for building on IXO'
 ---
 
 <Tip>
-The IXO Spatial Web SDKs provide developers with the tools to build real-world applications that leverage digital twins, Agentic Oracles, secure data rooms, and interchain networks.
+IXO provides TypeScript SDKs for integrating with the IXO Protocol, IXO Matrix, and related services, as well as deployable gateway tools for extending IXO access to offline and mobile channels.
 </Tip>
 
-## Available SDKs
+## SDKs
+
+Install these packages to integrate IXO services into your application.
 
 <CardGroup>
 
 <Card title="IXO MultiClient SDK" icon="network-wired" href="/sdk-reference/multiclient-sdk">
-  Connect with IXO and Cosmos networks for interchain operations
+  Interact with IXO Protocol modules, Cosmos chains, and interchain services from TypeScript
 </Card>
 
-<Card title="Matrix Client SDK" icon="database" href="/sdk-reference/matrix-client-sdk">
-  Build secure data rooms and encrypted communication channels
+<Card title="IXO Matrix Client SDK" icon="database" href="/sdk-reference/matrix-client-sdk">
+  Create and manage encrypted data rooms and secure messaging on IXO Matrix
 </Card>
 
 <Card title="Personal Agent ADK" icon="brain" href="/sdk-reference/oracle-adk">
-  Create AI-powered autonomous agents
+  Integrate conversational AI and personal agents with IXO services and verifiable data
+</Card>
+
+<Card title="IXO SignX SDK" icon="signature" href="/sdk-reference/signx-sdk">
+  Enable mobile-to-web signing and authentication using IXO SignX
 </Card>
 
 <Card title="JAMBO Wallet SDK" icon="wallet" href="/sdk-reference/jambo-wallet-sdk">
-  Manage digital assets and credentials in the JAMBO wallet
-</Card>
-
-<Card title="SignX SDK" icon="signature" href="/sdk-reference/signx-sdk">
-  Enable secure mobile-to-web authentication and transaction signing
+  Integrate digital asset and credential management into the JAMBO wallet
 </Card>
 
 </CardGroup>
 
-## Installation
+## Gateway tools
 
-```bash
-# Install core SDKs
-npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
-npm install @ixo/assistant-sdk @ixo/jambo-wallet-sdk
-```
-
-## Basic Setup
-
-<CodeGroup>
-
-```typescript IXO MultiClient SDK
-import { createClient } from "@ixo/impactxclient-sdk";
-
-// Initialize client
-const chain = await createClient({
-  rpcEndpoint: RPC_ENDPOINT,
-  chainId: "ixo-5"
-});
-
-// Create digital twin
-const twin = await chain.entity.create({
-  type: "DigitalTwin",
-  controller: "did:ixo:org/123"
-});
-```
-
-```typescript IXO Matrix Client SDK
-import { createMatrixClient } from "@ixo/matrixclient-sdk";
-
-// Initialize Matrix client
-const matrix = await createMatrixClient({
-  baseUrl: MATRIX_ENDPOINT,
-  accessToken: USER_TOKEN
-});
-
-// Create secure data room
-const room = await matrix.createRoom({
-  name: "Secure Data Room",
-  encryption: true,
-  visibility: "private"
-});
-```
-
-```typescript Assistant
-import { createAssistant } from "@ixo/assistant-sdk";
-
-// Initialize assistant
-const assistant = await createAssistant({
-  type: "VerificationAgent",
-  capabilities: ["verification", "analytics"]
-});
-
-// Process verification request
-const result = await assistant.verify({
-  data: inputData,
-  context: verificationContext
-});
-```
-
-```typescript JAMBO Wallet
-import { createWallet } from "@ixo/jambo-wallet-sdk";
-
-// Initialize wallet
-const wallet = await createWallet({
-  storageType: "secure",
-  network: "mainnet"
-});
-
-// Manage credentials
-const credential = await wallet.createCredential({
-  type: "VerifiableCredential",
-  issuer: "did:ixo:issuer/123"
-});
-```
-
-</CodeGroup>
-
-## Key Features
-
-### MultiClient SDK
-- Interchain transactions and queries
-- Digital twin management
-- Entity state management
-- Blockchain service management
-
-### Matrix Client SDK
-- End-to-end encrypted data rooms
-- Secure messaging and file storage
-- Access control management
-- Real-time data streaming
-
-### Personal Agent ADK
-- AI-powered agent services
-- Analytics processing
-- Evidence collection
-- Proof generation
-
-### JAMBO Wallet SDK
-- Credential management
-- Digital asset operations
-- Secure key storage
-- Transaction signing
-
-## Next Steps
+Fork or deploy these tools to extend IXO services to additional channels and environments.
 
 <CardGroup>
 
-<Card title="API Reference" icon="code">
-  View detailed SDK documentation
-</Card>
-
-<Card title="Examples" icon="lightbulb">
-  Explore sample applications
-</Card>
-
-<Card title="GitHub" icon="github">
-  Access SDK source code
-</Card>
-
-<Card title="Support" icon="headset">
-  Get developer support
+<Card title="IXO USSD gateway" icon="tower-cell" href="/articles/ixo-ussd">
+  Give any GSM mobile phone access to IXO services — no smartphone or data plan required
 </Card>
 
 </CardGroup>
+
+## Next steps
+
+- [SDK reference](/sdk-reference) — full reference for each SDK
+- [API reference](/api-reference) — IXO service APIs
+- [Developer overview](/guides/dev/overview) — task guides for common developer workflows
