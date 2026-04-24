@@ -1,0 +1,201 @@
+---
+title: "USSD gateway API"
+icon: "tower-cell"
+description: "Endpoint reference for the IXO USSD gateway session API."
+---
+
+## Overview
+
+The IXO USSD gateway exposes a single session endpoint that telecom gateways call for each user interaction, plus debug and health endpoints for operators.
+
+All endpoints accept and return JSON unless otherwise noted. The main session endpoint returns plain text in the USSD response format.
+
+## Authentication
+
+The `/api/ussd` endpoint does not require authentication by default. It is intended to be called by your telecom gateway server, not directly from a browser. Restrict access at the network or reverse-proxy layer in production.
+
+## Base URL
+
+```text
+http://YOUR_SERVER:3000
+```
+
+The default port is `3000`. Set `PORT` in your environment to override.
+
+## Session endpoint
+
+### POST /api/ussd
+
+Processes a USSD interaction. Called by the telecom gateway once per user input during a session.
+
+**Request**
+
+```json
+{
+  "sessionId": "string",
+  "serviceCode": "string",
+  "phoneNumber": "string",
+  "text": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `sessionId` | string | yes | Unique session identifier assigned by the telecom gateway |
+| `serviceCode` | string | yes | USSD service code the user dialled, e.g. `*1234#` |
+| `phoneNumber` | string | yes | User's phone number in E.164 international format, e.g. `+260971234567` |
+| `text` | string | yes | User input accumulated during the session. Empty string on initial dial |
+
+**Validation rules**
+
+- `phoneNumber` must be E.164 format
+- `serviceCode` must match USSD format, e.g. `*1234#` or `*123*456#`
+- `text` maximum 182 characters (USSD protocol limit)
+- `sessionId` maximum 100 characters
+
+**Response**
+
+Plain text. The first word indicates whether the session continues or ends.
+
+```
+CON <menu text>
+```
+```
+END <closing message>
+```
+
+| Prefix | Meaning |
+|---|---|
+| `CON` | Session continues — display the menu and wait for the next input |
+| `END` | Session closed — display the message and end the USSD session |
+
+**Example — initial dial**
+
+```bash
+curl -X POST http://localhost:3000/api/ussd \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "session-001",
+    "serviceCode": "*1234#",
+    "phoneNumber": "+260971234567",
+    "text": ""
+  }'
+```
+
+Response:
+
+```
+CON Welcome to IXO USSD
+1. Know More
+2. Account Menu
+*. Exit
+```
+
+**Example — user selects option 1**
+
+```bash
+curl -X POST http://localhost:3000/api/ussd \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "session-001",
+    "serviceCode": "*1234#",
+    "phoneNumber": "+260971234567",
+    "text": "1"
+  }'
+```
+
+Response:
+
+```
+CON Information Center
+1. About this service
+2. Pricing
+3. Delivery
+*. Exit
+```
+
+## Debug endpoints
+
+### GET /api/ussd/debug/:sessionId
+
+Returns the current state and context for an active session. Intended for operator debugging only — do not expose publicly.
+
+**Response**
+
+```json
+{
+  "sessionId": "session-001",
+  "debugInfo": {
+    "state": "preMenu",
+    "context": {
+      "sessionId": "session-001",
+      "phoneNumber": "+260971234567",
+      "message": "Welcome to IXO USSD...",
+      "isAuthenticated": false
+    },
+    "status": "active"
+  },
+  "activeSessions": ["session-001"]
+}
+```
+
+### GET /api/ussd/sessions
+
+Returns all currently active session IDs.
+
+```json
+{
+  "activeSessions": ["session-001", "session-002"],
+  "count": 2
+}
+```
+
+## Health endpoints
+
+### GET /health
+
+Returns application health with database connectivity status.
+
+```json
+{
+  "status": "ok",
+  "environment": "production",
+  "timestamp": "2026-04-22T10:00:00.000Z",
+  "uptime": 3600,
+  "database": "connected"
+}
+```
+
+### GET /
+
+Basic health check for platform-as-a-service health probes.
+
+```json
+{
+  "status": "ok",
+  "message": "ixo-ussd-server running",
+  "environment": "production",
+  "timestamp": "2026-04-22T10:00:00.000Z"
+}
+```
+
+## Errors
+
+| Response | Cause | What to do |
+|---|---|---|
+| `END Invalid input. Please try again.` | Request failed validation | Check phone number is E.164, service code format, and text length |
+| `END Service temporarily unavailable. Please try again later.` | Server or database error | Check `/health` for database connectivity |
+| Session not found on `GET /debug/:sessionId` | Session expired or never started | Sessions expire after inactivity; the user must dial again |
+
+**Rate limiting:** 100 requests per minute per IP address. Requests exceeding this return HTTP 429.
+
+## Security notes
+
+- User PINs are encrypted at rest with AES-256 using the `PIN_ENCRYPTION_KEY` environment variable.
+- All inputs are validated and sanitised before processing.
+- Set `TRUST_PROXY_ENABLED=true` when running behind a reverse proxy so rate limiting uses the real client IP.
+
+## Related guides
+
+- [Deploy the IXO USSD gateway](/guides/dev/ussd-gateway) — setup, environment configuration, and telecom gateway integration
+- [IXO USSD gateway overview](/articles/ixo-ussd) — architecture and integration model

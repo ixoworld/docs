@@ -1,0 +1,25 @@
+---
+title: "USSD access channel"
+icon: "tower-cell"
+description: "How Emerging Household Energy uses USSD to give rural households offline access to IXO services."
+---
+
+Emerging Household Energy uses USSD as the primary offline access channel for rural household members. It is built on the open-source [IXO USSD gateway](/articles/ixo-ussd) and deployed as a fork at [emerging-eco/ixo-ussd-supamoto](https://github.com/emerging-eco/ixo-ussd-supamoto).
+
+Users dial a USSD short code on any GSM phone — no smartphone or data plan required — to register their identity, manage their account, and interact with Emerging Household Energy services.
+
+## Current capabilities
+
+The Supamoto deployment supports:
+
+- **Know More** — information about the programme, products, and services
+- **Account creation** — register a new household member identity with a PIN, creating an IXO Decentralized Identifier (DID) and on-chain wallet
+- **Account login** — authenticate returning users by phone number and PIN
+
+Additional flows, including user services and agent services, are under active development. See the [repository](https://github.com/emerging-eco/ixo-ussd-supamoto) for current status.
+
+## Related pages
+
+- [IXO USSD gateway](/articles/ixo-ussd) — generic gateway architecture and how USSD connects to IXO Protocol
+- [Deploy the IXO USSD gateway](/guides/dev/ussd-gateway) — set up and configure the gateway
+- [Emerging Household Energy digital identifiers](/platforms/Emerging/digital-identifiers) — how DIDs and credentials are used for household members

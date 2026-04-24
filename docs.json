@@ -25,22 +25,29 @@
           {
             "group": "Developers",
             "pages": [
+              "guides/dev/overview",
               "guides/dev/spatial-web-sdks",
-              "guides/dev/domain-settings",
-              "guides/digital-twins",
-              "guides/domain-registration",
-              "guides/dev/domain-privacy",
+              "mcp/model-context-protocol",
+              {
+                "group": "Developer Guides",
+                "pages": [
+                  "guides/dev/ussd-gateway"
+                ]
+              },
               "guides/dev/authentication",
               "guides/dev/ixo-claims",
-              "guides/registry",
+              "guides/digital-twins",
+              "guides/domain-registration",
+              "guides/dev/domain-settings",
+              "guides/dev/domain-privacy",
               "guides/digital-mrv",
-              "guides/ixo-oracles-architecture",
-              "mcp/model-context-protocol"
+              "guides/registry",
+              "guides/ixo-oracles-architecture"
             ]
           },
           {
             "group": "User Guides",
-            "pages": ["guides/users/intro-users"]
+            "pages": ["guides/users/intro-users", "guides/users/ussd"]
           },
           {
             "group": "Platforms",
@@ -53,6 +60,7 @@
               "articles/cdt-systems",
               "articles/ixo-blockchain",
               "articles/ixo-matrix",
+              "articles/ixo-ussd",
               "articles/ixo-blocksync",
               "articles/ixo-oracles",
               "articles/pods",
@@ -79,6 +87,7 @@
                 "group": "Emerging",
                 "pages": [
                   "platforms/Emerging/intro-emerging",
+                  "platforms/Emerging/ussd-channel",
                   "platforms/Emerging/concepts",
                   "platforms/Emerging/digital-identifiers",
                   "platforms/Emerging/credential-issuance",
@@ -127,6 +136,10 @@
           {
             "group": " ",
             "pages": ["api-reference/registry-api"]
+          },
+          {
+            "group": " ",
+            "pages": ["api-reference/ussd-api"]
           },
           {
             "group": " ",
