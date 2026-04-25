@@ -1,14 +1,75 @@
 ---
-title: 'Digital MRV'
-icon: 'chart-line'
-description: 'Decentralized Measurement, Reporting, and Verification for Climate Impact Activities'
+title: "Emerging Household Energy dMRV"
+icon: "chart-line"
+description: "Implement dMRV for the Emerging Household Energy solution using household, device, and reporting workflows."
 ---
 
-<Tip>
-  The Emerging Household Energy provides a decentralized digital Measurement, Reporting, and Verification (dMRV) system that delivers real-time data capture, robust protocol configuration, and cryptographic verification for climate impact activities.
-</Tip>
+This page documents the **Emerging Household Energy** scope. Use it to run household-energy monitoring and reporting workflows on top of **Emerging Platform dMRV** capabilities.
 
-## Core Features
+<Info>
+  Platform reference: `/platforms/Emerging/dmrv`
+</Info>
+
+## Prerequisites
+
+Before you implement solution dMRV, confirm:
+
+- identity and entity setup is complete
+- household and device registration flows are available
+- credential issuance flow is configured
+
+## Implementation flow
+
+<Steps>
+<Step title="Set up households and devices">
+Register household and device entities, then bind them to monitoring scope.
+
+- Household setup: `/platforms/Emerging/household-monitoring`
+- Device telemetry setup: `/platforms/Emerging/stove-use-monitoring`
+</Step>
+
+<Step title="Collect and validate monitoring data">
+Ingest monitored data for the reporting period and run verification checks for completeness and consistency.
+
+- Supplementary validation inputs: `/platforms/Emerging/kpt`
+- Survey support data: `/platforms/Emerging/qualitative-surveys`
+</Step>
+
+<Step title="Generate household reporting outputs">
+Aggregate accepted evidence into household reporting outputs for downstream use.
+
+- Reporting workflow: `/platforms/Emerging/household-reporting`
+</Step>
+
+<Step title="Issue credentials and track outcomes">
+Issue or update credentials tied to verified outcomes and preserve traceability in registry-linked state.
+
+- Credential lifecycle: `/platforms/Emerging/credential-issuance`
+- Certification-specific references: `/platforms/Emerging/itmo-credentials`
+</Step>
+</Steps>
+
+## Solution dependencies
+
+This solution implementation depends on:
+
+- Emerging Platform dMRV capability model: `/platforms/Emerging/dmrv`
+- Registry workflows: `/platforms/Emerging/registry`
+- Cross-product identity dependency: `/platforms/Emerging/digital-identifiers`
+
+## Next steps
+
+- Track SDG-linked outcomes: `/platforms/Emerging/sdg-monitoring`
+- Continue with digital certification references: `/platforms/Emerging/digital-certification`
+---
+title: 'Emerging Household Energy dMRV'
+icon: 'chart-line'
+description: 'Implement dMRV for the Emerging Household Energy solution using households, devices, and solution-specific workflows.'
+---
+
+The **Emerging Household Energy** solution applies Emerging Platform dMRV capabilities to household energy and clean cooking workflows. Use this page when you need solution-specific implementation guidance for households, devices, and reporting flows.
+
+## Core features
 
 <CardGroup>
   <Card title="Real-Time Measurement" icon="clock">
@@ -25,7 +86,7 @@ description: 'Decentralized Measurement, Reporting, and Verification for Climate
   </Card>
 </CardGroup>
 
-## System Architecture
+## System architecture
 
 <CardGroup>
   <Card title="Data Layer" icon="database">
@@ -42,7 +103,7 @@ description: 'Decentralized Measurement, Reporting, and Verification for Climate
   </Card>
 </CardGroup>
 
-## Implementation Guide
+## Implementation guide
 
 ### Device Integration
 
@@ -84,7 +145,7 @@ description: 'Decentralized Measurement, Reporting, and Verification for Climate
   </Card>
 </CardGroup>
 
-## Workflow Components
+## Workflow components
 
 ### Data Collection
 <CardGroup>
@@ -125,13 +186,21 @@ description: 'Decentralized Measurement, Reporting, and Verification for Climate
   </Accordion>
 </AccordionGroup>
 
-## Integration Examples
+## Related platform dependency
+
+This solution depends on core IXO platform services, including:
+
+- [IXO Protocol](/protocols/ixo-protocol)
+- [IXO Matrix](/articles/ixo-matrix)
+- [Registry](/platforms/Emerging/registry)
+
+## Integration examples
 
 <CardGroup>
-  <Card title="Clean Cooking" icon="fire" href="/platforms/Emerging/clean-cooking">
+  <Card title="Clean cooking workflows" icon="fire" href="/platforms/Emerging/household-monitoring">
     Implementation guide for clean cooking projects
   </Card>
-  <Card title="Carbon Credits" icon="leaf" href="/platforms/Emerging/carbon-credits">
+  <Card title="Carbon credits" icon="leaf" href="/platforms/Emerging/digital-certification">
     Carbon credit generation and trading
   </Card>
   <Card title="SDG Monitoring" icon="chart-line" href="/platforms/Emerging/sdg-monitoring">
@@ -142,13 +211,13 @@ description: 'Decentralized Measurement, Reporting, and Verification for Climate
 ## Developer Resources
 
 <CardGroup>
-  <Card title="API Documentation" icon="code" href="/api-docs/emerging-api/emerging-api">
+  <Card title="API Documentation" icon="code" href="/platforms/Emerging/emerging-api">
     Complete API reference and examples
   </Card>
   <Card title="Registry Integration" icon="book" href="/platforms/Emerging/registry">
     Connect with the Emerging Registry
   </Card>
-  <Card title="Protocol Templates" icon="puzzle-piece" href="/articles/ixo-protocols">
+  <Card title="Protocol concepts" icon="puzzle-piece" href="/protocols/ixo-protocol">
     Ready-to-use protocol configurations
   </Card>
 </CardGroup>

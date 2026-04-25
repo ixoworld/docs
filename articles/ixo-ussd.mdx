@@ -1,0 +1,90 @@
+---
+title: "IXO USSD gateway"
+icon: "tower-cell"
+description: "How the IXO USSD gateway extends IXO services to any GSM mobile phone."
+---
+
+<Tip>
+The IXO USSD gateway is an open-source tool that makes IXO Protocol services accessible from any GSM phone — no smartphone, app, or data plan required. This page explains its architecture and role in the IXO ecosystem. For setup instructions, see the [developer guide](/guides/dev/ussd-gateway).
+</Tip>
+
+## Role in the IXO ecosystem
+
+USSD (Unstructured Supplementary Service Data) is a real-time text session protocol built into every GSM network. A user dials a short code such as `*1234#`, navigates menus via number keys, and receives responses — all within a live network session.
+
+The IXO USSD gateway sits between a telecom network and IXO services. It receives USSD sessions from a telecom gateway, processes user input through configurable state machine flows, and calls IXO Protocol and IXO Matrix services to create identities, issue credentials, and record verifiable impact data.
+
+<AccordionGroup>
+  <Accordion title="How a session works" icon="route">
+    1. A user dials the USSD service code on any GSM phone.
+    2. The telecom gateway (such as Africa's Talking) forwards the session to the IXO USSD gateway as an HTTP POST request.
+    3. The gateway processes the input through an XState v5 state machine and returns a `CON` (continue) or `END` (close) response.
+    4. The user navigates menus until the session completes or times out.
+    5. Completed actions — account creation, credential issuance, impact reporting — are recorded on the IXO Protocol and stored in an IXO Matrix data vault.
+  </Accordion>
+  <Accordion title="Integration with IXO services" icon="plug">
+    The gateway integrates with:
+
+    - **IXO Protocol** — creates Decentralized Identifiers (DIDs) and blockchain wallets for new users, and writes verifiable claims on behalf of the user
+    - **IXO Matrix** — stores encrypted user data and private keys in a Matrix-based data vault
+    - **PostgreSQL** — maintains session state across USSD interactions for each user
+  </Accordion>
+  <Accordion title="Open-source and forkable" icon="code-fork">
+    The gateway is designed to be forked and adapted. The core framework — state machines, session management, database layer, and IXO service integrations — is reusable across any impact use case. Operators fork the repository, define their own USSD flows as state machines, and deploy against their own telecom gateway and IXO network.
+  </Accordion>
+</AccordionGroup>
+
+## Concept model
+
+<CardGroup>
+  <Card title="State machines" icon="diagram-project">
+    Each USSD flow is an XState v5 state machine. Parent machines orchestrate flows; child machines handle specific screens and business logic.
+  </Card>
+  <Card title="Session management" icon="clock-rotate-left">
+    PostgreSQL stores active session state. Each USSD session maps to a state machine instance keyed by session ID and phone number.
+  </Card>
+  <Card title="Telecom gateway bridge" icon="tower-broadcast">
+    Any telecom gateway that sends HTTP POST requests with session ID, service code, phone number, and text input is compatible. Africa's Talking is the reference integration.
+  </Card>
+  <Card title="IXO identity and credentials" icon="id-card">
+    On account creation, the gateway generates a DID and blockchain wallet for the user, and stores encrypted credentials in an IXO Matrix data vault.
+  </Card>
+</CardGroup>
+
+## Typical use cases
+
+<CardGroup>
+  <Card title="Offline user onboarding" icon="user-plus">
+    Register community members on IXO without a smartphone — collect name, set a PIN, create a DID and wallet.
+  </Card>
+  <Card title="Impact activity reporting" icon="file-circle-check">
+    Let field workers or household members report verified activities (such as clean cooking sessions) via USSD, triggering credential issuance on-chain.
+  </Card>
+  <Card title="Digital voucher management" icon="ticket">
+    Issue and redeem digital vouchers for goods or services through USSD menus, with on-chain settlement.
+  </Card>
+  <Card title="Low-connectivity data collection" icon="signal">
+    Collect structured data from areas with no mobile data coverage using only voice-quality GSM connectivity.
+  </Card>
+</CardGroup>
+
+## Reference implementation
+
+Emerging Household Energy (Supamoto) uses the IXO USSD gateway as the offline access channel for rural household members in Zambia. The Supamoto deployment is maintained as an open-source fork at [emerging-eco/ixo-ussd-supamoto](https://github.com/emerging-eco/ixo-ussd-supamoto). See [USSD access channel](/platforms/Emerging/ussd-channel) for details.
+
+## Go here next
+
+<CardGroup>
+  <Card title="Deploy the IXO USSD gateway" icon="server" href="/guides/dev/ussd-gateway">
+    Fork, configure, and run the gateway for your use case.
+  </Card>
+  <Card title="USSD gateway API" icon="code" href="/api-reference/ussd-api">
+    Endpoint reference for the USSD session API.
+  </Card>
+  <Card title="Use IXO via USSD" icon="mobile" href="/guides/users/ussd">
+    End-user guide for accessing IXO services on a basic phone.
+  </Card>
+  <Card title="Source repository" icon="github" href="https://github.com/ixoworld/ixo-ussd">
+    Fork the open-source IXO USSD gateway on GitHub.
+  </Card>
+</CardGroup>

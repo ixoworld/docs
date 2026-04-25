@@ -1,12 +1,10 @@
 ---
-title: 'Energy Systems'
+title: 'Emerging Household Energy systems'
 icon: 'bolt'
-description: 'Build intelligent household energy solutions using Cognitive Digital Twins (CDTs)'
+description: 'Model and monitor household energy systems in the Emerging Household Energy solution using digital twins and verification workflows.'
 ---
 
-<Tip>
-  Cognitive Digital Twins (CDTs) provide digital representations of the energy system, including physical devices, households, and processes. This enables real-time monitoring, automated verification, and AI-driven optimization of household energy transition and related climate impact mitigation activities.
-</Tip>
+This page documents **Emerging Household Energy** solution modeling. It explains how the solution maps households, devices, and verification data using platform primitives. Use this guide when implementing household-energy workflows rather than generic platform capabilities.
 
 ## Why Cognitive Digital Twins (CDTs)?
 
@@ -74,7 +72,7 @@ graph TD
   </Accordion>
 
   <Accordion title="Authorization Rights">
-    - Role-based access control
+    - Capability-based access control
     - Delegated permissions
     - Multi-signature governance
     - Revocation management
@@ -133,16 +131,16 @@ graph TD
 
 ### CDT System Integrations
 <CardGroup>
-  <Card title="IoT Connectivity" icon="wifi" href="/spatial-web-stack/spatial-web-sdks">
+  <Card title="IoT Connectivity" icon="wifi" href="/guides/dev/ixo-stack-sdks">
     Device data streaming and control
   </Card>
   <Card title="Registry Services" icon="grid" href="/platforms/Emerging/registry">
     Asset and claim registration
   </Card>
-  <Card title="Payment Systems" icon="credit-card" href="/platforms/Emerging/payment-integration">
+  <Card title="Payment Systems" icon="credit-card" href="/platforms/Emerging/digital-vouchers">
     Digital payments and tokenization
   </Card>
-  <Card title="Impact Markets" icon="globe" href="/platforms/Emerging/carbon-credits">
+  <Card title="Impact Markets" icon="globe" href="/platforms/Emerging/digital-certification">
     Carbon credit trading & ITMO purchases
   </Card>
 </CardGroup>
@@ -153,18 +151,18 @@ graph TD
 2. [Create digital twins](/guides/digital-twins) for your devices and entities
 3. [Configure monitoring](/platforms/Emerging/household-monitoring) and verification rules
 4. [Implement dMRV](/platforms/Emerging/emerging-dmrv) for impact tracking
-5. [Enable payments](/platforms/Emerging/payment-integration) and tokenization
+5. [Enable payments](/platforms/Emerging/digital-vouchers) and tokenization
 
 ## Developer Resources
 
 <CardGroup>
-  <Card title="API Documentation" icon="code" href="/api-docs/emerging-api/emerging-api">
+  <Card title="API Documentation" icon="code" href="/platforms/Emerging/emerging-api">
     Complete API reference
   </Card>
-  <Card title="SDKs" icon="box" href="/spatial-web-stack/spatial-web-sdks">
+  <Card title="SDKs" icon="box" href="/guides/dev/ixo-stack-sdks">
     Development tools and libraries
   </Card>
-  <Card title="AI Companion" icon="sparkles" href="assistant.ixo.world">
+  <Card title="AI Companion" icon="sparkles" href="/guides/users/ai-companion">
     AI-powered developer co-pilot
   </Card>
   <Card title="Support" icon="headset" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">

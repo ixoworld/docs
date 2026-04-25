@@ -1,12 +1,10 @@
 ---
-title: 'Data Integrity'
+title: 'Emerging Platform data integrity'
 icon: 'shield-check'
-description: 'Understand how the Emerging Household Energy ensures data integrity through cryptographic proofs and distributed consensus'
+description: 'Understand platform-level integrity controls used across Emerging implementations, including Emerging Household Energy.'
 ---
 
-<Tip>
-  The Emerging Household Energy uses cryptographic proofs and distributed consensus to ensure the integrity of all clean cooking data, impact claims, and verifiable credentials across the system.
-</Tip>
+The **Emerging Platform** uses cryptographic proofs, verifiable identities, and distributed consensus to preserve integrity of claims and credentials. This is a platform capability used by solution implementations such as **Emerging Household Energy**.
 
 ## Core Security Features
 
@@ -21,7 +19,7 @@ description: 'Understand how the Emerging Household Energy ensures data integrit
     Blockchain-based storage of verification proofs
   </Card>
   <Card title="Access Control" icon="shield">
-    Role-based permissions and credential verification
+    Capability-based permissions and credential verification
   </Card>
 </CardGroup>
 
@@ -44,7 +42,7 @@ description: 'Understand how the Emerging Household Energy ensures data integrit
   </Accordion>
 
   <Accordion title="Access Control">
-    - Role-based permissions
+    - Capability-based permissions
     - Multi-signature requirements
     - Credential verification
     - Authorization protocols
@@ -114,18 +112,18 @@ description: 'Understand how the Emerging Household Energy ensures data integrit
 
 ## Integration Guide
 
-1. [Review security requirements](/guides/dev/security)
-2. [Set up authentication](/platforms/Emerging/authentication)
-3. [Implement data validation](/platforms/Emerging/validation)
-4. [Configure monitoring](/platforms/Emerging/monitoring)
+1. [Review security requirements](/guides/dev/authentication)
+2. [Set up authentication](/guides/dev/authentication)
+3. [Implement data validation](/platforms/Emerging/data-integrity)
+4. [Configure monitoring](/platforms/Emerging/household-monitoring)
 
 ## Developer Resources
 
 <CardGroup>
-  <Card title="Security Guide" icon="shield-check" href="/guides/dev/security">
+  <Card title="Security Guide" icon="shield-check" href="/guides/dev/authentication">
     Implementation guidelines
   </Card>
-  <Card title="API Reference" icon="code" href="/api-docs/emerging-api/emerging-api">
+  <Card title="API Reference" icon="code" href="/api-reference/blocksync-graphql-api">
     Verification endpoints
   </Card>
   <Card title="Registry Guide" icon="book" href="/platforms/Emerging/registry">

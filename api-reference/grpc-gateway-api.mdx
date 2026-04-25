@@ -1,99 +1,40 @@
 ---
 title: Blockchain REST API
 icon: cloud
-description: RESTful interface for accessing IXO blockchain's gRPC services
+description: HTTP/JSON gateway reference for IXO Protocol gRPC query services.
 ---
 
-<Tip>
-The IXO Blockchain REST API provides a RESTful interface to access IXO blockchain's gRPC services, bridging the gap between high-performance gRPC and web-friendly REST APIs.
-</Tip>
+The Blockchain REST API is the gateway surface for IXO Protocol query access over HTTP. It is a protocol interface, not an application service API.
 
-## How It Works
+## Overview
 
-<AccordionGroup>
-  <Accordion title="Request Flow" icon="arrow-right-arrow-left">
-    The process of handling API requests
-    
-    <CardGroup>
-      <Card title="Steps" icon="list">
-        1. Client makes RESTful HTTP request
-        2. Gateway translates to gRPC request
-        3. gRPC server processes request
-        4. Response converted back to HTTP/JSON
-      </Card>
-    </CardGroup>
-  </Accordion>
+- Use this API when your client needs HTTP/JSON access to protocol queries.
+- Use the RPC API for direct node interaction patterns.
+- Use service APIs for IXO Blocksync, IXO Matrix, or Impact Hub Registry workflows.
 
-  <Accordion title="Key Features" icon="stars">
-    Main benefits of using the gRPC Gateway
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - REST access to gRPC services
-        - Simplified blockchain integration
-        - JSON response format
-        - Extensive endpoint coverage
-      </Card>
-    </CardGroup>
-  </Accordion>
-</AccordionGroup>
+## Request model
 
-## Available Endpoints
+1. Client sends HTTP request.
+2. Gateway maps request to gRPC service methods.
+3. Gateway returns JSON response.
 
-<AccordionGroup>
-  <Accordion title="Entity Management" icon="building">
-    Endpoints for managing entities
-    
-    ```http
-    GET /ixo/entity/{id}
-    ```
-  </Accordion>
+## Example endpoint shapes
 
-  <Accordion title="Claims" icon="file-check">
-    Endpoints for handling claims
-    
-    ```http
-    GET /ixo/claims/claims
-    ```
-  </Accordion>
-
-  <Accordion title="Token Operations" icon="coins">
-    Endpoints for token management
-    
-    ```http
-    GET /ixo/token/params
-    ```
-  </Accordion>
-</AccordionGroup>
-
-## Response Structure
-
-All responses are returned in JSON format and follow a consistent structure:
-
-```json
-{
-  "data": {
-    // Response data specific to the endpoint
-  },
-  "metadata": {
-    // Additional information about the response
-  }
-}
+```http
+GET /ixo/entity/{id}
+GET /ixo/claims/claims
+GET /ixo/token/params
 ```
 
-## Development Resources
+## Authentication
 
-<CardGroup>
-  <Card title="IXO Blockchain" href="https://github.com/ixofoundation/ixo-blockchain" icon="github">
-    Core blockchain repository with custom modules
-  </Card>
-  <Card title="Multiclient SDK" href="https://github.com/ixofoundation/ixo-MultiClient-SDK" icon="code">
-    TypeScript SDK for blockchain interaction
-  </Card>
-</CardGroup>
+Authentication requirements vary by deployment.
 
-<Tip type="info">
-The gRPC Gateway simplifies blockchain integration by allowing developers to use familiar REST APIs instead of implementing gRPC-specific libraries.
-</Tip>
+- Confirm credentials in `/reference/authentication-matrix`.
+- Confirm network endpoint mappings in `/reference/networks-and-endpoints`.
 
+## Related references
 
+- Blockchain RPC API: `/api-reference/rpc-api`
+- API authentication: `/api-reference/authentication`
+- Product and SDK map: `/reference/product-and-sdk-map`

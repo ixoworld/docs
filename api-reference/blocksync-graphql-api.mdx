@@ -1,59 +1,24 @@
 ---
-title: Blocksync GraphQL API
+title: IXO Blocksync GraphQL API
 icon: compass
-description: Comprehensive guide to the IXO Blocksync GraphQL API for interacting with blockchain data
+description: Read-only GraphQL query interface for indexed IXO chain data.
 ---
 
-<Tip>
-The IXO Blocksync GraphQL API provides a flexible and efficient way to interact with the IXO blockchain, offering powerful querying capabilities and high-precision data handling.
-</Tip>
+IXO Blocksync is an indexing and query service. It is not the canonical protocol transaction interface.
 
 ## Overview
 
-The Blocksync GraphQL API enables developers to:
-- Query blockchain data efficiently
-- Filter information with precision
-- Interact with decentralized features
-- Handle high-precision financial data
+- Use this API for indexed, flexible querying.
+- Treat this as a service layer over chain data.
+- Use protocol gateways for direct protocol operations.
 
-<AccordionGroup>
-  <Accordion title="Key Components" icon="puzzle">
-    Core elements of the Blocksync GraphQL API
-    
-    <CardGroup>
-      <Card title="Scalars" icon="pen-to-square">
-        - `BigFloat`: High-precision floating point numbers
-        - `BigInt`: Large integer values
-      </Card>
-      <Card title="Filters" icon="filter">
-        - Input filters for complex queries
-        - Logical operations support
-      </Card>
-      <Card title="Types" icon="database">
-        - Entity types
-        - Bond types
-        - Claim types
-      </Card>
-    </CardGroup>
-  </Accordion>
+## Service boundary
 
-  <Accordion title="Query Capabilities" icon="circle-question">
-    Available query operations
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - Read-only operations (no mutations)
-        - Complex filtering
-        - Pagination support
-        - Nested queries
-      </Card>
-    </CardGroup>
-  </Accordion>
-</AccordionGroup>
+- In scope: GraphQL query patterns, filters, and pagination.
+- Out of scope: transaction submission and module-level protocol semantics.
 
-## Example Queries
+## Example queries
 
-### Basic Entity Query
 ```graphql
 query {
   entities(first: 10) {
@@ -72,7 +37,6 @@ query {
 }
 ```
 
-### Filtered Query
 ```graphql
 query {
   entities(
@@ -92,33 +56,13 @@ query {
 }
 ```
 
-## Development Resources
+## Authentication and endpoints
 
-<CardGroup>
-  <Card title="GraphQL Playground" href="https://blocksync-graphql.ixo.earth/graphiql" icon="play">
-    Mainnet Playground
-  </Card>
-  <Card title="Testnet Playground" href="https://testnet-blocksync-graphql.ixo.earth/graphiql" icon="play">
-    Test Environment
-  </Card>
-  <Card title="Devnet Playground" href="https://devnet-blocksync-graphql.ixo.earth/graphiql" icon="play">
-    Development Environment
-  </Card>
-</CardGroup>
+- Auth requirements: `/reference/authentication-matrix`
+- Endpoint mapping by network: `/reference/networks-and-endpoints`
 
-## GitHub Repositories
+## Related references
 
-<CardGroup>
-  <Card title="Blocksync Core" href="https://github.com/ixofoundation/ixo-blocksync-core" icon="github">
-    Core Components
-  </Card>
-  <Card title="Blocksync" href="https://github.com/ixofoundation/ixo-blocksync" icon="github">
-    Implementation
-  </Card>
-</CardGroup>
-
-<Tip type="info">
-For detailed schema documentation and type definitions, refer to the [GraphQL Schema Reference](/api-reference/blocksync-graphql-schema).
-</Tip>
-
-
+- Pagination: `/api-reference/pagination`
+- Blockchain RPC API: `/api-reference/rpc-api`
+- Product and SDK map: `/reference/product-and-sdk-map`

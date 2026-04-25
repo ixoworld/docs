@@ -1,0 +1,175 @@
+---
+title: "Deploy the IXO USSD gateway"
+icon: "tower-cell"
+description: "Fork, configure, and run the open-source IXO USSD gateway to give any GSM phone access to IXO services."
+---
+
+## Before you start
+
+- Node.js 20 or later
+- pnpm (`npm install -g pnpm`)
+- PostgreSQL 14 or later
+- A telecom gateway account (such as [Africa's Talking](https://africastalking.com)) for live USSD testing
+- Docker — required only for integration tests
+
+## What this guide does
+
+This guide walks you through forking the IXO USSD gateway, configuring it for your environment, and running it against a telecom gateway. At the end you will have a working USSD server that can accept real or simulated sessions and write results to IXO Protocol.
+
+The gateway is designed to be forked. You define your own USSD flows as XState v5 state machines. The core session management, database layer, and IXO service integrations come pre-built.
+
+## Step 1 — Fork and clone the repository
+
+Fork [ixoworld/ixo-ussd](https://github.com/ixoworld/ixo-ussd) on GitHub, then clone your fork and install dependencies.
+
+```bash
+git clone https://github.com/YOUR_USERNAME/ixo-ussd.git
+cd ixo-ussd
+pnpm install
+```
+
+## Step 2 — Configure environment variables
+
+Copy the example environment file and edit it with your values.
+
+```bash
+cp env.example .env
+```
+
+### Required variables
+
+| Variable | Description | Example |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | `postgres://user:pass@localhost:5432/ixo-ussd-dev` |
+| `PIN_ENCRYPTION_KEY` | 32-character key for PIN encryption | generate with `openssl rand -hex 16` |
+| `LOG_LEVEL` | Logging verbosity | `debug`, `info`, `warn`, `error` |
+
+### Optional variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `NODE_ENV` | `development` | Environment mode |
+| `PORT` | `3000` | Server port |
+| `ZM_SERVICE_CODES` | `*1234#` | USSD service codes, comma-separated |
+| `IXO_API_URL` | `https://api.ixo.world` | IXO API endpoint |
+| `IXO_BLOCKCHAIN_URL` | `https://rpc.ixo.world` | IXO blockchain RPC |
+
+To target the IXO testnet instead of mainnet:
+
+```bash
+IXO_API_URL=https://api.testnet.ixo.world
+IXO_BLOCKCHAIN_URL=https://rpc.testnet.ixo.world
+```
+
+## Step 3 — Set up the database and start the server
+
+Create a PostgreSQL database, run migrations, then start the development server.
+
+```bash
+# Build the project
+pnpm build
+
+# Run database migrations
+node dist/src/migrations/run-migrations.js
+
+# Start the development server
+pnpm dev
+```
+
+The server starts at `http://localhost:3000` by default.
+
+## Step 4 — Connect a telecom gateway
+
+Most telecom USSD gateways send HTTP POST requests with form-encoded or JSON body. The IXO USSD gateway expects JSON at `POST /api/ussd`.
+
+For Africa's Talking, add a callback URL pointing to your server and adapt the request format:
+
+```javascript
+// Convert Africa's Talking format and forward to the gateway
+app.post('/ussd', async (req, res) => {
+  const response = await fetch('http://your-server/api/ussd', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sessionId: req.body.sessionId,
+      serviceCode: req.body.serviceCode,
+      phoneNumber: req.body.phoneNumber,
+      text: req.body.text || ''
+    })
+  });
+  const ussdResponse = await response.text();
+  res.type('text/plain').send(ussdResponse);
+});
+```
+
+See the [USSD gateway API reference](/api-reference/ussd-api) for the full request and response format.
+
+## Step 5 — Verify the result
+
+Send a test request to confirm the server is accepting sessions.
+
+```bash
+curl -X POST http://localhost:3000/api/ussd \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "test-session-001",
+    "serviceCode": "*1234#",
+    "phoneNumber": "+260971234567",
+    "text": ""
+  }'
+```
+
+A working server returns a `CON` response with the main menu text.
+
+Check active sessions:
+
+```bash
+curl http://localhost:3000/api/ussd/sessions
+```
+
+Check server health:
+
+```bash
+curl http://localhost:3000/health
+```
+
+## Troubleshooting
+
+### Database connection failed
+
+Confirm PostgreSQL is running and the `DATABASE_URL` in `.env` matches your setup.
+
+```bash
+# macOS
+brew services start postgresql
+
+# Ubuntu/Debian
+sudo systemctl start postgresql
+```
+
+### Missing PIN encryption key error
+
+Generate a valid key and add it to `.env`:
+
+```bash
+echo "PIN_ENCRYPTION_KEY=$(openssl rand -hex 16)" >> .env
+```
+
+### IXO account does not exist on chain
+
+New user accounts need a small token balance to cover gas fees before the gateway can write on-chain. Update your IXO feegrant configuration to cover gas for new accounts, or send a small amount to the generated address.
+
+### Migration failed
+
+Ensure the database exists and the user has write permissions, then re-run:
+
+```bash
+pnpm build && node dist/src/migrations/run-migrations.js
+```
+
+## Next steps
+
+- [USSD gateway API reference](/api-reference/ussd-api) — request and response format, session endpoints, error codes
+- [IXO USSD gateway — architecture overview](/articles/ixo-ussd) — state machine design and integration model
+- [Architecture patterns guide](https://github.com/ixoworld/ixo-ussd/blob/main/docs/ARCHITECTURE_PATTERNS_GUIDE.md) — how to build custom USSD flows
+- [IXO networks and endpoints](/reference/networks-and-endpoints) — mainnet and testnet connection details

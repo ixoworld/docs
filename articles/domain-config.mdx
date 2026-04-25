@@ -1,81 +1,35 @@
-## Manage Spatial Web Domains
-Each Cognitive Digital Twin has a Spatial Web Domain Identifier and a set of Domain Configurations.
+---
+title: "Domain configuration"
+description: "Conceptual overview of domain configuration in IXO digital twin systems."
+---
+
+## Domain configuration model
+
+Each digital entity domain is anchored by a Decentralized Identifier (DID) record and extended with controllers, services, resources, rights, and linked claims.
+
 <AccordionGroup>
-
-  <Accordion title="Identifiers">
-  * DID
-  * Also known as: Human-readable identifiers
+  <Accordion title="Identity and control" icon="fingerprint">
+    Controllers define who can update domain state and delegate permissions.
   </Accordion>
-
-  <Accordion title="Controllers">
-  * Entity with update permissions
-  * Example: "did:ixo:entity:abc123..."
+  <Accordion title="Services and resources" icon="database">
+    Domains reference service endpoints and linked data resources required for operations.
   </Accordion>
-  
-  <Accordion title="Services">
-  * Associated services and endpoints
-  * Example: Data ingestion service with endpoint "https://api.ixo.earth"
+  <Accordion title="Rights and claims" icon="scale-balanced">
+    Accorded rights and verifiable claims define what can be done and what has been attested.
   </Accordion>
-  
-  <Accordion title="Resources">
-  * Digital media, files, and data
-  * Example: Verifiable Credential
-  </Accordion>
-  
-  <Accordion title="Rights">
-  * Permissions and access control
-  * Example: Delegated Authorisation
-  </Accordion>
-  
-  <Accordion title="Claims">
-  * Assertions made by entities or about entities
-  * Example: Emission reduction
-  </Accordion>
-  
-  <Accordion title="Relationships">
-  * Networks of entities in the system
-  * Example: Projects deploy Assets, financed by Investments
-  </Accordion>
-  
-  <Accordion title="Accounts">
-  * Blockchain account addresses
-  * Example: Ethereum Network Address
-  </Accordion>
-
-  <Accordion title="Metadata">
-  * Verification status
-  * Credentials
-  * Validity Period
-  * State (e.g. active, inactive)
-  * Ownership
-  * Creator DID
-  </Accordion>
-
 </AccordionGroup>
 
-## Domain Properties and Configuration
+## Inheritance model
 
-Domain properties are stored on-chain in the context of the IID Module as an entity document that resolves to a DID-Core standard Document, based on the Interchain Identifier (IID) DID Method. The associated domain metadata is maintained within the Entity Module.
+Domains can inherit properties from protocol classes, with local domain properties taking precedence when conflicts occur.
 
-### Access Control
+## Go here next
 
-Only the Controllers specified in the Domain Document have the authority to modify the Domain Configuration. Updates to entity document properties are performed by submitting a `msgUpdateEntity` transaction using the defined message structure.
-
-### Class Inheritance
-
-Every domain inherits from a Class, which is typically a Protocol Domain. This class is defined in the domain's context and links to the DID of the entity from which the class properties are inherited.
-
-The complete domain document for an entity is compiled off-chain by aggregating:
-- The domain's own properties
-- Properties inherited from its class
-- Properties inherited through multiple levels of class inheritance
-
-<Tip>
-In cases where property conflicts exist between a domain and its inherited properties, the domain's own properties take precedence.
-</Tip>
-
-This inheritance structure enables:
-- Standardization through protocol domains
-- Flexible property customization
-- Multi-level inheritance for complex domain relationships
-- Clear resolution of property conflicts
+<CardGroup>
+  <Card title="Developer guide" icon="hand-pointer" href="/guides/dev/ixo-domains">
+    Use the domain guide for implementation and operational details.
+  </Card>
+  <Card title="Core concepts" icon="book" href="/core-concepts">
+    Return to the system model for identity and domain vocabulary.
+  </Card>
+</CardGroup>

@@ -6,7 +6,12 @@
   "overrides": [
     {
       "files": ["*.mdx"],
-      "extends": "plugin:mdx/recommended"
+      "extends": "plugin:mdx/recommended",
+      "rules": {
+        "no-unused-vars": "off",
+        "no-undef": "off",
+        "no-unused-expressions": "off"
+      }
     }
   ],
   "parserOptions": {

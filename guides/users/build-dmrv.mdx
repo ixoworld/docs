@@ -1,0 +1,130 @@
+---
+title: "Digital MRV"
+icon: "chart-line"
+description: "Link measurements, reports, verification, and outcomes into one auditable workflow on the IXO stack."
+---
+
+## Build digital MRV
+
+**Digital MRV** (measurement, reporting, and verification) turns raw observations into evidence-backed claims and verified outcomes that funders, regulators, programs, and downstream workflows can trust.
+
+Build this when measurements, reports, verification, and outcomes need to form **one auditable workflow**—not a chain of disconnected spreadsheets, inboxes, and field tools.
+
+<Card
+  title="MRV workflow builder"
+  icon="wand-magic-sparkles"
+  href="#add-mrv-workflow-builder-url"
+  cta="Build with AI"
+  arrow={true}
+>
+  Use an Agentic Oracle in qi.space to turn your indicators, sampling plan, evidence formats, verifier roles, and acceptance rules into a concrete digital MRV design.
+</Card>
+
+### What you will create
+
+- **Program or site entities** in the IXO graph that anchor what is being measured
+- **Indicators and methods** (what is measured, how often, units, and quality checks)
+- **Data capture paths** from field tools, sensors, lab results, surveys, or imports into your evidence model
+- **Report and claim types** that package measurements as reviewable evidence
+- A **verification Flow** with human and/or agent checks before outcomes are accepted
+- **Outputs** for dashboards, compliance exports, funding gates, or governance records
+
+### Quick start
+
+<Steps>
+  <Step title="Anchor the real-world subject">
+    Model the project, site, asset, intervention, or program as graph entities. Decide what “one row of truth” means for location, time period, and responsibility.
+  </Step>
+
+  <Step title="Define one measurable outcome">
+    Choose a single outcome the program cares about first (for example: emissions avoided, trees planted, attendance, energy saved). Write the formula or rule that defines “met / not met.”
+  </Step>
+
+  <Step title="Specify evidence and lineage">
+    For each indicator, define acceptable evidence types (readings, photos, lab PDFs, third-party attestations), required metadata (timestamp, geotag, device ID), and how duplicates or gaps are handled.
+  </Step>
+
+  <Step title="Design the reporting and claim step">
+    Decide how field or operational data becomes a structured report or claim, who may submit it, and what “complete for review” looks like before verifiers see it.
+  </Step>
+
+  <Step title="Assign verification and appeals">
+    Map who reviews completeness vs who attests truth, where Agentic Oracles may pre-check consistency, and how disputes or re-measurements are recorded.
+  </Step>
+
+  <Step title="Pilot one reporting cycle">
+    Run one period end-to-end: capture → report → claim → verify → published outcome. Confirm funders or regulators can replay the trail from measurement to decision.
+  </Step>
+</Steps>
+
+### Useful first scope
+
+Start with **one site or project**, **one indicator**, and **one reporting period**:
+
+- one evidence format you can enforce
+- one verifier path (with optional agent pre-check)
+- one consumer of the verified outcome (dashboard, report, funding gate, or registry)
+
+### Why MRV breaks across silos
+
+Measurement, reporting, and verification often happen across separate tools, organizations, documents, field systems, and review processes. This makes it difficult to prove what happened, compare evidence, release funds, satisfy governance, or improve future programs.
+
+### What you are wiring together
+
+A **digital MRV workflow** where measurements and reports are linked to entities, claims, evidence, verification steps, and outcomes.
+
+### Example
+
+A field team records measurements. A report is submitted as evidence. A claim is created for an outcome. An agent checks completeness and consistency. A verifier attests the result. The verified outcome becomes available for funding, reporting, governance, or learning.
+
+### Design checklist: first measurable outcome
+
+Before you scale, capture this in one place:
+
+- the program or project entity
+- the measurement method
+- the evidence format
+- the claim type
+- the verifier role
+- the acceptance criteria
+- the output needed by funders, regulators, dashboards, or governance processes
+
+### IXO and Qi roles
+
+<CardGroup cols={2}>
+  <Card title="IXO Graph" icon="circle-nodes" href="/articles/ixo-graph">
+    Connects projects, sites, participants, data sources, claims, evidence, reports, and outcomes.
+  </Card>
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
+    Anchors the claims, credentials, entities, and state transitions behind MRV workflows.
+  </Card>
+  <Card title="IXO Blocksync" icon="database" href="/articles/ixo-blocksync">
+    Provides indexed state and history for dashboards, analytics, services, and agents.
+  </Card>
+  <Card title="Qi and Agentic Oracles" icon="sparkles" href="/articles/ixo-oracles">
+    Support evidence checks, review routing, workflow automation, and decision support.
+  </Card>
+</CardGroup>
+
+### Next steps
+
+<CardGroup cols={2}>
+  <Card title="Digital MRV" icon="chart-line" href="/guides/digital-mrv">
+    End-to-end concepts and deployment patterns for digital MRV.
+  </Card>
+  <Card title="Agentic Oracles" icon="robot" href="/articles/ixo-oracles">
+    Agentic review, evidence evaluation, and workflow automation patterns.
+  </Card>
+  <Card title="IXO Blocksync" icon="database" href="/articles/ixo-blocksync">
+    Indexed access to state and history for analytics and applications.
+  </Card>
+  <Card title="IXO Graph" icon="circle-nodes" href="/articles/ixo-graph">
+    How real-world entities, claims, evidence, and outcomes connect.
+  </Card>
+</CardGroup>
+
+For more build paths and stack context, see [What you can build](/guides/what-you-can-build#digital-mrv-systems).
+
+<Note>
+  MRV programs often must follow methodology standards, registry rules, or regulatory frameworks. Use IXO and Qi for auditable workflow infrastructure; validate methodology and compliance requirements with subject-matter experts and legal counsel where applicable.
+</Note>

@@ -1,11 +1,14 @@
 ---
-title: IXO Spatial Web SDKs
+title: IXO and Qi Developer Kits
 icon: code
-description: A comprehensive collection of tools for building impact-driven applications on the IXO blockchain
+description: The fast-track to building custom applications and integrations
+sidebarTitle: SDK and kit overview
 ---
 
 <Tip>
-The IXO Spatial Web SDKs provide a collection of tools that enable developers to interact seamlessly with the IXO blockchain and build impact-driven applications. These SDKs simplify the integration of blockchain features into applications, offering a straightforward way to create, manage, and verify digital assets, identities, and claims.
+The IXO Software Development Kits and Qi tooling fast-track building custom applications and systems integrations with the IXO Stack and Qi Intelligent Cooperating System, for digitally-enabled coordination, financing, verification, governance, and data-driven intelligence.
+
+**Qi Forge ADK** is the umbrella for building Agentic Oracles without treating code as the only path: it includes the **Qi Forge CLI** and a **no-code Agentic Oracle-builder Skill** (configure and ship oracle workflows from skills rather than only from TypeScript).
 </Tip>
 
 ## Overview
@@ -13,12 +16,12 @@ The IXO Spatial Web SDKs provide a collection of tools that enable developers to
 This document introduces developers to the different SDKs provided by IXO. It aims to help developers understand the functionality of each SDK, their use cases, and how they can leverage these tools to build blockchain-based solutions that contribute to social, environmental, and economic impacts.
 
 <AccordionGroup>
-  <Accordion title="Multiclient SDK" icon="server">
-    The primary tool for interacting with the IXO blockchain, offering access to various blockchain services.
-    
+  <Accordion title="IXO MultiClient SDK" icon="server">
+    The primary toolkit for interacting with the IXO blockchain and related services.
+
     <CardGroup>
       <Card title="Documentation" href="/sdk-reference/multiclient-sdk" icon="book">
-        Learn how to use the Multiclient SDK
+        Learn how to use the IXO MultiClient SDK
       </Card>
       <Card title="GitHub" href="https://github.com/ixofoundation/ixo-multiclient-sdk" icon="github">
         View the source code
@@ -27,8 +30,8 @@ This document introduces developers to the different SDKs provided by IXO. It ai
   </Accordion>
 
   <Accordion title="SignX SDK" icon="key">
-    A cryptographic signature tool that simplifies the process of signing multiple blockchain transactions.
-    
+    A cryptographic authentication and transaction signing toolkit.
+
     <CardGroup>
       <Card title="Documentation" href="/sdk-reference/signx-sdk" icon="book">
         Learn how to use the SignX SDK
@@ -40,40 +43,27 @@ This document introduces developers to the different SDKs provided by IXO. It ai
   </Accordion>
 
   <Accordion title="Matrix Client SDK" icon="message">
-    Enables seamless interaction with Matrix, IXO's encrypted messaging and data storage infrastructure.
-    
+    A toolkit for integrating encrypted messaging and sovereign data storage in federated Matrix servers.
+
     <CardGroup>
       <Card title="Documentation" href="/sdk-reference/matrix-client-sdk" icon="book">
         Learn how to use the Matrix Client SDK
       </Card>
-      <Card title="GitHub" href="https://github.com/ixofoundation/ixo-matrixclient-sdk" icon="github">
-        View the source code
+      <Card title="Private GitHub" href="https://github.com/ixofoundation/ixo-matrixclient-sdk" icon="github">
+        Request repository access
       </Card>
     </CardGroup>
   </Accordion>
 
-  <Accordion title="Oracle AI SDK" icon="robot">
-    Leverages AI capabilities to enhance the development of decentralised applications.
-    
-    <CardGroup>
-      <Card title="Documentation" href="/sdk-reference/oracle-ai-sdk" icon="book">
-        Learn how to use the Oracle AI SDK
-      </Card>
-      <Card title="GitHub" href="https://github.com/ixofoundation/ixo-assistant-sdk" icon="github">
-        View the source code
-      </Card>
-    </CardGroup>
-  </Accordion>
+  <Accordion title="Qi Forge ADK and Agentic Oracles ADK" icon="sparkles">
+    **Qi Forge ADK** covers the **Qi Forge CLI** plus the **no-code Agentic Oracle-builder Skill**. For the TypeScript package that implements oracle and agent services in code, use the **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`) reference.
 
-  <Accordion title="JAMBO Wallet SDK" icon="wallet">
-    Provides integration capabilities for the Jambo wallet, allowing developers to easily build digital wallet functionalities.
-    
     <CardGroup>
-      <Card title="Documentation" href="/sdk-reference/jambo-wallet-sdk" icon="book">
-        Learn how to use the JAMBO Wallet SDK
+      <Card title="Agentic Oracles ADK (`@ixo/oracle-agent-sdk`)" href="/sdk-reference/agentic-oracles-adk" icon="book">
+        Programmatic Agent Development Kit for oracle services
       </Card>
-      <Card title="GitHub" href="https://github.com/ixofoundation/ixo-jambo-wallet-sdk" icon="github">
-        View the source code
+      <Card title="Concepts" href="/articles/ixo-oracles" icon="book-open">
+        Agentic Oracles overview
       </Card>
     </CardGroup>
   </Accordion>
@@ -81,7 +71,7 @@ This document introduces developers to the different SDKs provided by IXO. It ai
 
 ## Benefits
 
-These SDKs provide the foundational tools needed for developers to build sophisticated blockchain applications within the IXO ecosystem. They help in:
+These SDKs provide the foundational tools needed for developers to build powerful digitally-enabled coordination, financing, verification, governance, and data-driven intelligence applications.
 
 - **Streamlining Development**: The SDKs abstract complex blockchain interactions, allowing developers to focus more on application features rather than blockchain-specific code.
 - **Ensuring Security**: Tools like SignX and the DID Provider SDK ensure that security and identity management are core aspects of the development process.
@@ -91,13 +81,10 @@ These SDKs provide the foundational tools needed for developers to build sophist
   <Card title="Getting Started" href="/guides/dev/introduction" icon="rocket">
     Start building with our developer guides
   </Card>
-  <Card title="API Reference" href="/api-reference" icon="code">
+  <Card title="API Reference" href="/api-reference/index" icon="code">
     Explore our API documentation
   </Card>
   <Card title="Examples" href="/guides/dev/examples" icon="lightbulb">
     View implementation examples
   </Card>
 </CardGroup>
-
-
-

@@ -1,108 +1,31 @@
 ---
 title: Blockchain RPC API
 icon: server
-description: Protocol documentation for the IXO blockchain's RPC API
+description: Node-level API interface for IXO Protocol transactions and state queries.
 ---
 
-<Tip>
-The IXO Blockchain RPC API provides protobuf-based interfaces for interacting with the blockchain, defining key message types and services for transactions, events, and state queries.
-</Tip>
+This page documents the RPC interface family for IXO Protocol. It does not document application service APIs such as Impact Hub Registry, IXO Blocksync, or IXO Matrix.
 
-## Core Components
+## Overview
 
-<AccordionGroup>
-  <Accordion title="Messages" icon="message">
-    Protocol messages for blockchain interactions
-    
-    <CardGroup>
-      <Card title="Types" icon="list">
-        - Transaction messages
-        - Query messages
-        - State modification messages
-      </Card>
-    </CardGroup>
-  </Accordion>
+- Use this interface for protocol-level operations against chain nodes.
+- Prefer this when you need direct interaction with IXO Protocol modules.
+- For indexed or application-service workflows, use service APIs in this section instead.
 
-  <Accordion title="Events" icon="bell">
-    Blockchain state change notifications
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - State change tracking
-        - Transaction monitoring
-        - Real-time updates
-      </Card>
-    </CardGroup>
-  </Accordion>
+## Protocol boundary
 
-  <Accordion title="Queries" icon="circle-question">
-    State enquiry operations
-    
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - Blockchain state queries
-        - Parameter queries
-        - Historical data access
-      </Card>
-    </CardGroup>
-  </Accordion>
-</AccordionGroup>
+- In scope: chain state queries and transaction submission patterns.
+- Out of scope: service-specific business endpoints and off-chain workflow APIs.
 
-## Available Modules
+## Authentication
 
-<AccordionGroup>
-  <Accordion title="Claims Module" icon="file-check">
-    Manage verifiable claims and disputes
-    
-    <CardGroup>
-      <Card title="Operations" icon="list">
-        - Submit claims
-        - Evaluate claims
-        - Process disputes
-      </Card>
-    </CardGroup>
-  </Accordion>
+Authentication depends on node and deployment policy.
 
-  <Accordion title="Entities Module" icon="building">
-    Handle entity operations
-    
-    <CardGroup>
-      <Card title="Operations" icon="list">
-        - Create entities
-        - Update records
-        - Link resources
-      </Card>
-    </CardGroup>
-  </Accordion>
+- Check `/reference/authentication-matrix` for active auth requirements.
+- Check `/reference/networks-and-endpoints` for network-specific RPC endpoints.
 
-  <Accordion title="IID Module" icon="fingerprint">
-    Manage decentralized identifiers
-    
-    <CardGroup>
-      <Card title="Operations" icon="list">
-        - Create DIDs
-        - Update metadata
-        - Verify identifiers
-      </Card>
-    </CardGroup>
-  </Accordion>
+## Example message shapes
 
-  <Accordion title="Bonds Module" icon="link">
-    Handle bond operations
-    
-    <CardGroup>
-      <Card title="Operations" icon="list">
-        - Create bonds
-        - Buy/sell orders
-        - Swap operations
-      </Card>
-    </CardGroup>
-  </Accordion>
-</AccordionGroup>
-
-## Example Messages
-
-### Create Entity
 ```protobuf
 message MsgCreateEntity {
   string creator = 1;
@@ -111,7 +34,6 @@ message MsgCreateEntity {
 }
 ```
 
-### Submit Claim
 ```protobuf
 message MsgSubmitClaim {
   string creator = 1;
@@ -120,19 +42,8 @@ message MsgSubmitClaim {
 }
 ```
 
-## Development Resources
+## Related references
 
-<CardGroup>
-  <Card title="IXO Blockchain" href="https://github.com/ixofoundation/ixo-blockchain" icon="github">
-    Core blockchain repository
-  </Card>
-  <Card title="Multiclient SDK" href="https://github.com/ixofoundation/ixo-MultiClient-SDK" icon="code">
-    TypeScript SDK for RPC interactions
-  </Card>
-</CardGroup>
-
-<Tip type="info">
-The RPC API provides the foundation for all blockchain interactions, enabling developers to build decentralized applications that leverage IXO's core functionalities.
-</Tip>
-
-
+- Blockchain REST API: `/api-reference/grpc-gateway-api`
+- IXO Blocksync GraphQL API: `/api-reference/blocksync-graphql-api`
+- Product and SDK map: `/reference/product-and-sdk-map`

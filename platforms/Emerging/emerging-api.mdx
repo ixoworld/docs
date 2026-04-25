@@ -1,12 +1,10 @@
 ---
-title: 'API Reference'
+title: 'Emerging Platform API surfaces'
 icon: 'code'
-description: "Build service integrations"
+description: "Understand platform API surfaces and how Emerging Household Energy integrations consume them."
 ---
 
-<Tip>
-  The Emerging Household Energy provides a comprehensive set of APIs for interacting with the Impact Hub Network, Data Matrix, and Agentic Oracle services. These APIs enable developers to build applications for clean cooking initiatives and climate impact projects.
-</Tip>
+This page documents **Emerging Platform** API surfaces and cross-product IXO dependencies. Use it to choose integration entry points. For household-energy workflows, use the linked **Emerging Household Energy** guides.
 
 ## Service APIs
 
@@ -31,13 +29,13 @@ description: "Build service integrations"
   <Card title="Registry API" icon="book" href="/api-reference/registry-api">
     Register and manage digital twins
   </Card>
-  <Card title="Verification API" icon="check-double" href="/platforms/Emerging/verification">
+  <Card title="Verification API" icon="check-double" href="/platforms/Emerging/data-integrity">
     Process and validate claims
   </Card>
-  <Card title="Data API" icon="database" href="/platforms/Emerging/data-matrix">
+  <Card title="Data API" icon="database" href="/articles/ixo-matrix">
     Store and retrieve secure data
   </Card>
-  <Card title="Oracle API" icon="sparkles" href="/guides/ixo-oracles-architecture">
+  <Card title="Oracle API" icon="sparkles" href="/articles/ixo-oracles">
     Access AI services
   </Card>
 </CardGroup>
@@ -48,7 +46,7 @@ description: "Build service integrations"
   <Accordion title="API Keys">
     - Required for all API requests
     - Managed through Mission Control
-    - Role-based access control
+    - Capability-based access control
     - Environment-specific keys
   </Accordion>
 
@@ -120,17 +118,17 @@ description: "Build service integrations"
 ## Integration Guide
 
 1. [Get API credentials](/guides/dev/authentication)
-2. [Choose service endpoints](/platforms/Emerging/service-endpoints)
-3. [Implement authentication](/platforms/Emerging/authentication)
-4. [Handle responses](/guides/dev/error-handling)
+2. [Choose service endpoints](/reference/networks-and-endpoints)
+3. [Implement authentication](/guides/dev/authentication)
+4. [Handle responses](/api-reference/authentication)
 
 ## Developer Tools
 
 <CardGroup>
-  <Card title="API Reference" icon="book" href="/api-docs/emerging-api/emerging-api">
+  <Card title="API Reference" icon="book" href="/api-reference/blocksync-graphql-api">
     Complete API documentation
   </Card>
-  <Card title="SDKs" icon="code" href="/spatial-web-stack/spatial-web-sdks">
+  <Card title="SDKs" icon="code" href="/sdk-reference/index">
     Client libraries and tools
   </Card>
   <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">

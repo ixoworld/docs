@@ -1,6 +1,6 @@
 ---
 title: 'Entity Domains'
-description: 'Create and manage digital domains for entities in the IXO Spatial Web'
+description: 'Create and manage digital domains for entities on the IXO Stack'
 ---
 
 <Tip>
@@ -150,7 +150,8 @@ description: 'Create and manage digital domains for entities in the IXO Spatial 
 
     return await Entity.broadcast(msg);
   }
-  ```
+
+  ```python
 
   ```typescript Update Domain
   async function updateEntityDomain(
@@ -200,6 +201,7 @@ description: 'Create and manage digital domains for entities in the IXO Spatial 
     });
   }
   ```
+
 </CodeGroup>
 
 ## Domain Management
@@ -218,7 +220,7 @@ description: 'Create and manage digital domains for entities in the IXO Spatial 
           service
         }
       };
-      
+
       return await Entity.broadcast(msg);
     }
     ```
@@ -237,7 +239,7 @@ description: 'Create and manage digital domains for entities in the IXO Spatial 
           resource
         }
       };
-      
+
       return await Entity.broadcast(msg);
     }
     ```
@@ -256,7 +258,7 @@ description: 'Create and manage digital domains for entities in the IXO Spatial 
           status
         }
       };
-      
+
       return await Entity.broadcast(msg);
     }
     ```
@@ -298,15 +300,15 @@ description: 'Create and manage digital domains for entities in the IXO Spatial 
 ## Developer Resources
 
 <CardGroup>
-  <Card title="API Reference" icon="book" href="/api-reference/entity">
+  <Card title="API Reference" icon="book" href="/api-reference/grpc-gateway-api">
     Entity module API documentation
   </Card>
   
-  <Card title="SDK Guide" icon="code" href="/guides/dev/entity-sdk">
+  <Card title="SDK Guide" icon="code" href="/guides/dev/ixo-stack-sdks">
     Client SDK implementation guide
   </Card>
   
-  <Card title="Examples" icon="lightbulb" href="/guides/dev/entity-examples">
+  <Card title="Examples" icon="lightbulb" href="/guides/dev/examples">
     Implementation examples
   </Card>
   

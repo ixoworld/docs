@@ -1,98 +1,82 @@
 ---
-title: 'Introduction'
-icon: 'book-open'
-description: 'Explore in-depth articles about IXO technologies, implementations, and use cases'
+title: "Articles"
+icon: "book-open"
+description: "Two reading paths: outcome-first workflows, then deeper stack articles for IXO Graph, protocol, Matrix, Blocksync, oracles, and Qi."
 ---
 
 <Tip>
-The Articles section provides comprehensive technical documentation, implementation guides, and real-world case studies about the IXO Spatial Web ecosystem. This growing collection serves as a knowledge base for developers, system architects, and decision-makers.
+  **Path 1 — I want to build something:** start at [Introduction](/introduction) and [What you can build](/guides/what-you-can-build), then jump into developer guides. **Path 2 — I want to understand the stack:** read [Core concepts](/core-concepts), then the articles below for each component.
 </Tip>
 
-## Overview
+Articles explain how IXO and Qi **components fit together**. They give **conceptual context**, not step-by-step setup or API ownership (use [Developer overview](/guides/dev/overview) and [API reference](/api-reference/index) for that).
 
-<CardGroup>
-  <Card title="Core Technologies" icon="microchip">
-    Deep dives into IXO's foundational technologies like blockchain, Matrix protocol, and Agentic Oracles
+## Path 1: Build and operate
+
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="earth-africa" href="/introduction">
+    Market promise, lifecycle, and links into the stack.
   </Card>
-  
-  <Card title="Implementation Guides" icon="book">
-    Detailed guides for implementing IXO components in various scenarios and environments
+  <Card title="What you can build" icon="layer-group" href="/guides/what-you-can-build">
+    Verified claims, MRV, financing, agents, data rooms, learning loops.
   </Card>
-  
-  <Card title="Case Studies" icon="lightbulb">
-    Real-world examples of IXO technology deployments and their impact
+  <Card title="Hands-on" icon="hand-pointer" href="/guides/hands-on">
+    First-touch domain and digital twin setup.
   </Card>
-  
-  <Card title="External Resources" icon="arrow-up-right-from-square">
-    Links to external articles, research papers, and additional documentation
+  <Card title="Developer overview" icon="code" href="/guides/dev/overview">
+    SDKs, APIs, and implementation entry points.
   </Card>
 </CardGroup>
 
-## Article Categories
+## Path 2: Stack deep-dives
+
+<CardGroup>
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Vocabulary, lifecycle, layers, and how state and cooperation relate.
+  </Card>
+  <Card title="Technical deep-dives" icon="diagram-project" href="/articles/ixo-graph">
+    Start with the IXO Graph, then protocol, Matrix, Blocksync, oracles, and Qi articles from the groups below.
+  </Card>
+</CardGroup>
+
+## Core article groups
 
 <AccordionGroup>
-  <Accordion title="Infrastructure" icon="server">
-    - **Blockchain**: IXO Protocol implementation and features
-    - **Blocksync**: Data indexing and querying services
-    - **Matrix**: Secure data storage and messaging
-    - **Oracles**: AI-powered verification services
+  <Accordion title="IXO components" icon="server">
+    - **IXO Graph**: shared map of entities, claims, evidence, and outcomes — [`/articles/ixo-graph`](/articles/ixo-graph)
+    - **IXO Protocol**: identity, claims, coordination primitives — [`/protocols/ixo-protocol`](/protocols/ixo-protocol)
+    - **IXO Matrix**: encrypted cooperation rooms and communication — [`/articles/ixo-matrix`](/articles/ixo-matrix)
+    - **IXO Blocksync**: indexed blockchain data access — [`/articles/ixo-blocksync`](/articles/ixo-blocksync)
+    - **Agentic Oracles**: AI-assisted verification and automation — [`/articles/ixo-oracles`](/articles/ixo-oracles)
   </Accordion>
-
-  <Accordion title="Integration" icon="plug">
-    - **SDKs and APIs**: Client libraries and interfaces
-    - **External Systems**: Third-party integrations
-    - **Data Exchange**: Interoperability protocols
-    - **Security**: Authentication and encryption
+  <Accordion title="Qi components" icon="window">
+    - [Qi: cooperation on verified workflows](/articles/qi-intelligent-cooperating-system) (**Qi Intelligent Cooperating System**)
+    - Digital twin architecture patterns and orchestration narratives in linked articles
   </Accordion>
-
-  <Accordion title="Applications" icon="window">
-    - **Digital Twins**: Implementation patterns
-    - **Impact Projects**: Use case studies
-    - **Verification Systems**: dMRV solutions
-    - **Market Integration**: Trading and exchange
+  <Accordion title="Related platform context" icon="window">
+    - Platform-specific articles under **Platforms** in the sidebar
+    - Emerging programs and field patterns under [Emerging Platform](/platforms/Emerging/intro-emerging)
   </Accordion>
 </AccordionGroup>
 
-## Contributing
+## Next steps
 
 <CardGroup>
-  <Card title="Submit Articles" icon="pen">
-    Share your implementation experiences and insights with the community
+  <Card title="Intelligent Cooperation" icon="yin-yang" href="/articles/pods">
+    Read about how human and AI agents can safely work together, with shared intent
   </Card>
-  
-  <Card title="Suggest Topics" icon="comment">
-    Propose new topics or request specific technical documentation
+  <Card title="Outcomes-driven Financing" icon="money-bill-trend-up" href="/guides/digital-mrv">
+    Read about how digital financing makes money programmable and more accountable
   </Card>
-  
-  <Card title="Review & Feedback" icon="message">
-    Help improve existing articles through feedback and suggestions
+  <Card title="Verification and Credentialing" icon="shield-check" href="/guides/digital-mrv">
+    Read about how digital measurement, reporting, and verification elevate trust in reality
   </Card>
-  
-  <Card title="External Links" icon="link">
-    Submit relevant external resources to expand the knowledge base
+  <Card title="Governance and Decision-Making" icon="shield-halved" href="/articles/pods">
+    Read about how to coordinate and automate work in Programmable Organizational Domains (PODs)
   </Card>
-</CardGroup>
-
-## Next Steps
-
-<CardGroup>
-  <Card title="Core Technologies" icon="layer-group" href="/articles/ixo-blockchain">
-    Start with foundational IXO technologies
+  <Card title="Data as an Asset" icon="gem" href="/guides/data-and-intelligence">
+    Read about how data sovereignty and encryption give you ownership and control
   </Card>
-  
-  <Card title="Implementation" icon="code" href="/articles/ixo-integrations">
-    Learn about system integration patterns
-  </Card>
-  
-  <Card title="Use Cases" icon="lightbulb" href="/platforms/Emerging/concepts">
-    Explore real-world applications
-  </Card>
-  
-  <Card title="Community" icon="users" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
-    Join the developer community
+  <Card title="Cognitive Digital Twins" icon="brain-circuit" href="/articles/cdt-systems">
+    Read about how to build intelligent feedback loops into real world systems
   </Card>
 </CardGroup>
-
-<Tip>
-This documentation is continuously evolving. Check back regularly for new articles and updates, or subscribe to our [Developer Newsletter](https://chronicle.impacts.network/) for the latest additions.
-</Tip>

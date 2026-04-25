@@ -1,10 +1,10 @@
 ---
 title: 'MCP Servers'
 icon: 'code-simple'
-description: 'Model Context Protocols (MCPs) for the IXO ecosystem'
+description: 'Model Context Protocol (MCP) servers for the IXO ecosystem'
 ---
 
-Model Context Protocols (MCPs) enable Large Language Model (LLM) agents to safely interact with IXO ecosystem services through specialized server interfaces.
+Model Context Protocol (MCP) servers enable Large Language Model (LLM) agents to safely interact with IXO ecosystem services through specialized server interfaces.
 
 <CardGroup cols={2}>
   <Card title="Secure Access" icon="shield-check">
@@ -18,7 +18,7 @@ Model Context Protocols (MCPs) enable Large Language Model (LLM) agents to safel
 ## Architecture Overview
 
 <Frame>
-  <img src="/images/mcp-architecture.png" alt="MCP Architecture Overview" />
+  <img src="/images/emerging.svg" alt="MCP server integration overview" />
 </Frame>
 
 MCP servers act as secure gateways between AI agents and IXO services:
@@ -54,7 +54,7 @@ Each MCP server implements three core security components:
 ## Available Servers
 
 <Tabs>
-  <Tab title="Blockchain MCP">
+  <Tab title="Blockchain MCP Server">
     Access IXO blockchain functionality:
     - Query on-chain data and entity states
     - Submit authorized transactions
@@ -73,7 +73,7 @@ Each MCP server implements three core security components:
     </CodeGroup>
   </Tab>
   
-  <Tab title="Matrix MCP">
+  <Tab title="Matrix MCP Server">
     Enable secure, decentralized communication:
     - Manage encrypted rooms
     - Send/receive messages
@@ -81,7 +81,7 @@ Each MCP server implements three core security components:
     - Handle real-time events
   </Tab>
   
-  <Tab title="Oracle MCP">
+  <Tab title="Agentic Oracles MCP Server">
     Interact with Impact Oracle services:
     - Submit verification data
     - Access verification results
@@ -89,7 +89,7 @@ Each MCP server implements three core security components:
     - Participate in consensus
   </Tab>
   
-  <Tab title="Client MCP">
+  <Tab title="Client MCP Server">
     Integrate with user applications:
     - Access app state
     - Handle user interactions
@@ -97,7 +97,7 @@ Each MCP server implements three core security components:
     - Process app events
   </Tab>
   
-  <Tab title="Assistant MCP">
+  <Tab title="Personal Agent MCP Server">
     Provide AI support services:
     - Handle user queries
     - Access knowledge bases
@@ -109,20 +109,20 @@ Each MCP server implements three core security components:
 ## Integration Guides
 
 <CardGroup cols={2}>
-  <Card title="Blockchain Integration" icon="cube" href="/guides/mcp/blockchain-mcp">
+  <Card title="Blockchain Integration" icon="cube" href="/guides/dev/authentication">
     Connect AI agents to the IXO blockchain
   </Card>
-  <Card title="Matrix Integration" icon="network-wired" href="/guides/mcp/matrix-mcp">
+  <Card title="Matrix Integration" icon="network-wired" href="/sdk-reference/matrix-client-sdk">
     Enable secure agent communication
   </Card>
-  <Card title="Oracle Integration" icon="crystal-ball" href="/guides/mcp/oracle-mcp">
+  <Card title="Personal Agent ADK" icon="crystal-ball" href="/sdk-reference/oracle-adk">
     Access Impact Oracle services
   </Card>
-  <Card title="Client Integration" icon="window" href="/guides/mcp/client-mcp">
+  <Card title="Client Integration" icon="window" href="/sdk-reference/multiclient-sdk">
     Integrate with IXO applications
   </Card>
 </CardGroup>
 
 <Tip>
-For detailed API references and example implementations, visit the [API Documentation](/api-reference/mcp).
+For service auth and endpoint ownership, use the [Authentication Matrix](/reference/authentication-matrix) and [Networks and Endpoints](/reference/networks-and-endpoints).
 </Tip>

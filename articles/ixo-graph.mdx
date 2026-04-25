@@ -1,0 +1,364 @@
+---
+title: "IXO Graph"
+icon: "circle-nodes"
+description: "The shared, verifiable graph for entities, claims, evidence, credentials, workflows, transactions, and outcomes."
+---
+
+The IXO Graph is the shared map of reality, and a record of state changes over time.
+
+It connects people, organizations, projects, assets, services, agents, Claims, evidence, credentials, workflows, transactions, decisions, and outcomes so humans and AI agents can understand:
+
+- what exists
+- who is involved
+- what is being claimed
+- what evidence supports it
+- who has authority
+- what changed
+- what has been verified
+- what should happen next
+
+Use the IXO Graph when your system needs more than private data storage. Use it when multiple participants, applications, services, or agents need to coordinate around the same inspectable reality, and when you need to trace changes over time.
+
+<Tip>
+  Think of the IXO Graph as the shared operating map for intelligent cooperation. IXO Protocol records verifiable state. Qi uses that state to coordinate humans, agents, applications, and services.
+</Tip>
+
+## Why it matters
+
+Most real-world work is fragmented across spreadsheets, documents, chats, CRMs, dashboards, blockchains, APIs, and institutional records.
+
+That fragmentation creates coordination failures:
+
+- participants use different identifiers
+- evidence is separated from the Claim it supports
+- permissions are hidden inside private systems
+- agents act on partial or stale context
+- decisions cannot be replayed
+- outcomes are hard to verify
+- value is released without a clear audit trail
+
+The IXO Graph addresses this by giving the stack a common structure for representing entities, relationships, authority, evidence, decisions, and change over time.
+
+This lets IXO and Qi answer practical questions:
+
+<AccordionGroup>
+  <Accordion title="Who is this participant?" icon="id-card">
+    Identity, domain, credentials, roles, and relationships.
+  </Accordion>
+  <Accordion title="What is being claimed?" icon="clipboard-check">
+    Claim type, subject, issuer, data, and linked evidence.
+  </Accordion>
+  <Accordion title="Can this actor perform this action?" icon="shield-check">
+    Credentials, permissions, delegations, and workflow state.
+  </Accordion>
+  <Accordion title="What evidence exists?" icon="file-shield">
+    Documents, measurements, observations, attestations, media, reports, sensor records, or external references.
+  </Accordion>
+  <Accordion title="What changed?" icon="arrow-right-arrow-left">
+    Transactions, attestations, Flow events, state transitions, and decisions.
+  </Accordion>
+  <Accordion title="What was determined?" icon="scale-balanced">
+    Evaluation Claims, approvals, rejections, disputes, UDIDs, and outcomes.
+  </Accordion>
+  <Accordion title="What happens next?" icon="route">
+    Flow state, allowed actions, assigned roles, agent tools, and settlement rules.
+  </Accordion>
+</AccordionGroup>
+
+## What the IXO Graph connects
+
+<CardGroup cols={2}>
+  <Card title="Entities" icon="cube">
+    People, organizations, projects, assets, devices, services, agents, datasets, places, programs, workflows, and outcomes.
+  </Card>
+
+  <Card title="Claims and evidence" icon="badge-check">
+    Assertions about delivery, eligibility, compliance, performance, impact, or state, linked to supporting evidence.
+  </Card>
+
+  <Card title="Credentials and authority" icon="id-card">
+    Roles, permissions, qualifications, attestations, delegations, and rights to act.
+  </Card>
+
+  <Card title="Transactions and state changes" icon="arrow-right-arrow-left">
+    Records of what changed, who changed it, when it changed, and which protocol operation or workflow caused it.
+  </Card>
+
+  <Card title="Flows and cooperation spaces" icon="route">
+    Workflow state, rooms, messages, agent actions, human review, escalations, and next steps.
+  </Card>
+
+  <Card title="Outcomes and determinations" icon="bullseye">
+    Verified results, decisions, impacts, approvals, disputes, payments, credentials, and learning loops.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Represent the thing">
+    A real-world or digital object is represented as an entity. This may be a person, organization, project, asset, device, service, agent, program, claim process, or outcome.
+  </Step>
+
+  <Step title="Connect identity and authority">
+    The entity is linked to identities, domains, credentials, roles, permissions, or delegations that define who can act.
+  </Step>
+
+  <Step title="Attach Claims and evidence">
+    Participants, services, devices, or agents submit Claims about the entity. Evidence is linked to the Claim so it can be reviewed, verified, disputed, or reused.
+  </Step>
+
+  <Step title="Record workflow state">
+    Qi Flows coordinate the Claim through intake, review, evaluation, approval, dispute, settlement, or closure.
+  </Step>
+
+  <Step title="Record change over time">
+    Transactions, attestations, Flow events, Evaluation Claims, and UDIDs create an inspectable history of what changed and why.
+  </Step>
+
+  <Step title="Enable the next action">
+    Humans, services, and Agentic Oracles use the graph to decide what is allowed, what needs review, what can be settled, and what should happen next.
+  </Step>
+</Steps>
+
+## Example: verified service delivery
+
+A service provider delivers field data collection for a digital MRV program.
+
+<Steps>
+  <Step title="The service provider is represented">
+    The provider exists as an entity with an identity, credentials, service profile, and marketplace listing.
+  </Step>
+
+  <Step title="The work is requested">
+    A buyer requests the service through a Marketplace. A Qi Flow starts the fulfillment process.
+  </Step>
+
+  <Step title="The provider submits a Claim">
+    The provider submits a Claim that field visits were completed for a specific project, location, and reporting period.
+  </Step>
+
+  <Step title="Evidence is linked">
+    The Claim links to field reports, timestamps, location records, photos, device references, or verifier attestations.
+  </Step>
+
+  <Step title="An agent evaluates the Claim">
+    An Agentic Oracle inspects only the context it is authorized to access, applies the active rubric, and creates an Evaluation Claim.
+  </Step>
+
+  <Step title="A verifier makes a determination">
+    A human verifier accepts, rejects, disputes, or requests more evidence. The decision is recorded as a UDID when the Flow reaches a determination point.
+  </Step>
+
+  <Step title="The Flow triggers settlement">
+    If the determination approves the work, the Flow can trigger payment, reputation update, credential issuance, or the next workflow step.
+  </Step>
+</Steps>
+
+The graph connects every part of this process: provider, buyer, project, service, Claim, evidence, rubric, agent review, verifier decision, settlement, and outcome.
+
+## The developer mental model
+
+When building with the IXO Graph, model the system as connected operational facts.
+
+<AccordionGroup>
+  <Accordion title="What is the object of work?" icon="cube">
+    Entity.
+  </Accordion>
+  <Accordion title="Who or what is acting?" icon="users">
+    Identity, agent, service, or organization.
+  </Accordion>
+  <Accordion title="What is being asserted?" icon="clipboard-check">
+    Claim.
+  </Accordion>
+  <Accordion title="What supports the assertion?" icon="file-shield">
+    Evidence.
+  </Accordion>
+  <Accordion title="Who can act?" icon="key">
+    Credential, permission, UCAN, role, or delegation.
+  </Accordion>
+  <Accordion title="What workflow is running?" icon="route">
+    Qi Flow.
+  </Accordion>
+  <Accordion title="What did the agent or reviewer find?" icon="magnifying-glass">
+    Evaluation Claim.
+  </Accordion>
+  <Accordion title="What was decided?" icon="scale-balanced">
+    UDID.
+  </Accordion>
+  <Accordion title="What changed?" icon="arrow-right-arrow-left">
+    Transaction, state transition, attestation, or Flow event.
+  </Accordion>
+  <Accordion title="What value moved?" icon="wallet">
+    Payment, reward, fee, settlement, or allocation.
+  </Accordion>
+  <Accordion title="What was learned?" icon="lightbulb">
+    Outcome, metric, research Claim, or updated Blueprint.
+  </Accordion>
+</AccordionGroup>
+
+## IXO Graph and Qi
+
+Qi depends on the IXO Graph because intelligent cooperation needs shared context.
+
+Qi uses the graph to:
+
+- resolve which entities are involved in a Flow
+- retrieve Claims, evidence, credentials, and workflow history
+- check whether a participant, service, or agent has authority
+- give Agentic Oracles structured context instead of disconnected prompts
+- separate submitted information from verified state
+- record Evaluation Claims and UDID-backed determinations
+- trigger allowed state transitions, messages, payments, credentials, or next actions
+- feed verified outcomes back into analytics, research, governance, and future workflows
+
+<Warning>
+  Do not treat agent memory or chat history as the system of record. Use the IXO Graph for entities, Claims, evidence, authority, state transitions, decisions, and outcomes.
+</Warning>
+
+## Practical build patterns
+
+<CardGroup cols={2}>
+  <Card title="Claim and evidence review" icon="clipboard-check">
+    Let participants submit Claims, attach evidence, route review, record Evaluation Claims, and issue determinations.
+  </Card>
+
+  <Card title="Digital MRV" icon="chart-line">
+    Connect measurements, reports, verification events, attestations, outcomes, and funding logic.
+  </Card>
+
+  <Card title="Verified service marketplaces" icon="store">
+    Link providers, buyers, listings, orders, fulfillment Claims, evidence, review, settlement, and reputation.
+  </Card>
+
+  <Card title="Outcome-based financing" icon="hand-holding-dollar">
+    Release value when Claims and evidence satisfy protocol rules and a determination is recorded.
+  </Card>
+
+  <Card title="Agentic evidence review" icon="robot">
+    Give agents scoped access to graph context, evidence, rubrics, and tools so they can support review without becoming final authority.
+  </Card>
+
+  <Card title="Verified learning loops" icon="rotate">
+    Feed accepted outcomes, rejected Claims, disputes, and evaluation results back into protocols, rubrics, research, and agent improvement.
+  </Card>
+</CardGroup>
+
+## First implementation move
+
+Start with one entity type, one Claim type, and one Flow.
+
+<Steps>
+  <Step title="Choose the entity">
+    Decide what the graph should represent first. Examples: service provider, project, device, household, marketplace listing, dataset, agent, or outcome.
+  </Step>
+
+  <Step title="Define the Claim">
+    Specify what can be asserted about that entity. Include the Claim type, issuer, subject, required fields, and evidence requirements.
+  </Step>
+
+  <Step title="Define authority">
+    Decide who can create, read, review, evaluate, approve, dispute, or settle the Claim. Use credentials, roles, permissions, and UCAN-scoped delegation where agents or services act.
+  </Step>
+
+  <Step title="Attach a Flow">
+    Route the Claim through submission, review, evaluation, determination, action, and closure.
+  </Step>
+
+  <Step title="Record the determination">
+    Use a UDID when the Flow reaches a decision and impact determination point.
+  </Step>
+
+  <Step title="Inspect and improve">
+    Review the graph history to find missing evidence, unclear authority, slow review, rejected Claims, disputes, or settlement bottlenecks.
+  </Step>
+</Steps>
+
+## Design principles
+
+<AccordionGroup>
+  <Accordion title="Model only what needs coordination">
+    Do not model everything. Start with the entities, Claims, evidence, permissions, workflows, and outcomes that participants need to inspect or act on.
+  </Accordion>
+
+  <Accordion title="Separate Claims from verified state">
+    A Claim is an assertion. It becomes useful when linked to evidence, authority, review, and determination.
+  </Accordion>
+
+  <Accordion title="Make evidence addressable">
+    Evidence should be linkable, identifiable, and reviewable. Include references, hashes, provenance, timestamps, source metadata, and access rules where needed.
+  </Accordion>
+
+  <Accordion title="Preserve authority">
+    Record who acted, under which role, credential, delegation, or permission, and within which Flow state.
+  </Accordion>
+
+  <Accordion title="Keep agent access scoped">
+    Agents should access only the graph context, tools, rooms, Claims, and evidence required for their task.
+  </Accordion>
+
+  <Accordion title="Record decisions separately">
+    Keep recommendations, reviews, approvals, disputes, UDIDs, and state transitions distinct so decisions can be audited and challenged.
+  </Accordion>
+
+  <Accordion title="Design for replay">
+    A reviewer should be able to reconstruct what happened from the graph: Claim, evidence, authority, evaluation, decision, impact, and state change.
+  </Accordion>
+</AccordionGroup>
+
+## Production checklist
+
+Before using the IXO Graph in a live workflow, confirm:
+
+- [ ] entities have stable identifiers
+- [ ] Claim types are defined
+- [ ] evidence requirements are explicit
+- [ ] authority rules are clear
+- [ ] agent permissions are scoped
+- [ ] workflow states are defined
+- [ ] Evaluation Claims have a structured schema
+- [ ] UDIDs record decision and impact determinations
+- [ ] state transitions are inspectable
+- [ ] disputes and corrections have a path
+- [ ] applications and agents can query only what they are allowed to access
+- [ ] verified outcomes can feed reporting, settlement, research, or learning loops
+
+## IXO Graph in the stack
+
+<CardGroup cols={2}>
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
+    Verifiable state, identities, Claims, credentials, assets, transactions, and protocol operations.
+  </Card>
+
+  <Card title="IXO Blocksync" icon="database" href="/articles/ixo-blocksync">
+    Indexed IXO state for applications, dashboards, analytics, services, and agent context.
+  </Card>
+
+  <Card title="IXO Matrix" icon="comments" href="/articles/ixo-matrix">
+    Secure cooperation spaces where humans, agents, and services coordinate around graph-backed work.
+  </Card>
+
+  <Card title="Qi Intelligent Cooperating System" icon="sparkles" href="/articles/qi-intelligent-cooperating-system">
+    The coordination layer that lets humans, agents, applications, and services act over shared state.
+  </Card>
+</CardGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Start Building" icon="rocket" href="/start-building">
+    Build a POD, Flow, Blueprint, or Marketplace using IXO and Qi.
+  </Card>
+
+  <Card title="Core Concepts" icon="lightbulb" href="/core-concepts">
+    Learn the vocabulary for entities, Claims, evidence, credentials, Flows, Blueprints, and outcomes.
+  </Card>
+
+  <Card title="Agent Evaluations" icon="clipboard-check" href="/guides/agent-evaluations">
+    Evaluate agent work using UCAN authority, Claims, rubrics, evidence, Flow state, and UDIDs.
+  </Card>
+
+  <Card title="What You Can Build" icon="shapes" href="/guides/what-you-can-build">
+    Explore practical use cases for verified cooperation, digital MRV, outcome finance, marketplaces, and agent workflows.
+  </Card>
+</CardGroup>

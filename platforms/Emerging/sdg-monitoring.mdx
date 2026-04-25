@@ -1,10 +1,12 @@
 ---
-title: 'SDG Monitoring'
+title: 'Emerging Household Energy SDG monitoring'
 icon: 'bullseye-arrow'
-description: 'Technical guide for implementing Sustainable Development Goal (SDG) monitoring using the Emerging Household Energy'
+description: 'Implement SDG monitoring in the Emerging Household Energy solution using dMRV and verifiable claims.'
 ---
 
-The Emerging Household Energy uses decentralized Measurement, Reporting, and Verification (dMRV) to track SDG indicators through:
+This page documents **Emerging Household Energy** solution workflows for SDG monitoring. It applies platform dMRV capabilities to household-energy program indicators.
+
+The solution tracks SDG indicators through:
 
 - Decentralized Identifiers (DIDs) for entities
 - Verifiable claims and credentials
@@ -69,7 +71,7 @@ Requires tracking baseline vs. current fuel expenditure through validated purcha
 The platform ensures data integrity through:
 - Cryptographic signatures on all claims
 - Immutable ledger records
-- Role-based access control
+- Capability-based access control
 - Privacy-preserving data handling
 
 ## Integration Points
@@ -83,10 +85,10 @@ The platform ensures data integrity through:
   Integrate user apps, IoT devices, and partner systems
 </Card>
 
-<Card title="Registry Server" icon="chart-line" href="/platforms/Emerging/registry-server">
+<Card title="Registry API" icon="chart-line" href="/api-reference/registry-api">
   API interface to get SDG reporting data
 </Card>
-<Card title="Protocols" icon="ruler" href="/platforms/Emerging/protocols">
-  Templates, Workflows and Rules
+<Card title="dMRV protocols" icon="ruler" href="/platforms/Emerging/dmrv">
+  Templates, workflows, and rules
 </Card>
 </CardGroup>

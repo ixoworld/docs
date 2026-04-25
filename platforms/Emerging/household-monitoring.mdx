@@ -1,12 +1,10 @@
 ---
 title: 'Household Monitoring'
 icon: 'house-signal'
-description: 'Learn how to implement household-level monitoring for clean cooking initiatives'
+description: 'Implement household-level monitoring in the Emerging Household Energy solution.'
 ---
 
-<Tip>
-Household monitoring enables granular tracking of clean cooking adoption through digital twins, IoT integration, and AI-powered verification. Since emission reductions are directly linked to household fuel consumption, usage rates, and installed stove numbers, the monitoring system ensures reliable and accurate measurement of these critical factors.
-</Tip>
+This page documents **Emerging Household Energy** monitoring workflows for households, devices, and usage data. It is solution-scoped and builds on Emerging Platform identity, registry, and verification services.
 
 ## Key Features
 
@@ -37,7 +35,7 @@ Household monitoring enables granular tracking of clean cooking adoption through
     "density": "Medium"
   },
   "devices": [{
-    "did": "did:ixo:device/456", 
+    "did": "did:ixo:device/456",
     "type": "ElectricPressureCooker",
     "status": "active"
   }],
@@ -65,6 +63,7 @@ household = Household.create(
 device = Device.get("did:ixo:device/456")
 household.add_device(device)
 ```
+
 </CodeGroup>
 
 ## Data Collection
@@ -198,7 +197,7 @@ Implement comprehensive monitoring to capture the full complexity of cooking beh
   <Card title="Analytics Guide" icon="chart-line">
     Access household insights
   </Card>
-  <Card title="Registry API" icon="brackets-curly" href="/platforms/Emerging/registry-server">
+  <Card title="Registry API" icon="brackets-curly" href="/api-reference/registry-api">
     Integration server
   </Card>
 </CardGroup>

@@ -1,23 +1,76 @@
 ---
-title: 'Digital MRV'
-icon: 'chart-line'
-description: 'Learn how to implement IXO decentralized Monitoring, Reporting and Verification (dMRV) for clean cooking mitigation activities and ITMO generation'
+title: "Emerging Platform dMRV"
+icon: "chart-line"
+description: "Reference the reusable dMRV capability model in Emerging Platform and link into solution-specific implementation guides."
 ---
 
-<Tip>
-  The Emerging Household Energy provides a decentralized digital Measurement, Reporting, and Verification (dMRV) system that delivers real-time data capture, robust protocol configuration, and cryptographic verification for climate impact activities.
-</Tip>
+This page documents the **Emerging Platform** scope. It is the canonical reference for reusable digital measurement, reporting, and verification (dMRV) capabilities that can be used by multiple solutions.
 
-## Overview
+## What dMRV means at platform level
 
-The [Emerging Household Energy](https://emerging.eco) implements [IXO](https://ixo.world) dMRV protocols for managing clean cooking data and generating Internationally Transferred Mitigation Outcomes (ITMOs) - standardized units representing greenhouse gas emission reductions that can be transferred between countries under Article 6.2 of the Paris Agreement. The system provides:
+At platform level, dMRV provides shared capabilities for:
+
+- entity-linked measurement records
+- claims and verification workflows
+- credential issuance and status checks
+- tamper-evident registry references
+
+These capabilities are not specific to one vertical implementation.
+
+## Capability layers
+
+<CardGroup>
+  <Card title="Identity layer" icon="id-card">
+    DID-based entity identity and controller relationships.
+  </Card>
+  <Card title="Measurement layer" icon="database">
+    Structured ingestion of time-linked monitoring evidence.
+  </Card>
+  <Card title="Verification layer" icon="check-double">
+    Rule-based and oracle-assisted checks on submitted claims.
+  </Card>
+  <Card title="Certification layer" icon="certificate">
+    Verifiable credentials for accepted outcomes and attestations.
+  </Card>
+</CardGroup>
+
+## Core dependencies in IXO
+
+- Identity and domain model: `/platforms/Emerging/digital-identifiers`
+- Domain lifecycle and control: `/platforms/Emerging/domain-registration`
+- Registry-backed state: `/platforms/Emerging/registry`
+- Credential lifecycle: `/platforms/Emerging/credential-issuance`
+
+## Solution implementations
+
+Use this reference together with implementation pages:
+
+- **Emerging Household Energy implementation:** `/platforms/Emerging/emerging-dmrv`
+- Household data collection: `/platforms/Emerging/household-monitoring`
+- Device telemetry flow: `/platforms/Emerging/stove-use-monitoring`
+
+## When to use this page
+
+Use this page when you are designing or integrating reusable dMRV infrastructure.  
+Use solution pages when you need workflow details for a specific domain.
+---
+title: 'Emerging Platform dMRV'
+icon: 'chart-line'
+description: 'Reference overview of dMRV capabilities in the Emerging Platform, with links to the Emerging Household Energy implementation.'
+---
+
+The **Emerging Platform** provides reusable digital measurement, reporting, and verification (dMRV) capabilities for identity-linked data collection, claim verification, and credential issuance. This page describes platform-level building blocks. For the household-energy implementation, use the **Emerging Household Energy dMRV** guide.
+
+## What this page covers
+
+The platform model is solution-agnostic and can be adapted to multiple domains. Core capabilities include:
 
 - **Household-Level Reporting** - Consolidated data across multiple devices and fuel sources
 - **Usage Monitoring** - Tracking of multiple devices and fuels to prevent double-counting
 - **Connected Data Graph** - Linked entities and claims for system-wide insights  
 - **Immutable Records** - Blockchain-backed registry for full traceability
 
-## Core Features
+## Core features
 
 <CardGroup>
   <Card title="Real-Time Measurement" icon="clock">
@@ -34,7 +87,7 @@ The [Emerging Household Energy](https://emerging.eco) implements [IXO](https://i
   </Card>
 </CardGroup>
 
-## System Architecture
+## System architecture
 
 <CardGroup>
   <Card title="Data Layer" icon="database">
@@ -51,11 +104,11 @@ The [Emerging Household Energy](https://emerging.eco) implements [IXO](https://i
   </Card>
 </CardGroup>
 
-## Core Concepts
+## Core concepts
 
 ### Digital Entities
 
-Digital Entities are online representations of real-world objects or concepts in the IXO Spatial Web, including:
+Digital entities are online representations of real-world objects or concepts in IXO services, including:
 
 - Physical entities (stoves, energy devices)
 - Cognitive entities (Organisations, projects, assets)
@@ -97,7 +150,7 @@ Protocols provide templates for domain configuration including:
 - Required services
 - Governance settings
 
-## Implementation Guide
+## Implementation patterns
 
 ### Device Integration
 
@@ -122,7 +175,7 @@ Protocols provide templates for domain configuration including:
   </Accordion>
 </AccordionGroup>
 
-## Emission Reduction Quantification
+## Quantification considerations
 
 The accurate quantification of emission reductions in clean cooking initiatives depends on three critical factors:
 
@@ -154,7 +207,7 @@ These elements are essential for:
 - Verifiable impact claims
 - Methodology compliance
 
-## Workflow Components
+## Workflow components
 
 ### Data Collection
 <CardGroup>
@@ -194,6 +247,14 @@ These elements are essential for:
   </Accordion>
 </AccordionGroup>
 
+## Related solution guide
+
+Use this platform reference together with:
+
+- [Emerging Household Energy dMRV](/platforms/Emerging/emerging-dmrv)
+- [Household monitoring](/platforms/Emerging/household-monitoring)
+- [Registry](/platforms/Emerging/registry)
+
 ## Benefits
 
 - Real-time tracking of system dynamics
@@ -211,7 +272,7 @@ These elements are essential for:
   <Card title="Registry Integration" icon="book" href="/platforms/Emerging/registry">
     Connect with the Emerging Registry
   </Card>
-  <Card title="Protocol Templates" icon="puzzle-piece" href="/articles/ixo-protocols">
+  <Card title="Protocol concepts" icon="puzzle-piece" href="/protocols/ixo-protocol">
     Ready-to-use protocol configurations
   </Card>
 </CardGroup>

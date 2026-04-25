@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaries": ["softwareTerms"],
+  "useGitignore": true,
+  "ignorePaths": [
+    "node_modules/**",
+    "pnpm-lock.yaml",
+    "skills-lock.json",
+    "models/**",
+    "images/**",
+    "api-reference/openapi.yaml"
+  ],
+  "words": [
+    "Blocksync",
+    "codebase",
+    "dMRV",
+    "ImpactX",
+    "ixo",
+    "IXO",
+    "JAMBO",
+    "Multiclient",
+    "SignX"
+  ]
+}

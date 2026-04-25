@@ -11,66 +11,26 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Spatial Web",
+        "tab": "Overview",
         "groups": [
           {
             "group": "Get Started",
             "pages": [
               "introduction",
-              "core-concepts",
-              "articles/ixo-protocol",
-              "guides/hands-on"
+              "guides/what-you-can-build",
+              "your-role",
+              "core-concepts"
             ]
-          },
-          {
-            "group": "Developers",
-            "pages": [
-              "guides/dev/spatial-web-sdks",
-              "guides/dev/domain-settings",
-              "guides/digital-twins",
-              "guides/domain-registration",
-              "guides/dev/domain-privacy",
-              "guides/dev/authentication",
-              "guides/dev/ixo-claims",
-              "guides/registry",
-              "guides/digital-mrv",
-              "guides/ixo-oracles-architecture",
-              "mcp/model-context-protocol"
-            ]
-          },
-          {
-            "group": "User Guides",
-            "pages": ["guides/users/intro-users"]
           },
           {
             "group": "Platforms",
-            "pages": ["articles/intro-platforms"]
-          },
-          {
-            "group": "Articles",
             "pages": [
-              "articles/intro-articles",
-              "articles/cdt-systems",
-              "articles/ixo-blockchain",
-              "articles/ixo-matrix",
-              "articles/ixo-blocksync",
-              "articles/ixo-oracles",
-              "articles/pods",
-              "articles/projects"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Platforms",
-        "groups": [
-          {
-            "group": "Platforms",
-            "pages": [
+              "articles/intro-platforms",
               {
                 "group": "Emerging",
                 "pages": [
                   "platforms/Emerging/intro-emerging",
+                  "platforms/Emerging/ussd-channel",
                   "platforms/Emerging/concepts",
                   "platforms/Emerging/digital-identifiers",
                   "platforms/Emerging/credential-issuance",
@@ -90,70 +50,75 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Articles",
+            "pages": [
+              "articles/intro-articles",
+              "articles/cdt-systems",
+              "articles/ixo-matrix",
+              "articles/ixo-ussd",
+              "articles/ixo-blocksync",
+              "articles/ixo-oracles",
+              "articles/pods",
+              "articles/projects"
+            ]
           }
         ]
       },
       {
-        "tab": "APIs",
+        "tab": "Guides",
         "groups": [
           {
-            "group": " ",
-            "pages": ["api-reference/index"]
+            "group": "User Guides",
+            "pages": ["guides/users/intro-users", "guides/users/ussd"]
           },
           {
-            "group": " ",
-            "pages": ["api-reference/rpc-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/grpc-gateway-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/blocksync-graphql-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/matrix-state-bot-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/registry-api"]
-          },
-          {
-            "group": " ",
-            "openapi": {
-              "source": "api-reference/openapi.yaml"
-            }
+            "group": "Developer Guides",
+            "pages": [
+              "guides/dev/overview",
+              "guides/dev/ixo-stack-sdks",
+              "mcp/model-context-protocol",
+              "guides/dev/ussd-gateway",
+              "guides/dev/authentication",
+              "guides/dev/ixo-claims",
+              "guides/digital-twins",
+              "guides/domain-registration",
+              "guides/dev/domain-settings",
+              "guides/dev/domain-privacy",
+              "guides/digital-mrv",
+              "guides/registry",
+              "guides/ixo-oracles-architecture"
+            ]
           }
         ]
       },
       {
-        "tab": "SDKs",
+        "tab": "Stack",
         "groups": [
           {
-            "group": " ",
-            "pages": ["sdk-reference/index"]
+            "group": "APIs",
+            "pages": [
+              "api-reference/index",
+              "api-reference/rpc-api",
+              "api-reference/grpc-gateway-api",
+              "api-reference/blocksync-graphql-api",
+              "api-reference/matrix-state-bot-api",
+              "api-reference/registry-api",
+              "api-reference/ussd-api"
+            ]
           },
           {
-            "group": " ",
-            "pages": ["sdk-reference/multiclient-sdk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/signx-sdk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/matrix-client-sdk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/oracle-ai-sdk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/jambo-wallet-sdk"]
+            "group": "SDKs",
+            "pages": [
+              "sdk-reference/index",
+              "sdk-reference/multiclient-sdk",
+              "sdk-reference/signx-sdk",
+              "sdk-reference/matrix-client-sdk",
+              "sdk-reference/agentic-oracles-adk",
+              "sdk-reference/oracle-adk",
+              "sdk-reference/jambo-wallet-sdk"
+            ]
           }
         ]
       }
@@ -173,6 +138,140 @@
       ]
     }
   },
+  "redirects": [
+    {
+      "source": "/guides/dev/spatial-web-sdks",
+      "destination": "/guides/dev/ixo-stack-sdks"
+    },
+    {
+      "source": "/sdk-reference/oracle-ai-sdk",
+      "destination": "/sdk-reference/oracle-adk"
+    },
+    {
+      "source": "/spatial-web-stack/intro-stack",
+      "destination": "/ixo-stack/intro-stack"
+    },
+    {
+      "source": "/spatial-web-stack/core-concepts",
+      "destination": "/ixo-stack/core-concepts"
+    },
+    {
+      "source": "/spatial-web-stack/blockchain/ixo-blockchain",
+      "destination": "/ixo-stack/blockchain/ixo-blockchain"
+    },
+    {
+      "source": "/spatial-web-stack/matrix/ixo-matrix",
+      "destination": "/ixo-stack/matrix/ixo-matrix"
+    },
+    {
+      "source": "/spatial-web-stack/matrix/matrix-encryption",
+      "destination": "/ixo-stack/matrix/matrix-encryption"
+    },
+    {
+      "source": "/spatial-web-stack/networks/intro-networks",
+      "destination": "/ixo-stack/networks/intro-networks"
+    },
+    {
+      "source": "/spatial-web-stack/networks/grpc-gateway",
+      "destination": "/ixo-stack/networks/grpc-gateway"
+    },
+    {
+      "source": "/spatial-web-stack/networks/ibc-relayers",
+      "destination": "/ixo-stack/networks/ibc-relayers"
+    },
+    {
+      "source": "/spatial-web-stack/networks/unl-chain",
+      "destination": "/ixo-stack/networks/unl-chain"
+    },
+    {
+      "source": "/spatial-web-stack/networks/impact-hub",
+      "destination": "/ixo-stack/networks/impact-hub"
+    },
+    {
+      "source": "/spatial-web-stack/networks/energy-chains",
+      "destination": "/ixo-stack/networks/energy-chains"
+    },
+    {
+      "source": "/spatial-web-stack/networks/interchain-bridges",
+      "destination": "/ixo-stack/networks/interchain-bridges"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/intro-sdks",
+      "destination": "/sdk-reference/index"
+    },
+    {
+      "source": "/ixo-stack/sdks/intro-sdks",
+      "destination": "/sdk-reference/index"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/modules-sdk",
+      "destination": "/ixo-stack/sdks/modules-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/ixo-multiclient-sdk",
+      "destination": "/sdk-reference/multiclient-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/ixo-multiclient-sdk",
+      "destination": "/sdk-reference/multiclient-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/ixo-matrix-sdk",
+      "destination": "/sdk-reference/matrix-client-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/ixo-matrix-sdk",
+      "destination": "/sdk-reference/matrix-client-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/oracle-agent-sdk",
+      "destination": "/sdk-reference/agentic-oracles-adk"
+    },
+    {
+      "source": "/ixo-stack/sdks/oracle-agent-sdk",
+      "destination": "/sdk-reference/agentic-oracles-adk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/signx-sdk",
+      "destination": "/sdk-reference/signx-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/signx-sdk",
+      "destination": "/sdk-reference/signx-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/sdks/jambo-wallet-sdk",
+      "destination": "/sdk-reference/jambo-wallet-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/jambo-wallet-sdk",
+      "destination": "/sdk-reference/jambo-wallet-sdk"
+    },
+    {
+      "source": "/spatial-web-stack/apps/intro-apps",
+      "destination": "/ixo-stack/apps/intro-apps"
+    },
+    {
+      "source": "/spatial-web-stack/apps/jambo/hello-jambo",
+      "destination": "/ixo-stack/apps/jambo/hello-jambo"
+    },
+    {
+      "source": "/spatial-web-stack/apps/mission/hello-mission",
+      "destination": "/ixo-stack/apps/mission/hello-mission"
+    },
+    {
+      "source": "/spatial-web-stack/apps/mobile/hello-mobile",
+      "destination": "/ixo-stack/apps/mobile/hello-mobile"
+    },
+    {
+      "source": "/spatial-web-stack/apps/portal/hello-portal",
+      "destination": "/ixo-stack/apps/portal/hello-portal"
+    },
+    {
+      "source": "/spatial-web-stack/apps/studio/hello-studio",
+      "destination": "/ixo-stack/apps/studio/hello-studio"
+    }
+  ],
   "styling": {
     "codeblocks": "system"
   },

@@ -1,0 +1,162 @@
+---
+title: 'IXO Stack SDKs'
+icon: 'code'
+description: 'Build advanced applications on the IXO Stack using the comprehensive suite of IXO development tools'
+---
+
+<Tip>
+The IXO Stack SDKs help you integrate the IXO Protocol, IXO Matrix, and related services from TypeScript. Deployable **gateway tools** extend IXO to offline and mobile channels (including USSD).
+</Tip>
+
+## Available SDKs
+
+<CardGroup>
+
+<Card title="IXO MultiClient SDK" icon="network-wired" href="/sdk-reference/multiclient-sdk">
+  Connect with IXO and Cosmos networks for interchain operations
+</Card>
+
+<Card title="Matrix Client SDK" icon="database" href="/sdk-reference/matrix-client-sdk">
+  Build secure data rooms and encrypted communication channels
+</Card>
+
+<Card title="Agentic Oracles ADK" icon="sparkles" href="/sdk-reference/agentic-oracles-adk">
+  Build oracle and agent services with `@ixo/oracle-agent-sdk`
+</Card>
+
+<Card title="Personal Agent ADK" icon="brain" href="/sdk-reference/oracle-adk">
+  Integrate conversational AI with `@ixo/assistant-sdk`
+</Card>
+
+<Card title="JAMBO Wallet SDK" icon="wallet" href="/sdk-reference/jambo-wallet-sdk">
+  Manage digital assets and credentials in the JAMBO wallet
+</Card>
+
+<Card title="SignX SDK" icon="signature" href="/sdk-reference/signx-sdk">
+  Enable secure mobile-to-web authentication and transaction signing
+</Card>
+
+</CardGroup>
+
+## Gateway tools
+
+Fork or deploy these tools to extend IXO services to additional channels and environments.
+
+<CardGroup>
+
+<Card title="IXO USSD gateway" icon="tower-cell" href="/articles/ixo-ussd">
+  Give any GSM mobile phone access to IXO services — no smartphone or data plan required
+</Card>
+
+</CardGroup>
+
+## Installation
+
+```bash
+# Install core SDKs
+npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
+npm install @ixo/assistant-sdk @ixo/jambo-wallet-sdk
+```
+
+## Basic Setup
+
+<CodeGroup>
+
+```typescript IXO MultiClient SDK
+import { createClient } from "@ixo/impactxclient-sdk";
+
+// Initialize client
+const chain = await createClient({
+  rpcEndpoint: RPC_ENDPOINT,
+  chainId: "ixo-5"
+});
+
+// Create digital twin
+const twin = await chain.entity.create({
+  type: "DigitalTwin",
+  controller: "did:ixo:org/123"
+});
+```
+
+```typescript IXO Matrix Client SDK
+import { createMatrixClient } from "@ixo/matrixclient-sdk";
+
+// Initialize Matrix client
+const matrix = await createMatrixClient({
+  baseUrl: MATRIX_ENDPOINT,
+  accessToken: USER_TOKEN
+});
+
+// Create secure data room
+const room = await matrix.createRoom({
+  name: "Secure Data Room",
+  encryption: true,
+  visibility: "private"
+});
+```
+
+```typescript Assistant
+import { createAssistant } from "@ixo/assistant-sdk";
+
+// Initialize assistant
+const assistant = await createAssistant({
+  type: "VerificationAgent",
+  capabilities: ["verification", "analytics"]
+});
+
+// Process verification request
+const result = await assistant.verify({
+  data: inputData,
+  context: verificationContext
+});
+```
+
+```typescript JAMBO Wallet
+import { createWallet } from "@ixo/jambo-wallet-sdk";
+
+// Initialize wallet
+const wallet = await createWallet({
+  storageType: "secure",
+  network: "mainnet"
+});
+
+// Manage credentials
+const credential = await wallet.createCredential({
+  type: "VerifiableCredential",
+  issuer: "did:ixo:issuer/123"
+});
+```
+
+</CodeGroup>
+
+## Key Features
+
+### MultiClient SDK
+- Interchain transactions and queries
+- Digital twin management
+- Entity state management
+- Blockchain service management
+
+### Matrix Client SDK
+- End-to-end encrypted data rooms
+- Secure messaging and file storage
+- Access control management
+- Real-time data streaming
+
+### Personal Agent ADK
+- AI-powered agent services
+- Analytics processing
+- Evidence collection
+- Proof generation
+
+### JAMBO Wallet SDK
+- Credential management
+- Digital asset operations
+- Secure key storage
+- Transaction signing
+
+## Next steps
+
+- [SDK reference](/sdk-reference) — full reference for each SDK
+- [API reference](/api-reference) — IXO service APIs
+- [Developer overview](/guides/dev/overview) — entry points and task-oriented guides

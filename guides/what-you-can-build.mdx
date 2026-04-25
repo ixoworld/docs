@@ -1,0 +1,312 @@
+---
+title: "What you can build"
+icon: "rocket"
+description: "Start here when you want to turn an idea, program, protocol, service, or organization into a working system with shared state, governed workflows, evidence, verification, and economic coordination."
+---
+
+Choose the build path that matches what you need first. If IXO and Qi are new, read [Core concepts](/core-concepts) for vocabulary, or [Act on Reality](/introduction) for the product story, then come back to pick a path.
+
+<CardGroup cols={2}>
+  <Card title="Build a POD" icon="building-columns" href="/guides/users/build-a-pod">
+    Create the programmable organizational domain where people, agents, apps, assets, claims, evidence, and outcomes operate together.
+  </Card>
+
+  <Card title="Build a Flow" icon="route" href="/guides/users/build-a-flow">
+    Create a governed workflow that coordinates humans, Agentic Oracles, tools, evidence, decisions, and state changes.
+  </Card>
+
+  <Card title="Build an Oracle" icon="robot" href="/guides/ixo-oracles-architecture">
+    Design and operate Agentic Oracles that deliver services, automate tasks, inspect evidence, check rules, flag risks, and support human decisions.
+  </Card>
+
+  <Card title="Build a Blueprint" icon="file-signature" href="/guides/users/build-a-blueprint">
+    Define a reusable protocol for deeds, claims, evidence, roles, rubrics, rules, verifications, and settlements for PODs, Flows, assets, oracles, and markets.
+  </Card>
+
+  <Card title="Build an Asset" icon="diamond" href="/guides/digital-twins">
+    Model a real-world asset as a digital twin you can verify, link to claims and evidence, and exchange when your program allows it.
+  </Card>
+
+  <Card title="Build a Market" icon="store" href="/guides/users/build-a-market">
+    Create a trusted exchange where participants can discover, offer, request, verify, and settle services, assets, outcomes, or deeds.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Start small. A strong first build usually has one POD, one Flow, one claim type, one evidence standard, one review path, and one settlement action.
+</Tip>
+
+## How the pieces fit together
+
+A **POD** is the workspace. A **Flow** is how work moves. A **Blueprint** is the rulebook. **Agentic Oracles** carry out scoped automation and judgment. **Assets** (often as digital twins) are what you track, prove, or exchange. A **Market** is where discovery and settlement happen when many parties trade.
+
+<AccordionGroup>
+  <Accordion title="POD" icon="building-columns">
+    **Use it to:** Create a secure domain for coordination.
+
+    **First useful output:** Workspace, roles, entities, rooms, tools, and agents.
+  </Accordion>
+
+  <Accordion title="Flow" icon="route">
+    **Use it to:** Run work through clear steps.
+
+    **First useful output:** Trigger, states, actions, reviews, and state changes.
+  </Accordion>
+
+  <Accordion title="Agentic Oracle" icon="robot">
+    **Use it to:** Automate or assist steps with bounded tools, context, and oversight.
+
+    **First useful output:** Services, evaluations, summaries, checks, and handoffs into human decisions.
+  </Accordion>
+
+  <Accordion title="Blueprint" icon="file-signature">
+    **Use it to:** Standardize how something is done.
+
+    **First useful output:** Claim schema, evidence rules, rubric, permissions, and outcomes.
+  </Accordion>
+
+  <Accordion title="Real-world Asset" icon="diamond">
+    **Use it to:** Represent something real on the graph with identity, history, and verifiable updates.
+
+    **First useful output:** A governed entity you can link to claims, credentials, workflows, and markets.
+  </Accordion>
+
+  <Accordion title="Market" icon="store">
+    **Use it to:** Enable discovery and settlement.
+
+    **First useful output:** Listings, offers, verification rules, pricing, and fulfillment logic.
+  </Accordion>
+</AccordionGroup>
+
+In practice those blocks combine into recurring **program shapes**. For shared vocabulary first, read [Core concepts](/core-concepts). Open a shape below for how it uses **state, claims, evidence, and cooperation** on the stack, then follow **Start here** for a hands-on guide.
+
+<AccordionGroup>
+  <Accordion title="Verified claims workflows" icon="badge-check">
+    **Primary job:** Prove assertions and resolve decisions with an inspectable trail.
+
+    **Stack:** The [IXO Graph](/articles/ixo-graph) connects claimants, subjects, **claims**, **evidence**, reviewers, and outcomes in one shared map. The [IXO Protocol](/protocols/ixo-protocol) provides the primitives for entities, claims, **credentials**, and verifiable **state** changes. [Qi](/articles/qi-intelligent-cooperating-system) coordinates humans, agents, and services around the same workflow **context** so reviews and decisions stay aligned with protocol-backed truth—not siloed documents.
+
+    **Start here:** [Verified claims](/guides/users/build-a-claim-collection)
+  </Accordion>
+
+  <Accordion title="Digital MRV systems" icon="chart-line">
+    **Primary job:** Turn measurements and reports into verified outcomes programs can trust.
+
+    **Stack:** Field and lab data become **evidence** linked to **claims** and entities on the [IXO Graph](/articles/ixo-graph). [IXO Blocksync](/articles/ixo-blocksync) indexes protocol events and state so dashboards, analytics, and tools can query history and relationships at scale. **Agentic Oracles** may pre-check completeness or consistency; humans or governed processes still attest what counts as verified.
+
+    **Start here:** [Build digital MRV](/guides/users/build-dmrv)
+  </Accordion>
+
+  <Accordion title="Outcomes-based financing" icon="coins">
+    **Primary job:** Move value only after agreed outcomes are evidenced and accepted under rules.
+
+    **Stack:** Outcomes are expressed as **claims** with **evidence** and reviewed through **workflows**; settlement is a protocol- and credential-aware **action** on state (for example assets, accounts, or governance transitions—see [IXO Protocol](/protocols/ixo-protocol)). The graph ties funders, implementers, and outcomes so “what was verified” and “what was paid” stay linked.
+
+    **Start here:** [Build OBF](/guides/users/build-obf)
+  </Accordion>
+
+  <Accordion title="Agentic evidence review" icon="robot">
+    **Primary job:** Use agents safely inside verification—bounded tools, IXO-backed context, human handoff.
+
+    **Stack:** [Qi](/articles/qi-intelligent-cooperating-system) supplies **cooperation** over verified state; **Agentic Oracles** read graph context and act through declared interfaces (including [MCP](/mcp/model-context-protocol) where tools are exposed to models). Agents support review; they do not replace **authority** or protocol rules. A [Flow](/guides/users/build-a-flow) defines states, evidence gates, and escalation.
+
+    **Start here:** [Build a Flow](/guides/users/build-a-flow)
+  </Accordion>
+
+  <Accordion title="Programmable Organizational Domains (PODs)" icon="comments">
+    **Primary job:** Create a secure domain for coordination.
+
+    **Stack:** [IXO Graph](/articles/ixo-graph) connects claimants, subjects, **claims**, **evidence**, reviewers, and outcomes in one shared map. [IXO Protocol](/protocols/ixo-protocol) provides the primitives for entities, claims, **credentials**, and verifiable **state** changes. [Qi](/articles/qi-intelligent-cooperating-system) coordinates humans, agents, and services around the same workflow **context** so reviews and decisions stay aligned with protocol-backed truth—not siloed documents.
+
+    **Start here:** [Verified claims](/guides/users/build-a-claim-collection)
+  </Accordion>
+</AccordionGroup>
+
+## Before you start
+
+Gather these inputs before using a builder or Agentic Oracle. You do not need every answer on day one—treat this as a living checklist.
+
+<AccordionGroup>
+  <Accordion title="Intent">
+    What real-world outcome should the system produce?
+  </Accordion>
+
+  <Accordion title="Participants">
+    Who acts, reviews, verifies, funds, governs, or receives value?
+  </Accordion>
+
+  <Accordion title="Entities">
+    What people, organizations, assets, projects, services, claims, or outcomes need to exist in the graph?
+  </Accordion>
+
+  <Accordion title="Evidence">
+    What documents, measurements, observations, attestations, media, reports, sensor data, or external records prove what happened?
+  </Accordion>
+
+  <Accordion title="Authority">
+    Who has permission to submit, review, approve, dispute, pay, publish, or update state?
+  </Accordion>
+
+  <Accordion title="Economics">
+    What value is exchanged, rewarded, reserved, released, or settled?
+  </Accordion>
+
+  <Accordion title="Governance">
+    What decisions need human approval, automated review, or escalation?
+  </Accordion>
+
+  <Accordion title="Learning">
+    What outcomes should be fed back into models, programs, governance, and future workflow automation?
+  </Accordion>
+
+  <Accordion title="Tools">
+    What tools, data sources, or external systems are available to the system?
+  </Accordion>
+
+  <Accordion title="Workflows">
+    What steps need to be taken to produce the outcome?
+  </Accordion>
+
+  <Accordion title="Notifications">
+    What messages, emails, alerts, or events should be sent to participants?
+  </Accordion>
+
+  <Accordion title="Monitoring">
+    What metrics, logs, events, or alerts should be collected and analyzed?
+  </Accordion>
+
+  <Accordion title="Error handling">
+    What should happen if the system fails to produce the outcome?
+  </Accordion>
+
+  <Accordion title="Escalation and recovery">
+    When work is blocked or cannot complete, who decides the next step (escalation), and how do you restore integrity of data, permissions, or service (recovery)?
+  </Accordion>
+
+  <Accordion title="Testing">
+    What tests should be run to confirm the system is working as expected?
+  </Accordion>
+
+  <Accordion title="Documentation">
+    What documentation should be created to explain the system?
+  </Accordion>
+
+  <Accordion title="Training">
+    What training should be provided to the participants?
+  </Accordion>
+</AccordionGroup>
+
+## Recommended first build paths
+
+<CardGroup cols={2}>
+  <Card title="I have an organization or program" icon="building-columns" href="/guides/users/build-a-pod">
+    Start with a POD. Then add one Flow and one Blueprint for the most important operating loop.
+  </Card>
+
+  <Card title="I have a process to automate" icon="route" href="/guides/users/build-a-flow">
+    Start with a Flow. Then attach a Blueprint so every action has clear rules and evidence requirements.
+  </Card>
+
+  <Card title="I need agents in the workflow" icon="robot" href="/guides/users/build-a-flow">
+    Start with the Flow that needs help, then add Agentic Oracles with narrow tools and clear handoffs. See also [Oracle architecture](/guides/ixo-oracles-architecture).
+  </Card>
+
+  <Card title="I have a protocol or standard" icon="file-signature" href="/guides/users/build-a-blueprint">
+    Start with a Blueprint. Then run it inside a POD through a Flow that tests real submissions.
+  </Card>
+
+  <Card title="I need a real-world asset digital twin" icon="diamond" href="/guides/digital-twins">
+    Start from the Digital twins guide, then connect claims, evidence, and Flows to what the asset represents in the real world.
+  </Card>
+
+  <Card title="I want participants to exchange value" icon="store" href="/guides/users/build-a-market">
+    Start with a Market. Then define the fulfillment Flow and verification Blueprint behind each listing.
+  </Card>
+</CardGroup>
+
+### Cross-cutting outcomes (after your first loop)
+
+When the basics work, add depth with these focused guides—each assumes you already have (or will add) a POD and Flow.
+
+<CardGroup cols={2}>
+  <Card title="Verified claims" icon="badge-check" href="/guides/users/build-a-claim-collection">
+    One end-to-end pattern for submit → evidence → review → decision.
+  </Card>
+  <Card title="Digital MRV" icon="chart-line" href="/guides/users/build-dmrv">
+    Measurement, reporting, and verification as one auditable workflow.
+  </Card>
+  <Card title="Outcomes-based financing" icon="coins" href="/guides/users/build-obf">
+    Tie settlement to verified outcomes instead of schedules alone.
+  </Card>
+</CardGroup>
+
+## Production checklist
+
+Use this checklist before inviting external participants.
+
+<AccordionGroup>
+  <Accordion title="POD readiness">
+    Confirm the POD has a clear purpose, named operators, member roles, permission boundaries, rooms, tools, Agentic Oracles, entity mappings, and governance rules.
+  </Accordion>
+
+  <Accordion title="Flow readiness">
+    Confirm the Flow has a trigger, states, actors, permissions, evidence requirements, escalation paths, decision outputs, and test cases for failure conditions.
+  </Accordion>
+
+  <Accordion title="Blueprint readiness">
+    Confirm the Blueprint has schemas, evidence rules, review rubrics, role authority, state transition logic, versioning, and dispute handling.
+  </Accordion>
+
+  <Accordion title="Market readiness">
+    Confirm the Market has listing rules, participant onboarding, fulfillment flows, verification logic, settlement rules, moderation, dispute handling, and operating metrics.
+  </Accordion>
+
+  <Accordion title="Oracle and agent readiness">
+    Confirm each Agentic Oracle has scoped permissions, tool access, context boundaries, human oversight, logging, evaluation criteria, and a clear handoff path. For production oracle services, review [Oracle architecture](/guides/ixo-oracles-architecture) for deployment and trust boundaries.
+  </Accordion>
+</AccordionGroup>
+
+## Keep improving
+
+Once your first build is running, use verified outcomes to improve the system.
+
+<Steps>
+  <Step title="Inspect what happened">
+    Review claims, evidence, decisions, state changes, payments, disputes, and completion times.
+  </Step>
+
+  <Step title="Identify bottlenecks">
+    Look for missing evidence, unclear authority, slow reviews, repeated escalations, rejected claims, or settlement delays.
+  </Step>
+
+  <Step title="Update the Flow or Blueprint">
+    Improve the workflow, rubric, evidence rules, agent instructions, or governance logic based on real operating data.
+  </Step>
+
+  <Step title="Scale through the POD or Market">
+    Add more participants, listings, protocols, services, agents, or domains only after the first operating loop is stable.
+  </Step>
+</Steps>
+
+## Architecture path
+
+After choosing a workflow, use the architecture docs to understand the stack in depth.
+
+<CardGroup cols={2}>
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Learn the vocabulary for IXO, Qi, state, evidence, claims, workflows, and agents.
+  </Card>
+  <Card title="IXO Graph" icon="circle-nodes" href="/articles/ixo-graph">
+    Understand the shared map of entities, relationships, evidence, and verifiable change.
+  </Card>
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
+    Understand protocol primitives for verifiable state and coordination.
+  </Card>
+  <Card title="Qi Intelligent Cooperating System" icon="diagram-project" href="/articles/qi-intelligent-cooperating-system">
+    Understand human-agent-service cooperation over IXO-backed state.
+  </Card>
+</CardGroup>
+
+<Note>
+  For the product narrative and a worked claims example, see [Act on Reality](/introduction). This page stays focused on **which** to build first and **how** the pieces connect.
+</Note>

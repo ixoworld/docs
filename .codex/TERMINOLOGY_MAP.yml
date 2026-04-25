@@ -1,0 +1,305 @@
+# terminology-lint merges each term's `deprecated_aliases` into CI checks (see
+# scripts/terminology-lint.mjs). Aliases that map to more than one canonical are skipped.
+# `banned_aliases` override the merged list for the same surface string.
+
+version: 2
+terms:
+  - canonical: IXO MultiClient SDK
+    type: sdk
+    first_mention: "IXO MultiClient SDK (`@ixo/impactxclient-sdk`)"
+    package: "@ixo/impactxclient-sdk"
+    allowed_short_forms:
+      - MultiClient SDK
+    deprecated_aliases:
+      - ImpactX Client
+      - ImpactX Client SDK
+      - IXO Spatial Web Multiclient SDK
+      - Spatial Web Multiclient SDK
+      - Multiclient SDK
+      - Impacts Client SDK
+
+  - canonical: IXO Matrix Client SDK
+    type: sdk
+    first_mention: "IXO Matrix Client SDK (`@ixo/matrixclient-sdk`)"
+    package: "@ixo/matrixclient-sdk"
+    allowed_short_forms:
+      - Matrix Client SDK
+    deprecated_aliases:
+      - IXO Matrix SDK
+      - Matrix Client
+
+  - canonical: Agentic Oracles ADK
+    type: sdk
+    first_mention: "Agentic Oracles ADK (`@ixo/oracle-agent-sdk`)"
+    package: "@ixo/oracle-agent-sdk"
+    allowed_short_forms:
+      - Agentic Oracles ADK
+    deprecated_aliases:
+      - Oracles SDK
+      - Oracle SDK
+      - Agentic Oracles SDK
+
+  - canonical: Personal Agent ADK
+    type: sdk
+    first_mention: "Personal Agent ADK (`@ixo/assistant-sdk`)"
+    package: "@ixo/assistant-sdk"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - IXO Assistant SDK
+      - IXO Personal Agent SDK
+      - Oracle AI SDK
+      - Personal Agent SDK
+
+  - canonical: IXO SignX SDK
+    type: sdk
+    first_mention: "IXO SignX SDK (`@ixo/signx-sdk`)"
+    package: "@ixo/signx-sdk"
+    allowed_short_forms:
+      - SignX SDK
+    deprecated_aliases: []
+
+  - canonical: JAMBO Wallet SDK
+    type: sdk
+    first_mention: "JAMBO Wallet SDK (`@ixo/jambo-wallet-sdk`)"
+    package: "@ixo/jambo-wallet-sdk"
+    allowed_short_forms: [JAMBO Wallet SDK]
+    deprecated_aliases:
+      - JAMBO PWA SDK
+      - IXO PWA SDK
+      - JAMBO dApp
+      - JAMBO PWA
+
+  - canonical: Qi Forge ADK
+    type: kit
+    first_mention: "Qi Forge ADK (Qi Forge CLI and the no-code Agentic Oracle-builder Skill)"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Qi ADK
+
+  - canonical: Qi Forge CLI
+    type: cli
+    first_mention: "Qi Forge CLI"
+    allowed_short_forms: [Qi Forge]
+    deprecated_aliases:
+      - Qi CLI
+
+  - canonical: IXO Protocol
+    type: protocol
+    first_mention: "IXO Protocol"
+    allowed_short_forms:
+      - Protocol
+    deprecated_aliases:
+      - IXO Blockchain
+
+  - canonical: Impact Hub Network
+    type: network
+    first_mention: "Impact Hub Network"
+    allowed_short_forms:
+      - Impact Hub
+    deprecated_aliases: []
+
+  - canonical: Impact Hub Registry
+    type: service
+    first_mention: "Impact Hub Registry"
+    allowed_short_forms:
+      - Registry
+    deprecated_aliases: []
+
+  - canonical: IXO Matrix
+    type: service
+    first_mention: "IXO Matrix"
+    allowed_short_forms:
+      - Matrix
+    deprecated_aliases: []
+
+  - canonical: IXO Blocksync
+    type: service
+    first_mention: "IXO Blocksync"
+    allowed_short_forms:
+      - Blocksync
+    deprecated_aliases: []
+
+  - canonical: Agentic Oracles
+    type: product-family
+    first_mention: "Agentic Oracles"
+    allowed_short_forms:
+      - Oracles
+    deprecated_aliases: []
+
+  - canonical: Personal Agent
+    type: product
+    first_mention: "Personal Agent"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - IXO Assistant
+      - Companion AI
+      - IXO Companion
+
+  - canonical: Qi Agents
+    type: product
+    first_mention: "Qi Agents"
+    allowed_short_forms: [Agents]
+    deprecated_aliases: []
+
+  - canonical: Qi Forge
+    type: product
+    first_mention: "Qi Forge"
+    allowed_short_forms: [Qi Forge]
+    deprecated_aliases:
+      - Forge
+
+  - canonical: IXO SignX
+    type: product
+    first_mention: "IXO SignX"
+    allowed_short_forms:
+      - SignX
+    deprecated_aliases: []
+
+  - canonical: IXO Stack
+    type: stack
+    first_mention: "IXO Stack"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Spatial Web Stack
+      - IXO Spatial Web Stack
+
+  - canonical: IXO Stack SDKs
+    type: sdk-set
+    first_mention: "IXO Stack SDKs"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Spatial Web SDKs
+      - IXO Spatial Web SDKs
+
+  - canonical: Qi Intelligent Cooperating System
+    type: system
+    first_mention: "Qi Intelligent Cooperating System"
+    allowed_short_forms:
+      - Qi
+    deprecated_aliases: []
+
+  - canonical: Qi Flow
+    type: cooperation-surface
+    first_mention: "Qi Flow"
+    allowed_short_forms:
+      - Flow
+    deprecated_aliases: []
+
+  - canonical: Qi Flow Engine
+    type: flow-runtime
+    first_mention: "Qi Flow Engine"
+    allowed_short_forms:
+      - Flow Engine
+    deprecated_aliases: []
+
+  - canonical: Qi Flow Block
+    type: flow-unit
+    first_mention: "Qi Flow Block"
+    allowed_short_forms:
+      - Flow Block
+    deprecated_aliases: []
+
+  - canonical: Qi Skills
+    type: capability-package
+    first_mention: "Qi Skills"
+    allowed_short_forms:
+      - Skills
+    deprecated_aliases: []
+
+  - canonical: Qi Capsules
+    type: runtime-kit
+    first_mention: "Qi Capsules"
+    allowed_short_forms:
+      - Capsules
+    deprecated_aliases: []
+
+  - canonical: Emerging Platform
+    type: platform
+    first_mention: "Emerging Platform"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Emerging
+
+  - canonical: Emerging Household Energy
+    type: solution
+    first_mention: "Emerging Household Energy"
+    allowed_short_forms:
+      - Household Energy
+    deprecated_aliases:
+      - Emerging
+
+  - canonical: Model Context Protocol (MCP)
+    type: standard
+    first_mention: "Model Context Protocol (MCP)"
+    allowed_short_forms:
+      - MCP
+    deprecated_aliases:
+      - Model Context Protocols
+      - Model Context Protocols (MCPs)
+      - MCPs
+
+  - canonical: Blockchain MCP Server
+    type: mcp-server
+    first_mention: "Blockchain MCP Server"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Blockchain MCP
+
+  - canonical: Matrix MCP Server
+    type: mcp-server
+    first_mention: "Matrix MCP Server"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Matrix MCP
+
+  - canonical: Agentic Oracles MCP Server
+    type: mcp-server
+    first_mention: "Agentic Oracles MCP Server"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Oracle MCP
+
+  - canonical: Personal Agent MCP Server
+    type: mcp-server
+    first_mention: "Personal Agent MCP Server"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Assistant MCP
+
+banned_aliases:
+  - alias: "ImpactX Client"
+    replace_with: "IXO MultiClient SDK"
+  - alias: "ImpactX Client SDK"
+    replace_with: "IXO MultiClient SDK"
+  - alias: "IXO Matrix SDK"
+    replace_with: "IXO Matrix Client SDK"
+  - alias: "Agentic Oracles SDK"
+    replace_with: "Agentic Oracles ADK"
+  - alias: "Model Context Protocols"
+    replace_with: "Model Context Protocol (MCP)"
+  - alias: "Model Context Protocols (MCPs)"
+    replace_with: "Model Context Protocol (MCP)"
+  - alias: "MCPs"
+    replace_with: "MCP"
+  - alias: "Assistant MCP"
+    replace_with: "Personal Agent MCP Server"
+  - alias: "Oracle MCP"
+    replace_with: "Agentic Oracles MCP Server"
+  - alias: "spatial-web-sdks"
+    replace_with: "ixo-stack-sdks"
+
+glossary:
+  - term: DID
+    expansion: Decentralized Identifier
+  - term: dMRV
+    expansion: Digital measurement, reporting, and verification
+  - term: POD
+    expansion: Programmable Organisational Domain
+  - term: DeHAN
+    expansion: Decentralised Human Agent Network
+  - term: Agent
+    expansion: Agentic Oracle
+  - term: UCAN
+    expansion: User-controlled Authorization Network
+  - term: UDID
+    expansion: Universal Decision and Impact Determination

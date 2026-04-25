@@ -1,0 +1,864 @@
+---
+title: "Agent Evaluations"
+icon: "clipboard-check"
+description: "Evaluate agent work in Qi Flows using UCAN authority, Claims, evidence, rubrics, and UDID records."
+---
+
+Build this when an AI agent should inspect evidence, apply rules, summarize findings, or recommend a decision without becoming the final source of accountability.
+
+Agent evaluations in Qi are not ordinary model evaluations. You are not only asking whether an answer is fluent, correct, or useful. You are checking whether an agent acted within delegated authority, used the right evidence, applied the right rubric, and produced a verifiable decision record that people, services, regulators, or communities can inspect.
+
+<Tip>
+  Treat the model response as a working output. Treat Claims, evidence references, UCAN delegations, Flow state, and UDID records as the accountable system of record.
+</Tip>
+
+## The problem
+
+Teams need agents to help with evidence review, claim processing, decision support, fulfillment checks, and workflow routing.
+
+Ordinary agents create several risks:
+
+- they may act outside their authority
+- they may use stale or incomplete context
+- they may confuse submitted evidence with verified state
+- they may summarize without citing sources
+- they may recommend actions that the workflow does not allow
+- they may produce outputs that cannot be replayed, challenged, or audited
+- they may trigger payments, credentials, or state changes before a valid determination exists
+
+In Qi, the Flow engine solves this by making evaluation part of a governed state machine.
+
+An agent evaluation should answer four questions:
+
+<AccordionGroup>
+  <Accordion title="Who was allowed to act?" icon="key">
+    **Qi mechanism:** UCAN delegation and capability checks
+  </Accordion>
+  <Accordion title="What was being evaluated?" icon="file-text">
+    **Qi mechanism:** Claims, entities, evidence, and Flow state
+  </Accordion>
+  <Accordion title="How was it evaluated?" icon="clipboard-list">
+    **Qi mechanism:** Protocol, rubric, tools, checks, and citations
+  </Accordion>
+  <Accordion title="What was determined?" icon="stamp">
+    **Qi mechanism:** Evaluation Claim and UDID record
+  </Accordion>
+</AccordionGroup>
+
+## What you build
+
+You build a Qi Flow that evaluates agent work or agent-assisted reviews against verified context.
+
+The Flow should:
+
+1. receive a Claim, task output, or Flow event
+2. check the agent’s UCAN authority
+3. resolve the current state of the relevant entities, Claims, credentials, and evidence
+4. run the evaluation against a declared rubric
+5. produce a structured Evaluation Claim
+6. produce or update a UDID when a decision and impact determination is ready
+7. route the result to a human, service, payment step, credential step, dispute path, or next Flow state
+
+## Core pattern
+
+<Steps>
+  <Step title="A Claim or task enters evaluation">
+    A participant, service, device, or agent submits a Claim, completes a task, or proposes a state transition inside a Qi Flow.
+  </Step>
+
+  <Step title="The Flow opens an evaluation context">
+    The Flow instance defines the subject, claim type, protocol, rubric version, allowed evidence sources, current state snapshot, and decision boundary.
+  </Step>
+
+  <Step title="UCAN authority is checked">
+    The Flow verifies that the agent has the required object-capability delegation for this exact action, resource, claim type, tool, time window, and Flow instance.
+  </Step>
+
+  <Step title="The agent retrieves permitted context">
+    The agent may only inspect Claims, evidence, rooms, graph state, tools, and records that are inside its UCAN scope.
+  </Step>
+
+  <Step title="The agent applies the rubric">
+    The agent checks the Claim against required fields, evidence rules, protocol constraints, scoring thresholds, disqualifiers, and escalation rules.
+  </Step>
+
+  <Step title="The agent emits an Evaluation Claim">
+    The result is written as structured data with cited evidence references, applied checks, confidence, recommendation, limitations, and proof of the agent’s authority.
+  </Step>
+
+  <Step title="The Flow issues a UDID when ready">
+    A UDID records the decision and impact determination: what was decided, why, under which authority, with which evidence, and what state or value changed.
+  </Step>
+
+  <Step title="Humans or services act on the result">
+    The Flow routes the evaluation to approval, rejection, dispute, settlement, credential issuance, state update, or a request for more evidence.
+  </Step>
+</Steps>
+
+## Key concepts
+
+<AccordionGroup>
+  <Accordion title="UCAN" icon="shield-halved">
+    Delegates what an agent may do, on which resource, under which constraints.
+  </Accordion>
+  <Accordion title="Claim" icon="file-signature">
+    Records something asserted or performed, including agent work, evidence submission, review, or evaluation.
+  </Accordion>
+  <Accordion title="Evaluation Claim" icon="clipboard-check">
+    Records how a Claim, task, or proposed state transition was evaluated.
+  </Accordion>
+  <Accordion title="UDID" icon="stamp">
+    Records the final decision and impact determination produced from one or more evaluations.
+  </Accordion>
+  <Accordion title="Flow state" icon="route">
+    Defines where the evaluation happens and which transitions are allowed.
+  </Accordion>
+  <Accordion title="Rubric" icon="table">
+    Defines the rules, scoring, thresholds, disqualifiers, and escalation conditions.
+  </Accordion>
+  <Accordion title="Evidence reference" icon="paperclip">
+    Links the evaluation to documents, measurements, observations, attestations, media, reports, sensor records, or external records.
+  </Accordion>
+  <Accordion title="Agentic Oracle" icon="robot">
+    Performs specialized review, evidence analysis, scoring, prediction, recommendation, or verification support.
+  </Accordion>
+</AccordionGroup>
+
+## Start with one evaluation
+
+Do not begin with a fully autonomous approval workflow.
+
+Start with one narrow review task where the agent can recommend, but not finalize, the outcome.
+
+Good first tasks:
+
+- check whether a Claim is complete
+- classify evidence by type and relevance
+- detect missing required fields
+- compare submitted evidence against protocol requirements
+- summarize conflicting evidence
+- score one rubric section
+- recommend whether a human verifier should approve, reject, dispute, or request more evidence
+
+Avoid first tasks where the agent can directly release funds, issue credentials, update high-value state, or approve irreversible outcomes.
+
+## Design the evaluation Flow
+
+Use this minimum Flow shape:
+
+<AccordionGroup>
+  <Accordion title="`submitted`" icon="inbox">
+    **Purpose:** Claim or agent task output has entered the Flow.
+
+    **Exit condition:** Claim exists and has a subject.
+  </Accordion>
+  <Accordion title="`authority_check`" icon="key">
+    **Purpose:** Verify UCAN delegation and credentials.
+
+    **Exit condition:** Agent has required capabilities.
+  </Accordion>
+  <Accordion title="`context_resolved`" icon="database">
+    **Purpose:** Retrieve current graph state, evidence, and protocol rules.
+
+    **Exit condition:** All required context references are loaded or marked missing.
+  </Accordion>
+  <Accordion title="`evaluating`" icon="wand-magic-sparkles">
+    **Purpose:** Run the agent evaluation against the rubric.
+
+    **Exit condition:** Structured Evaluation Claim is produced.
+  </Accordion>
+  <Accordion title="`review_required`" icon="user-check">
+    **Purpose:** Human or authorized verifier reviews the recommendation.
+
+    **Exit condition:** Reviewer accepts, rejects, disputes, or requests more evidence.
+  </Accordion>
+  <Accordion title="`determined`" icon="stamp">
+    **Purpose:** UDID is created or updated.
+
+    **Exit condition:** Decision and impact determination is signed or recorded.
+  </Accordion>
+  <Accordion title="`actioned`" icon="bolt">
+    **Purpose:** Allowed state transition, payment, credential, or next Flow is triggered.
+
+    **Exit condition:** Action result is recorded.
+  </Accordion>
+  <Accordion title="`closed`" icon="circle-check">
+    **Purpose:** Evaluation loop is complete.
+
+    **Exit condition:** Audit trail is inspectable.
+  </Accordion>
+</AccordionGroup>
+
+Add explicit failure states:
+
+<AccordionGroup>
+  <Accordion title="`unauthorized`" icon="ban">
+    The agent does not have the required UCAN capability.
+  </Accordion>
+  <Accordion title="`insufficient_evidence`" icon="file-xmark">
+    Required evidence is missing, stale, inaccessible, or invalid.
+  </Accordion>
+  <Accordion title="`rubric_failed`" icon="triangle-exclamation">
+    The Claim fails a hard protocol rule.
+  </Accordion>
+  <Accordion title="`conflict_detected`" icon="code-merge">
+    Evidence sources conflict or cannot be reconciled.
+  </Accordion>
+  <Accordion title="`human_escalation`" icon="user-plus">
+    The agent is uncertain or the rubric requires human judgment.
+  </Accordion>
+  <Accordion title="`disputed`" icon="comments">
+    A participant challenges the evaluation or determination.
+  </Accordion>
+</AccordionGroup>
+
+## Configure UCAN authority
+
+A UCAN should be scoped to the smallest useful evaluation task.
+
+Define:
+
+- issuer: the human, organization, POD, or service delegating authority
+- audience: the agent or Agentic Oracle DID receiving the authority
+- resource: the POD, Flow instance, Claim Collection, Claim, entity, evidence set, room, or tool
+- capabilities: the exact actions the agent may perform
+- constraints: limits on claim type, time, budget, tool use, output type, state transition, and approval power
+- expiry: when the delegation ends
+- revocation path: how the delegation can be suspended or revoked
+- proof chain: how the Flow verifies the delegation
+
+A useful first UCAN capability set:
+
+<AccordionGroup>
+  <Accordion title="`claim.read`" icon="eye">
+    Read one submitted Claim and its metadata.
+  </Accordion>
+  <Accordion title="`evidence.read`" icon="paperclip">
+    Read only evidence linked to the Claim.
+  </Accordion>
+  <Accordion title="`entity.read`" icon="sitemap">
+    Read only entities referenced by the Claim.
+  </Accordion>
+  <Accordion title="`rubric.read`" icon="table">
+    Read the active rubric and protocol version.
+  </Accordion>
+  <Accordion title="`evaluation.create`" icon="plus">
+    Create an Evaluation Claim.
+  </Accordion>
+  <Accordion title="`state.propose`" icon="arrow-right-arrow-left">
+    Propose a Flow transition, not execute it.
+  </Accordion>
+  <Accordion title="`message.create`" icon="message">
+    Send a structured finding to the review room.
+  </Accordion>
+</AccordionGroup>
+
+Avoid granting these at first:
+
+<AccordionGroup>
+  <Accordion title="`payment.release`" icon="coins">
+    Value movement should require a UDID and stronger approval.
+  </Accordion>
+  <Accordion title="`credential.issue`" icon="id-card">
+    Credential issuance should require human or protocol-controlled determination.
+  </Accordion>
+  <Accordion title="`state.update`" icon="pen-to-square">
+    Direct state updates can bypass review.
+  </Accordion>
+  <Accordion title="`claim.approve`" icon="badge-check">
+    Approval should be separate from recommendation.
+  </Accordion>
+  <Accordion title="`policy.change`" icon="sliders">
+    Agents should not modify the rules they are evaluated against.
+  </Accordion>
+</AccordionGroup>
+
+### Example UCAN design shape
+
+Use this as a design shape, then map it to the canonical Qi and IXO SDK fields used in your implementation.
+
+```json
+{
+  "ucan": {
+    "issuer": "did:ixo:pod:review-board",
+    "audience": "did:ixo:oracle:evidence-reviewer",
+    "resource": {
+      "pod": "did:ixo:pod:clean-cooking-program",
+      "flow": "flow:claim-review:v1",
+      "claimCollection": "claims:stove-usage:v1"
+    },
+    "capabilities": [
+      "claim.read",
+      "evidence.read",
+      "entity.read",
+      "rubric.read",
+      "evaluation.create",
+      "state.propose"
+    ],
+    "constraints": {
+      "claimTypes": ["stove_usage"],
+      "maxEvidenceItems": 50,
+      "allowedTools": ["ixo.graph.query", "evidence.hash.verify", "rubric.evaluate"],
+      "mayApprove": false,
+      "mayReleasePayment": false,
+      "expiresAt": "2026-06-30T23:59:59Z"
+    }
+  }
+}
+```
+
+<Tip>
+  The safest default is propose-only. Let the agent create an Evaluation Claim and propose the next Flow state. Let the Flow, verifier, or protocol decide whether the proposal becomes a UDID-backed determination.
+</Tip>
+
+## Define the Claim under review
+
+Each evaluation should start with a clear Claim.
+
+Minimum Claim inputs:
+
+<AccordionGroup>
+  <Accordion title="`claimId`" icon="hashtag">
+    Unique identifier for the Claim.
+  </Accordion>
+  <Accordion title="`claimType`" icon="tag">
+    Type of Claim being reviewed.
+  </Accordion>
+  <Accordion title="`issuer`" icon="user">
+    DID of the person, organization, service, device, or agent that made the Claim.
+  </Accordion>
+  <Accordion title="`subject`" icon="crosshairs">
+    Entity, asset, project, person, device, service, or outcome the Claim is about.
+  </Accordion>
+  <Accordion title="`data`" icon="brackets-curly">
+    Structured submitted data.
+  </Accordion>
+  <Accordion title="`evidence`" icon="paperclip">
+    Linked evidence references.
+  </Accordion>
+  <Accordion title="`proof`" icon="shield">
+    Cryptographic proof, signature, hash, attestation, or provenance record.
+  </Accordion>
+  <Accordion title="`submittedAt`" icon="clock">
+    Submission time.
+  </Accordion>
+  <Accordion title="`protocolId`" icon="file-code">
+    Protocol or Blueprint used to evaluate the Claim.
+  </Accordion>
+  <Accordion title="`flowId`" icon="route">
+    Qi Flow instance handling the review.
+  </Accordion>
+</AccordionGroup>
+
+Example:
+
+```json
+{
+  "claimId": "claim:stove-usage:000123",
+  "claimType": "stove_usage",
+  "issuer": "did:ixo:org:field-operator",
+  "subject": "did:ixo:device:stove-7781",
+  "data": {
+    "period": "2026-04",
+    "reportedBurnHours": 182,
+    "householdId": "entity:household:442"
+  },
+  "evidence": [
+    {
+      "type": "deviceTelemetry",
+      "uri": "ipfs://...",
+      "hash": "bafy..."
+    },
+    {
+      "type": "fieldVisitReport",
+      "uri": "ipfs://...",
+      "hash": "bafy..."
+    }
+  ],
+  "protocolId": "blueprint:clean-cooking-mrv:v1",
+  "flowId": "flow:claim-review:7781"
+}
+```
+
+## Define the rubric
+
+The rubric converts protocol rules into checks that the agent and Flow can apply.
+
+A practical rubric should include:
+
+- required evidence
+- evidence freshness rules
+- source authenticity checks
+- data integrity checks
+- field completeness checks
+- allowed value ranges
+- consistency checks across evidence sources
+- disqualifying conditions
+- scoring rules
+- minimum score for recommendation
+- conditions that require human review
+- conditions that require dispute or investigation
+- allowed Flow transitions after evaluation
+
+Example rubric shape:
+
+```json
+{
+  "rubricId": "rubric:stove-usage-review:v1",
+  "claimType": "stove_usage",
+  "requiredEvidence": [
+    "deviceTelemetry",
+    "fieldVisitReport"
+  ],
+  "checks": [
+    {
+      "id": "evidence.telemetry.present",
+      "type": "required",
+      "description": "Telemetry evidence is linked and hash-verifiable"
+    },
+    {
+      "id": "usage.range.valid",
+      "type": "range",
+      "description": "Reported burn hours are within the protocol range",
+      "min": 1,
+      "max": 744
+    },
+    {
+      "id": "field.report.consistent",
+      "type": "consistency",
+      "description": "Field visit report does not contradict telemetry period or device identity"
+    }
+  ],
+  "thresholds": {
+    "recommendApprove": 0.85,
+    "recommendRejectBelow": 0.5,
+    "humanReviewBelow": 0.85
+  },
+  "disqualifiers": [
+    "missingTelemetry",
+    "invalidEvidenceHash",
+    "deviceNotLinkedToHousehold",
+    "claimOutsideReportingPeriod"
+  ]
+}
+```
+
+## Run the evaluation
+
+The agent evaluation should produce structured output, not a free-form opinion.
+
+Minimum Evaluation Claim output:
+
+<AccordionGroup>
+  <Accordion title="`evaluationId`" icon="hashtag">
+    Unique identifier for the evaluation.
+  </Accordion>
+  <Accordion title="`subjectClaimId`" icon="link">
+    Claim being evaluated.
+  </Accordion>
+  <Accordion title="`evaluatorDid`" icon="robot">
+    Agentic Oracle, agent, human, or service performing the evaluation.
+  </Accordion>
+  <Accordion title="`ucanProof`" icon="key">
+    Proof that the evaluator had authority.
+  </Accordion>
+  <Accordion title="`rubricId`" icon="table">
+    Rubric used.
+  </Accordion>
+  <Accordion title="`rubricVersion`" icon="tag">
+    Exact version used.
+  </Accordion>
+  <Accordion title="`stateSnapshotRef`" icon="camera">
+    Reference to the Flow or graph state used at evaluation time.
+  </Accordion>
+  <Accordion title="`evidenceRefs`" icon="paperclip">
+    Evidence items inspected.
+  </Accordion>
+  <Accordion title="`checks`" icon="list-check">
+    Rule-by-rule results.
+  </Accordion>
+  <Accordion title="`findings`" icon="magnifying-glass">
+    Structured observations with evidence citations.
+  </Accordion>
+  <Accordion title="`score`" icon="percent">
+    Numeric score if the rubric requires one.
+  </Accordion>
+  <Accordion title="`recommendation`" icon="signs-post">
+    Proposed next action.
+  </Accordion>
+  <Accordion title="`confidence`" icon="gauge">
+    Confidence in the recommendation.
+  </Accordion>
+  <Accordion title="`limitations`" icon="circle-exclamation">
+    Missing evidence, uncertainty, assumptions, or unresolved conflicts.
+  </Accordion>
+  <Accordion title="`proposedTransition`" icon="arrow-right-arrow-left">
+    Flow transition proposed by the agent.
+  </Accordion>
+  <Accordion title="`proof`" icon="shield-check">
+    Signature, hash, attestation, or other proof of the evaluation record.
+  </Accordion>
+</AccordionGroup>
+
+Example Evaluation Claim:
+
+```json
+{
+  "evaluationId": "eval:claim:stove-usage:000123:oracle-01",
+  "type": "AgentEvaluationClaim",
+  "subjectClaimId": "claim:stove-usage:000123",
+  "evaluatorDid": "did:ixo:oracle:evidence-reviewer",
+  "ucanProof": "ucan:proof:...",
+  "rubricId": "rubric:stove-usage-review:v1",
+  "rubricVersion": "1.0.0",
+  "stateSnapshotRef": "state:flow:claim-review:7781:checkpoint:004",
+  "evidenceRefs": [
+    "evidence:telemetry:hash:bafy...",
+    "evidence:field-report:hash:bafy..."
+  ],
+  "checks": [
+    {
+      "checkId": "evidence.telemetry.present",
+      "result": "pass",
+      "evidenceRef": "evidence:telemetry:hash:bafy..."
+    },
+    {
+      "checkId": "usage.range.valid",
+      "result": "pass",
+      "observedValue": 182
+    },
+    {
+      "checkId": "field.report.consistent",
+      "result": "needs_review",
+      "reason": "Field report date is one day outside the telemetry period"
+    }
+  ],
+  "score": 0.82,
+  "recommendation": "request_more_evidence",
+  "confidence": 0.76,
+  "limitations": [
+    "Field report date mismatch requires human review"
+  ],
+  "proposedTransition": "human_escalation"
+}
+```
+
+<Warning>
+  Do not store private model scratchpad as the audit trail. Store evidence references, extracted facts, tool calls, applied checks, rule outcomes, recommendation, limitations, and the final rationale that reviewers can inspect.
+</Warning>
+
+## Create the UDID
+
+A UDID is created when the Flow has enough information to record a decision and impact determination.
+
+Do not create a UDID for every intermediate model output. Create or update a UDID when the Flow reaches a determination point.
+
+A UDID should record:
+
+<AccordionGroup>
+  <Accordion title="`udid`" icon="hashtag">
+    Unique determination identifier.
+  </Accordion>
+  <Accordion title="`decisionType`" icon="scale-balanced">
+    Approval, rejection, request for evidence, dispute, settlement, credential issuance, state update, or no-op.
+  </Accordion>
+  <Accordion title="`subjectClaims`" icon="file-signature">
+    Claims considered.
+  </Accordion>
+  <Accordion title="`evaluationClaims`" icon="clipboard-check">
+    Evaluations used.
+  </Accordion>
+  <Accordion title="`authority`" icon="key">
+    UCANs, credentials, verifier role, or governance authority.
+  </Accordion>
+  <Accordion title="`rubric`" icon="table">
+    Rubric and protocol version applied.
+  </Accordion>
+  <Accordion title="`evidence`" icon="paperclip">
+    Evidence references used in the determination.
+  </Accordion>
+  <Accordion title="`determination`" icon="stamp">
+    Final decision.
+  </Accordion>
+  <Accordion title="`impact`" icon="chart-network">
+    What changed or will change because of the decision.
+  </Accordion>
+  <Accordion title="`stateTransition`" icon="arrow-right-arrow-left">
+    Flow transition or graph update authorized by the determination.
+  </Accordion>
+  <Accordion title="`approver`" icon="user-check">
+    Human, service, governance process, or authorized verifier.
+  </Accordion>
+  <Accordion title="`timestamp`" icon="clock">
+    Determination time.
+  </Accordion>
+  <Accordion title="`proof`" icon="shield-check">
+    Signature, attestation, transaction hash, or other proof.
+  </Accordion>
+  <Accordion title="`disputeWindow`" icon="hourglass">
+    Period or condition under which the determination can be challenged.
+  </Accordion>
+</AccordionGroup>
+
+Example UDID shape:
+
+```json
+{
+  "udid": "udid:flow:claim-review:7781:determination:001",
+  "type": "UniversalDecisionAndImpactDetermination",
+  "decisionType": "request_more_evidence",
+  "subjectClaims": [
+    "claim:stove-usage:000123"
+  ],
+  "evaluationClaims": [
+    "eval:claim:stove-usage:000123:oracle-01"
+  ],
+  "authority": {
+    "verifier": "did:ixo:person:human-verifier-17",
+    "agentUcan": "ucan:proof:...",
+    "protocol": "blueprint:clean-cooking-mrv:v1"
+  },
+  "rubric": {
+    "id": "rubric:stove-usage-review:v1",
+    "version": "1.0.0"
+  },
+  "determination": {
+    "status": "more_evidence_required",
+    "reason": "Telemetry is present and valid, but the field report date conflicts with the reporting period."
+  },
+  "impact": {
+    "paymentReleased": false,
+    "credentialIssued": false,
+    "claimStatus": "evidence_requested"
+  },
+  "stateTransition": {
+    "from": "review_required",
+    "to": "insufficient_evidence"
+  },
+  "disputeWindow": "P14D"
+}
+```
+
+## Decide what the agent may do
+
+Use three evaluation modes.
+
+<AccordionGroup>
+  <Accordion title="Recommend" icon="message">
+    **Agent can do:** Inspect context and create an Evaluation Claim.
+
+    **Use when:** First implementation, high-stakes review, new rubric.
+  </Accordion>
+  <Accordion title="Propose" icon="arrow-right-arrow-left">
+    **Agent can do:** Create an Evaluation Claim and propose a Flow transition.
+
+    **Use when:** The rubric is stable and human review remains required.
+  </Accordion>
+  <Accordion title="Act" icon="bolt">
+    **Agent can do:** Execute a permitted transition after checks pass.
+
+    **Use when:** Low-risk actions with strict UCAN scope and protocol guardrails.
+  </Accordion>
+</AccordionGroup>
+
+For most production systems, start with `Recommend`, move to `Propose`, and only allow `Act` for narrow, reversible, low-risk transitions.
+
+## Test the evaluation
+
+Use a test set before connecting the evaluation to real state changes.
+
+Create cases for:
+
+<AccordionGroup>
+  <Accordion title="Valid Claim with complete evidence" icon="circle-check">
+    Agent can recommend approval correctly.
+  </Accordion>
+  <Accordion title="Missing required evidence" icon="file-xmark">
+    Agent detects incomplete submissions.
+  </Accordion>
+  <Accordion title="Invalid evidence hash" icon="link-slash">
+    Agent does not trust unverifiable evidence.
+  </Accordion>
+  <Accordion title="Stale evidence" icon="clock-rotate-left">
+    Agent applies freshness rules.
+  </Accordion>
+  <Accordion title="Conflicting evidence" icon="code-merge">
+    Agent escalates instead of forcing a decision.
+  </Accordion>
+  <Accordion title="Unauthorized agent" icon="ban">
+    UCAN gate blocks evaluation.
+  </Accordion>
+  <Accordion title="Wrong claim type" icon="triangle-exclamation">
+    Agent cannot operate outside scope.
+  </Accordion>
+  <Accordion title="Revoked UCAN" icon="key">
+    Flow rejects previously authorized access.
+  </Accordion>
+  <Accordion title="Prompt injection in evidence" icon="bug">
+    Agent treats evidence content as untrusted input.
+  </Accordion>
+  <Accordion title="Score below threshold" icon="arrow-trend-down">
+    Agent does not recommend approval.
+  </Accordion>
+  <Accordion title="Boundary score" icon="equals">
+    Rubric threshold behavior is correct.
+  </Accordion>
+  <Accordion title="Human disagreement" icon="users">
+    Review and correction are captured.
+  </Accordion>
+  <Accordion title="Disputed determination" icon="comments">
+    Flow can route to dispute handling.
+  </Accordion>
+  <Accordion title="Payment-triggering decision" icon="coins">
+    Payment cannot happen without valid UDID authority.
+  </Accordion>
+</AccordionGroup>
+
+## Evaluation metrics
+
+Track operational quality, not only model quality.
+
+<AccordionGroup>
+  <Accordion title="Authorization accuracy" icon="shield-halved">
+    Agent only acts when UCAN scope permits.
+  </Accordion>
+  <Accordion title="Evidence citation coverage" icon="paperclip">
+    Every finding links to evidence or state.
+  </Accordion>
+  <Accordion title="Rubric adherence" icon="list-check">
+    All required checks are applied.
+  </Accordion>
+  <Accordion title="False approval rate" icon="thumbs-down">
+    Bad Claims are not recommended for approval.
+  </Accordion>
+  <Accordion title="False rejection rate" icon="circle-xmark">
+    Valid Claims are not rejected without cause.
+  </Accordion>
+  <Accordion title="Escalation quality" icon="user-plus">
+    Ambiguous cases route to humans.
+  </Accordion>
+  <Accordion title="UDID completeness" icon="stamp">
+    Determinations include authority, evidence, decision, impact, and proof.
+  </Accordion>
+  <Accordion title="Human override rate" icon="user-gear">
+    High override rate triggers rubric or agent improvement.
+  </Accordion>
+  <Accordion title="Audit replay success" icon="rotate">
+    A reviewer can reconstruct the evaluation from records.
+  </Accordion>
+  <Accordion title="State transition accuracy" icon="route">
+    Proposed transitions match Flow rules.
+  </Accordion>
+  <Accordion title="Time to determination" icon="stopwatch">
+    Review speed improves without reducing accountability.
+  </Accordion>
+</AccordionGroup>
+
+## Common failure modes
+
+<AccordionGroup>
+  <Accordion title="The agent invents evidence">
+    Require evidence references for every finding. Reject evaluations that cite documents, measurements, Claims, or state that are not present in the permitted context.
+  </Accordion>
+
+  <Accordion title="The agent has too much authority">
+    Replace broad API keys with UCAN capability delegation. Scope authority by Flow instance, resource, claim type, tool, time window, and allowed action.
+  </Accordion>
+
+  <Accordion title="The agent uses stale context">
+    Include a state snapshot reference in the Evaluation Claim. If the graph state changes, require a new evaluation or explicit refresh.
+  </Accordion>
+
+  <Accordion title="The rubric is too vague">
+    Convert policy language into checks, thresholds, disqualifiers, and escalation rules. Ambiguity should route to human review.
+  </Accordion>
+
+  <Accordion title="The model output is treated as truth">
+    Write structured Evaluation Claims and UDID records. A chat response should not be the source of truth for settlement, credentials, or state changes.
+  </Accordion>
+
+  <Accordion title="The agent approves its own work">
+    Separate task execution from evaluation. Use independent evaluators or human review for high-stakes decisions.
+  </Accordion>
+
+  <Accordion title="The Flow cannot explain a decision">
+    Require the UDID to reference Claims, evaluations, evidence, rubric version, authority, decision, impact, and proof.
+  </Accordion>
+</AccordionGroup>
+
+## First implementation move
+
+Build one agent-assisted evaluation that cannot directly approve, pay, issue, or update state.
+
+Define:
+
+- one Claim type
+- one Claim Collection
+- one Flow
+- one Agentic Oracle or agent DID
+- one UCAN delegation
+- one rubric
+- one Evaluation Claim schema
+- one UDID schema
+- one human review step
+- one dispute path
+- one production metric dashboard
+
+Then run at least 20 representative Claims through the Flow before enabling any automated state transition.
+
+## Production checklist
+
+Before launch, confirm:
+
+- the agent has a DID
+- every evaluation action requires UCAN authority
+- UCAN scopes are narrow and expire
+- Claims have typed schemas and evidence references
+- evidence can be resolved and verified
+- the rubric is versioned
+- the Flow has explicit states and failure paths
+- the agent emits structured Evaluation Claims
+- the UDID records authority, evidence, decision, impact, state transition, and proof
+- irreversible actions require human, protocol, or governance approval
+- disputes can be submitted and resolved
+- reviewers can replay the evaluation from stored records
+- revoked authority blocks future actions
+- payment, credential, and state update actions cannot execute without valid determination authority
+
+## Example: agent-assisted evidence review
+
+A field operator submits a Claim that a clean cooking device was used during a reporting period.
+
+The Qi Flow:
+
+1. receives the Claim
+2. checks that the Evidence Review Oracle has UCAN authority to inspect this claim type
+3. retrieves linked telemetry, field report, device entity, household entity, and active protocol rules
+4. asks the agent to apply the usage review rubric
+5. records an Evaluation Claim with findings, evidence references, score, recommendation, and limitations
+6. routes the recommendation to a human verifier because the score is below the automatic threshold
+7. records a UDID after the verifier decides to request more evidence
+8. updates the Flow state to `insufficient_evidence`
+9. notifies the claimant about the missing or conflicting evidence
+
+The agent helped evaluate the Claim, but it did not become the final authority. The accountable record is the combination of UCAN delegation, Claim, evidence, Evaluation Claim, human review, Flow transition, and UDID.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Claims Management" icon="badge-check" href="/guides/dev/ixo-claims">
+    Create, process, evaluate, dispute, and automate verifiable Claims.
+  </Card>
+
+  <Card title="Model Context Protocol" icon="plug" href="/mcp/model-context-protocol">
+    Connect agents to IXO services through secure, capability-scoped tool interfaces.
+  </Card>
+
+  <Card title="Agentic Oracles" icon="robot" href="/articles/ixo-oracles">
+    Build agent services for verification, decision support, evidence analysis, and workflow automation.
+  </Card>
+
+  <Card title="Qi Intelligent Cooperating System" icon="diagram-project" href="/articles/qi-intelligent-cooperating-system">
+    Coordinate humans, agents, services, and applications over shared state.
+  </Card>
+</CardGroup>
