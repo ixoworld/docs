@@ -97,7 +97,7 @@ description: "Concise summary for SEO and navigation."
 Optional frontmatter fields:
 
 * `sidebarTitle`: Short title for sidebar navigation.
-* `icon`: Lucide or Font Awesome icon name, URL, or file path.
+* `icon`: Icon name, URL, or file path. **In this IXO repo**, Mintlify is configured for **Font Awesome** (`icons.library`: `fontawesome` in `docs.json`); use Font Awesome icon names unless that setting changes.
 * `tag`: Label next to the page title in the sidebar (for example, "NEW").
 * `mode`: Page layout mode (`default`, `wide`, `custom`).
 * `keywords`: Array of terms related to the page content for local search and SEO.
@@ -150,6 +150,12 @@ The `navigation` property in `docs.json` controls site structure. Choose one pri
 * **Internal links:** Root-relative, no extension: `/getting-started/quickstart`
 * **Images:** Store in `/images`, reference as `/images/example.png`
 * **External links:** Use full URLs, they open in new tabs automatically
+
+### Icons (IXO Mintlify sites)
+
+* **Library:** Font Awesome for string `icon` values site-wide (`docs.json` → `icons.library`: `fontawesome`).
+* **Naming:** Use valid Font Awesome icon identifiers for components and frontmatter. If an icon fails to render, fix the identifier—do not switch to Lucide-only names unless `icons.library` is migrated to `lucide`.
+* **Styles:** When Mintlify exposes `iconType`, use Font Awesome style values (`solid`, `regular`, and so on) per [Mintlify icons](https://mintlify.com/docs/components/icons).
 
 ## Customize docs sites
 

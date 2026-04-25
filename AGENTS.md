@@ -20,6 +20,7 @@ Read and follow these files in order before making changes:
 
 - The writable docs source of truth is the current Mintlify/MDX repository, not the archived legacy GitBook repo.
 - Site configuration authority is `docs.json` (Mintlify config schema).
+- Mintlify icons for this site use **Font Awesome** names (`icons.library` is `fontawesome` in `docs.json`). When adding or fixing `icon` on components (for example `Card`, `Accordion`) or in page frontmatter, use Font Awesome identifiers and verify names against the current Font Awesome set—do not assume Lucide-only naming unless a migration explicitly changes `icons.library`.
 - `mint.json` is deprecated in this repo and must not be introduced or edited unless a migration task explicitly requires a temporary compatibility step.
 - Most public content lives under:
   - `guides/`

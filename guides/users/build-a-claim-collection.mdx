@@ -1,0 +1,69 @@
+## Verified claims workflows
+
+Build this when assertions about delivery, eligibility, compliance, performance, or impact need to be reviewed and trusted.
+
+### The problem
+
+Claims often live in spreadsheets, emails, documents, screenshots, and siloed applications. Reviewers cannot easily see who made a claim, what evidence supports it, who has authority, what changed, or why a decision was made.
+
+AI agents can help, but only if they can distinguish verified state from unverified context.
+
+### What you build
+
+A workflow where claims are submitted, linked to evidence, reviewed by authorized actors, and resolved through clear state changes.
+
+### Example
+
+An implementer submits a claim that a milestone was completed.
+Evidence is attached.
+An agent checks the evidence against program rules.
+A verifier reviews the result.
+The claim is accepted, disputed, or rejected.
+The workflow advances based on the decision.
+
+### IXO and Qi roles
+
+<CardGroup cols={2}>
+  <Card title="IXO Graph" icon="circle-nodes" href="/articles/ixo-graph">
+    Connects the claimant, project, claim, evidence, reviewer, decision, and outcome.
+  </Card>
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
+    Provides primitives for entities, claims, credentials, assets, and verifiable state changes.
+  </Card>
+  <Card title="Qi" icon="sparkles" href="/articles/qi-intelligent-cooperating-system">
+    Coordinates humans, agents, applications, and services around the claim workflow.
+  </Card>
+  <Card title="Agentic Oracles" icon="robot" href="/articles/ixo-oracles">
+    Support evidence review, rule checks, risk flags, and workflow recommendations.
+  </Card>
+</CardGroup>
+
+### First implementation move
+
+Start with one claim type.
+
+Define:
+
+- the entity the claim is about
+- who can submit the claim
+- what evidence is required
+- who can review it
+- what states the claim can move through
+- what happens when the claim is accepted or rejected
+
+### Next steps
+
+<CardGroup cols={2}>
+  <Card title="Claims guides" icon="file-check" href="/guides/dev/ixo-claims">
+    Implementation patterns for creating and managing claims.
+  </Card>
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
+    Protocol concepts behind claims, credentials, entities, and coordination.
+  </Card>
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Vocabulary for entities, domains, claims, evidence, state, and workflows.
+  </Card>
+  <Card title="Agentic Oracles" icon="robot" href="/articles/ixo-oracles">
+    Agent patterns for observing state, evaluating evidence, and triggering actions.
+  </Card>
+</CardGroup>

@@ -39,12 +39,28 @@ Processes a USSD interaction. Called by the telecom gateway once per user input 
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `sessionId` | string | yes | Unique session identifier assigned by the telecom gateway |
-| `serviceCode` | string | yes | USSD service code the user dialled, e.g. `*1234#` |
-| `phoneNumber` | string | yes | User's phone number in E.164 international format, e.g. `+260971234567` |
-| `text` | string | yes | User input accumulated during the session. Empty string on initial dial |
+<AccordionGroup>
+  <Accordion title="`sessionId`">
+    - **Type:** `string`
+    - **Required:** yes
+    - **Description:** Unique session identifier assigned by the telecom gateway.
+  </Accordion>
+  <Accordion title="`serviceCode`">
+    - **Type:** `string`
+    - **Required:** yes
+    - **Description:** USSD service code the user dialled, for example `*1234#`.
+  </Accordion>
+  <Accordion title="`phoneNumber`">
+    - **Type:** `string`
+    - **Required:** yes
+    - **Description:** User phone number in E.164 international format, for example `+260971234567`.
+  </Accordion>
+  <Accordion title="`text`">
+    - **Type:** `string`
+    - **Required:** yes
+    - **Description:** User input accumulated during the session; empty string on initial dial.
+  </Accordion>
+</AccordionGroup>
 
 **Validation rules**
 
@@ -64,10 +80,14 @@ CON <menu text>
 END <closing message>
 ```
 
-| Prefix | Meaning |
-|---|---|
-| `CON` | Session continues — display the menu and wait for the next input |
-| `END` | Session closed — display the message and end the USSD session |
+<AccordionGroup>
+  <Accordion title="`CON`">
+    - **Meaning:** Session continues; display the menu and wait for the next input.
+  </Accordion>
+  <Accordion title="`END`">
+    - **Meaning:** Session closed; display the message and end the USSD session.
+  </Accordion>
+</AccordionGroup>
 
 **Example — initial dial**
 
@@ -181,11 +201,20 @@ Basic health check for platform-as-a-service health probes.
 
 ## Errors
 
-| Response | Cause | What to do |
-|---|---|---|
-| `END Invalid input. Please try again.` | Request failed validation | Check phone number is E.164, service code format, and text length |
-| `END Service temporarily unavailable. Please try again later.` | Server or database error | Check `/health` for database connectivity |
-| Session not found on `GET /debug/:sessionId` | Session expired or never started | Sessions expire after inactivity; the user must dial again |
+<AccordionGroup>
+  <Accordion title="`END Invalid input. Please try again.`">
+    - **Cause:** Request failed validation.
+    - **What to do:** Check phone number is E.164, service code format, and text length.
+  </Accordion>
+  <Accordion title="`END Service temporarily unavailable. Please try again later.`">
+    - **Cause:** Server or database error.
+    - **What to do:** Check `/health` for database connectivity.
+  </Accordion>
+  <Accordion title="Session not found on `GET /debug/:sessionId`">
+    - **Cause:** Session expired or never started.
+    - **What to do:** Sessions expire after inactivity; the user must dial again.
+  </Accordion>
+</AccordionGroup>
 
 **Rate limiting:** 100 requests per minute per IP address. Requests exceeding this return HTTP 429.
 
@@ -197,5 +226,11 @@ Basic health check for platform-as-a-service health probes.
 
 ## Related guides
 
-- [Deploy the IXO USSD gateway](/guides/dev/ussd-gateway) — setup, environment configuration, and telecom gateway integration
-- [IXO USSD gateway overview](/articles/ixo-ussd) — architecture and integration model
+<CardGroup cols={2}>
+  <Card title="Deploy the IXO USSD gateway" href="/guides/dev/ussd-gateway">
+    Set up environment configuration and telecom gateway integration.
+  </Card>
+  <Card title="IXO USSD gateway overview" href="/articles/ixo-ussd">
+    Review architecture and the integration model.
+  </Card>
+</CardGroup>

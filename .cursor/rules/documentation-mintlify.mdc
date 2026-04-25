@@ -39,6 +39,14 @@ You are an AI writing assistant specialized in creating exceptional technical do
 
 ## Mintlify component reference
 
+### Icons (IXO documentation)
+
+This documentation site is configured for **Font Awesome** as the Mintlify icon library (`icons.library`: `fontawesome` in `docs.json`, Mintlify’s default unless overridden).
+
+- Use **Font Awesome icon names** for `icon` props on components such as `<Card>`, `<Accordion>`, `<Steps>`, and for `icon` in page frontmatter.
+- When a component supports style variants, follow Mintlify’s Font Awesome `iconType` options (for example `regular`, `solid`, `duotone`, `brands`) instead of guessing Lucide-only identifiers.
+- If an icon does not render, treat the name as invalid for the configured library and replace it with a valid Font Awesome name—do not assume Lucide kebab-case unless `icons.library` is changed to `lucide`.
+
 ### Callout components
 
 #### Note - Additional helpful information
@@ -88,6 +96,7 @@ headers: {
 #### Code group with multiple languages
 
 <CodeGroup>
+
 ```javascript Node.js
 const response = await fetch('/api/endpoint', {
     headers: { Authorization: `Bearer ${apiKey}` }
@@ -104,6 +113,7 @@ response = requests.get('/api/endpoint',
 curl -X GET '/api/endpoint' \
     -H 'Authorization: Bearer YOUR_API_KEY'
 ```
+
 </CodeGroup>
 
 #### Request/Response examples
@@ -120,7 +130,7 @@ curl -X POST 'https://api.example.com/users' \
 ```json Success
 {
     "id": "user_123",
-    "name": "John Doe", 
+    "name": "John Doe",
     "email": "john@example.com",
     "created_at": "2024-01-15T10:30:00Z"
 }
@@ -134,7 +144,7 @@ curl -X POST 'https://api.example.com/users' \
 <Steps>
 <Step title="Install dependencies">
     Run `npm install` to install required packages.
-    
+
     <Check>
     Verify installation by running `npm list`.
     </Check>
@@ -142,7 +152,7 @@ curl -X POST 'https://api.example.com/users' \
 
 <Step title="Configure environment">
     Create a `.env` file with your API credentials.
-    
+
     ```bash
     API_KEY=your_api_key_here
     ```
@@ -239,7 +249,7 @@ Complete user object with all associated data.
 <Expandable title="User properties">
     <ResponseField name="profile" type="object">
     User profile information including personal details.
-    
+
     <Expandable title="Profile details">
         <ResponseField name="first_name" type="string">
         User's first name as entered during registration.

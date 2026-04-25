@@ -1,414 +1,367 @@
 ---
-title: 'IXO PODs'
-icon: 'code-simple'
-description: 'Programmable Organisational Domains (PODs).'
+title: "IXO PODs"
+icon: "users"
+description: "Programmable Organisational Domains for coordinating people, AI agents, services, workflows, evidence, and outcomes."
 ---
 
+An IXO POD is a Programmable Organisational Domain.
+
+It is a secure operating domain where people, organizations, AI agents, services, tools, Claims, evidence, credentials, workflows, and value can cooperate around a shared purpose.
+
+Use a POD when work needs to happen across multiple actors and the system must know:
+
+- who is involved
+- what each actor is allowed to do
+- which entities, Claims, evidence, and outcomes matter
+- which Flows run the work
+- which Blueprints define the rules
+- which agents and services may act
+- which decisions, payments, credentials, or state changes are allowed
+
 <Tip>
-  Programmable Organisational Domains (PODs) are autonomous, intelligent digital Organisations that run on decentralized infrastructure. They coordinate networks of people, traditional Organisations, and AI agents within defined domains to pursue shared goals using advanced governance, protocols, and automation mechanisms for traditional Organisations, DAOs, Project Domains, and Investment Domains.
+  A POD is not just a workspace, DAO, database, or chatbot. It is the governed domain where shared state, human roles, agent authority, workflows, and verifiable outcomes come together.
 </Tip>
 
-## Introduction
+## When to build a POD
 
-Programmable Organisational Domains (PODs) represent the next evolution of decentralized Organisations, extending the DAO concept with artificial intelligence capabilities. PODs operate as **autonomous, intelligent domains** on decentralized infrastructure, coordinating networks of people, traditional Organisations, and **AI agents within a defined domain** to pursue shared goals.
-
-<AccordionGroup>
-  <Accordion title="Definition and Significance">
-    PODs are like next-generation Decentralized Autonomous Organisations (DAOs) augmented with artificial intelligence. They can sense, learn, and act in the world with minimal direct human input, operating more efficiently and adaptively than conventional Organisations or standard DAOs. By incorporating "agentic" AI (AI with independent agency), these domains can make data-driven decisions in real time and continuously optimize operations, potentially creating Organisations that are partly or even completely AI-driven.
-  </Accordion>
-
-  <Accordion title="Core Features">
-    - **Decentralized Digital Identity:** Every POD is anchored by a decentralized identifier (DID), ensuring the domain and its agents have a verifiable, unique identity
-    - **Autonomous Controllers:** Built-in controllers (smart contracts and AI routines) that manage interactions and behavior of agents
-    - **Encoded Rights and Rules:** Pre-defined governance framework that allows the POD to autonomously execute actions when certain conditions are met
-    - **Agentic Services:** Smart services provided by AI agents that adapt to real-time inputs
-    - **Integrated Resources and Accounts:** Native management of resources (data, tokens, or other assets) within the domain using smart accounts
-  </Accordion>
-</AccordionGroup>
-
-Through these features, PODs extend the DAO model by embedding intelligence and automation at the core. A traditional DAO relies on human proposals and votes for most decisions; a POD preserves decentralized **governance** but augments it with **AI-driven services**. This means many routine decisions and data processing tasks that would bog down a DAO can be autonomously handled by the POD's AI agents. Humans remain in control of high-level governance, but much of the day-to-day operation is *programmable*.
-
-### Relationship Between DAOs and PODs
-
-It's important to note that PODs don't replace DAOs but rather complement them. While a POD functions as a DAO itself, DAOs may be structured to incorporate **one or more PODs** that run specific functions of the Organisation:
-
-- A DAO might have a **Finance POD** that autonomously manages treasury operations, yield strategies, and financial reporting
-- A **Compliance POD** could handle regulatory monitoring, KYC verification, and audit preparation
-- A **Community Management POD** might coordinate member onboarding, reputation systems, and communication channels
-
-This modular approach allows DAOs to selectively automate and enhance specific operational areas while maintaining their overall governance structure. The POD becomes a specialized, intelligent component within the broader DAO ecosystem.
-
-### Organisational System Design
-
-Various Organisational system designs are possible by linking these domains in different arrangements:
-
-<CardGroup>
-  <Card title="Subsidiary Arrangements" icon="sitemap">
-    PODs functioning as autonomous subsidiaries of a parent DAO
-  </Card>
-  
-  <Card title="Related Domains" icon="diagram-project">
-    Multiple PODs operating as peer entities with defined interfaces between them
-  </Card>
-  
-  <Card title="Hybrid Structures" icon="object-group">
-    Combinations of traditional Organisations, DAOs, and PODs working together
-  </Card>
-</CardGroup>
-
-The **IXO Studio** provides a user interface for designing and instantiating these cognitive digital twin systems through a drag-and-drop interface. This visual design environment allows Organisations to:
-
-- Map out domain relationships and hierarchies
-- Configure the capabilities and permissions of each POD
-- Define communication protocols between domains
-- Deploy and monitor the entire system from a unified dashboard
-
-This approach to Organisational design enables unprecedented flexibility in creating purpose-built governance and operational structures that combine human and AI agency in optimal ways.
-
-## Technical Capabilities
-
-<CardGroup>
-  <Card title="IXO architecture stack" icon="layer-group">
-    Foundational layers combining identity, data, AI, and blockchain components
-  </Card>
-  
-  <Card title="Agentic Oracles" icon="crystal-ball">
-    AI-powered agents that process complex inputs and produce insights
-  </Card>
-  
-  <Card title="P-Functions" icon="function">
-    Spectrum of intelligent functions for advanced data analysis and decision-making
-  </Card>
-  
-  <Card title="AI Agents" icon="robot">
-    First-class members of the Organisation with roles and responsibilities
-  </Card>
-</CardGroup>
-
-### The IXO architecture stack
-
-PODs are enabled by the IXO architecture stack, which combines **identity, data, AI, and blockchain** components into one coherent system:
-
-<AccordionGroup>
-  <Accordion title="Decentralized Identity and Credentials">
-    Each domain has a DID and can use verifiable credentials to prove claims. This identity layer ensures every agent or device in the POD is trusted and actions are non-repudiable.
-  </Accordion>
-
-  <Accordion title="AI/Analytics Engine">
-    At the core is an AI layer (such as IXO's Langraph service) that enables **cognitive workflows**. This means the POD can run complex algorithms, from simple rules to machine learning models, to interpret data, make predictions, and even converse in natural language.
-  </Accordion>
-
-  <Accordion title="Federated Data Storage (Data Matrix)">
-    The POD has access to a **secure data matrix**, which is a federated data store for the domain. All the stateful data and streaming inputs relevant to the Organisation are stored in encrypted data spaces dedicated to that domain, allowing the POD to share and fuse data across sources.
-  </Accordion>
-
-  <Accordion title="Blockchain and Smart Contracts">
-    The IXO architecture stack connects each domain to blockchain networks via the IXO MultiClient SDK. This provides the transactional and contractual backbone for POD operations.
-  </Accordion>
-</AccordionGroup>
-
-All these layers work together to enable a POD to function as a *self-contained digital Organisation*. The importance of this stack is that it allows **trusted autonomy**: identity ensures trust, the AI layer provides intelligence, the data layer provides information, and blockchain provides enforcement.
-
-### Agentic Oracles and P-Functions
-
-A distinguishing technical capability of PODs is their use of **Agentic Oracles** and **P-Functions** to make sense of data and inform decisions:
-
-```typescript
-// Example of an Oracle configuration in a POD
-const impactOracle = await createOracle({
-  type: "ImpactVerificationOracle",
-  model: "causal-inference-v1",
-  confidence: 0.95,
-  pFunctions: ["predict", "prove", "prescribe", "prevent"]
-});
-
-// Configure verification rules
-await impactOracle.setVerificationRules({
-  requiredEvidence: ["projectId", "timestamp", "metrics"],
-  thresholds: {
-    minimumConfidence: 0.9,
-    maximumDeviation: 0.05
-  }
-});
-```
-
-The core P-Functions include:
-
-<AccordionGroup>
-  <Accordion title="Proving & Predicting">
-    Capabilities focused on *verification* and *forecasting*. The AI can verify the accuracy and validity of claims/data in real time, and run statistical models to **predict outcomes or future states** with associated probabilities.
-  </Accordion>
-
-  <Accordion title="Prescribing & Planning">
-    Capabilities for *decision support and optimization*. The POD's intelligence can formulate **data-driven interventions or recommendations** and plan strategic actions to maximize the chances of achieving desired outcomes.
-  </Accordion>
-
-  <Accordion title="Prevention & Protection">
-    Functions that handle *risk management and security*. The POD's AI continuously performs **risk calculation, threat detection, and protection measures** to identify anomalous patterns and take protective steps.
-  </Accordion>
-
-  <Accordion title="Personalization & Participation">
-    Functions aimed at *adapting to individuals and facilitating collaboration*. A POD can tailor its services or responses to individual users (human or machine) – **customizing outputs and interactions** based on learned preferences.
-  </Accordion>
-</AccordionGroup>
-
-### AI Agents as First-class Members
-
-In PODs, AI agents function as *first-class members* of the Organisation. This means they are not just passive tools, but active participants with roles and responsibilities, much like a human member would have:
-
-- They can autonomously perform tasks, initiate processes, and even take part in governance
-- The POD's controllers can delegate certain authorities to AI agents (via "accorded rights")
-- AI agents continuously monitor domain activities, prepare and execute decisions for routine matters
-- They collaborate with humans on complex decisions
-
-Practically, making AI agents first-class citizens means the POD can **run autonomously for long stretches**, only involving humans when high-level guidance or novel judgments are needed. The agents have access to the POD's data and resources (per permissions) and carry out their duties as defined by the protocols.
-
-## Governance Mechanisms and Controls
-
-<CardGroup>
-  <Card title="Intelligent Self-Governance" icon="brain-circuit">
-    Self-governing and self-regulating using encoded rules and AI-driven insights
-  </Card>
-  
-  <Card title="Decision-Making Processes" icon="gavel">
-    Combination of algorithmic automation with human collective choice
-  </Card>
-  
-  <Card title="Compliance and Regulation" icon="shield-check">
-    Automated and continuous enforcement of rules and regulatory requirements
-  </Card>
-  
-  <Card title="Dispute Resolution" icon="scale-balanced">
-    On-chain and off-chain mechanisms for resolving conflicts
-  </Card>
-</CardGroup>
-
-### Intelligent Self-Governance
-
-PODs are designed to **self-govern and self-regulate** using both encoded rules and AI-driven insights. Instead of governance being purely off-chain or manual, a POD's governance is baked into its digital domain:
-
-- Governance rules are implemented in smart contracts and domain logic
-- Intelligent controllers and agents enforce and monitor these rules in real time
-- The *Controllers* of a digital twin domain "manage the interactions and behavior of agents, governing access, permissions, and operational decisions" within the POD
-- The system itself watches over what each agent (human or AI) is doing, and ensures it aligns with the domain's policies
-
-Because these controllers are intelligent, a POD can also adapt its governance in response to context. For example, the POD might have a rule that certain transactions require KYC/identity verification; the AI can automatically verify credentials of participants before allowing the transaction, thus enforcing compliance without manual checks.
-
-### Decision-Making Processes
-
-Decision-making in a POD combines algorithmic automation with human collective choice:
-
-- Low-level or routine decisions can be made autonomously by the system
-- High-level strategic decisions involve human voting or input – with AI providing decision support
-- AI can participate in the decision process by **analyzing proposals and predicting outcomes** to advise human voters
-- AI agents might even hold governance tokens or be assigned voting power by humans to cast votes on trivial matters
-
-To ensure these processes remain fair and effective, PODs employ various **governance controls**:
-
-- Quorum requirements, voting periods, and approval thresholds are set in code
-- Failsafe mechanisms are implemented for AI-triggered actions
-- The POD can detect when it's deviating from desired parameters and correct itself or seek guidance
-
-### Compliance and Regulation
-
-Compliance in PODs is both automated and continuous:
-
-- Rules of the Organisation (including regulatory requirements) are encoded as protocols
-- The POD can enforce compliance by design
-- AI compliance agents monitor all transactions for suspicious patterns
-- The moment something looks off, the system can pause it and raise it for review
-- PODs can integrate external compliance rules as smart contracts or oracle checks
-- The decentralized identity and credential system ensures participants meet certain criteria
-
-### Dispute Resolution Mechanisms
-
-Even with autonomous regulation, disputes or exceptions can arise. PODs address this through both on-chain and off-chain mechanisms:
-
-- **On-chain governance protocols** include procedures for challenging decisions
-- Members might trigger a "vote of reconsideration" if they believe an automated action was in error
-- Some POD designs incorporate decentralized dispute resolution services to adjudicate issues
-- Off-chain, PODs can escalate disputes to legal systems if needed
-- The IXO framework allows assigning *juristic (legal) rights* to digital entities
-
-### Role of AI in Governance and Oversight
-
-AI agents in a POD don't just execute operations; they also serve as a kind of **continuous oversight mechanism**:
-
-- They watch for policy deviations, measure performance, and can mediate disagreements
-- In governance, AI might moderate discussions in forums by summarizing points and checking toxicity
-- They might compile governance reports with key metrics and anomalies
-- The AI agents provide a **"Mission Control"** for the POD's governance
-
-All of these mechanisms result in a system where **governance is not a slow periodic activity, but an ongoing, responsive process**. The POD self-regulates by enforcing rules and correcting course when needed; it self-governs by enabling both automated and collective decisions within a transparent, accountable framework.
-
-## Operational Protocols and Standard Procedures
-
-<CardGroup>
-  <Card title="Protocol Domains" icon="diagram-project">
-    Templates or modules that encode standardized operational procedures
-  </Card>
-  
-  <Card title="Operational Procedures" icon="list-check">
-    Predefined workflows that are automatically followed and enforced
-  </Card>
-  
-  <Card title="Execution Framework" icon="gears">
-    Infrastructure that ensures protocols are carried out as prescribed
-  </Card>
-</CardGroup>
-
-### Protocol Domains in IXO
-
-In the IXO software system, *Protocol Domains* are a concept that allows Organisations to define and follow **standardized operational procedures**:
-
-- A Protocol Domain is essentially a template or module that encodes a set of rules, workflows, and data schemas for a particular type of process
-- Protocols *"define the rules, norms and standards for a Domain, with templates and schemas, methodologies and systems for processing data, encoding sophisticated business and evaluation logic"*
-- These protocols are programmable and shareable
-- When an Organisation creates a POD, it can **configure it with one or more protocol domains** that correspond to the Organisation's scope of work
-
-### Following Predefined Operational Procedures
-
-Once a POD has its protocol domains in place, it will *follow those procedures automatically* as part of its operations. Let's illustrate this with an example of **Impact Claim Verification**:
-
-1. **Submission:** A member submits a claim via the POD's interface, structured according to the protocol's schema
-2. **Oracle Evaluation:** The POD's oracle service automatically evaluates the claim – cross-checking evidence, ensuring numbers add up, comparing with external data
-3. **Approval & Recording:** If the claim passes validation rules, it's approved (automatically or by a human supervisor) and recorded as a verifiable credential
-4. **Outcome Actions:** The protocol triggers outcomes like automatically paying out a bounty or minting an Impact NFT to the claimant
-5. **Logging and Feedback:** Every step is logged, and results can train the AI for future improvements
-
-This whole sequence is a *standard procedure executed within the POD framework*. It shows how a POD makes the Organisation run by rules rather than ad-hoc decisions. From the example, we saw **data fusion** (oracle checking the claim against data), decision-making (approve/reject), and action (payment) all happen seamlessly.
-
-### Execution within the POD Framework
-
-The beauty of PODs is that these SOPs are *not just documented, but actively enforced and carried out* by the infrastructure:
-
-- The Protocol Domains provide the blueprint, and the IXO architecture stack provides the execution engine
-- This ensures Organisations follow through on their intended processes
-- It reduces error and ensures compliance
-- Standard protocols mean that if multiple PODs adopt the same protocol, their processes become interoperable and comparable
-- The IXO architecture explicitly supports this modular approach with domains for **Projects, Protocols, Assets, Investments, Oracles**, etc.
-- All these protocols are **programmable and can be improved** over time
-
-In summary, *operational protocols ensure that a POD runs on rails*, following predefined procedures step by step. Standard operating procedures (SOPs) are no longer just words in a manual – they are living parts of the software that will execute exactly as prescribed.
-
-## Applications and Use Cases
-
-<CardGroup>
-  <Card title="Climate Action" icon="leaf">
-    Environmental monitoring, carbon credit verification, and resource management
-  </Card>
-  
-  <Card title="Community Resources" icon="water">
-    Decentralized management of water, energy, and other shared resources
-  </Card>
-  
-  <Card title="Education Programs" icon="graduation-cap">
-    Scholarship funds, educational DAOs, and personalized learning
-  </Card>
-  
-  <Card title="Supply Chain" icon="truck">
-    Automated inventory management, quality control, and logistics
-  </Card>
-</CardGroup>
-
-Because PODs are a **general model for intelligent, autonomous organisations**, they can be applied across many contexts and industries:
-
-### Climate Action and Environmental Management
-
-One of the pioneering uses of POD-like structures is in climate and environmental projects:
-
-- Reforestation projects that generate carbon credits
-- IoT sensors and satellite imagery provide input data
-- Agentic Oracles analyze data to verify tree growth and carbon sequestration
-- Verified claims trigger automatic issuance of carbon credit tokens
-- **Decentralised digital MRV (Measurement, Reporting, Verification) systems** built on the IXO platform
-- The *Emerging Cooking Solutions* project in Zambia used an IXO-based POD to verify and issue carbon credits
-- IXO's *WISP* (Wider Impact Sustainability Protocol) oracle is live for climate impact verification
-
-In such PODs, human experts design the methodologies and intervene in edge cases, but **AI handles the continuous tracking and verification**.
-
-### Community Resource Management
-
-PODs are well-suited for managing local community resources in a decentralized way:
-
-- Community water management PODs for rural regions
-- Sensors on pumps and reservoirs provide real-time data
-- AI agents monitor water usage, rainfall forecasts, and sensor readings
-- IXO architecture helps communities coordinate watershed and resource-management systems
-- If the AI predicts a water shortage, it can autonomously impose rationing measures
-- If a pump failure is detected, the POD might automatically dispatch maintenance requests
-- Similar approaches can be applied to community energy microgrids or agriculture
-
-The POD model ensures **inclusive governance** combined with **automation**.
-
-### Education and Social Programs
-
-Another use case for PODs is in education and social impact programs:
-
-- Scholarship funds or education DAOs structured as PODs
-- AI for personalized matching and verification of academic credentials
-- Automated monitoring of student performance and fund disbursement
-- AI tutors or assistants embedded as services within the POD
-- Human mentors oversee the AI's guidance to ensure quality
-- **Outcome tracking** is automated through credential verification
-- The POD approach reduces administrative overhead drastically
-
-### Business and Supply Chain Operations
-
-In the private sector, companies can transform into POD-like Organisations:
-
-- Manufacturing supply chains managed by PODs
-- Inventory management with automated restock orders
-- Automated payments using smart contracts
-- Quality control with AI-powered inspection
-- Human supervisors receive notifications and can override if necessary
-- The POD framework adds trust and transparency
-- Processes like procurement that might take days can happen in seconds
-- **Predictive analytics** buffer the system against shocks
-
-In each of these cases, **human–AI collaboration is at the heart of the POD's success**. Humans provide vision, values, and nuanced judgment; AI provides scale, speed, and analytical power.
-
-## Go here next
+Build a POD when you need a governed operating space for a real-world initiative.
 
 <CardGroup cols={2}>
-  <Card title="Developer guides" icon="hand-pointer" href="/guides/dev/overview">
-    Follow implementation workflows that relate to POD-style orchestration.
+  <Card title="Program operations" icon="diagram-project">
+    Coordinate funders, implementers, verifiers, researchers, agents, and services inside one program domain.
   </Card>
-  <Card title="IXO Stack SDKs" icon="code" href="/sdk-reference/index">
-    Choose SDK packages and integration paths for your build.
+
+  <Card title="Verified service delivery" icon="handshake">
+    Manage service providers, fulfillment Flows, Claims, evidence, review, settlement, and reputation.
   </Card>
-  <Card title="API reference" icon="server" href="/api-reference/index">
-    Use interface-level references for gateways and application APIs.
+
+  <Card title="Digital MRV" icon="chart-line">
+    Connect measurements, reports, verification, Claims, outcomes, and funding decisions.
+  </Card>
+
+  <Card title="Marketplaces" icon="store">
+    Operate trusted exchange for services, data, protocols, agent capabilities, or verified outcomes.
+  </Card>
+
+  <Card title="Research and learning" icon="microscope">
+    Create a governed research space for data access, analysis, publication, and verified learning loops.
+  </Card>
+
+  <Card title="Multi-party governance" icon="scale-balanced">
+    Coordinate decisions across humans, organizations, agents, services, and protocol-defined rules.
   </Card>
 </CardGroup>
 
-## Conclusion
+## What a POD contains
+
+A POD brings together the core objects of IXO and Qi.
 
 <AccordionGroup>
-  <Accordion title="Key Advantages">
-    - **Increased Efficiency and Speed:** Automated processes and real-time decisions
-    - **Data-Driven Decision Making:** Continuous analysis and evidence-based choices
-    - **Trust and Transparency:** Encoded rules and immutable records
-    - **Resilience and Continuity:** 24/7 operation and adaptive responses
-    - **Scalability and Flexibility:** Easy addition of agents and reconfiguration of processes
-    - **Enhanced Collaboration:** AI support for human creativity and innovation
+  <Accordion title="Domain identity">The POD’s verifiable identity and operating boundary</Accordion>
+
+  <Accordion title="Members">People, organizations, services, and agents that participate</Accordion>
+
+  <Accordion title="Roles">What each participant is responsible for</Accordion>
+
+  <Accordion title="Permissions">What each participant is allowed to do</Accordion>
+
+  <Accordion title="Entities">Projects, assets, devices, services, datasets, agents, Claims, outcomes, or other graph objects</Accordion>
+
+  <Accordion title="Claims">Structured assertions about work, evidence, eligibility, delivery, compliance, or outcomes</Accordion>
+
+  <Accordion title="Evidence">Documents, measurements, observations, attestations, media, reports, sensor data, or external records</Accordion>
+
+  <Accordion title="Credentials">Qualifications, roles, authorizations, attestations, or rights</Accordion>
+
+  <Accordion title="Flows">Workflows that coordinate actions, reviews, decisions, and state transitions</Accordion>
+
+  <Accordion title="Blueprints">Protocols that define schemas, evidence rules, rubrics, authority, and outcomes</Accordion>
+
+  <Accordion title="Agents">Agentic Oracles or AI services that support review, routing, analysis, monitoring, and decision support</Accordion>
+
+  <Accordion title="Rooms">Secure cooperation spaces for humans, agents, and services</Accordion>
+
+  <Accordion title="Value mechanisms">Payments, rewards, fees, credits, escrow, funding, or settlement rules</Accordion>
+
+  <Accordion title="UDIDs">Decision and impact determinations that record what was decided, why, and with what effect</Accordion>
+</AccordionGroup>
+
+## How a POD works
+
+<Steps>
+  <Step title="A domain is created">
+    The POD is created for a specific purpose, such as a program, marketplace, fund, research initiative, verification network, or service operation.
+  </Step>
+
+  <Step title="Participants are added">
+    People, organizations, services, and agents are added with roles, credentials, and permissions.
+  </Step>
+
+  <Step title="Entities are represented">
+    The POD connects relevant projects, assets, services, datasets, devices, Claims, outcomes, and agents into the IXO Graph.
+  </Step>
+
+  <Step title="Blueprints define the rules">
+    Blueprints specify claim schemas, evidence requirements, rubrics, authority, decision logic, and allowed outcomes.
+  </Step>
+
+  <Step title="Flows run the work">
+    Qi Flows coordinate submission, review, evaluation, approval, dispute, settlement, and closure.
+  </Step>
+
+  <Step title="Agents support the process">
+    Agentic Oracles can inspect permitted context, apply rubrics, summarize evidence, flag risks, and create Evaluation Claims.
+  </Step>
+
+  <Step title="Humans remain accountable">
+    High-value, disputed, uncertain, or irreversible actions can require human, governance, or protocol-controlled approval.
+  </Step>
+
+  <Step title="Decisions are recorded">
+    When a Flow reaches a determination point, a UDID records the decision, evidence, authority, impact, and resulting state change.
+  </Step>
+</Steps>
+
+## PODs and the IXO Graph
+
+A POD operates over the IXO Graph.
+
+The graph gives the POD shared context for:
+
+- identities and roles
+- entities and relationships
+- Claims and evidence
+- credentials and authority
+- workflow state
+- transactions and state changes
+- evaluations and determinations
+- outcomes and learning loops
+
+This prevents the POD from depending on disconnected spreadsheets, private databases, chat history, or agent memory as the system of record.
+
+<Warning>
+  Do not use a POD as a loose collection of tools. Model the entities, Claims, evidence, permissions, Flows, and decisions that must be inspected or acted on.
+</Warning>
+
+## PODs and Qi Flows
+
+Qi Flows are the operating procedures inside a POD.
+
+A Flow defines:
+
+- what starts the process
+- who can act
+- which state the work is in
+- which evidence is required
+- which tools and agents may be used
+- which checks must pass
+- which decisions need human review
+- which state transitions are allowed
+- which payments, credentials, messages, or next actions may be triggered
+
+Example Flow states:
+
+<AccordionGroup>
+  <Accordion title="`submitted`">A Claim, request, listing, or task enters the POD</Accordion>
+
+  <Accordion title="`authority_check`">The POD checks role, credential, permission, or UCAN delegation</Accordion>
+
+  <Accordion title="`evidence_required`">Required evidence is requested or validated</Accordion>
+
+  <Accordion title="`evaluating`">A human, service, or Agentic Oracle applies the rubric</Accordion>
+
+  <Accordion title="`review_required`">A verifier, operator, or governance role reviews the result</Accordion>
+
+  <Accordion title="`determined`">A UDID records the decision and impact determination</Accordion>
+
+  <Accordion title="`actioned`">Payment, credential, state update, message, or next Flow is triggered</Accordion>
+
+  <Accordion title="`closed`">The process is complete and inspectable</Accordion>
+</AccordionGroup>
+
+## PODs and agent authority
+
+Agents can participate in a POD, but they should not have open-ended authority.
+
+Use scoped permissions or UCAN-style delegation to define:
+
+- which agent may act
+- which POD, Flow, Claim, room, tool, or evidence set it may access
+- which capability it may use
+- whether it may read, evaluate, propose, or execute
+- when the authority expires
+- which actions require human approval
+- how the action is logged
+
+A safe first pattern is:
+
+<AccordionGroup>
+  <Accordion title="Read Claim">One Claim type in one Flow</Accordion>
+
+  <Accordion title="Read evidence">Only evidence linked to that Claim</Accordion>
+
+  <Accordion title="Read rubric">Only the active Blueprint version</Accordion>
+
+  <Accordion title="Create Evaluation Claim">Structured recommendation with citations</Accordion>
+
+  <Accordion title="Propose transition">Suggest next Flow state</Accordion>
+
+  <Accordion title="Execute transition">Disabled until the workflow is proven safe</Accordion>
+</AccordionGroup>
+
+<Tip>
+  Start with propose-only agents. Let humans, governance roles, or protocol-controlled checks decide when an agent recommendation becomes an approved state transition.
+</Tip>
+
+## Example: verified service marketplace POD
+
+A marketplace operator creates a POD for evidence collection services.
+
+<AccordionGroup>
+  <Accordion title="Purpose">Help digital MRV programs find and pay verified field data providers</Accordion>
+
+  <Accordion title="Members">Marketplace operator, service providers, buyers, verifiers, funders, agents</Accordion>
+
+  <Accordion title="Entities">Providers, listings, projects, service orders, Claims, evidence, outcomes</Accordion>
+
+  <Accordion title="Blueprint">Defines required evidence for completed field visits</Accordion>
+
+  <Accordion title="Flow">Request service, accept order, deliver work, submit Claim, review evidence, settle payment</Accordion>
+
+  <Accordion title="Agent">Evidence Review Oracle checks completeness, consistency, and missing fields</Accordion>
+
+  <Accordion title="Human role">Verifier accepts, rejects, disputes, or requests more evidence</Accordion>
+
+  <Accordion title="UDID">Records whether the service was accepted and whether payment should be released</Accordion>
+</AccordionGroup>
+
+The POD gives the marketplace an operating boundary. The Flow runs the work. The Blueprint defines the rules. Claims and evidence make delivery inspectable. The UDID records the decision and impact.
+
+## Example: digital MRV program POD
+
+A climate program creates a POD to coordinate monitoring, reporting, and verification.
+
+<AccordionGroup>
+  <Accordion title="Purpose">Verify outcomes for a clean cooking, water, energy, land restoration, or biodiversity program</Accordion>
+
+  <Accordion title="Members">Program operator, field teams, device providers, communities, verifiers, funders, researchers</Accordion>
+
+  <Accordion title="Entities">Households, devices, projects, reporting periods, measurements, Claims, outcomes</Accordion>
+
+  <Accordion title="Blueprint">Defines eligibility, evidence requirements, measurement methods, and verification rules</Accordion>
+
+  <Accordion title="Flow">Submit measurement Claim, validate evidence, review, determine outcome, trigger settlement</Accordion>
+
+  <Accordion title="Agent">Agentic Oracle summarizes evidence and flags anomalies</Accordion>
+
+  <Accordion title="Human role">Verifier reviews edge cases and approves determinations</Accordion>
+
+  <Accordion title="UDID">Records verified outcome and impact determination</Accordion>
+</AccordionGroup>
+
+## First implementation move
+
+Start with one POD that runs one complete operating loop.
+
+<Steps>
+  <Step title="Define the purpose">
+    State what the POD is responsible for. Use one sentence that names the domain, participants, and intended outcome.
+  </Step>
+
+  <Step title="Define the members">
+    List the people, organizations, services, and agents that need to participate.
+  </Step>
+
+  <Step title="Define roles and authority">
+    Specify who can submit, read, review, approve, dispute, pay, issue credentials, manage agents, or change rules.
+  </Step>
+
+  <Step title="Define the entities">
+    Identify the projects, assets, services, datasets, devices, Claims, listings, agents, or outcomes the POD must represent.
+  </Step>
+
+  <Step title="Choose one Blueprint">
+    Use one protocol to define the first Claim type, evidence requirements, rubric, and determination logic.
+  </Step>
+
+  <Step title="Run one Flow">
+    Build the first workflow from submission to review, determination, action, and closure.
+  </Step>
+
+  <Step title="Add one agent carefully">
+    Give the agent scoped access to one task, such as evidence summarization, completeness checking, or rubric scoring.
+  </Step>
+
+  <Step title="Test with real cases">
+    Run complete, incomplete, rejected, disputed, and edge-case submissions before scaling.
+  </Step>
+</Steps>
+
+## Design principles
+
+<AccordionGroup>
+  <Accordion title="Start with the operating loop">
+    Do not begin by modeling the whole organization. Start with one repeatable process that creates, reviews, determines, and acts on Claims.
   </Accordion>
 
-  <Accordion title="Challenges">
-    - **Governance and Control:** Ensuring AI alignment with Organisational values
-    - **Technical Complexity:** Managing the intersection of blockchain, AI, and cloud technologies
-    - **Legal and Regulatory Uncertainty:** Navigating the legal status of AI-operated entities
-    - **Social and Cultural Adoption:** Overcoming resistance and building trust
-    - **Interoperability and Standards:** Developing common protocols for POD interaction
+  <Accordion title="Keep authority explicit">
+    Every important action should be tied to a role, credential, permission, delegation, Flow state, or governance rule.
+  </Accordion>
+
+  <Accordion title="Separate recommendation from decision">
+    Agent outputs should be recorded as Evaluation Claims. Decisions and impacts should be recorded as UDIDs when the Flow reaches a determination point.
+  </Accordion>
+
+  <Accordion title="Use Blueprints for repeatability">
+    Put schemas, evidence requirements, rubrics, thresholds, disqualifiers, escalation rules, and outcome logic into a Blueprint.
+  </Accordion>
+
+  <Accordion title="Design for audit and dispute">
+    A reviewer should be able to reconstruct what happened from the POD record: actor, authority, Claim, evidence, evaluation, decision, impact, and state change.
+  </Accordion>
+
+  <Accordion title="Do not over-automate early">
+    Keep high-value, irreversible, ambiguous, or contested actions under human or governance review until the Flow has enough operating history.
   </Accordion>
 </AccordionGroup>
 
-Programmable Organisational Domains (PODs) represent a profound shift in how we envision and operate Organisations. By fusing the **decentralized governance of DAOs with the autonomous intelligence of AI agents**, PODs create entities that are *persistently active, data-informed, and self-regulating*.
+## Production checklist
 
-The impact of this on the future of Organisations could be revolutionary. Instead of companies or nonprofits that rely on layers of management and slow decision cycles, we can have **Organisations that run at the speed of software**, yet are aligned with human-defined purpose and values.
+Before inviting external participants, confirm:
 
-Despite the challenges, the trajectory for POD development looks promising. As blockchain technology becomes more scalable and user-friendly, and AI becomes more reliable and explainable, the synergy between them will become easier to harness.
+- the POD has a clear purpose
+- members and roles are defined
+- authority rules are explicit
+- entities have stable identifiers
+- Claim types are defined
+- evidence requirements are clear
+- at least one Blueprint is attached
+- at least one Flow is configured
+- agent permissions are scoped
+- human review is required for high-risk decisions
+- Evaluation Claims have a structured schema
+- UDIDs are used for decision and impact determinations
+- payments, credentials, and state updates require valid authority
+- disputes and corrections have a path
+- participants know where to act and what happens next
+- the POD history can be inspected and replayed
 
-In conclusion, Programmable Organisational Domains offer a blueprint for the **future of Organisations** – one that is agile, transparent, and intelligent by design. A world with widespread PODs could see nonprofits that automatically prove and report their impact to donors, companies that dynamically optimize themselves and share rewards more fairly, and global networks that tackle issues like climate change with swarms of coordinated agents.
+## What to build next
 
-This convergence of AI and decentralized governance, though not without challenges, could dramatically enhance our capacity to solve complex problems and adapt to change, fundamentally reshaping the landscape of how we organize ourselves in the digital age.
+<CardGroup cols={2}>
+  <Card title="Build a Flow" icon="route" href="/start-building#build-a-flow">
+    Define the workflow that runs inside your POD.
+  </Card>
+
+  <Card title="Build a Blueprint" icon="file-signature" href="/start-building#build-a-blueprint-protocol">
+    Define the schemas, rules, evidence requirements, rubrics, and outcome logic.
+  </Card>
+
+  <Card title="Build a Marketplace" icon="store" href="/start-building#build-a-marketplace">
+    Create trusted exchange for services, protocols, data, agent capabilities, or verified outcomes.
+  </Card>
+
+  <Card title="Agent Evaluations" icon="clipboard-check" href="/guides/agent-evaluations">
+    Evaluate agent work using Claims, evidence, UCAN authority, rubrics, Flow state, and UDIDs.
+  </Card>
+</CardGroup>
