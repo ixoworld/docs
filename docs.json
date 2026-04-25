@@ -11,7 +11,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "IXO",
+        "tab": "Overview",
         "groups": [
           {
             "group": "Get Started",
@@ -23,65 +23,9 @@
             ]
           },
           {
-            "group": "Developers",
-            "pages": [
-              "guides/dev/overview",
-              "guides/dev/ixo-stack-sdks",
-              "mcp/model-context-protocol",
-              {
-                "group": "Developer Guides",
-                "pages": [
-                  "guides/dev/ussd-gateway"
-                ]
-              },
-              "guides/dev/authentication",
-              "guides/dev/ixo-claims",
-              "guides/digital-twins",
-              "guides/domain-registration",
-              "guides/dev/domain-settings",
-              "guides/dev/domain-privacy",
-              "guides/digital-mrv",
-              "guides/registry",
-              "guides/ixo-oracles-architecture"
-            ]
-          },
-          {
-            "group": "User Guides",
-            "pages": ["guides/users/intro-users", "guides/users/ussd"]
-          },
-          {
-            "group": "Platforms",
-            "pages": ["articles/intro-platforms"]
-          },
-          {
-            "group": "Articles",
-            "pages": [
-              "articles/intro-articles",
-              "articles/cdt-systems",
-              "articles/ixo-matrix",
-              "articles/ixo-ussd",
-              "articles/ixo-blocksync",
-              "articles/ixo-oracles",
-              "articles/pods",
-              "articles/projects"
-            ]
-          },
-          {
-            "group": "Reference",
-            "pages": [
-              "reference/networks-and-endpoints",
-              "reference/authentication-matrix",
-              "reference/product-and-sdk-map"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Platforms",
-        "groups": [
-          {
             "group": "Platforms",
             "pages": [
+              "articles/intro-platforms",
               {
                 "group": "Emerging",
                 "pages": [
@@ -106,78 +50,75 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Articles",
+            "pages": [
+              "articles/intro-articles",
+              "articles/cdt-systems",
+              "articles/ixo-matrix",
+              "articles/ixo-ussd",
+              "articles/ixo-blocksync",
+              "articles/ixo-oracles",
+              "articles/pods",
+              "articles/projects"
+            ]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Guides",
         "groups": [
           {
-            "group": " ",
-            "pages": ["api-reference/index"]
+            "group": "User Guides",
+            "pages": ["guides/users/intro-users", "guides/users/ussd"]
           },
           {
-            "group": " ",
-            "pages": ["api-reference/rpc-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/grpc-gateway-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/blocksync-graphql-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/matrix-state-bot-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/registry-api"]
-          },
-          {
-            "group": " ",
-            "pages": ["api-reference/ussd-api"]
-          },
-          {
-            "group": " ",
-            "openapi": {
-              "source": "api-reference/openapi.yaml"
-            }
+            "group": "Developer Guides",
+            "pages": [
+              "guides/dev/overview",
+              "guides/dev/ixo-stack-sdks",
+              "mcp/model-context-protocol",
+              "guides/dev/ussd-gateway",
+              "guides/dev/authentication",
+              "guides/dev/ixo-claims",
+              "guides/digital-twins",
+              "guides/domain-registration",
+              "guides/dev/domain-settings",
+              "guides/dev/domain-privacy",
+              "guides/digital-mrv",
+              "guides/registry",
+              "guides/ixo-oracles-architecture"
+            ]
           }
         ]
       },
       {
-        "tab": "SDK Reference",
+        "tab": "Stack",
         "groups": [
           {
-            "group": " ",
-            "pages": ["sdk-reference/index"]
+            "group": "APIs",
+            "pages": [
+              "api-reference/index",
+              "api-reference/rpc-api",
+              "api-reference/grpc-gateway-api",
+              "api-reference/blocksync-graphql-api",
+              "api-reference/matrix-state-bot-api",
+              "api-reference/registry-api",
+              "api-reference/ussd-api"
+            ]
           },
           {
-            "group": " ",
-            "pages": ["sdk-reference/multiclient-sdk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/signx-sdk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/matrix-client-sdk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/agentic-oracles-adk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/oracle-adk"]
-          },
-          {
-            "group": " ",
-            "pages": ["sdk-reference/jambo-wallet-sdk"]
+            "group": "SDKs",
+            "pages": [
+              "sdk-reference/index",
+              "sdk-reference/multiclient-sdk",
+              "sdk-reference/signx-sdk",
+              "sdk-reference/matrix-client-sdk",
+              "sdk-reference/agentic-oracles-adk",
+              "sdk-reference/oracle-adk",
+              "sdk-reference/jambo-wallet-sdk"
+            ]
           }
         ]
       }
