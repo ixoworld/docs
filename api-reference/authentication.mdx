@@ -22,10 +22,16 @@ Do not assume any one header or token type applies to every endpoint. Confirm ea
 
 ## API families and auth responsibility
 
-| API family | Surface | Auth notes |
-|---|---|---|
-| Protocol gateways | `/api-reference/rpc-api`, `/api-reference/grpc-gateway-api` | Chain and node access patterns vary by network and deployment. |
-| Service APIs | `/api-reference/blocksync-graphql-api`, `/api-reference/matrix-state-bot-api`, `/api-reference/registry-api` | Service operators can enforce different credentials and scopes. |
+<AccordionGroup>
+  <Accordion title="Protocol gateways">
+    - **Surfaces:** `/api-reference/rpc-api`, `/api-reference/grpc-gateway-api`
+    - **Auth notes:** Chain and node access patterns vary by network and deployment.
+  </Accordion>
+  <Accordion title="Service APIs">
+    - **Surfaces:** `/api-reference/blocksync-graphql-api`, `/api-reference/matrix-state-bot-api`, `/api-reference/registry-api`
+    - **Auth notes:** Service operators can enforce different credentials and scopes.
+  </Accordion>
+</AccordionGroup>
 
 ## Security baseline
 
@@ -36,6 +42,14 @@ Do not assume any one header or token type applies to every endpoint. Confirm ea
 
 ## Source-of-truth references
 
-- Authentication matrix: `/reference/authentication-matrix`
-- Networks and endpoints: `/reference/networks-and-endpoints`
-- Product and SDK map: `/reference/product-and-sdk-map`
+<CardGroup cols={3}>
+  <Card title="Authentication matrix" href="/reference/authentication-matrix">
+    Use canonical auth literals and requirements by interface.
+  </Card>
+  <Card title="Networks and endpoints" href="/reference/networks-and-endpoints">
+    Confirm network-specific endpoint mappings before integration.
+  </Card>
+  <Card title="Product and SDK map" href="/reference/product-and-sdk-map">
+    Navigate IXO products, APIs, and SDK references.
+  </Card>
+</CardGroup>

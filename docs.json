@@ -283,6 +283,9 @@
   "background": {
     "decoration": "windows"
   },
+  "icons": {
+    "library": "fontawesome"
+  },
   "navbar": {
     "links": [
       {

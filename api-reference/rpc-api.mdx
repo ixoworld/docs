@@ -17,7 +17,7 @@ This page documents the RPC interface family for IXO Protocol. It does not docum
 - In scope: chain state queries and transaction submission patterns.
 - Out of scope: service-specific business endpoints and off-chain workflow APIs.
 
-## Authentication
+## Authentication and endpoints
 
 Authentication depends on node and deployment policy.
 
@@ -44,6 +44,14 @@ message MsgSubmitClaim {
 
 ## Related references
 
-- Blockchain REST API: `/api-reference/grpc-gateway-api`
-- IXO Blocksync GraphQL API: `/api-reference/blocksync-graphql-api`
-- Product and SDK map: `/reference/product-and-sdk-map`
+<CardGroup cols={3}>
+  <Card title="Blockchain REST API" href="/api-reference/grpc-gateway-api">
+    Access protocol queries over HTTP/JSON through the gRPC gateway.
+  </Card>
+  <Card title="IXO Blocksync GraphQL API" href="/api-reference/blocksync-graphql-api">
+    Query indexed chain data through the IXO Blocksync service layer.
+  </Card>
+  <Card title="Product and SDK map" href="/reference/product-and-sdk-map">
+    Navigate IXO products, APIs, and SDK references.
+  </Card>
+</CardGroup>

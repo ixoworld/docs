@@ -6,6 +6,7 @@ This file defines which repository configuration files are authoritative during 
 
 - Authoritative docs site config: `docs.json`
 - Non-authoritative/deprecated in this repo: `mint.json` (file is currently absent)
+- Mintlify icon library selection (for example `icons.library`) is part of `docs.json` authority. This repo documents **Font Awesome** as the active library for string `icon` values unless maintainers change that setting in a deliberate migration.
 
 ## Why this decision is current truth
 
