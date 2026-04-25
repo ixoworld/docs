@@ -1,0 +1,143 @@
+---
+title: "Outcomes-based financing (OBF)"
+icon: "coins"
+description: "Tie funding, incentives, and settlement to verified claims and outcomes using governed workflows on the IXO stack."
+---
+
+## Build outcomes-based financing
+
+**Outcomes-based financing (OBF)** connects value movement to proof: funds, incentives, or governance steps advance only when agreed outcomes are evidenced, reviewed, and accepted under clear rules.
+
+Build this when value should move only after agreed outcomes are verified—not on schedules or trust alone.
+
+<Card
+  title="Financing workflow builder"
+  icon="wand-magic-sparkles"
+  href="#add-financing-workflow-builder-url"
+  cta="Build with AI"
+  arrow={true}
+>
+  Use an Agentic Oracle in qi.space to turn your outcome definitions, verification rules, settlement actions, and dispute paths into a concrete OBF workflow design.
+</Card>
+
+### What you will create
+
+- One or more **outcome definitions** tied to program or project entities
+- **Claim types** and **evidence** required before settlement can fire
+- **Verifier and approver** roles, including optional agent-assisted review
+- A **Flow** (or flows) from claim submission through verification to settlement
+- **Settlement actions**: release funds, rewards, credentials, governance state, or escalations
+- **Dispute and audit** expectations for funders, auditors, and governance
+- Links to **assets or token logic** where on-chain settlement applies
+
+### Quick start
+
+<Steps>
+  <Step title="Name the outcome that unlocks value">
+    Write the outcome in operational terms (for example: milestone delivered, metric threshold met, verification complete). Tie it to a specific entity in the IXO graph such as a project, program, or asset.
+  </Step>
+
+  <Step title="Define the claim and evidence package">
+    Specify which claim type represents the outcome and what evidence must be present, in what format, and from which sources. Decide what “complete” means before review starts.
+  </Step>
+
+  <Step title="Assign verification authority">
+    Decide who may attest, approve, dispute, or escalate: humans, organizations, services, or Agentic Oracles. Record which actions require a human decision.
+  </Step>
+
+  <Step title="Map verification to settlement">
+    For each terminal verification state (accepted, rejected, disputed), define the exact settlement or governance action: transfer, unlock, record-only, hold, or route to dispute resolution.
+  </Step>
+
+  <Step title="Add safeguards">
+    Include time bounds, duplicate-claim handling, partial outcomes, clawbacks or holds if your model needs them, and the audit trail funders or regulators must be able to replay.
+  </Step>
+
+  <Step title="Pilot one payment or incentive path">
+    Run a single outcome through the full path: submit claim, attach evidence, verify, settle. Confirm logs, notifications, and graph state match what stakeholders expect.
+  </Step>
+</Steps>
+
+### Useful first scope
+
+Start with one **settlement condition** and one **funder or payer** role:
+
+- one verified outcome type
+- one claim and evidence template
+- one verifier path (with optional agent pre-check)
+- one automated or human-gated settlement action
+- one dispute or appeal step
+
+### Why OBF fails without a shared workflow
+
+Funding, incentives, and resource allocation are often disconnected from proof of delivery or impact. Contracts may describe outcomes, but verification, evidence, payment, and governance usually happen in separate systems.
+
+That creates delays, disputes, weak accountability, and high transaction costs.
+
+### What you are wiring together
+
+A workflow where **verified claims or outcomes trigger settlement actions**. Settlement may mean:
+
+- releasing funds
+- issuing rewards
+- unlocking incentives
+- approving a milestone
+- changing governance state
+- updating a program record
+- issuing or updating a credential
+- routing a dispute or escalation
+
+### Example
+
+A project submits an outcome claim. Evidence is linked. An agent checks rules and flags exceptions. A verifier attests the result. The accepted outcome triggers a funding release or next governance step.
+
+### Design checklist: first settlement condition
+
+Before you scale, capture this in one place:
+
+- the outcome that must be verified
+- the claim and evidence required
+- who can verify it
+- the approval or dispute path
+- the settlement action
+- the audit trail needed for funders and governance
+
+### IXO and Qi roles
+
+<CardGroup cols={2}>
+  <Card title="Verified outcomes" icon="badge-check" href="/guides/digital-mrv">
+    Claims and evidence establish whether agreed outcomes have been achieved.
+  </Card>
+  <Card title="Assets and transactions" icon="coins" href="/guides/dev/tokens">
+    Token and asset patterns can connect verified state to value movement.
+  </Card>
+  <Card title="Program rules" icon="scale-balanced" href="/protocols/ixo-protocol">
+    Protocol and workflow rules define what must be true before settlement occurs.
+  </Card>
+  <Card title="Qi cooperation" icon="people-arrows" href="/articles/qi-intelligent-cooperating-system">
+    Humans, agents, services, and funders coordinate around review, approval, dispute, and settlement.
+  </Card>
+</CardGroup>
+
+### Next steps
+
+<CardGroup cols={2}>
+  <Card title="Managing tokens" icon="coins" href="/guides/dev/tokens">
+    Token domains and on-chain asset patterns.
+  </Card>
+  <Card title="Digital MRV" icon="chart-line" href="/guides/digital-mrv">
+    Measurement and verification patterns for outcome-linked workflows.
+  </Card>
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
+    State and coordination primitives beneath financing workflows.
+  </Card>
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Understand claims, evidence, credentials, state, and workflow authority.
+  </Card>
+</CardGroup>
+
+For more build paths and stack context, see [What you can build](/guides/what-you-can-build#outcomes-based-financing).
+
+<Note>
+  Outcomes-based financing may involve legal, regulatory, accounting, tax, and governance requirements. Use IXO and Qi to build verifiable workflow infrastructure; involve the appropriate professional review for regulated financial products or contractual commitments.
+</Note>

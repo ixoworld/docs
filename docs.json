@@ -17,16 +17,16 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "core-concepts",
-              "protocols/ixo-protocol",
-              "guides/hands-on"
+              "guides/what-you-can-build",
+              "your-role",
+              "core-concepts"
             ]
           },
           {
             "group": "Developers",
             "pages": [
               "guides/dev/overview",
-              "guides/dev/spatial-web-sdks",
+              "guides/dev/ixo-stack-sdks",
               "mcp/model-context-protocol",
               {
                 "group": "Developer Guides",
@@ -52,10 +52,6 @@
           {
             "group": "Platforms",
             "pages": ["articles/intro-platforms"]
-          },
-          {
-            "group": "Protocols",
-            "pages": ["protocols/ixo-protocol"]
           },
           {
             "group": "Articles",
@@ -173,6 +169,10 @@
           },
           {
             "group": " ",
+            "pages": ["sdk-reference/agentic-oracles-adk"]
+          },
+          {
+            "group": " ",
             "pages": ["sdk-reference/oracle-adk"]
           },
           {
@@ -198,6 +198,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/guides/dev/spatial-web-sdks",
+      "destination": "/guides/dev/ixo-stack-sdks"
+    },
     {
       "source": "/sdk-reference/oracle-ai-sdk",
       "destination": "/sdk-reference/oracle-adk"
@@ -252,7 +256,11 @@
     },
     {
       "source": "/spatial-web-stack/sdks/intro-sdks",
-      "destination": "/ixo-stack/sdks/intro-sdks"
+      "destination": "/sdk-reference/index"
+    },
+    {
+      "source": "/ixo-stack/sdks/intro-sdks",
+      "destination": "/sdk-reference/index"
     },
     {
       "source": "/spatial-web-stack/sdks/modules-sdk",
@@ -260,23 +268,43 @@
     },
     {
       "source": "/spatial-web-stack/sdks/ixo-multiclient-sdk",
-      "destination": "/ixo-stack/sdks/ixo-multiclient-sdk"
+      "destination": "/sdk-reference/multiclient-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/ixo-multiclient-sdk",
+      "destination": "/sdk-reference/multiclient-sdk"
     },
     {
       "source": "/spatial-web-stack/sdks/ixo-matrix-sdk",
-      "destination": "/ixo-stack/sdks/ixo-matrix-sdk"
+      "destination": "/sdk-reference/matrix-client-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/ixo-matrix-sdk",
+      "destination": "/sdk-reference/matrix-client-sdk"
     },
     {
       "source": "/spatial-web-stack/sdks/oracle-agent-sdk",
-      "destination": "/ixo-stack/sdks/oracle-agent-sdk"
+      "destination": "/sdk-reference/agentic-oracles-adk"
+    },
+    {
+      "source": "/ixo-stack/sdks/oracle-agent-sdk",
+      "destination": "/sdk-reference/agentic-oracles-adk"
     },
     {
       "source": "/spatial-web-stack/sdks/signx-sdk",
-      "destination": "/ixo-stack/sdks/signx-sdk"
+      "destination": "/sdk-reference/signx-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/signx-sdk",
+      "destination": "/sdk-reference/signx-sdk"
     },
     {
       "source": "/spatial-web-stack/sdks/jambo-wallet-sdk",
-      "destination": "/ixo-stack/sdks/jambo-wallet-sdk"
+      "destination": "/sdk-reference/jambo-wallet-sdk"
+    },
+    {
+      "source": "/ixo-stack/sdks/jambo-wallet-sdk",
+      "destination": "/sdk-reference/jambo-wallet-sdk"
     },
     {
       "source": "/spatial-web-stack/apps/intro-apps",

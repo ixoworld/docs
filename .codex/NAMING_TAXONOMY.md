@@ -33,6 +33,7 @@ Keep these layers separate:
 | Brand | IXO | The ecosystem or company brand | — | A single protocol or product |
 | Architecture umbrella | IXO Platform | The broader architecture / stack | Platform | Any single SDK or service |
 | Protocol | IXO Protocol | Blockchain modules, DID/claim/entity protocol, protocol docs | Protocol | Impact Hub Network |
+| Graph substrate | IXO Graph | Linked semantic + verifiable state substrate beneath protocol and Qi | IXO Graph | IXO Protocol alone |
 | Network deployment | Impact Hub Network | The deployed public network | Impact Hub | IXO Protocol |
 | Registry service | Impact Hub Registry | Registry service and registry API | Registry, only when context is already explicit | Emerging Platform |
 | Data + messaging service | IXO Matrix | Data rooms, messaging, Matrix service docs | Matrix | Matrix Client SDK |
@@ -60,11 +61,12 @@ Use these names in H1s, navigation labels, overview pages, and prose.
 |---|---|---|
 | IXO MultiClient SDK | `@ixo/impactxclient-sdk` | Public docs name is MultiClient. Do not call this “ImpactX Client” in headings or prose. |
 | IXO Matrix Client SDK | `@ixo/matrixclient-sdk` | Use “Matrix Client SDK” after first mention if context is clear. |
-| Agentic Oracles SDK | `@ixo/oracle-agent-sdk` | Public docs name is Agentic Oracles SDK. Preserve the current package literal exactly. |
+| Agentic Oracles ADK | `@ixo/oracle-agent-sdk` | Public docs name is Agentic Oracles ADK (Agent Development Kit). Preserve the current package literal exactly. |
 | Personal Agent ADK | `@ixo/assistant-sdk` | Public docs name is Personal Agent ADK. Preserve the current package literal exactly until the package itself changes. |
 | IXO SignX SDK | `@ixo/signx-sdk` | Always use the IXO prefix on first mention. |
 | JAMBO Wallet SDK | `@ixo/jambo-wallet-sdk` | Keep JAMBO as the docs-facing sub-brand. |
-| Qi Forge CLI | — | Canonical docs name for the CLI product used to build Agentic Oracles. Add the package identifier only once it is verified. |
+| Qi Forge ADK | — | Umbrella for building Agentic Oracles: **Qi Forge CLI** and the no-code **Agentic Oracle-builder Skill**. Not a single npm package; distinct from **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`). |
+| Qi Forge CLI | — | CLI surface inside **Qi Forge ADK**. Add the package identifier only once it is verified. |
 
 ## Canonical names by repo surface
 
@@ -74,12 +76,20 @@ Use this map to remove naming judgment calls during rewrites.
 |---|---|---|
 | `sdk-reference/multiclient-sdk.mdx` | IXO MultiClient SDK | Keep package literal exact in code blocks. |
 | `sdk-reference/matrix-client-sdk.mdx` | IXO Matrix Client SDK | Do not shorten to "Matrix Client" on first mention. |
-| `sdk-reference/oracle-adk.mdx` | Personal Agent ADK | Agent development kit route; `/sdk-reference/oracle-ai-sdk` redirects here. |
+| `sdk-reference/agentic-oracles-adk.mdx` | Agentic Oracles ADK | `@ixo/oracle-agent-sdk`; canonical oracle/agent service ADK page. |
+| `sdk-reference/oracle-adk.mdx` | Personal Agent ADK | Agent development kit route for `@ixo/assistant-sdk`; `/sdk-reference/oracle-ai-sdk` redirects here. |
 | `sdk-reference/signx-sdk.mdx` | IXO SignX SDK | Keep IXO prefix on first mention. |
 | `sdk-reference/jambo-wallet-sdk.mdx` | JAMBO Wallet SDK | Keep JAMBO sub-brand. |
 | `mcp/model-context-protocol.mdx` | Model Context Protocol (MCP) servers | First expansion must be singular. |
 | `platforms/Emerging/*.mdx` (platform capability pages) | Emerging Platform | Use for reusable platform capability. |
 | `platforms/Emerging/*.mdx` (solution implementation pages) | Emerging Household Energy | Use for the vertical implementation. |
+| `guides/what-you-can-build.mdx` | What you can build | Path 1 workflow hub; not a product brand. |
+| `articles/ixo-graph.mdx` | IXO Graph | Market-facing frontmatter title may add a subtitle (for example “shared map of verified reality”); canonical surface name remains **IXO Graph**. |
+| `articles/qi-intelligent-cooperating-system.mdx` | Qi Intelligent Cooperating System | Market-facing frontmatter title may lead with the job (“cooperation on verified workflows”); first precise mention in body should still use **Qi Intelligent Cooperating System** where the full product name is required. |
+
+## Market-facing page titles (Mintlify frontmatter)
+
+Hub and article pages may use an **outcome-first `title`** for search and first impression while keeping **canonical product names** in prose, tips, and terminology lint. Do not introduce alternate official brands; subtitles are positioning only.
 
 ## Current naming corrections
 
@@ -87,15 +97,20 @@ These are the canonical replacements for terms already present in the docs.
 
 | Replace this | With this | Scope |
 |---|---|---|
-| Spatial Web | IXO | Headings, prose, nav |
+| Spatial Web Stack | IXO Stack | Headings, prose, nav |
+| IXO Spatial Web Stack | IXO Stack | Headings, prose, nav |
+| Spatial Web SDKs | IXO Stack SDKs | Headings, prose, nav |
+| IXO Spatial Web SDKs | IXO Stack SDKs | Headings, prose, nav |
+| Spatial Web (generic, when it meant the IXO platform stack) | IXO or IXO Stack | Prefer **IXO Stack** when referring to the full stack |
 | ImpactX Client | IXO MultiClient SDK | Headings, prose, nav |
 | IXO Spatial Web Multiclient SDK | IXO MultiClient SDK | Headings, prose, nav |
 | Multiclient SDK | IXO MultiClient SDK | Headings and first mention |
 | IXO Matrix SDK | IXO Matrix Client SDK | Headings, prose, nav |
 | Matrix Client | IXO Matrix Client SDK or Matrix client | Use sentence-level generic only when not naming the SDK |
-| IXO Oracles SDK | Agentic Oracles SDK | Headings, prose, nav |
-| IXO Agentic Oracles SDK | Agentic Oracles SDK | Headings, prose, nav |
-| Oracles SDK | Agentic Oracles SDK | Headings and first mention |
+| IXO Oracles SDK | Agentic Oracles ADK | Headings, prose, nav |
+| IXO Agentic Oracles SDK | Agentic Oracles ADK | Headings, prose, nav |
+| Agentic Oracles SDK | Agentic Oracles ADK | Headings, prose, nav |
+| Oracles SDK | Agentic Oracles ADK | Headings and first mention |
 | IXO Assistant SDK | Personal Agent ADK | Headings, prose, nav |
 | IXO Personal Agent SDK | Personal Agent ADK | Headings, prose, nav |
 | IXO Assistant | Personal Agent | End-user/product naming |
@@ -129,7 +144,7 @@ On first mention, use the full canonical product name exactly:
 
 - `IXO MultiClient SDK` (`@ixo/impactxclient-sdk`)
 - `IXO Matrix Client SDK` (`@ixo/matrixclient-sdk`)
-- `Agentic Oracles SDK` (`@ixo/oracle-agent-sdk`)
+- `Agentic Oracles ADK` (`@ixo/oracle-agent-sdk`)
 - `Personal Agent ADK` (`@ixo/assistant-sdk`)
 - `IXO SignX SDK` (`@ixo/signx-sdk`)
 - `JAMBO Wallet SDK` (`@ixo/jambo-wallet-sdk`)
@@ -151,7 +166,7 @@ On first mention, use:
 
 - `IXO MultiClient SDK` (`@ixo/impactxclient-sdk`)
 - `IXO Matrix Client SDK` (`@ixo/matrixclient-sdk`)
-- `Agentic Oracles SDK` (`@ixo/oracle-agent-sdk`)
+- `Agentic Oracles ADK` (`@ixo/oracle-agent-sdk`)
 - `Personal Agent ADK` (`@ixo/assistant-sdk`)
 - `IXO SignX SDK` (`@ixo/signx-sdk`)
 - `JAMBO Wallet SDK` (`@ixo/jambo-wallet-sdk`)
@@ -193,7 +208,7 @@ When you encounter a banned alias, replace it using `.codex/TERMINOLOGY_MAP.yml`
 | `Model Context Protocols`, `MCPs` on first expansion | `Model Context Protocol (MCP)` | Singular first expansion only. |
 | `IXO Matrix SDK` | `IXO Matrix Client SDK` | SDK naming normalization. |
 | `ImpactX Client` / `Multiclient SDK` | `IXO MultiClient SDK` | Keep package literal unchanged. |
-| `Oracle SDK` / `Oracles SDK` (when referring to `@ixo/oracle-agent-sdk`) | `Agentic Oracles SDK` | Public docs name only. |
+| `Oracle SDK` / `Oracles SDK` (when referring to `@ixo/oracle-agent-sdk`) | `Agentic Oracles ADK` | Public docs name only. |
 | `IXO Assistant` / `Companion AI` | `Personal Agent` | Product naming normalization. |
 | `Emerging` (ambiguous) | `Emerging Platform` or `Emerging Household Energy` | Must choose explicit scope. |
 
@@ -206,7 +221,7 @@ Examples:
 - `IXO MultiClient SDK`
 - `IXO Matrix Client SDK`
 - `Personal Agent ADK`
-- `Agentic Oracles SDK`
+- `Agentic Oracles ADK`
 - `IXO SignX SDK`
 - `Emerging Platform`
 - `Emerging Household Energy Digital MRV`

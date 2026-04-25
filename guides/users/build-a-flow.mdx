@@ -1,0 +1,149 @@
+---
+title: "Build a Flow"
+icon: "route"
+description: "Design a governed workflow that coordinates people, agents, tools, evidence, decisions, and state transitions."
+---
+
+## Build a Flow
+
+A Flow is a governed workflow for real-world work. It coordinates people, Agentic Oracles, tools, evidence, decisions, transactions, and state transitions.
+
+Build a Flow when you already know the sequence of work that needs to happen, but you need it to become inspectable, repeatable, and verifiable.
+
+Build a workflow where agents, people, organizations, evidence, value, and outcomes operate from shared verifiable state.
+
+### Flow patterns to explore
+
+<CardGroup cols={2}>
+  <Card title="Verified claims workflows" icon="badge-check" href="/guides/what-you-can-build#verified-claims-workflows">
+    Submit, review, attest, dispute, and resolve claims with linked evidence and explicit authority.
+  </Card>
+  <Card title="Digital MRV systems" icon="chart-line" href="/guides/what-you-can-build#digital-mrv-systems">
+    Connect measurements, reports, verification, and outcomes into auditable workflows.
+  </Card>
+  <Card title="Outcomes-based financing" icon="coins" href="/guides/what-you-can-build#outcomes-based-financing">
+    Release funding, incentives, or other value when agreed outcomes are verified.
+  </Card>
+  <Card title="Agentic evidence review" icon="robot" href="/guides/what-you-can-build#agentic-evidence-review">
+    Use AI agents to inspect evidence, check rules, flag risks, and support human decisions.
+  </Card>
+  <Card title="Multi-party data rooms" icon="lock" href="/guides/what-you-can-build#multi-party-data-rooms">
+    Coordinate funders, implementers, verifiers, communities, services, and agents in secure spaces.
+  </Card>
+  <Card title="Verified learning loops" icon="rotate" href="/guides/what-you-can-build#verified-learning-loops">
+    Feed verified outcomes back into analytics, agents, programs, and future workflows.
+  </Card>
+</CardGroup>
+
+### The common workflow pattern
+
+Most IXO and Qi applications follow the same underlying pattern.
+
+<Steps>
+  <Step title="Create Entity">
+    A person, organization, project, asset, place, service, agent, or workflow is represented in the IXO Graph, configured with controllers, services, resources, claims, accounts, and relationships.
+  </Step>
+  <Step title="Authorize Actions (UCAN)">
+    A person, service or an oracle is authorized to act on the entity, claim, evidence, or state.
+  </Step>
+  <Step title="Submit Claims">
+    A person, service or an oracle asserts that something is true: work was completed, evidence was collected, eligibility was met, or an outcome occurred.
+  </Step>
+  <Step title="Process Claims">
+    An evaluation oracle service reviews the claim and evidence, checking rules, rubrics, permissions, and workflow requirements.
+  </Step>
+  <Step title="Verify (UDID)">
+    A qualified actor or process accepts, rejects, disputes, or verifies the claim, submitting a signed Universal Decision and Impact Determination (UDID).
+  </Step>
+  <Step title="Update State">
+    The accepted result becomes part of IXO-backed state and can trigger downstream actions or stored as a record to be queried, inspected, and used by other workflows.
+  </Step>
+  <Step title="Settle">
+    The system can trigger payment, governance, escalation, notification, credential issuance, or another workflow step. The UDID is recorded as a transaction on the IXO Chain, and the outcome is stored as a record to be queried, inspected, and used by other workflows.
+  </Step>
+  <Step title="Learn">
+    Verified outcomes and results feed analytics, agent evaluation, model improvement, and improved future decisions and actions.
+  </Step>
+</Steps>
+
+<Card
+  title="Flow Builder"
+  icon="wand-magic-sparkles"
+  href="#add-flow-builder-url"
+  cta="Build with AI"
+  arrow={true}
+>
+  Use the Flow Builder Agentic Oracle in qi.space to turn your process, actors, triggers, actions, tools, and approvals into an executable workflow design.
+</Card>
+
+### What you will create
+
+- Trigger that starts the Flow
+- Actors and responsibilities
+- Workflow states
+- Actions available at each state
+- Evidence required at each step
+- Agentic Oracle tasks and tool access
+- Human approvals and escalation paths
+- Decision outputs
+- State changes written to the graph
+- Notifications, handoffs, and next actions
+
+### Quick start
+
+<Steps>
+  <Step title="Choose the trigger">
+    Decide what starts the Flow. Common triggers include a claim submission, onboarding request, marketplace order, scheduled review, data update, governance decision, or external event.
+  </Step>
+
+  <Step title="Define the actors">
+    List who participates in the Flow. Separate submitters, reviewers, verifiers, approvers, funders, operators, agents, services, and observers.
+  </Step>
+
+  <Step title="Map the states">
+    Write the workflow as states, not just tasks. For example: Draft, Submitted, Evidence Required, In Review, Approved, Disputed, Settled, Closed.
+  </Step>
+
+  <Step title="Attach actions and permissions">
+    For each state, define who can act, what tools they can use, what data they can access, and which actions change state.
+  </Step>
+
+  <Step title="Add evidence and review logic">
+    Connect the Flow to the Blueprint that defines claim schemas, evidence rules, rubrics, verifier requirements, and approval logic.
+  </Step>
+
+  <Step title="Test with edge cases">
+    Run at least one happy path, one missing-evidence case, one rejected case, and one escalation case before putting the Flow into production.
+  </Step>
+</Steps>
+
+### Useful first scope
+
+Start with a Flow that answers one operational question:
+
+- Can this participant be onboarded?
+- Is this claim complete?
+- Does this evidence satisfy the protocol?
+- Should this outcome be approved?
+- Should this value be released?
+- Should this task be escalated to a human?
+
+### Resources
+
+<CardGroup cols={2}>
+  <Card title="Blueprints" icon="diagram-project" href="/blueprints/flows">
+    Start from Flow templates for claims processing, digital MRV, approvals, onboarding, fulfillment, governance, or settlement.
+  </Card>
+
+  <Card title="Concepts" icon="route" href="/concepts/flows">
+    Learn how Flows coordinate triggers, actors, states, actions, evidence, permissions, Agentic Oracles, and graph updates.
+  </Card>
+
+  <Card title="Code with AI" icon="terminal" href="/guides/flows/code-with-ai">
+    Generate workflow schemas, state machines, test cases, agent instructions, and integration code with an AI coding assistant.
+  </Card>
+
+  <Card title="Deep dive" icon="book-open" href="/guides/flows/deep-dive">
+    Understand Flow architecture, state transitions, tool invocation, escalation, observability, and production operations.
+  </Card>
+</CardGroup>

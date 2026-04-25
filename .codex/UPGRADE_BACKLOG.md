@@ -4,6 +4,11 @@ This backlog is the operating work plan for Codex.
 
 Use checkboxes to track completion. Keep task summaries short and file-specific.
 
+## Qi ICS narrative follow-ups
+
+- [ ] Add a verified, runnable **Qi agent quickstart** (time-bounded walkthrough) once the canonical flow and packages are confirmed.
+- [ ] Add any verified `@qi/*` (or successor) package identifiers to `reference/product-and-sdk-map.mdx` after engineering signs off—do not publish package literals from drafts alone.
+
 ## Phase 0 — Governance foundation
 
 - [ ] Add `AGENTS.md` and the `.codex/` governance pack to the repo root.
@@ -22,7 +27,9 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
 
 ### SDK naming
 
-- [ ] Normalize `guides/dev/spatial-web-sdks.mdx`.
+- [ ] Normalize `guides/dev/ixo-stack-sdks.mdx` (renamed from `spatial-web-sdks`).
+  - Done (naming rollout):
+    - IXO Stack / IXO Stack SDKs naming and canonical slug `/guides/dev/ixo-stack-sdks`
   - Fix:
     - separate assistant vs oracles naming
     - stop calling `@ixo/assistant-sdk` an “Oracles SDK”
@@ -152,7 +159,7 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
 
 - [ ] Split “overview” pages that currently try to be both conceptual and procedural.
   - Start with:
-    - `guides/dev/spatial-web-sdks.mdx`
+    - `guides/dev/ixo-stack-sdks.mdx`
     - `guides/dev/overview.mdx`
     - `articles/ixo-matrix.mdx`
   - Done when:

@@ -1,0 +1,185 @@
+---
+title: "Qi: cooperation on verified workflows"
+icon: "brain-circuit"
+description: "Qi helps humans and AI agents work together on governed workflows over IXO-backed entities, claims, evidence, and state—with context, tools, permissions, and accountability."
+---
+
+<Tip>
+  **Formal name:** **Qi Intelligent Cooperating System**—the cooperation layer for humans, AI agents, applications, and services over **IXO** state. This page uses **Qi** for readability.
+</Tip>
+
+**Qi** helps **humans and AI agents work together** on **verified workflows**: shared context, clear permissions, messages and rooms where coordination lives, and actions taken through **declared interfaces**—not by inventing facts or bypassing governance.
+
+Qi gives agents what they need to **act on IXO state** responsibly: context, tools, workflow surfaces, and auditability, instead of isolated prompts or opaque tool chains.
+
+A useful rule:
+
+- **IXO** answers: what is asserted, who has authority, what evidence exists, and what changed?
+- **Qi** answers: who needs to act next, what context they need, how participants coordinate, and how actions flow through governed steps?
+
+## How Qi fits into the IXO stack
+
+Qi sits above IXO verifiable state and uses several parts of the stack.
+
+<AccordionGroup>
+  <Accordion title="IXO Protocol" icon="cube">
+    IXO Protocol provides the verifiable state foundation.
+  </Accordion>
+
+  <Accordion title="Linked data and evidence services" icon="file-shield">
+    Linked services provide the data, evidence, indexes, and retrieval surfaces that applications and agents need.
+
+    These services help Qi actors understand what happened, what evidence exists, and which state transitions may be valid.
+  </Accordion>
+
+  <Accordion title="IXO Matrix" icon="comments">
+    IXO Matrix provides secure rooms, messaging, and shared cooperation spaces.
+
+    It gives humans, agents, applications, and services a place to exchange context, coordinate decisions, and preserve the conversation around workflow actions.
+  </Accordion>
+
+  <Accordion title="Agentic Oracles" icon="sparkles">
+    Agentic Oracles are the service family for intelligent observation, evaluation, decision support, and workflow automation.
+
+    They connect agent behavior to IXO-backed context, evidence, and state transitions.
+  </Accordion>
+
+  <Accordion title="Qi Agents" icon="robot">
+    Qi Agents are productized agent surfaces built on the Qi cooperation model.
+
+    They help users and systems act on IXO-backed context through guided reasoning, secure coordination, and declared tools.
+  </Accordion>
+
+  <Accordion title="SDKs, APIs, and MCP tools" icon="code">
+    Developer interfaces expose IXO and Qi capabilities to applications and agents.
+
+    Use SDKs and APIs for implementation. Use MCP tools when AI agents need structured access to IXO-backed context, tools, and workflows.
+  </Accordion>
+</AccordionGroup>
+
+## Why Qi exists
+
+Most agent frameworks focus on prompts, memory, tools, and API calls.
+
+Qi is designed for a different problem: intelligent cooperation over verifiable reality.
+
+In IXO-based systems, agents do not operate only on generated context or private application state. They operate over domains, identities, claims, credentials, evidence, workflows, messages, and permissions that other participants can inspect and verify.
+
+This makes Qi useful when an intelligent system must:
+
+- coordinate across people, organizations, applications, services, and agents
+- preserve shared context across long-running workflows
+- evaluate claims and evidence before taking action
+- support human review, delegation, negotiation, and escalation
+- trigger updates to IXO-backed processes through declared interfaces
+- keep action accountable to state, authority, and provenance
+
+Qi is not just automation. It is cooperation with memory, context, authority, and verifiability.
+
+## Cooperation model
+
+Qi workflows usually follow this pattern.
+
+<Steps>
+  <Step title="Read verifiable state">
+    A human, agent, application, or service identifies the relevant domain, entity, claim, credential, workflow, room, or evidence record.
+  </Step>
+
+  <Step title="Build shared context">
+    Qi combines IXO-backed state, linked evidence, room history, messages, permissions, and tool outputs into useful context.
+  </Step>
+
+  <Step title="Reason and coordinate">
+    Actors interpret the context, evaluate evidence, discuss options, request clarification, negotiate next steps, or escalate to a human reviewer.
+  </Step>
+
+  <Step title="Act through declared interfaces">
+    Actions are performed through documented SDKs, APIs, MCP tools, protocol operations, or workflow-specific services.
+  </Step>
+
+  <Step title="Feed results back into state">
+    The outcome is recorded, attested, messaged, indexed, or used to advance an IXO-backed workflow.
+  </Step>
+</Steps>
+
+The important principle is that Qi actors should not invent state or act outside the workflow model. They should discover state, respect authority, use declared interfaces, and make results inspectable.
+
+## Agentic Oracles and Qi Agents
+
+Agentic Oracles and Qi Agents are related, but they should not be treated as interchangeable terms.
+
+<CardGroup cols={2}>
+  <Card title="Agentic Oracles" icon="sparkles" href="/articles/ixo-oracles">
+    The oracle and agent service family for observing state, evaluating evidence, supporting decisions, and automating workflow actions.
+  </Card>
+
+  <Card title="Qi Agents" icon="robot" href="/articles/qi-intelligent-cooperating-system">
+    Productized agent experiences that use Qi cooperation patterns to help humans and systems work with IXO-backed context.
+  </Card>
+</CardGroup>
+
+Use Agentic Oracles when describing the architecture and service pattern.
+
+Use Qi Agents when describing user-facing or productized agent surfaces.
+
+Use the SDK and API references when implementing either pattern.
+
+## What developers can build with Qi
+
+Qi is useful wherever intelligent actors need to cooperate over verified state.
+
+Examples include:
+
+<CardGroup cols={2}>
+  <Card title="Evidence review agents" icon="file-shield" href="/articles/ixo-oracles">
+    Agents that inspect evidence, compare it with workflow rules, and support claim review or verification.
+  </Card>
+
+  <Card title="Digital MRV workflows" icon="chart-line" href="/guides/digital-mrv">
+    Systems that connect measurement, reporting, verification, claims, attestations, and outcomes.
+  </Card>
+
+  <Card title="Secure data rooms" icon="lock" href="/articles/ixo-matrix">
+    Cooperation spaces where organizations, people, services, and agents coordinate around shared context.
+  </Card>
+
+  <Card title="Workflow automation" icon="gears" href="/guides/dev/overview">
+    Services that monitor state, detect required actions, route decisions, and trigger the next workflow step.
+  </Card>
+
+  <Card title="MCP-enabled agent tools" icon="plug" href="/mcp/model-context-protocol">
+    Tool interfaces that allow AI agents to access IXO-backed context and perform documented actions.
+  </Card>
+
+  <Card title="Human-agent operations" icon="people-arrows" href="/articles/qi-intelligent-cooperating-system">
+    Systems where humans supervise, delegate, approve, dispute, or refine actions performed by agents and services.
+  </Card>
+</CardGroup>
+
+## Developer entry points
+
+<CardGroup cols={2}>
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Learn the vocabulary for IXO state, Qi cooperation, claims, credentials, workflows, evidence, and agents.
+  </Card>
+
+  <Card title="Agentic Oracles" icon="sparkles" href="/articles/ixo-oracles">
+    Understand the conceptual model for intelligent oracle services, agent capabilities, and automation patterns.
+  </Card>
+
+  <Card title="IXO Matrix" icon="comments" href="/articles/ixo-matrix">
+    Learn how secure rooms, messaging, and shared context support cooperation between people, services, and agents.
+  </Card>
+
+  <Card title="Model Context Protocol" icon="plug" href="/mcp/model-context-protocol">
+    Connect AI agents to IXO-backed context, tools, and workflow actions through MCP interfaces.
+  </Card>
+
+  <Card title="Agentic Oracles ADK" icon="code" href="/sdk-reference/agentic-oracles-adk">
+    Use the development kit for oracle-powered services and agentic automation patterns.
+  </Card>
+
+  <Card title="Personal Agent ADK" icon="wand-magic-sparkles" href="/sdk-reference/oracle-adk">
+    Use the package reference for building personal agent capabilities and integrations.
+  </Card>
+</CardGroup>

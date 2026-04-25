@@ -1,56 +1,413 @@
 ---
 title: "Core concepts"
 icon: "lightbulb-exclamation-on"
-description: "Understand the IXO architecture model and where to go for implementation details."
+description: "Vocabulary and mental models for IXO, Qi, entities, claims, evidence, verification, and workflows."
 ---
 
-<Tip>
-IXO combines verifiable identity, programmable coordination, secure data exchange, and AI-assisted services so you can run digital workflows against real-world outcomes.
-</Tip>
+<Info>
+  This page is **definitions and structure**: what words mean and how layers fit together. For motivation, positioning, and a short worked example, read [Act on Reality](/introduction) first. When you are ready to pick a first artifact (POD, Flow, Blueprint, and so on), use [What you can build](/guides/what-you-can-build).
+</Info>
 
-## Core vocabulary
+## The problem space
 
-- **Digital entity**: a real-world actor or system represented in IXO.
-- **Domain**: the identity anchor for an entity, based on a Decentralized Identifier (DID).
-- **Digital twin**: a working system that combines identity, data, state, and executable logic.
-- **Claim**: a verifiable statement that can be reviewed, attested, and linked to evidence.
+If you are building or buying systems for real-world work, you are usually asking how to **trust agents** with consequential work, **verify outcomes** before releasing money or authority, **coordinate** across organizations, and know **what changed**, **who did it**, and **whether it worked**.
 
-## System layers
+IXO and Qi target that class of problem—not generic chat over siloed documents.
 
-<AccordionGroup>
-  <Accordion title="Identity and trust" icon="fingerprint">
-    Domains use Decentralized Identifier (DID) records, verification methods, and delegated rights to establish who can act and what they can do.
-  </Accordion>
-  <Accordion title="Coordination and execution" icon="gears">
-    IXO Protocol modules and workflows coordinate requests, offers, claims, and value transfer across participants.
-  </Accordion>
-  <Accordion title="Data and communication" icon="database">
-    IXO Matrix provides encrypted rooms, messaging, and shared state channels for applications and operators.
-  </Accordion>
-  <Accordion title="Intelligence and automation" icon="sparkles">
-    Agentic Oracles add automated evaluation and decision support to domain and claim workflows.
-  </Accordion>
-</AccordionGroup>
+Most software tracks **internal** application state. Most AI systems reason over **generated** context. This stack coordinates many actors around **shared, verifiable reality**.
 
-## How concepts map to docs
+- **State** — Structured information that can be identified, permissioned, queried, verified, and updated through protocol-defined actions: you can say what is true and what changed.
+- **Intelligence** — Humans and AI agents interpret state, coordinate with others, and take accountable action.
+- **Cooperation** — Alignment of people, organizations, agents, services, evidence, and workflows around a shared map of work.
 
-<CardGroup cols={2}>
-  <Card title="Architecture articles" icon="book" href="/articles/intro-articles">
-    Use conceptual pages to understand components and relationships.
-  </Card>
-  <Card title="Developer guides" icon="hand-pointer" href="/guides/dev/overview">
-    Use guides for implementation workflows and operational steps.
-  </Card>
-  <Card title="SDK references" icon="code" href="/ixo-stack/sdks/intro-sdks">
-    Use SDK pages for package-specific setup and usage.
-  </Card>
-  <Card title="API reference" icon="server" href="/api-docs/introduction">
-    Use API docs for exact request, response, and parameter details.
+<CardGroup cols={1}>
+  <Card title="IXO with Qi" icon="scale-balanced">
+    **IXO defines what is true and verifiable** in the shared model. **Qi defines how intelligent actors cooperate** over that model inside real workflows.
   </Card>
 </CardGroup>
 
-## Next steps
+IXO and Qi are closely connected, but they are not the same layer.
 
-- Read `/protocols/ixo-protocol` for protocol concepts and governance primitives.
-- Read `/articles/ixo-matrix` for the data-layer architecture model.
-- Continue with `/guides/dev/overview` to implement your first workflow.
+<AccordionGroup>
+  <Accordion title="IXO" icon="grid">
+    **Problem:** AI agents and partners cannot safely act on **fragmented, unverifiable** data scattered across orgs and tools.
+
+    **What the component does:** IXO (including the [IXO Graph](/articles/ixo-graph) and [IXO Protocol](/protocols/ixo-protocol)) connects **entities, identities, claims, evidence, credentials, transactions, and outcomes** into structured state that can be shared, queried, and verified.
+
+    **What you build:** Workflows where humans and agents can **discover context**, **verify claims**, **trace changes**, and **ground decisions** in the same facts.
+  </Accordion>
+
+  <Accordion title="Qi" icon="sparkles">
+    **Problem:** Real-world workflows need **humans, agents, services, and organizations** to coordinate without losing context or accountability.
+
+    **What the component does:** The **Qi Intelligent Cooperating System** provides the cooperation layer: actors **reason** over IXO-backed state, **exchange messages**, **evaluate evidence**, and **act** through declared workflows—with permissions and auditability.
+
+    **What you build:** Evidence-review agents, secure cooperation spaces, assisted verification, human approvals, and automated routing—see [Qi](/articles/qi-intelligent-cooperating-system) and [IXO Matrix](/articles/ixo-matrix).
+  </Accordion>
+</AccordionGroup>
+
+<CardGroup cols={2}>
+  <Card title="IXO: state you can verify" icon="grid" href="/protocols/ixo-protocol">
+    Model identities, domains, entities, claims, credentials, assets, relationships, workflows, and evidence.
+  </Card>
+
+  <Card title="Qi: cooperation on that state" icon="sparkles" href="/articles/qi-intelligent-cooperating-system">
+    Read IXO-backed context, coordinate securely, reason over evidence, and act through governed workflows.
+  </Card>
+</CardGroup>
+
+A useful rule:
+
+- **Use IXO** to define, verify, persist, or query the shared state of **reality**.
+- **Use Qi** to interpret, discuss, reason, decide, automate, or **act** on that reality.
+
+## Domains
+
+In IXO, an **entity domain** (often shortened to **domain**) is the standardized way to register and manage a **digital twin** of a real-world subject on the stack: decentralized identity, verifiable credentials, linked claims and resources, services, and relationships—see [Entity Domains](/guides/dev/ixo-domains) for the developer-oriented model and [Domain registration](/guides/domain-registration) for how domains are created and typed.
+
+Each domain is anchored by a **digital identifier (DID)** following the interchain identifier pattern, has an **entity type** (what class of thing it is), and is associated with a **protocol** that defines the entity **class** and inherited properties. **Controllers** manage the on-chain domain record (DID document), and **metadata** carries standard settings for that type.
+
+Common **domain types** used across solutions include the following (wording aligned with [Domain registration](/guides/domain-registration) and the [Emerging platform domain model](/platforms/Emerging/domain-registration)):
+
+<AccordionGroup>
+  <Accordion title="Organisation" icon="building">
+    **Organisation** domains represent legal or virtual entities that operate programs, hold rights, or participate in governance—often managed as or alongside DAOs.
+
+    They anchor who is accountable, who can act for the entity, and how the organisation connects to projects, assets, and markets.
+  </Accordion>
+
+  <Accordion title="Project" icon="diagram-project">
+    **Project** domains represent programs, portfolios, or interventions: the unit of work you measure, fund, verify, or report against.
+
+    Project domains are typically linked to protocols that define operational rules, may use PODs for automation, and often coordinate agents, resources, claims, and accounts—see [Project Domains](/articles/projects).
+  </Accordion>
+
+  <Accordion title="Asset" icon="microchip">
+    **Asset** domains represent physical systems, devices, infrastructure, sites, or **tokenized outcomes** that need identity, telemetry, custody, or verification on the graph.
+
+    They bridge real-world “things” to claims, evidence, and economic actions (for example issuance, transfer, or retirement of outcome-linked instruments).
+  </Accordion>
+
+  <Accordion title="Protocol" icon="file-code">
+    **Protocol** domains (and protocol references on other domains) supply the **templates and rules** that govern behaviour: the entity **class**, inherited property sets, rubrics, and constraints that implementations must honour.
+
+    Creating a domain of another type usually requires selecting the protocol DID that defines its class, as described under [Domain properties](/guides/domain-registration#domain-properties) and [Creating domains](/guides/domain-registration#creating-domains).
+  </Accordion>
+
+  <Accordion title="Oracle" icon="sparkles">
+    **Oracle** domains (and oracle-linked services) represent **verification, measurement, or decision-support** capabilities attached to programs, assets, or workflows—often AI-enabled services that supply data or evaluations used in claims and reviews.
+
+    For how oracle services fit the wider stack, see [Oracle architecture](/guides/ixo-oracles-architecture).
+  </Accordion>
+
+  <Accordion title="Deed" icon="arrow-right-arrow-left">
+    **Deed* style domains structure **asks and commitments** between parties so governance, negotiation, acceptance, execution, and fulfillment can be represented on the graph and autonomously executed by the system and its participants.
+  </Accordion>
+</AccordionGroup>
+
+The exact user-facing naming of domain types is configurable to the specific ontology of the use case. The underlying pattern is still a domain document with controllers, services, linked resources, rights, linked claims, relationships, and accounts.
+
+## Core vocabulary
+
+These terms appear throughout the docs, including **build-pattern** names from [What you can build](/guides/what-you-can-build).
+
+<AccordionGroup>
+  <Accordion title="Digital entity" icon="cube">
+    A digital entity is a real-world actor, asset, system, place, project, organization, program, claim process, or other meaningful object represented in IXO.
+
+    Digital entities make real-world things addressable in software. They can have identity, metadata, relationships, credentials, claims, services, and state transitions.
+  </Accordion>
+
+  <Accordion title="Domain" icon="fingerprint">
+    A **domain** is the identity anchor for a digital entity: a DID-backed record that establishes who or what the entity is, which verification methods apply, and which actors or services may act on its behalf.
+
+    For **domain types** (organisation, project, asset, protocol, oracle, request/offer) and how they relate to registration, read [Domains](#domains) above, then [Domain registration](/guides/domain-registration) or [Entity Domains](/guides/dev/ixo-domains) for procedures and interfaces.
+  </Accordion>
+
+  <Accordion title="POD" icon="building-columns">
+    A **POD** (programmable organisational domain) is a governed **workspace**: members, roles, rooms, tools, graph entities, and agents share one coordination boundary.
+
+    Hands-on: [Build a POD](/guides/users/build-a-pod).
+  </Accordion>
+
+  <Accordion title="Flow" icon="route">
+    A **Flow** is a **governed workflow**: triggers, states, actions, evidence gates, reviews, and outcomes that move real work forward in an inspectable way.
+
+    Hands-on: [Build a Flow](/guides/users/build-a-flow).
+  </Accordion>
+
+  <Accordion title="Blueprint" icon="file-signature">
+    A **Blueprint** is a reusable **protocol** for a class of work: claim schemas, evidence rules, rubrics, roles, permissions, and verification or settlement logic that many PODs or Flows can share.
+
+    Hands-on: [Build a Blueprint](/guides/users/build-a-blueprint).
+  </Accordion>
+
+  <Accordion title="Market" icon="store">
+    A **Market** is a **discovery and settlement** pattern: listings, offers, fulfillment, verification, pricing, and disputes—usually implemented with Flows and Blueprints behind each listing type.
+
+    Hands-on: [Build a Market](/guides/users/build-a-market).
+  </Accordion>
+
+  <Accordion title="Agentic Oracle" icon="robot">
+    An **Agentic Oracle** is a **scoped automation or judgment service** (often with declared tools and human handoff) that reads IXO-backed context and participates in Flows—without replacing protocol authority or verified state.
+
+    Architecture: [Oracle architecture](/guides/ixo-oracles-architecture).
+  </Accordion>
+
+  <Accordion title="IXO Graph" icon="circle-nodes">
+    The **IXO Graph** is the shared, queryable map of entities, relationships, claims, evidence, credentials, and outcomes your applications and agents read from. It is the practical “shape” of IXO-backed state. More detail: [IXO Graph](/articles/ixo-graph).
+  </Accordion>
+
+  <Accordion title="Digital twin" icon="diagram-project">
+    A digital twin is a working representation of a real-world entity or process.
+
+    It combines identity, metadata, data services, verifiable state, relationships, and executable logic. A digital twin is not just a profile or database record. It is the operational model that applications, services, and agents use to interact with a real-world system—still expressed using domains, entities, claims, and evidence.
+
+    Guide: [Digital twins](/guides/digital-twins).
+  </Accordion>
+
+  <Accordion title="Claim" icon="badge-check">
+    A claim is a verifiable statement about something.
+
+    Claims can describe status, eligibility, delivery, performance, measurement, compliance, completion, impact, or any other assertion that needs review or attestation.
+
+    A claim can be linked to evidence, evaluated by humans or agents, and accepted, rejected, disputed, or used to trigger further workflow steps.
+  </Accordion>
+
+  <Accordion title="Credential" icon="id-card">
+    A credential is a portable proof issued by an authority or trusted participant.
+
+    Credentials can describe identity, rights, roles, qualifications, authorizations, certifications, or attestations. They help systems determine who can do what, under which conditions, and with what level of trust.
+  </Accordion>
+
+  <Accordion title="Flow" icon="route">
+    A Flow is a structured sequence of actions, decisions, messages, claims, evidence, reviews, and state changes.
+
+    IXO-backed Flows make coordination explicit. Qi-enabled Flows allow humans, agents, and services to cooperate around each step using shared context and declared interfaces.
+  </Accordion>
+  <Accordion title="Deed" icon="handshake">
+    A deed is an executable set of agreements and obligations that are packaged with controllers, services, resources, rights. claims, relationships, and accounts.
+
+    Deeds can define requests and offers for units of work, or governance processes that are executed by the system.
+  </Accordion>
+
+</AccordionGroup>
+
+## When to use the deeper technical words
+
+Use plain language first (the [introduction](/introduction) stays non-jargony). When you need precision, these are the usual mappings:
+
+<AccordionGroup>
+  <Accordion title="Semantic graph" icon="circle-nodes">
+    First-impression phrase: **shared map** of people, assets, claims, evidence, and outcomes. Technically: a graph of entities and relationships expressed with **shared meaning** (for example linked data) so different systems interpret the same world the same way.
+  </Accordion>
+
+  <Accordion title="Directed acyclic graph (DAG) of state" icon="timeline">
+    First-impression phrase: **tamper-resistant history** of important changes. Technically: how certain state transitions are recorded so history stays inspectable and consistent with protocol rules.
+  </Accordion>
+
+  <Accordion title="Linked data" icon="link">
+    First-impression phrase: **data that different systems and agents can use together** without private one-off schemas everywhere. Technically: identifiers and relationships exposed in standard, machine-readable forms.
+  </Accordion>
+
+  <Accordion title="Ontologies" icon="book">
+    First-impression phrase: **shared definitions** for how real-world things are represented. Technically: controlled vocabularies and class relationships that keep programs aligned on meaning.
+  </Accordion>
+</AccordionGroup>
+
+## State, data, context, and action
+
+These four concepts are related, but they should not be confused.
+
+<AccordionGroup>
+  <Accordion title="Data" icon="database">
+    Data is information available to a system.
+
+    It may come from APIs, databases, sensors, documents, messages, user input, or external services. Data can be useful without being verified, authoritative, or suitable for workflow decisions.
+  </Accordion>
+
+  <Accordion title="State" icon="circle-nodes">
+    State is the current structured condition of an entity, claim, workflow, asset, credential, or relationship.
+
+    IXO state is designed to be identifiable, inspectable, permissioned, and verifiable. State tells the system what currently exists, what has changed, and which actions are valid.
+  </Accordion>
+
+  <Accordion title="Context" icon="comments">
+    Context is the relevant information an actor needs to understand what is happening.
+
+    Qi uses IXO-backed state, Matrix rooms, messages, evidence, workflow history, and external tools to provide context for humans and agents.
+  </Accordion>
+
+  <Accordion title="Action" icon="bolt">
+    Action is a change made by a human, agent, application, service, or protocol process.
+
+    Actions may create entities, submit claims, issue credentials, request reviews, send messages, evaluate evidence, trigger workflows, or update state.
+  </Accordion>
+</AccordionGroup>
+
+For production systems, the goal is to keep these aligned: actions should be based on context, context should be grounded in state, and state should be supported by verifiable data and evidence.
+
+## System layers
+
+IXO and Qi work together through several layers. They are ordered here from **outcomes and trust** down to **interfaces**.
+
+<AccordionGroup>
+  <Accordion title="1. Outcomes, evidence, and traceable change" icon="badge-check">
+    The stack exists so programs can answer: **What happened? What was claimed? What evidence exists? What was accepted or rejected? What changed next?**
+
+    This is the through-line from **field reality** to **decisions and automation**—not only “logs,” but state and relationships you can inspect over time.
+  </Accordion>
+
+  <Accordion title="2. Identity and authority" icon="fingerprint">
+    Domains, DIDs, verification methods, roles, and delegated rights establish who or what can act.
+
+    This layer answers questions such as:
+
+    - Who is this actor?
+    - What entity do they represent?
+    - Which actions are they allowed to perform?
+    - Which credentials or delegations support that authority?
+  </Accordion>
+
+  <Accordion title="3. Verifiable state" icon="database">
+    IXO Protocol modules define entities, claims, credentials, assets, relationships, and state transitions.
+
+    This layer answers questions such as:
+
+    - What exists?
+    - What is currently true?
+    - Who asserted it?
+    - What evidence supports it?
+    - What changed, and when?
+  </Accordion>
+
+  <Accordion title="4. Data and evidence services" icon="file-shield">
+    Linked services store, retrieve, index, and expose the data needed by applications, workflows, and agents.
+
+    This layer includes data services, evidence stores, indexed chain state, and query surfaces such as [IXO Blocksync](/articles/ixo-blocksync).
+  </Accordion>
+
+  <Accordion title="5. Secure communication" icon="comments">
+    IXO Matrix provides encrypted rooms, messaging, and shared cooperation spaces.
+
+    This layer allows people, organizations, agents, and services to align around context before, during, and after state-changing actions.
+  </Accordion>
+
+  <Accordion title="6. Intelligence and automation" icon="sparkles">
+    Qi Agents and Agentic Oracles evaluate context, reason over evidence, support decisions, and trigger workflow actions.
+
+    This layer should not invent state. It should discover relevant state, respect permissions, use declared tools, and act through verifiable processes.
+  </Accordion>
+
+  <Accordion title="7. Applications and interfaces" icon="window">
+    Applications, dashboards, SDKs, APIs, MCP servers, and developer tools expose the stack to builders and users.
+
+    This layer turns IXO state and Qi cooperation into usable products, workflows, and services.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  **Compared to typical enterprise agent platforms:** those often optimize **deploying and monitoring agents inside one organization**. IXO and Qi emphasize **multi-party ecosystems**: shared evidence, verifiable state, and traceable change so agents cooperate on **real-world outcomes**, not only internal tickets and documents.
+</Note>
+
+## How an agent should think about the stack
+
+If you are **not** implementing agents, you can skip to [Where to go next](#where-to-go-next).
+
+AI agents using IXO and Qi should follow a simple operating model.
+
+<Steps>
+  <Step title="Discover the relevant entity or domain">
+    Identify the entity, domain, participant, workflow, claim, asset, or room that the task refers to.
+  </Step>
+
+  <Step title="Read state before acting">
+    Use IXO-backed sources, SDKs, APIs, indexed data, or MCP tools to inspect the current state.
+  </Step>
+
+  <Step title="Separate verified state from assumptions">
+    Treat verified state, user intent, generated reasoning, external data, and speculation as different categories.
+  </Step>
+
+  <Step title="Use declared interfaces">
+    Do not invent protocol actions, API shapes, permissions, or workflow steps. Use the documented SDKs, APIs, MCP tools, and workflow definitions.
+  </Step>
+
+  <Step title="Act through accountable workflows">
+    Submit claims, messages, evaluations, updates, or actions through the appropriate governed process.
+  </Step>
+
+  <Step title="Record what changed">
+    When an action changes state, make the result inspectable, attributable, and available for the next actor.
+  </Step>
+</Steps>
+
+## Where to go next
+
+**Reading**
+
+<CardGroup cols={2}>
+  <Card title="Act on Reality" icon="earth-africa" href="/introduction">
+    Outcome-first positioning and a short walkthrough of a verified claims path.
+  </Card>
+
+  <Card title="What you can build" icon="rocket" href="/guides/what-you-can-build">
+    Choose a first POD, Flow, Blueprint, Oracle, asset, or Market and follow hands-on guides.
+  </Card>
+
+  <Card title="Architecture articles" icon="book" href="/articles/intro-articles">
+    Component deep-dives and design patterns across the stack.
+  </Card>
+
+  <Card title="Digital MRV guide" icon="chart-line" href="/guides/digital-mrv">
+    Measurement, reporting, and verification as a program discipline.
+  </Card>
+</CardGroup>
+
+**Hands-on patterns**
+
+<CardGroup cols={2}>
+  <Card title="Verified claims" icon="badge-check" href="/guides/users/build-a-claim-collection">
+    Submit, evidence, review, and decision in one guided shape.
+  </Card>
+
+  <Card title="Digital MRV (build)" icon="chart-line" href="/guides/users/build-dmrv">
+    Practical steps to wire measurement → report → verification → outcome.
+  </Card>
+
+  <Card title="Outcomes-based financing" icon="coins" href="/guides/users/build-obf">
+    Tie settlement actions to verified outcomes.
+  </Card>
+
+  <Card title="Programmable Organizational Domains (PODs)" icon="users" href="/articles/pods">
+    How program domains coordinate delivery, governance, and verification within a secure shared workspace.
+  </Card>
+</CardGroup>
+
+**Protocol and engineering**
+
+<CardGroup cols={2}>
+  <Card title="IXO Protocol" icon="cube" href="/protocols/ixo-protocol">
+    Trust, action, and coordination primitives for verifiable state.
+  </Card>
+
+  <Card title="Qi in depth" icon="sparkles" href="/articles/qi-intelligent-cooperating-system">
+    Cooperation over IXO-backed state.
+  </Card>
+
+  <Card title="Developer overview" icon="hand-pointer" href="/guides/dev/overview">
+    SDKs, setup, and implementation entry points.
+  </Card>
+
+  <Card title="Claims developer guide" icon="file-check" href="/guides/dev/ixo-claims">
+    Creating and managing claims in application code.
+  </Card>
+
+  <Card title="SDK references" icon="code" href="/sdk-reference/index">
+    Package-specific setup, usage, and examples.
+  </Card>
+
+  <Card title="Model Context Protocol" icon="plug" href="/mcp/model-context-protocol">
+    Connecting agents to IXO-backed tools and context.
+  </Card>
+</CardGroup>

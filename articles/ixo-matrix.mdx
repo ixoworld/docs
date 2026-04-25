@@ -1,12 +1,14 @@
 ---
 title: "IXO Matrix"
 icon: "database"
-description: "Conceptual overview of IXO Matrix as the secure data and communication layer in IXO."
+description: "Secure cooperation spaces for people, services, and AI agents—encrypted rooms, messaging, and shared context tied to real IXO workflows."
 ---
 
 <Tip>
-IXO Matrix provides encrypted data rooms and communication channels for IXO applications. This page explains the architecture model; setup details belong to SDK and API reference pages.
+  **Job-first framing:** IXO Matrix is how you run **multi-party data rooms**—funders, implementers, verifiers, communities, services, and agents in **encrypted rooms** with shared context. **Yjs** CRDTs and live shared documents are part of how cooperation stays attached to state, not a pile of attachments. Setup details live in SDK and API reference pages.
 </Tip>
+
+Funders, operators, verifiers, and agents rarely fail on “more chat.” They fail when **context, evidence, and decisions** scatter across channels. **IXO Matrix** is the secure **communication and shared-surface** layer so those actors align **before, during, and after** state-changing actions on [IXO Protocol](/protocols/ixo-protocol) and [Qi](/articles/qi-intelligent-cooperating-system) workflows.
 
 ## Architecture role
 
@@ -26,6 +28,66 @@ IXO Matrix is the data and communication layer in the IXO architecture. It suppo
     - Model Context Protocol (MCP) integrations where available
   </Accordion>
 </AccordionGroup>
+
+## CRDT shared state in Matrix for human and AI teams
+
+IXO uses **Matrix** and **Yjs** (commonly referenced as y.js in the ecosystem) **CRDTs** to turn documentation into **shared state**, so human and AI teams collaborate on the same live source of truth instead of passing files and chat snippets back and forth.
+
+At IXO, CRDT-based shared state lives **inside Matrix rooms**, with Yjs as the synchronization layer, so documentation behaves as a **live, multi-actor workspace** rather than a static file.
+
+This matters because documentation here is not only written once and published. It is shaped continuously by product teams, domain experts, operators, and AI agents working at the same time. The system needs **concurrent edits**, **preserved intent**, and **one evolving source of truth** without locking, silent overwrites, or fragile version handoffs.
+
+### What this means in practice
+
+Each documentation space, page, or structured work surface can be **bound to a dedicated Matrix room**. That room carries **communication context**, **access control**, **event history**, and the **encrypted collaboration channel**. Inside the room, **Yjs** holds the actual **shared document state** as a CRDT.
+
+The result is that all participants—human or AI—operate on the **same live state**.
+
+<Note>
+**Not** message-passing workflows such as “I sent you suggested edits,” “here is my copied version,” or “please merge these manually.” **Instead**, everyone sees and updates the same document state; concurrent changes merge automatically; no central locking is required; offline edits can reconcile safely; and AI agents can act as first-class collaborators on the same state as people.
+</Note>
+
+### Why CRDTs fit IXO
+
+**Conflict-free Replicated Data Types (CRDTs)** are built for distributed collaboration: many parties edit shared content independently and still **converge** on the same result. For IXO, that matters in four ways:
+
+1. **Real shared state, not file passing** — Traditional documentation often defaults to file ownership and turn-taking. CRDTs support a multiplayer model where the document is a **shared state surface**. That aligns with how coordination works across IXO and [Qi](/articles/qi-intelligent-cooperating-system): cooperation happens **over shared state**.
+2. **Symmetric human and AI collaboration** — Agents are not limited to external tools that only emit text in a side panel. They can inspect, propose, annotate, structure, and update the **same document state** humans use: humans edit sections directly; agents enrich structure, summarize, cross-link, validate, or suggest improvements—**all against one canonical state**. That is a stronger basis than chat-only copy-paste flows.
+3. **Distributed and resilient by default** — IXO targets sovereign, federated, multi-party settings. Matrix supplies a decentralized collaboration substrate; CRDTs provide synchronization **without** a single centralized editor session—important across organizations, devices, and trust boundaries.
+4. **Living operational knowledge** — Much of this documentation is operational, not only descriptive. Specifications, policies, rubrics, flows, and implementation notes keep moving. CRDTs fit because the document stays **live and synchronizing** instead of being frozen into periodic versions only.
+
+### Architecture pattern
+
+Think of the stack in three layers:
+
+**Matrix provides the collaboration fabric**
+
+- Secure **room-based** collaboration  
+- **Federation** across homeservers  
+- **End-to-end encrypted** communication  
+- **Identity and membership** context  
+- **Event history** and auditing hooks  
+- Integration with IXO **governance and access control** patterns  
+
+**Yjs provides the shared state engine**
+
+- **CRDT** document structures  
+- **Concurrent editing** without manual collision resolution  
+- **Automatic merge** of independent changes  
+- **Local-first** editing  
+- **Synchronization** across participants and devices  
+
+**IXO composes governed digital workspaces**
+
+On top of Matrix and Yjs, IXO can bind documents, flow pages, action blocks, structured metadata, agent participation, and governance rules—so the artifact is not only text but a **governed shared state object** inside a secure collaboration domain.
+
+### Why this matters for human and AI teams
+
+Most AI tooling today is **chat-first**: the model sees a conversational slice of context and returns text; a human must decide how to apply it.
+
+In this pattern, agents can work **directly on shared state** in the documentation workspace: read structure; spot missing sections; propose schema-aligned edits; attach evidence or rationale; keep terminology consistent; update linked references; prepare structured summaries for different audiences. Humans stay in control, but coordination tightens because **both humans and agents mutate the same living object**.
+
+That shift—from **message passing** to **stateful cooperation**—matches the broader [Qi](/articles/qi-intelligent-cooperating-system) model of human–AI cooperation over shared state.
 
 ## Concept model
 
@@ -64,11 +126,11 @@ IXO Matrix is the data and communication layer in the IXO architecture. It suppo
 ## Go here next
 
 <CardGroup>
-  <Card title="IXO Matrix Client SDK" icon="code" href="/ixo-stack/sdks/ixo-matrix-sdk">
+  <Card title="IXO Matrix Client SDK" icon="code" href="/sdk-reference/matrix-client-sdk">
     Use package-level documentation for implementation details.
   </Card>
-  <Card title="IXO Matrix APIs" icon="server" href="/api-docs/introduction">
-    Use canonical API reference pages for exact interfaces and parameters.
+  <Card title="API reference" icon="server" href="/api-reference/index">
+    Use canonical API pages for exact interfaces and parameters.
   </Card>
   <Card title="Developer guides" icon="hand-pointer" href="/guides/dev/overview">
     Follow task-oriented workflows after this architecture overview.

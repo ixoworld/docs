@@ -18,7 +18,7 @@
 - `.codex/QA_CHECKLIST.md`
 - `.codex/templates/guide-page-template.mdx`
 - `guides/dev/overview.mdx`
-- `guides/dev/spatial-web-sdks.mdx`
+- `guides/dev/ixo-stack-sdks.mdx`
 - `api-docs/ai-companion-api/companion-api.mdx`
 - `api-docs/matrix-api/matrix-statebot-api.mdx`
 

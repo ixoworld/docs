@@ -1,59 +1,82 @@
 ---
 title: "Articles"
 icon: "book-open"
-description: "Read conceptual and architecture-focused articles across IXO components."
+description: "Two reading paths: outcome-first workflows, then deeper stack articles for IXO Graph, protocol, Matrix, Blocksync, oracles, and Qi."
 ---
 
 <Tip>
-Articles explain how IXO components fit together. They provide conceptual context, not step-by-step setup or API ownership.
+  **Path 1 — I want to build something:** start at [Introduction](/introduction) and [What you can build](/guides/what-you-can-build), then jump into developer guides. **Path 2 — I want to understand the stack:** read [Core concepts](/core-concepts), then the articles below for each component.
 </Tip>
 
-## What you will find here
+Articles explain how IXO and Qi **components fit together**. They give **conceptual context**, not step-by-step setup or API ownership (use [Developer overview](/guides/dev/overview) and [API reference](/api-reference/index) for that).
+
+## Path 1: Build and operate
+
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="earth-africa" href="/introduction">
+    Market promise, lifecycle, and links into the stack.
+  </Card>
+  <Card title="What you can build" icon="layer-group" href="/guides/what-you-can-build">
+    Verified claims, MRV, financing, agents, data rooms, learning loops.
+  </Card>
+  <Card title="Hands-on" icon="hand-pointer" href="/guides/hands-on">
+    First-touch domain and digital twin setup.
+  </Card>
+  <Card title="Developer overview" icon="code" href="/guides/dev/overview">
+    SDKs, APIs, and implementation entry points.
+  </Card>
+</CardGroup>
+
+## Path 2: Stack deep-dives
 
 <CardGroup>
-  <Card title="Core Technologies" icon="microchip">
-    Conceptual explainers for IXO Protocol, IXO Matrix, IXO Blocksync, and Agentic Oracles.
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Vocabulary, lifecycle, layers, and how state and cooperation relate.
   </Card>
-  <Card title="Architecture narratives" icon="diagram-project">
-    System-level views that connect identity, data, verification, and coordination models.
-  </Card>
-  <Card title="Domain examples" icon="lightbulb">
-    Story-driven examples that show how concepts are used in practice.
-  </Card>
-  <Card title="Related platform context" icon="layer-group">
-    Concept links to platform and solution pages where relevant.
+  <Card title="Technical deep-dives" icon="diagram-project" href="/articles/ixo-graph">
+    Start with the IXO Graph, then protocol, Matrix, Blocksync, oracles, and Qi articles from the groups below.
   </Card>
 </CardGroup>
 
 ## Core article groups
 
 <AccordionGroup>
-  <Accordion title="Infrastructure" icon="server">
-    - **IXO Protocol**: identity, claims, and coordination primitives
-    - **IXO Matrix**: encrypted data rooms and communication
-    - **IXO Blocksync**: indexed blockchain data access
-    - **Agentic Oracles**: AI-assisted verification and automation
+  <Accordion title="IXO components" icon="server">
+    - **IXO Graph**: shared map of entities, claims, evidence, and outcomes — [`/articles/ixo-graph`](/articles/ixo-graph)
+    - **IXO Protocol**: identity, claims, coordination primitives — [`/protocols/ixo-protocol`](/protocols/ixo-protocol)
+    - **IXO Matrix**: encrypted cooperation rooms and communication — [`/articles/ixo-matrix`](/articles/ixo-matrix)
+    - **IXO Blocksync**: indexed blockchain data access — [`/articles/ixo-blocksync`](/articles/ixo-blocksync)
+    - **Agentic Oracles**: AI-assisted verification and automation — [`/articles/ixo-oracles`](/articles/ixo-oracles)
   </Accordion>
-  <Accordion title="Systems and patterns" icon="window">
-    - Digital twin architecture patterns
-    - Verification and trust models
-    - Orchestration and integration narratives
+  <Accordion title="Qi components" icon="window">
+    - [Qi: cooperation on verified workflows](/articles/qi-intelligent-cooperating-system) (**Qi Intelligent Cooperating System**)
+    - Digital twin architecture patterns and orchestration narratives in linked articles
+  </Accordion>
+  <Accordion title="Related platform context" icon="window">
+    - Platform-specific articles under **Platforms** in the sidebar
+    - Emerging programs and field patterns under [Emerging Platform](/platforms/Emerging/intro-emerging)
   </Accordion>
 </AccordionGroup>
 
-## Next Steps
+## Next steps
 
 <CardGroup>
-  <Card title="Read protocol concepts" icon="layer-group" href="/protocols/ixo-protocol">
-    Read foundational IXO Protocol and network concepts.
+  <Card title="Intelligent Cooperation" icon="yin-yang" href="/articles/pods">
+    Read about how human and AI agents can safely work together, with shared intent
   </Card>
-  <Card title="Developer guides" icon="code" href="/guides/dev/overview">
-    Move from concepts to task-oriented implementation guides.
+  <Card title="Outcomes-driven Financing" icon="money-bill-trend-up" href="/guides/digital-mrv">
+    Read about how digital financing makes money programmable and more accountable
   </Card>
-  <Card title="SDK reference" icon="book" href="/ixo-stack/sdks/intro-sdks">
-    Use canonical SDK pages for package setup and usage.
+  <Card title="Verification and Credentialing" icon="shield-check" href="/guides/digital-mrv">
+    Read about how digital measurement, reporting, and verification elevate trust in reality
   </Card>
-  <Card title="API reference" icon="server" href="/api-docs/introduction">
-    Use interface-level references for exact API details.
+  <Card title="Governance and Decision-Making" icon="shield-halved" href="/articles/pods">
+    Read about how to coordinate and automate work in Programmable Organizational Domains (PODs)
+  </Card>
+  <Card title="Data as an Asset" icon="gem" href="/guides/data-and-intelligence">
+    Read about how data sovereignty and encryption give you ownership and control
+  </Card>
+  <Card title="Cognitive Digital Twins" icon="brain-circuit" href="/articles/cdt-systems">
+    Read about how to build intelligent feedback loops into real world systems
   </Card>
 </CardGroup>

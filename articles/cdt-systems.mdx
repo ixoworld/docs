@@ -5,12 +5,12 @@ description: "An introduction to Cognitive Digital Twin Systems"
 ---
 
 <Tip>
-    IXO implements a systems-thinking approach to capture relationships, feedback loops, and interdependencies in real-world systems where mitigation activities are coordinated, financed, verified, and governed.
+    IXO implements a systems-thinking approach to capture relationships, feedback loops, and interdependencies in real-world systems where actions are intelligently coordinated, financed, verified, and governed.
 </Tip>
 
 ## What are Cognitive Digital Twins?
 
-Cognitive Digital Twins (CDTs) are digital replicas of real-world entities that can learn from data, adapt, and support intelligent decisions. IXO architecture implements CDTs through three core components:
+Cognitive Digital Twins (CDTs) are digital replicas of real-world entities that can learn from data, adapt, and support intelligent decisions. The IXO architecture implements CDTs through three core components:
 
 1. **AI/ML Models for Cognition**: CDTs integrate artificial intelligence to simulate cognition. With runtime learning, a twin can analyze streaming data and update its behavior or predictions autonomously. On IXO, Oracle Twins serve this role – they are AI-powered agent services that evaluate data, perform verifications, and automate intelligent actions within the twin system.
 
@@ -47,7 +47,7 @@ Each physical or conceptual element is represented as a _Digital Entity_ with a 
    Digital materials (documents, media) referenced via URIs, often with cryptographic proofs for authenticity.  
 
 5. **Accorded Rights**  
-   Object capabilities (zCAPs, Cacao) specify who can perform specific actions, preserving privacy and security.  
+   Object capabilities (UDIDs, zCAPs) specify who can perform what specific actions, on what objects, under what conditions, whilst preserving privacy and security in a decentralized manner.  
 
 6. **Linked Claims**  
    Verified data items that update the domain's state (e.g., device usage records, fuel delivery confirmations).  
@@ -75,13 +75,61 @@ IXO implements a federated, end-to-end encrypted data architecture built on the 
 Trust is established through:
 
 1. **Verifiable Claims**: Digitally signed data or assertions produced by agents or devices
-2. **Oracle Verification**: AI or human validators evaluate and verify claims
-3. **Verifiable Credentials**: W3C-standard digital certificates that encapsulate verified claims
+2. **Oracle Verification**: AI and/or human validators evaluate evidence and verify claims
+3. **Verifiable Credentials**: W3C-standard digital certificates that encapsulate verified claims and outcomes
 4. **End-to-End Trust Pipeline**: From data origin to verification and credential issuance
 
 ## Using Protocols
 
-Manually configuring domains can be intricate, so the IXO platform offers _Protocols_ to streamline the process. A protocol is a predefined template of properties, relationships, and data models for a specific type of domain.
+Manually configuring domains can be intricate, so the IXO platform offers _Protocols_ to streamline the process, and Agentic Oracles to automate steps in the creation of domains. 
+A protocol is a predefined template of properties, relationships, and data models for a specific type of domain, and an Agentic Oracle is an autonomous AI agent that can be configured to perform specific **P-Functions**—capability classes that are named with *P* for easier grouping. Expand a class below to see examples.
+
+<AccordionGroup>
+  <Accordion title="Prediction and perception">
+    - Predicting outcomes
+    - Pattern recognition
+    - Providing data analysis and insights
+    - Personalizing recommendations
+    - Pathfinding
+    - Performance monitoring
+  </Accordion>
+
+  <Accordion title="Prescription and planning">
+    - Prescribing actions
+    - Planning and coordinating actions
+    - Process optimisation
+  </Accordion>
+
+  <Accordion title="Proving and protocol conformance">
+    - Proving and verifying claims
+    - Protocol adherence
+  </Accordion>
+
+  <Accordion title="Protection and risk">
+    - Preventing risks and protecting assets
+    - Privacy protection
+    - Preventing and mitigating operational risk
+  </Accordion>
+
+  <Accordion title="Participation">
+    - Participating in governance
+    - Participation of people and organisations
+  </Accordion>
+
+  <Accordion title="Payments and portfolio">
+    - Payment automation
+    - Portfolio management
+  </Accordion>
+
+  <Accordion title="Policy and compliance">
+    - Policy enforcement
+    - Providing compliance and reporting
+  </Accordion>
+
+  <Accordion title="Problem identification and resolution">
+    - Problem detection and resolution
+  </Accordion>
+</AccordionGroup>
 
 ### Instantiating Protocols  
 When developers create an entity from a protocol "class," it inherits the protocol's default configurations. These inherited settings can be forked and updated to fit the specific use case, promoting:  
@@ -97,5 +145,11 @@ A protocol designed for clean cooking initiatives can include:
 
 ## Go here next
 
-- Use `/guides/dev/ixo-domains` to build and configure domains.
-- Use `/ixo-stack/sdks/intro-sdks` to choose SDK surfaces.
+<CardGroup cols={2}>
+  <Card title="Entity domains" icon="diagram-project" href="/guides/dev/ixo-domains">
+    Build and configure digital domains for entities on the IXO Stack.
+  </Card>
+  <Card title="IXO Stack SDKs" icon="code" href="/sdk-reference/index">
+    Choose SDK surfaces and package-level paths for your application.
+  </Card>
+</CardGroup>

@@ -33,7 +33,7 @@ function aliasScanPattern(alias) {
   if (alias === "Multiclient SDK") {
     return new RegExp(`(?<!\\b[Ww]eb\\s)\\b${escaped}\\b`, "g");
   }
-  // Do not flag the suffix of `Agentic Oracles SDK`.
+  // Do not flag the suffix of `Agentic Oracles ADK` (phrase is `Oracles SDK` without the Agentic prefix).
   if (alias === "Oracles SDK") {
     return new RegExp(`(?<!\\b[Aa]gentic\\s)\\b${escaped}\\b`, "g");
   }
@@ -41,10 +41,25 @@ function aliasScanPattern(alias) {
   if (alias === "Forge") {
     return new RegExp(`(?<!\\bqi\\s)\\b${escaped}\\b`, "gi");
   }
-  // Standalone `ADK` is deprecated (Qi Forge); `Personal Agent ADK` is canonical for `@ixo/assistant-sdk`.
+  // Standalone `ADK` is deprecated. Allowed forms: `Personal Agent ADK`, `Agentic Oracles ADK`, `Qi Forge ADK`.
   // Case-sensitive: slugs like `oracle-adk` must not match.
   if (alias === "ADK") {
-    return new RegExp(`(?<!\\b[Pp]ersonal\\s+[Aa]gent\\s)\\b${escaped}\\b`, "g");
+    return new RegExp(
+      `(?<!\\b[Pp]ersonal\\s+[Aa]gent\\s)(?<!\\b[Aa]gentic\\s+[Oo]racles\\s)(?<!\\b[Qq]i\\s+[Ff]orge\\s)\\b${escaped}\\b`,
+      "g"
+    );
+  }
+  // Case-insensitive multi-word phrases (titles, descriptions).
+  const caseInsensitivePhrases = new Set([
+    "Spatial Web Stack",
+    "IXO Spatial Web Stack",
+    "Spatial Web SDKs",
+    "IXO Spatial Web SDKs",
+    "Spatial Web Multiclient SDK",
+    "IXO Spatial Web Multiclient SDK",
+  ]);
+  if (caseInsensitivePhrases.has(alias)) {
+    return new RegExp(`\\b${escaped}\\b`, "gi");
   }
   return new RegExp(`\\b${escaped}\\b`, "g");
 }
@@ -227,23 +242,38 @@ if (bannedAliases.length === 0) {
 }
 
 const mdxFiles = collectMdxFiles(repoRoot);
+const configTextFiles = [path.join(repoRoot, "docs.json")];
+/** Legacy redirect sources in docs.json may keep old slug strings; do not flag those. */
+const docsJsonSlugExceptions = new Set(["spatial-web-sdks"]);
+
 const failures = [];
 
-for (const filePath of mdxFiles) {
-  const text = readFileSafe(filePath);
-  if (!text) continue;
-
+function scanTextForBannedAliases(relPath, text) {
   for (const term of bannedAliases) {
+    if (relPath === "docs.json" && docsJsonSlugExceptions.has(term.alias)) {
+      continue;
+    }
     const pattern = aliasScanPattern(term.alias);
     if (pattern.test(text)) {
-      const rel = path.relative(repoRoot, filePath);
       failures.push({
-        file: rel,
+        file: relPath,
         alias: term.alias,
         replaceWith: term.replaceWith,
       });
     }
   }
+}
+
+for (const filePath of mdxFiles) {
+  const text = readFileSafe(filePath);
+  if (!text) continue;
+  scanTextForBannedAliases(path.relative(repoRoot, filePath), text);
+}
+
+for (const filePath of configTextFiles) {
+  const text = readFileSafe(filePath);
+  if (!text) continue;
+  scanTextForBannedAliases(path.relative(repoRoot, filePath), text);
 }
 
 if (failures.length > 0) {

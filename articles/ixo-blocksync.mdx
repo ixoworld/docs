@@ -1,24 +1,21 @@
 ---
 title: "IXO Blocksync"
 icon: "magnifying-glass"
-description: "Conceptual overview of IXO Blocksync as the indexed query layer for IXO Protocol data."
+description: "Conceptual overview of IXO Blocksync as the indexed graph query layer for IXO Protocol data."
 ---
 
 <Tip>
-IXO Blocksync is the indexed query layer for IXO Protocol data. This article explains why it exists and how it fits in the architecture.
+IXO Blocksync is the indexed graph query layer for IXO Protocol data. This article explains why it exists and how it fits in the architecture.
 </Tip>
 
 ## What IXO Blocksync does
 
 <CardGroup>
-  <Card title="Indexes protocol events" icon="bolt">
+  <Card title="Indexes protocol events and state changes" icon="bolt">
     Transforms protocol events and state changes into query-ready structures.
   </Card>
   <Card title="Serves query workloads" icon="code">
-    Supports application workloads that need fast filtered access to historical and relational data.
-  </Card>
-  <Card title="Supports auditability" icon="clock">
-    Preserves traceability from indexed views back to protocol-level history.
+    Supports application workloads that need fast filtered access to historical and relational data from the protocol.
   </Card>
 </CardGroup>
 
@@ -26,13 +23,10 @@ IXO Blocksync is the indexed query layer for IXO Protocol data. This article exp
 
 <AccordionGroup>
   <Accordion title="Protocol and app boundary" icon="layer-group">
-    IXO Protocol owns transaction and state truth. IXO Blocksync provides the read-optimized access layer for applications and analytics.
+    IXO Protocol owns transaction and state truth. IXO Blocksync provides the read-optimized graph query layer for applications and analytics.
   </Accordion>
   <Accordion title="Typical consumers" icon="users">
-    Explorer views, dashboards, automation services, and operational tools use Blocksync for query-heavy workloads.
-  </Accordion>
-  <Accordion title="Data model perspective" icon="database">
-    Entity relationships, claims, and verification trails become easier to query without changing protocol-level ownership.
+    Explorer views, dashboards, automation services, and operational tools use Blocksync for graph query-heavy workloads.
   </Accordion>
 </AccordionGroup>
 

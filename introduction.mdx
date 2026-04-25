@@ -1,53 +1,142 @@
 ---
-title: Act on reality
+title: "Act on Reality"
 icon: "earth-africa"
-description: "Start here to understand IXO concepts and choose the right docs path."
+description: "Turn your intent into verifiable outcomes, through intelligent cooperation."
 ---
 
-<Tip>
-IXO helps you model real-world systems as cognitive digital twins, coordinate participants, verify outcomes, and automate actions across shared infrastructure.
-</Tip>
+AI agents can plan, reason, and call tools. But real-world work doesn't just need more capable agents, it needs **shared reality** and a source of truth across these dimensions:
 
-<Frame>
-  <img src="/images/ixoworld.png" alt="IXO ecosystem map showing connected products and infrastructure" />
-</Frame>
+<AccordionGroup>
+  <Accordion title="Intent" icon="bullseye">
+    **Why we are doing it**—**verifiable intent** so people, programs, and agents align on purpose and success criteria, not only on tasks or outputs.
+  </Accordion>
 
-## What IXO includes
+  <Accordion title="Identity" icon="fingerprint">
+    **Who is involved**—identities and **roles**: who can represent an organization, a device, a service, or an agent in the system, and how that is established and delegated.
+  </Accordion>
 
-<CardGroup>
-  <Card title="IXO Protocol" href="/protocols/ixo-protocol">
-    Verifiable on-chain identity, claims, and tokenized coordination primitives.
-  </Card>
-  <Card title="IXO Matrix" href="/articles/ixo-matrix">
-    Secure data rooms and messaging for collaboration around digital twins.
-  </Card>
-  <Card title="IXO Blocksync" href="/articles/ixo-blocksync">
-    Indexed blockchain data access for query-heavy applications.
-  </Card>
-  <Card title="Agentic Oracles" href="/articles/ixo-oracles">
-    AI-assisted verification and automation services for real-world workflows.
-  </Card>
-</CardGroup>
+  <Accordion title="Claims" icon="file-signature">
+    **What is being asserted**—**claims** and the **protocols** that supply rubrics, rules, standards, and outcome definitions so assertions can be reviewed against something explicit.
+  </Accordion>
 
-## Choose your path
+  <Accordion title="Evidence" icon="file-shield">
+    **What backs the claim**—documents, measurements, observations, attestations, media, reports, sensor data, or external records, linked so reviewers and automation can inspect the same material.
+  </Accordion>
+
+  <Accordion title="Governance" icon="scale-balanced">
+    **Who has authority to act**—**credentials**, **capabilities**, and **permissions** that determine who may submit, attest, dispute, pay, publish, or change state on behalf of whom.
+  </Accordion>
+
+  <Accordion title="Verification" icon="badge-check">
+    **Whether a result holds**—decisions, impacts, and approvals: what was reviewed, by whom, under which rules, and what was accepted, rejected, or sent back for more evidence.
+  </Accordion>
+
+  <Accordion title="Transactions" icon="receipt">
+    **What changed**—**transactions**, **state transitions**, and **immutable logs** so “what happened” is inspectable over time, not only the latest screen in an app.
+  </Accordion>
+
+  <Accordion title="Outcomes" icon="award">
+    **What was achieved**—**verifiable outcomes** tied to evidence and decisions: the record of what the system treats as true after review, suitable for reporting, funding, or compliance.
+  </Accordion>
+
+  <Accordion title="Economy" icon="coins">
+    **How value moves**—**financing**, **generation and circulation of assets**, and **value flows** (payments, rewards, fees, reserves, settlement) that can be anchored to verified outcomes and governed rules, not only offline agreements.
+  </Accordion>
+
+  <Accordion title="Cooperation" icon="people-arrows">
+    **What should happen next**—**cooperative workflows** that route the right actor, human or agent, to the next step using shared context and governed handoffs—not ad hoc chat threads.
+  </Accordion>
+</AccordionGroup>
+
+**IXO with Qi** provides the operating systems for acting on reality, for you and your organization to make positive impacts on the world, and for you to benefit from the intelligence economy.
+
+## What makes this different
+
+Most agent platforms automate tasks inside existing systems. We are here to build programmable organizations and workflows where agents, people, organizations, evidence, value, and outcomes operate within secure workspaces and act on verifiable state, to turn your intent into verifiable outcomes through intelligent cooperation.
+
+**IXO is the trust layer** that creates a verifiable graph of the state of real-world entities, with identities, claims, credentials, evidence, transactions, and verifiable outcomes. It is the foundation for the stack.
+
+**Qi is the intelligent cooperating system** that empowers humans, AI agents, applications, and services to cooperate over that graph through secure context, declared tools, governed workflows, and inspectable state changes. 
+
+Together, they let you build systems where real-world work can be understood, verified, coordinated, settled, and improved.
 
 <CardGroup cols={2}>
-  <Card title="Understand the architecture" icon="lightbulb-exclamation-on" href="/core-concepts">
-    Read the conceptual model before implementing.
+  <Card title="Shared state, not siloed context" icon="circle-nodes" href="/articles/ixo-graph">
+    Model people, organizations, assets, claims, evidence, credentials, transactions, and outcomes as connected graph state.
   </Card>
-  <Card title="Build with guides" icon="hand-pointer" href="/guides/dev/overview">
-    Follow task-oriented implementation guides.
+
+  <Card title="Verification, not blind automation" icon="badge-check" href="/protocols/ixo-protocol">
+    Link claims to evidence, credentials, attestations, authority, and protocol-defined state changes.
   </Card>
-  <Card title="Use SDKs" icon="code" href="/ixo-stack/sdks/intro-sdks">
-    Start from SDK overviews and package-specific references.
+
+  <Card title="Cooperation, not isolated agents" icon="superpowers" href="/articles/qi-intelligent-cooperating-system">
+    Coordinate humans, agents, applications, and services through shared context and governed workflows.
   </Card>
-  <Card title="Browse API reference" icon="book" href="/api-docs/introduction">
-    Check canonical endpoints and request/response details.
+
+  <Card title="Outcomes, not just activity logs" icon="bullseye" href="/guides/digital-mrv">
+    Connect measurements, verification, funding, governance, and learning to real-world results.
   </Card>
 </CardGroup>
 
-## Next steps
+## How it works
 
-- Read `/core-concepts` for the system vocabulary and architecture model.
-- Use `/guides/dev/overview` to complete your first implementation workflow.
-- Open `/api-docs/introduction` when you need exact interface details.
+Let's look at a verified claims workflow to see how IXO and Qi are different from ordinary agent tooling.
+
+<Steps>
+  <Step title="A participant submits a claim">
+    An implementer, organization, device, service, or agent submits a claim about work completed, evidence collected, eligibility, delivery, compliance, performance, or impact.
+  </Step>
+
+  <Step title="Evidence is linked">
+    Documents, measurements, observations, attestations, reasoning traces, media, reports, sensor data, or external records are attached to the claim.
+  </Step>
+
+  <Step title="Authority is checked">
+    The workflow verifies who submitted the claim, which domain or entity they represent, the credentials or permissions that allowed them to act, and which capabilities were invoked.
+  </Step>
+
+  <Step title="Agents support review">
+    Agentic Oracles, overseen by human operators, inspect evidence, check program rules, flag risks, summarize context, generate decision and impact determinations, then recommend next actions.
+  </Step>
+
+  <Step title="Humans and services coordinate">
+    Reviewers, verifiers, funders, operators, services, and agents work through secure rooms and messages, to coordinate actions, use tools, and implement cooperative workflows.
+  </Step>
+
+  <Step title="State changes are recorded">
+    Accepted claims, attestations, transactions, outcomes, payments, governance actions, or next workflow states emit decision and impact determinations as immutable, auditable records with provenance.
+  </Step>
+
+  <Step title="The system learns">
+    Verified outcomes feed analytics, agent evaluation, decision support, program design, and future workflow improvement, through automated learning loops.
+  </Step>
+</Steps>
+
+The core pattern is that agents do not invent facts or act on disconnected prompts. **Humans and agents cooperate over shared state** to produce changes that others can inspect, rely on, and build on. **Qi** is the intelligent cooperation layer that makes this possible.
+
+## What you can build
+
+The workflow above is one **verified-claims-shaped** slice of the stack. Everything else—**PODs, Flows, Blueprints, Agentic Oracles, assets, markets**, recurring **program shapes** (MRV, outcome-linked financing, secure cooperation rooms, learning loops), and production checklists—lives in one place so this introduction does not go stale next to the guides.
+
+<CardGroup cols={2}>
+  <Card title="What you can build" icon="rocket" href="/guides/what-you-can-build">
+    Pick a first build, see how the pieces fit together, and open program-shape accordions with stack detail and **Start here** links into hands-on guides.
+  </Card>
+
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Shared vocabulary for domains, claims, evidence, state, cooperation, and how IXO and Qi split responsibility.
+  </Card>
+</CardGroup>
+
+## This is just the beginning. 
+<AccordionGroup>
+  <Accordion title="Start from your current reality">
+    Turn your intent into a programmable organizational domain (POD) with a shared workspace, configured flows for your team and AI agents, and economic mechanisms.
+  </Accordion>
+  <Accordion title="Automate work and improve outcomes">
+    Automate work, elevate productivity, earn financial rewards, and drive positive impact with verifiable records of outcomes.
+  </Accordion>
+  <Accordion title="Keep ownership of your data and intelligence">
+    The data, memories, and intelligence you generate remain yours to own and control. You can sell, rent, or trade it as you choose.
+  </Accordion>
+</AccordionGroup>

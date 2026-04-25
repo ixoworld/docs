@@ -1,5 +1,11 @@
 # Content inventory evidence map
 
+## Doc hub register (manual)
+
+- **`/guides/what-you-can-build`** — Path 1 workflow hub (outcome-first); in `docs.json` **Get Started** immediately after `introduction`.
+- **Market-facing `title` in frontmatter vs canonical names:** `articles/qi-intelligent-cooperating-system.mdx` page title **Qi: cooperation on verified workflows**; first-body mention still **Qi Intelligent Cooperating System**. `articles/ixo-graph.mdx` uses **IXO Graph: the shared map of verified reality** as the page title; canonical surface remains **IXO Graph**. `protocols/ixo-protocol.mdx` uses an extended trust-first title; canonical remains **IXO Protocol**.
+- **`articles/intro-articles.mdx`** — Hub title set to **Articles**; describes Path 1 vs Path 2 reading order.
+
 ## Scope and method
 
 - Inventory source: filesystem scan of all `*.mdx` files.
@@ -81,7 +87,7 @@
 /guides/dev/overview
 /guides/dev/session-keys
 /guides/dev/smart-accounts
-/guides/dev/spatial-web-sdks
+/guides/dev/ixo-stack-sdks
 /guides/dev/tokens
 /guides/digital-certification
 /guides/digital-mrv
@@ -167,7 +173,7 @@
 /core-concepts
 /articles/ixo-protocol
 /guides/hands-on
-/guides/dev/spatial-web-sdks
+/guides/dev/ixo-stack-sdks
 /guides/dev/domain-settings
 /guides/digital-twins
 /guides/domain-registration

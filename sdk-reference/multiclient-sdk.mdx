@@ -1,34 +1,20 @@
 ---
 title: IXO MultiClient SDK
 icon: server
-description: A comprehensive toolkit for interacting with the IXO blockchain and its core modules
+description: A comprehensive toolkit for building custom client applications on the IXO Stack
 ---
 
 <Tip>
-The IXO MultiClient SDK provides a comprehensive set of tools for interacting with the IXO blockchain. It offers test helper functions and modules for managing various aspects of the blockchain, including authorization, bonds, claims, entities, liquid staking, smart accounts, and token operations.
+The IXO MultiClient SDK enables you to build custom client applications on the IXO Stack. It abstracts away the complexity of interacting with the blockchain and related services.
 </Tip>
 
-<AccordionGroup>
-  <Accordion title="Authz Module" icon="shield">
-    Handles authorization and permission management on the blockchain.
-
+  <Accordion title="Interchain Identifiers Module" icon="fingerprint">
+    Provides a trusted public registry for the `did:ixo:` namespace and related domain records
     <CardGroup>
       <Card title="Features" icon="list">
-        - **Authorization Grants**: Manage send and fee allowances
-        - **IBC Operations**: Execute cross-chain transactions
-        - **Permission Control**: Grant and revoke access rights
-      </Card>
-    </CardGroup>
-  </Accordion>
-
-  <Accordion title="Bond Module" icon="link">
-    Manages bond creation, trading, and lifecycle operations.
-
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - **Bond Management**: Create and edit bonds
-        - **Trading Operations**: Buy and sell bond tokens
-        - **State Control**: Update bond states and parameters
+        - **DID Registry**: CRUD operations for DID documents
+        - **Domain Settings**: Services, resources, rights, claims, relationships
+        - **Controllers**: Public keys and verification methods
       </Card>
     </CardGroup>
   </Accordion>
@@ -45,19 +31,56 @@ The IXO MultiClient SDK provides a comprehensive set of tools for interacting wi
     </CardGroup>
   </Accordion>
 
-  <Accordion title="Entity Module" icon="building">
-    Manages entity creation, transfer, and account operations.
+<Accordion title="Tokens Module" icon="coins">
+    Handles token creation, transfer, and lifecycle management.
 
     <CardGroup>
       <Card title="Features" icon="list">
-        - **Entity Management**: Create and transfer entities
-        - **Account Control**: Manage entity accounts
-        - **Verification**: Handle entity verification status
+        - **Token Operations**: Create, mint, and transfer tokens
+        - **Credit Management**: Handle credit transfers
+        - **Contract Control**: Manage token contracts
       </Card>
     </CardGroup>
   </Accordion>
 
-  <Accordion title="LiquidStake Module" icon="lock">
+<AccordionGroup>
+  <Accordion title="Authz Module" icon="shield">
+    Handles authorization and permission management on the blockchain.
+
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Authorization Grants**: Manage send and fee allowances
+        - **IBC Operations**: Execute cross-chain transactions
+        - **Permission Control**: Grant and revoke access rights
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+      <Accordion title="Smart Contracts Module" icon="code">
+    Runs smart contracts on the IXO blockchain.
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Governance-gated**: Curate smart contracts
+        - **CosmWasm enabled**: Execute smart contracts
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Bonds Module" icon="line-chart">
+    Manages bond creation, algorithmic pricing,trading, and payout execution.
+
+    <CardGroup>
+      <Card title="Features" icon="list">
+        - **Bond Management**: Create and manage algorithmic bonds
+        - **Automated Issuance**: Mint and burn bond tokens
+        - **Algorithmic Pricing**: Bonding curves and risk-adjusted (Alpha) bonds
+        - **Outcome Payments**: Settlement of outcome payments
+        - **Reserve Withdrawals**: Withdraw funds from the bond's reserve
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Liquid Staking Module" icon="lock">
     Handles liquid staking operations and validator management.
 
     <CardGroup>
@@ -69,7 +92,7 @@ The IXO MultiClient SDK provides a comprehensive set of tools for interacting wi
     </CardGroup>
   </Accordion>
 
-  <Accordion title="Smartaccount Module" icon="user-shield">
+  <Accordion title="Smart Accounts Module" icon="user-shield">
     Manages smart account authentication and operations.
 
     <CardGroup>
@@ -80,17 +103,6 @@ The IXO MultiClient SDK provides a comprehensive set of tools for interacting wi
     </CardGroup>
   </Accordion>
 
-  <Accordion title="Token Module" icon="coins">
-    Handles token creation, transfer, and lifecycle management.
-
-    <CardGroup>
-      <Card title="Features" icon="list">
-        - **Token Operations**: Create, mint, and transfer tokens
-        - **Credit Management**: Handle credit transfers
-        - **Contract Control**: Manage token contracts
-      </Card>
-    </CardGroup>
-  </Accordion>
 </AccordionGroup>
 
 ## Common Patterns
@@ -102,15 +114,6 @@ The SDK follows consistent patterns for blockchain interactions:
 3. Construct message with appropriate type URL
 4. Sign and broadcast transaction
 5. Return response
-
-## Dependencies
-
-The SDK relies on several key dependencies:
-- Cosmos SDK
-- IXO blockchain modules
-- Long
-- base58
-- Various crypto and encoding utilities
 
 <Tip type="info">
 For detailed API documentation and examples, refer to the [IXO MultiClient SDK module reference](https://github.com/ixofoundation/ixo-multiclient-sdk).

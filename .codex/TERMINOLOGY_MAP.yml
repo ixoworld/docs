@@ -14,6 +14,7 @@ terms:
       - ImpactX Client
       - ImpactX Client SDK
       - IXO Spatial Web Multiclient SDK
+      - Spatial Web Multiclient SDK
       - Multiclient SDK
       - Impacts Client SDK
 
@@ -27,15 +28,16 @@ terms:
       - IXO Matrix SDK
       - Matrix Client
 
-  - canonical: Agentic Oracles SDK
+  - canonical: Agentic Oracles ADK
     type: sdk
-    first_mention: "Agentic Oracles SDK (`@ixo/oracle-agent-sdk`)"
+    first_mention: "Agentic Oracles ADK (`@ixo/oracle-agent-sdk`)"
     package: "@ixo/oracle-agent-sdk"
-    allowed_short_forms: [Agentic Oracles SDK]
+    allowed_short_forms:
+      - Agentic Oracles ADK
     deprecated_aliases:
       - Oracles SDK
       - Oracle SDK
-      - Agentic Oracles ADK
+      - Agentic Oracles SDK
 
   - canonical: Personal Agent ADK
     type: sdk
@@ -67,14 +69,18 @@ terms:
       - JAMBO dApp
       - JAMBO PWA
 
+  - canonical: Qi Forge ADK
+    type: kit
+    first_mention: "Qi Forge ADK (Qi Forge CLI and the no-code Agentic Oracle-builder Skill)"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Qi ADK
+
   - canonical: Qi Forge CLI
     type: cli
     first_mention: "Qi Forge CLI"
     allowed_short_forms: [Qi Forge]
     deprecated_aliases:
-      - Qi Forge ADK
-      - ADK
-      - Qi ADK
       - Qi CLI
 
   - canonical: IXO Protocol
@@ -148,6 +154,22 @@ terms:
     allowed_short_forms:
       - SignX
     deprecated_aliases: []
+
+  - canonical: IXO Stack
+    type: stack
+    first_mention: "IXO Stack"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Spatial Web Stack
+      - IXO Spatial Web Stack
+
+  - canonical: IXO Stack SDKs
+    type: sdk-set
+    first_mention: "IXO Stack SDKs"
+    allowed_short_forms: []
+    deprecated_aliases:
+      - Spatial Web SDKs
+      - IXO Spatial Web SDKs
 
   - canonical: Qi Intelligent Cooperating System
     type: system
@@ -251,10 +273,8 @@ banned_aliases:
     replace_with: "IXO MultiClient SDK"
   - alias: "IXO Matrix SDK"
     replace_with: "IXO Matrix Client SDK"
-  - alias: "Agentic Oracles ADK"
-    replace_with: "Agentic Oracles SDK"
-  - alias: "Qi Forge ADK"
-    replace_with: "Qi Forge CLI"
+  - alias: "Agentic Oracles SDK"
+    replace_with: "Agentic Oracles ADK"
   - alias: "Model Context Protocols"
     replace_with: "Model Context Protocol (MCP)"
   - alias: "Model Context Protocols (MCPs)"
@@ -265,6 +285,8 @@ banned_aliases:
     replace_with: "Personal Agent MCP Server"
   - alias: "Oracle MCP"
     replace_with: "Agentic Oracles MCP Server"
+  - alias: "spatial-web-sdks"
+    replace_with: "ixo-stack-sdks"
 
 glossary:
   - term: DID
@@ -273,6 +295,8 @@ glossary:
     expansion: Digital measurement, reporting, and verification
   - term: POD
     expansion: Programmable Organisational Domain
+  - term: DeHAN
+    expansion: Decentralised Human Agent Network
   - term: Agent
     expansion: Agentic Oracle
   - term: UCAN
