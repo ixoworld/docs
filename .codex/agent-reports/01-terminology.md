@@ -17,7 +17,7 @@ Make the naming system enforceable before public content rewrites.
 
 - Normalized `Agentic Oracles ADK` -> `Agentic Oracles SDK` (historical note; public docs name is again **Agentic Oracles ADK** for `@ixo/oracle-agent-sdk`).
 - **Qi Forge ADK** is the umbrella canonical name (Qi Forge CLI + no-code Agentic Oracle-builder Skill); **Qi Forge CLI** names the CLI surface only.
-- Normalized `JAMBO PWA` SDK entry -> `JAMBO Wallet SDK` with exact package literal.
+- Normalized JAMBO SDK naming to `JAMBO PWA SDK` with exact package literal.
 - Corrected MCP server naming entry: `Assistant MCP` now maps to canonical `Personal Agent MCP Server`.
 - Added explicit "canonical names by repo surface" mapping for SDK, MCP, and Emerging platform/solution surfaces.
 

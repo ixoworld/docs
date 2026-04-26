@@ -44,6 +44,13 @@ This is a service API for IXO Matrix workflows. It is separate from IXO Protocol
   </Card>
 </CardGroup>
 
+## Troubleshooting
+
+- **`403` / ACL denied** — Bot token lacks power level or room membership; verify room ID, bot user ID, and ACL event content.
+- **State event rejected** — Invalid `state_key`, oversized `content`, or conflicting types; compare with working examples in [IXO Matrix](/articles/ixo-matrix).
+- **Wrong homeserver** — Matrix is federation-aware; confirm `baseUrl` and user IDs match the deployment in [Networks and endpoints](/reference/networks-and-endpoints).
+- **Rate limits** — Back off and batch state updates; see [Error handling](/api-reference/errors) for generic HTTP retry guidance.
+
 ## Related references
 
 <CardGroup cols={2}>

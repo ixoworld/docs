@@ -11,9 +11,53 @@ The IXO Software Development Kits and Qi tooling fast-track building custom appl
 **Qi Forge ADK** is the umbrella for building Agentic Oracles without treating code as the only path: it includes the **Qi Forge CLI** and a **no-code Agentic Oracle-builder Skill** (configure and ship oracle workflows from skills rather than only from TypeScript).
 </Tip>
 
-## Overview
+## Choose the right SDK or kit for your integration outcome
 
-This document introduces developers to the different SDKs provided by IXO. It aims to help developers understand the functionality of each SDK, their use cases, and how they can leverage these tools to build blockchain-based solutions that contribute to social, environmental, and economic impacts.
+<AccordionGroup>
+  <Accordion title="Build app-level blockchain and protocol workflows" icon="server">
+    Use **IXO MultiClient SDK**.
+
+    Route: `/sdk-reference/multiclient-sdk`
+  </Accordion>
+  <Accordion title="Add secure user auth and transaction signing" icon="key">
+    Use **SignX SDK**.
+
+    Route: `/sdk-reference/signx-sdk`
+  </Accordion>
+  <Accordion title="Integrate Matrix messaging and room state in clients" icon="message">
+    Use **Matrix Client SDK**.
+
+    Route: `/sdk-reference/matrix-client-sdk`
+  </Accordion>
+  <Accordion title="Build a React oracle interface (chat, sessions, tools, payments)" icon="comments">
+    Use **Oracles Client SDK**.
+
+    Route: `/sdk-reference/oracles-client-sdk`
+  </Accordion>
+  <Accordion title="Scaffold and deploy oracle services into the network" icon="sparkles">
+    Use **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`).
+
+    Route: `/sdk-reference/agentic-oracles-adk`
+  </Accordion>
+  <Accordion title="Build personal conversational agent integrations" icon="user-astronaut">
+    Use **Personal Agent ADK** (`@ixo/assistant-sdk`).
+
+    Route: `/sdk-reference/oracle-adk`
+  </Accordion>
+  <Accordion title="Integrate JAMBO PWA capabilities" icon="wallet">
+    Use **JAMBO PWA SDK**.
+
+    Route: `/sdk-reference/jambo-wallet-sdk`
+  </Accordion>
+</AccordionGroup>
+
+## Qi Forge and Agentic Oracles
+
+**Qi Forge ADK** is the broader product surface for Agentic Oracles (CLI + no-code builder skill + code paths).  
+**Agentic Oracles ADK** is the TypeScript package (`@ixo/oracle-agent-sdk`) for scaffolding, implementing, and deploying oracle services into the network.  
+**Oracles Client SDK** is the frontend agent-client interface used by applications that connect users to deployed oracles.
+
+## SDK reference
 
 <AccordionGroup>
   <Accordion title="IXO MultiClient SDK" icon="server">
@@ -22,6 +66,9 @@ This document introduces developers to the different SDKs provided by IXO. It ai
     <CardGroup>
       <Card title="Documentation" href="/sdk-reference/multiclient-sdk" icon="book">
         Learn how to use the IXO MultiClient SDK
+      </Card>
+      <Card title="Developer workflows" href="/guides/dev/workflows" icon="diagram-project">
+        End-to-end patterns for client, entities, claims, and evaluation
       </Card>
       <Card title="GitHub" href="https://github.com/ixofoundation/ixo-multiclient-sdk" icon="github">
         View the source code
@@ -56,7 +103,7 @@ This document introduces developers to the different SDKs provided by IXO. It ai
   </Accordion>
 
   <Accordion title="Qi Forge ADK and Agentic Oracles ADK" icon="sparkles">
-    **Qi Forge ADK** covers the **Qi Forge CLI** plus the **no-code Agentic Oracle-builder Skill**. For the TypeScript package that implements oracle and agent services in code, use the **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`) reference.
+    **Qi Forge ADK** covers the **Qi Forge CLI** plus the **no-code Agentic Oracle-builder Skill**. For the TypeScript package used to scaffold, implement, and deploy oracle services into the network, use the **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`) reference.
 
     <CardGroup>
       <Card title="Agentic Oracles ADK (`@ixo/oracle-agent-sdk`)" href="/sdk-reference/agentic-oracles-adk" icon="book">
@@ -67,19 +114,62 @@ This document introduces developers to the different SDKs provided by IXO. It ai
       </Card>
     </CardGroup>
   </Accordion>
+
+  <Accordion title="Oracles Client SDK" icon="comments">
+    Frontend agent-client SDK for connecting user-facing React applications to deployed Agentic Oracles.
+
+    <CardGroup>
+      <Card title="Documentation" href="/sdk-reference/oracles-client-sdk" icon="book">
+        Build the client interface for chat, sessions, tools, and payment-required handling
+      </Card>
+      <Card title="Agentic Oracles ADK" href="/sdk-reference/agentic-oracles-adk" icon="sparkles">
+        Build and deploy the oracle service itself
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="Personal Agent ADK" icon="user-astronaut">
+    SDK for personal conversational assistant integrations, separate from service-side oracle deployment.
+
+    <CardGroup>
+      <Card title="Documentation" href="/sdk-reference/oracle-adk" icon="book">
+        Build personal agent and assistant experiences
+      </Card>
+      <Card title="Agentic Oracles ADK" href="/sdk-reference/agentic-oracles-adk" icon="sparkles">
+        Build deployable oracle services instead of personal assistants
+      </Card>
+    </CardGroup>
+  </Accordion>
+
+  <Accordion title="JAMBO PWA SDK" icon="wallet">
+    SDK for JAMBO PWA integrations, including wallet-enabled mobile web experiences.
+
+    <CardGroup>
+      <Card title="Documentation" href="/sdk-reference/jambo-wallet-sdk" icon="book">
+        Integrate JAMBO PWA workflows and wallet-enabled user capabilities
+      </Card>
+      <Card title="Developer workflows" href="/guides/dev/workflows" icon="diagram-project">
+        Combine wallet and protocol workflows in app integrations
+      </Card>
+    </CardGroup>
+  </Accordion>
 </AccordionGroup>
 
-## Benefits
+## Recommended integration paths
 
-These SDKs provide the foundational tools needed for developers to build powerful digitally-enabled coordination, financing, verification, governance, and data-driven intelligence applications.
+- **Application + protocol path**: MultiClient SDK + SignX SDK (+ Matrix Client SDK if your app uses rooms or encrypted messaging)
+- **Agentic oracle path (service-side)**: Qi Forge ADK + Agentic Oracles ADK (+ MultiClient SDK for protocol/state interactions)
+- **Agentic oracle path (client-side)**: Oracles Client SDK + SignX SDK (+ Matrix Client SDK where messaging integration is required)
+- **Assistant path**: Personal Agent ADK for personal assistants, not for deployable oracle services
 
-- **Streamlining Development**: The SDKs abstract complex blockchain interactions, allowing developers to focus more on application features rather than blockchain-specific code.
-- **Ensuring Security**: Tools like SignX and the DID Provider SDK ensure that security and identity management are core aspects of the development process.
-- **Facilitating Integration**: The SDKs make it easier for developers to integrate the blockchain features, manage identities, and ensure smooth communication within the IXO ecosystem.
+## Next steps
 
-<CardGroup>
+<CardGroup cols={2}>
   <Card title="Getting Started" href="/guides/dev/introduction" icon="rocket">
     Start building with our developer guides
+  </Card>
+  <Card title="SDK workflows" href="/guides/dev/workflows" icon="diagram-project">
+    Follow end-to-end implementation patterns
   </Card>
   <Card title="API Reference" href="/api-reference/index" icon="code">
     Explore our API documentation

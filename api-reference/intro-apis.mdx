@@ -3,17 +3,77 @@ title: Introduction
 description: How to choose between IXO Protocol APIs and IXO service APIs.
 ---
 
-Use this page to select the right API family before implementation.
+Use this page to select the right **API surface** before implementation.
 
-## API families
+## Vocabulary
 
-- IXO Protocol gateways
-  - `/api-reference/rpc-api`
-  - `/api-reference/grpc-gateway-api`
-- IXO service APIs
-  - `/api-reference/blocksync-graphql-api`
-  - `/api-reference/matrix-state-bot-api`
-  - `/api-reference/registry-api`
+- **Protocol gateways** — Node-level interfaces to IXO Protocol modules: submit and query chain state via **JSON-RPC** or **REST over gRPC** (Cosmos stack). You typically need a wallet or signer for writes.
+- **Service APIs** — Operator-hosted interfaces over **indexed chain data**, **Matrix**, **registry workflows**, or **USSD** sessions. Auth and base URLs are **deployment-specific**; never assume one header works everywhere.
+
+## Comparison matrix
+
+<AccordionGroup>
+  <Accordion title="Blockchain RPC API" icon="server">
+    - **Primary purpose:** Transactions, ABCI queries, Tendermint RPC
+    - **Typical operations:** `broadcast_tx_*`, status, block, tx search
+    - **Read / write:** Read + write (tx)
+    - **Auth and endpoints:** [Authentication matrix](/reference/authentication-matrix); [Networks and endpoints](/reference/networks-and-endpoints)
+    - **Docs:** [Blockchain RPC API](/api-reference/rpc-api)
+  </Accordion>
+
+  <Accordion title="Blockchain REST API (gRPC gateway)" icon="cloud">
+    - **Primary purpose:** HTTP/JSON queries (and tx broadcast where exposed)
+    - **Typical operations:** Module REST paths, Swagger/OpenAPI per deployment
+    - **Read / write:** Read; write depends on deployment
+    - **Auth and endpoints:** Same as RPC—confirm with node operator
+    - **Docs:** [REST (gRPC gateway)](/api-reference/grpc-gateway-api)
+  </Accordion>
+
+  <Accordion title="IXO Blocksync GraphQL API" icon="compass">
+    - **Primary purpose:** Indexed queries over chain-derived entities
+    - **Typical operations:** GraphQL queries (subscriptions if enabled)
+    - **Read / write:** **Read-only** in docs model
+    - **Auth and endpoints:** Service operator credentials
+    - **Docs:** [Blocksync GraphQL API](/api-reference/blocksync-graphql-api)
+  </Accordion>
+
+  <Accordion title="Matrix state bot API" icon="snowflake">
+    - **Primary purpose:** Room state, ACLs, automation hooks for Matrix
+    - **Typical operations:** Bot-specific HTTP endpoints
+    - **Read / write:** Read + write (room operations)
+    - **Auth and endpoints:** Service operator credentials
+    - **Docs:** [Matrix state bot API](/api-reference/matrix-state-bot-api)
+  </Accordion>
+
+  <Accordion title="Registry API" icon="database">
+    - **Primary purpose:** Impact Hub Registry application workflows
+    - **Typical operations:** CRUD-style registry operations per spec
+    - **Read / write:** Read + write (per spec)
+    - **Auth and endpoints:** Often Basic or bearer—confirm matrix
+    - **Docs:** [Registry API](/api-reference/registry-api)
+  </Accordion>
+
+  <Accordion title="USSD gateway API" icon="tower-cell">
+    - **Primary purpose:** Telecom session bridge for USSD menus
+    - **Typical operations:** Session request/response
+    - **Read / write:** Write (session replies) + read patterns per spec
+    - **Auth and endpoints:** Service operator policy
+    - **Docs:** [USSD gateway API](/api-reference/ussd-api)
+  </Accordion>
+</AccordionGroup>
+
+For SDK and product naming, see [Product and SDK map](/reference/product-and-sdk-map).
+
+## API families (quick links)
+
+- **IXO Protocol gateways**
+  - [RPC API](/api-reference/rpc-api)
+  - [REST (gRPC gateway)](/api-reference/grpc-gateway-api)
+- **IXO service APIs**
+  - [Blocksync GraphQL](/api-reference/blocksync-graphql-api)
+  - [Matrix state bot](/api-reference/matrix-state-bot-api)
+  - [Registry](/api-reference/registry-api)
+  - [USSD gateway](/api-reference/ussd-api)
 
 ## Authentication and endpoints
 

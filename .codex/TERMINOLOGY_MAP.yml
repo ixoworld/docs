@@ -58,13 +58,12 @@ terms:
       - SignX SDK
     deprecated_aliases: []
 
-  - canonical: JAMBO Wallet SDK
+  - canonical: JAMBO PWA SDK
     type: sdk
-    first_mention: "JAMBO Wallet SDK (`@ixo/jambo-wallet-sdk`)"
+    first_mention: "JAMBO PWA SDK (`@ixo/jambo-wallet-sdk`)"
     package: "@ixo/jambo-wallet-sdk"
-    allowed_short_forms: [JAMBO Wallet SDK]
+    allowed_short_forms: [JAMBO PWA SDK]
     deprecated_aliases:
-      - JAMBO PWA SDK
       - IXO PWA SDK
       - JAMBO dApp
       - JAMBO PWA

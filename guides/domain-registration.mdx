@@ -106,28 +106,29 @@ Each domain requires:
 
 Domains require verification by the platform's governance system:
 
-1. Compliance group member submits verification proposal
+1. A compliance or program representative submits a verification proposal with the entity package.
+2. Eligible voters review and vote (quorum and thresholds depend on deployment).
+3. On approval, domain status moves to **Verified** and downstream services (reporting, issuance) can enable.
 
-2. Members vote on proposal
-
-3. Upon approval, domain status updates to "Verified"
+For a platform-scoped walkthrough (DAO stages, relayer assignment, GraphQL status checks), read [Emerging Platform domain registration](/platforms/Emerging/domain-registration). For how **roles** (Developer, Evaluator, Funder, Service provider) map to these steps, read [Your role](/your-role).
 
 <Tip>
-  Only verified domains can participate in platform activities like carbon credit issuance.
+  Only verified domains can participate in platform activities like carbon credit issuance. Confirm auth and endpoints for your environment in the [Authentication matrix](/reference/authentication-matrix) and [Networks and endpoints](/reference/networks-and-endpoints).
 </Tip>
 
-## Next Steps
+## Next steps
 
 <CardGroup>
-  <Card title="Protocol Templates" icon="book">
-    Browse available protocol templates
+  <Card title="Emerging domain registration" icon="globe" href="/platforms/Emerging/domain-registration">
+    Governance stages, entity JSON, and GraphQL examples
   </Card>
-
-  <Card title="Entity Management" icon="gear">
-    Learn how to update and manage domains
+  <Card title="Digital twins" icon="cube" href="/guides/digital-twins">
+    Model entities, protocols, and relationships
   </Card>
-
-  <Card title="Governance Guide" icon="scale-balanced">
-    Understand the verification process
+  <Card title="Identity and credentials" icon="fingerprint" href="/guides/dev/identity-and-credentials">
+    How DIDs, claims, and verifiable credentials connect
+  </Card>
+  <Card title="DAOs" icon="scale-balanced" href="/articles/daos">
+    How decentralized governance fits IXO programs
   </Card>
 </CardGroup>

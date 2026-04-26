@@ -5,7 +5,7 @@ description: "Canonical mapping between IXO products, SDK docs names, package id
 
 Use this page as the canonical naming and routing map for product and SDK surfaces.
 
-**Positioning (docs hub):** outcome-first entry is [`/introduction`](/introduction) and workflow paths are [`/guides/what-you-can-build`](/guides/what-you-can-build); stack mental model is [`/core-concepts`](/core-concepts).
+**Positioning (docs hub):** outcome-first entry is [`/introduction`](/introduction) and workflow paths are [`/guides/what-you-can-build`](/guides/what-you-can-build); stack mental model is [`/core-concepts`](/core-concepts). Shared vocabulary with links to deep pages lives in the [Glossary](/reference/glossary).
 
 ## Scope
 
@@ -15,31 +15,97 @@ Use this page as the canonical naming and routing map for product and SDK surfac
 
 ## SDK mapping
 
-| Canonical SDK docs name | Package identifier | Primary docs route | Notes |
-|---|---|---|---|
-| IXO MultiClient SDK | `@ixo/impactxclient-sdk` | `/sdk-reference/multiclient-sdk` | Keep docs name canonical even when legacy aliases appear elsewhere. |
-| IXO Matrix Client SDK | `@ixo/matrixclient-sdk` | `/sdk-reference/matrix-client-sdk` | Use full name on first mention. |
-| Agentic Oracles ADK | `@ixo/oracle-agent-sdk` | `/sdk-reference/agentic-oracles-adk` | Conceptual overview: `/articles/ixo-oracles`. |
-| Personal Agent ADK | `@ixo/assistant-sdk` | `/sdk-reference/oracle-adk` | Public docs name for `@ixo/assistant-sdk`; `/sdk-reference/oracle-ai-sdk` redirects here. |
-| IXO SignX SDK | `@ixo/signx-sdk` | `/sdk-reference/signx-sdk` | |
-| JAMBO Wallet SDK | `@ixo/jambo-wallet-sdk` | `/sdk-reference/jambo-wallet-sdk` | |
-| Qi Forge ADK | *(no single npm package)* | `/articles/ixo-oracles`, `/sdk-reference/agentic-oracles-adk` | Umbrella: **Qi Forge CLI** plus the no-code **Agentic Oracle-builder Skill**. Separate from **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`). |
-| Qi Forge CLI | Not yet verified | Route not yet defined | Add package literal only after verification. |
+<AccordionGroup>
+  <Accordion title="IXO MultiClient SDK" icon="server">
+    - **Package identifier:** `@ixo/impactxclient-sdk`
+    - **Primary docs route:** [multiclient-sdk](/sdk-reference/multiclient-sdk)
+    - **Notes:** Keep docs name canonical even when legacy aliases appear elsewhere.
+  </Accordion>
+
+  <Accordion title="IXO Matrix Client SDK" icon="comments">
+    - **Package identifier:** `@ixo/matrixclient-sdk`
+    - **Primary docs route:** [matrix-client-sdk](/sdk-reference/matrix-client-sdk)
+    - **Notes:** Use full name on first mention.
+  </Accordion>
+
+  <Accordion title="Agentic Oracles ADK" icon="sparkles">
+    - **Package identifier:** `@ixo/oracle-agent-sdk`
+    - **Primary docs route:** [agentic-oracles-adk](/sdk-reference/agentic-oracles-adk)
+    - **Notes:** Conceptual overview: [IXO Oracles](/articles/ixo-oracles).
+  </Accordion>
+
+  <Accordion title="Personal Agent ADK" icon="brain">
+    - **Package identifier:** `@ixo/assistant-sdk`
+    - **Primary docs route:** [oracle-adk](/sdk-reference/oracle-adk)
+    - **Notes:** Public docs name for `@ixo/assistant-sdk`; `/sdk-reference/oracle-ai-sdk` redirects here.
+  </Accordion>
+
+  <Accordion title="IXO SignX SDK" icon="key">
+    - **Package identifier:** `@ixo/signx-sdk`
+    - **Primary docs route:** [signx-sdk](/sdk-reference/signx-sdk)
+  </Accordion>
+
+  <Accordion title="JAMBO PWA SDK" icon="wallet">
+    - **Package identifier:** `@ixo/jambo-wallet-sdk`
+    - **Primary docs route:** [jambo-wallet-sdk](/sdk-reference/jambo-wallet-sdk)
+  </Accordion>
+
+  <Accordion title="Qi Forge ADK" icon="wand-magic-sparkles">
+    - **Package identifier:** *(no single npm package)*
+    - **Primary docs routes:** [IXO Oracles](/articles/ixo-oracles), [agentic-oracles-adk](/sdk-reference/agentic-oracles-adk)
+    - **Notes:** Umbrella: **Qi Forge CLI** plus the no-code **Agentic Oracle-builder Skill**. Separate from **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`).
+  </Accordion>
+
+  <Accordion title="Qi Forge CLI" icon="terminal">
+    - **Package identifier:** Not yet verified
+    - **Primary docs route:** Not yet defined
+    - **Notes:** Add package literal only after verification.
+  </Accordion>
+</AccordionGroup>
 
 ## Product and service surface map
 
-| Canonical surface | Primary docs route |
-|---|---|
-| IXO Graph | `/articles/ixo-graph` |
-| IXO Protocol | `/protocols/ixo-protocol` |
-| Impact Hub Network | `/protocols/ixo-protocol` |
-| Impact Hub Registry | `/guides/registry` and `/api-reference/registry-api` |
-| IXO Matrix | `/articles/ixo-matrix` and `/api-reference/matrix-state-bot-api` |
-| IXO Blocksync | `/articles/ixo-blocksync` and `/api-reference/blocksync-graphql-api` |
-| Agentic Oracles | `/articles/ixo-oracles` |
-| Qi Intelligent Cooperating System | `/articles/qi-intelligent-cooperating-system` (page title: **Qi: cooperation on verified workflows**); stack overview also `/introduction`, `/core-concepts` |
-| What you can build (workflow hub) | `/guides/what-you-can-build` |
-| Emerging Platform | `/platforms/Emerging/intro-emerging` |
+<AccordionGroup>
+  <Accordion title="IXO Graph" icon="circle-nodes">
+    **Primary docs route:** [IXO Graph](/articles/ixo-graph)
+  </Accordion>
+
+  <Accordion title="IXO Protocol" icon="link">
+    **Primary docs route:** [IXO Protocol](/protocols/ixo-protocol)
+  </Accordion>
+
+  <Accordion title="Impact Hub Network" icon="network-wired">
+    **Primary docs route:** [IXO Protocol](/protocols/ixo-protocol)
+  </Accordion>
+
+  <Accordion title="Impact Hub Registry" icon="database">
+    **Primary docs routes:** [Registry guide](/guides/registry), [Registry API](/api-reference/registry-api)
+  </Accordion>
+
+  <Accordion title="IXO Matrix" icon="comments">
+    **Primary docs routes:** [IXO Matrix](/articles/ixo-matrix), [Matrix state bot API](/api-reference/matrix-state-bot-api)
+  </Accordion>
+
+  <Accordion title="IXO Blocksync" icon="compass">
+    **Primary docs routes:** [IXO Blocksync](/articles/ixo-blocksync), [Blocksync GraphQL API](/api-reference/blocksync-graphql-api)
+  </Accordion>
+
+  <Accordion title="Agentic Oracles" icon="brain">
+    **Primary docs route:** [IXO Oracles](/articles/ixo-oracles)
+  </Accordion>
+
+  <Accordion title="Qi Intelligent Cooperating System" icon="people-arrows">
+    **Primary docs route:** [Qi](/articles/qi-intelligent-cooperating-system) (page title: **Qi: cooperation on verified workflows**); stack overview also [Introduction](/introduction), [Core concepts](/core-concepts).
+  </Accordion>
+
+  <Accordion title="What you can build (workflow hub)" icon="rocket">
+    **Primary docs route:** [What you can build](/guides/what-you-can-build)
+  </Accordion>
+
+  <Accordion title="Emerging Platform" icon="globe">
+    **Primary docs route:** [Emerging intro](/platforms/Emerging/intro-emerging)
+  </Accordion>
+</AccordionGroup>
 
 ## Canonical route policy
 

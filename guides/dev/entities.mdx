@@ -93,14 +93,43 @@ await Entity.UpdateEntityVerified(
 
 ## Entity Function Reference
 
-| Function | Description | Parameters |
-| -------- | ----------- | ---------- |
-| `CreateEntity` | Creates a new entity | `entityType?, context?, relayerNodeDid?, relayerNode?, signer?` |
-| `TransferEntity` | Transfers entity ownership | `signer?, entities[], recipientDid?, memo?` |
-| `UpdateEntityVerified` | Updates verification status | `signer?, entityDids[], relayerDid?, entityVerified?` |
-| `CreateEntityAccount` | Creates an entity account | `entityDid, name?, signer?` |
-| `GrantEntityAccountAuthz` | Grants account authorization | `entityDid, name?, grantee?, signer?, genericAuthMsg?` |
-| `MsgRevokeEntityAccountAuthz` | Revokes authorization | `entityDid, name?, grantee?, msgTypeUrl?, signer?` |
+<AccordionGroup>
+  <Accordion title="CreateEntity" icon="plus">
+    Creates a new entity.
+
+    **Parameters:** `entityType?, context?, relayerNodeDid?, relayerNode?, signer?`
+  </Accordion>
+
+  <Accordion title="TransferEntity" icon="arrow-right-arrow-left">
+    Transfers entity ownership.
+
+    **Parameters:** `signer?, entities[], recipientDid?, memo?`
+  </Accordion>
+
+  <Accordion title="UpdateEntityVerified" icon="badge-check">
+    Updates verification status.
+
+    **Parameters:** `signer?, entityDids[], relayerDid?, entityVerified?`
+  </Accordion>
+
+  <Accordion title="CreateEntityAccount" icon="user-plus">
+    Creates an entity account.
+
+    **Parameters:** `entityDid, name?, signer?`
+  </Accordion>
+
+  <Accordion title="GrantEntityAccountAuthz" icon="key">
+    Grants account authorization.
+
+    **Parameters:** `entityDid, name?, grantee?, signer?, genericAuthMsg?`
+  </Accordion>
+
+  <Accordion title="MsgRevokeEntityAccountAuthz" icon="ban">
+    Revokes authorization.
+
+    **Parameters:** `entityDid, name?, grantee?, msgTypeUrl?, signer?`
+  </Accordion>
+</AccordionGroup>
 
 ## Entity Data Structure
 

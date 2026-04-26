@@ -13,14 +13,49 @@ Use this matrix to choose authentication behavior by interface instead of applyi
 
 ## Auth by API surface
 
-| API surface | Auth ownership | Known documented pattern | Header example |
-|---|---|---|---|
-| Blockchain RPC API | Node/operator policy | Deployment-specific | Confirm per endpoint and operator policy |
-| Blockchain REST API (gRPC gateway) | Node/operator policy | Deployment-specific | Confirm per endpoint and operator policy |
-| IXO Blocksync GraphQL API | Service operator policy | Service-specific credential model | Confirm service deployment requirements |
-| Matrix state bot API | Service operator policy | Service-specific credential model | Confirm service deployment requirements |
-| Registry API | Service operator policy | Historical Basic auth example | `Authorization: Basic <base64(username:password)>` |
-| Emerging Platform API (OpenAPI set) | Service operator policy | Unauthorized responses defined in schema | Confirm active header contract for deployment |
+<AccordionGroup>
+  <Accordion title="Blockchain RPC API" icon="server">
+    - **Auth ownership:** Node / operator policy
+    - **Known documented pattern:** Deployment-specific
+    - **Header example:** Confirm per endpoint and operator policy
+  </Accordion>
+
+  <Accordion title="Blockchain REST API (gRPC gateway)" icon="cloud">
+    - **Auth ownership:** Node / operator policy
+    - **Known documented pattern:** Deployment-specific
+    - **Header example:** Confirm per endpoint and operator policy
+  </Accordion>
+
+  <Accordion title="IXO Blocksync GraphQL API" icon="compass">
+    - **Auth ownership:** Service operator policy
+    - **Known documented pattern:** Service-specific credential model
+    - **Header example:** Confirm service deployment requirements
+  </Accordion>
+
+  <Accordion title="Matrix state bot API" icon="snowflake">
+    - **Auth ownership:** Service operator policy
+    - **Known documented pattern:** Service-specific credential model
+    - **Header example:** Confirm service deployment requirements
+  </Accordion>
+
+  <Accordion title="Registry API" icon="database">
+    - **Auth ownership:** Service operator policy
+    - **Known documented pattern:** Historical Basic auth example
+    - **Header example:** `Authorization: Basic <base64(username:password)>`
+  </Accordion>
+
+  <Accordion title="Emerging Platform API (OpenAPI set)" icon="globe">
+    - **Auth ownership:** Service operator policy
+    - **Known documented pattern:** Unauthorized responses defined in schema
+    - **Header example:** Confirm active header contract for deployment
+  </Accordion>
+
+  <Accordion title="USSD gateway API" icon="tower-cell">
+    - **Auth ownership:** Deployer / reverse proxy
+    - **Known documented pattern:** Often unauthenticated at app layer; restrict at network edge
+    - **Header example:** _(no default header — use network controls in production)_
+  </Accordion>
+</AccordionGroup>
 
 ## Common header formats in docs
 
@@ -39,6 +74,13 @@ Authorization: Basic <base64(username:password)>
 <Warning>
 Do not treat any one header as globally valid across all IXO interfaces.
 </Warning>
+
+## Secret management
+
+- **Environment variables** — Load API keys, Basic passwords, Matrix tokens, and database URLs from env or a secrets manager; never commit them to git or embed them in client-side bundles.
+- **Rotation** — When operators rotate credentials, update your deployment config first, then redeploy clients. Prefer short-lived tokens where the service supports them.
+- **Least privilege** — Use separate credentials per environment (dev/staging/prod) and per integration so a leak does not span systems.
+- **Logs** — Strip authorization headers and tokens from application logs and exception reports.
 
 ## Credential-source guidance
 

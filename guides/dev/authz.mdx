@@ -19,11 +19,22 @@ const response = await MsgGrantSend(
 );
 ```
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `amount` | string | Token amount and denomination to authorize |
-| `granter` | string | Address granting the authorization |
-| `grantee` | string | Address receiving the authorization |
+<AccordionGroup>
+  <Accordion title="amount" icon="coins">
+    - **Type:** `string`
+    - **Description:** Token amount and denomination to authorize
+  </Accordion>
+
+  <Accordion title="granter" icon="user">
+    - **Type:** `string`
+    - **Description:** Address granting the authorization
+  </Accordion>
+
+  <Accordion title="grantee" icon="user-plus">
+    - **Type:** `string`
+    - **Description:** Address receiving the authorization
+  </Accordion>
+</AccordionGroup>
 
 ## Executing IBC Send with Authorization
 
@@ -65,13 +76,37 @@ const response = await MsgRevokeAllowance(
 
 ### Core Functions
 
-| Function | Description | Parameters |
-| -------- | ----------- | ---------- |
-| `MsgGrantSend` | Grants send authorization | `amount: string, granter: string, grantee: string` |
-| `MsgExecSendIbc` | Executes IBC send with authorization | `channel: string, grantee: string, amount: string` |
-| `MsgGrantAllowanceFeegrant` | Grants fee allowance | `granter: string, grantee: string` |
-| `MsgRevokeAllowance` | Revokes a fee allowance | `granter: string, grantee: string` |
-| `MsgExecAuthz` | Executes a transaction with granted authorization | *Varies by transaction type* |
+<AccordionGroup>
+  <Accordion title="MsgGrantSend" icon="key">
+    Grants send authorization.
+
+    **Parameters:** `amount: string, granter: string, grantee: string`
+  </Accordion>
+
+  <Accordion title="MsgExecSendIbc" icon="paper-plane">
+    Executes IBC send with authorization.
+
+    **Parameters:** `channel: string, grantee: string, amount: string`
+  </Accordion>
+
+  <Accordion title="MsgGrantAllowanceFeegrant" icon="hand-holding-dollar">
+    Grants fee allowance.
+
+    **Parameters:** `granter: string, grantee: string`
+  </Accordion>
+
+  <Accordion title="MsgRevokeAllowance" icon="ban">
+    Revokes a fee allowance.
+
+    **Parameters:** `granter: string, grantee: string`
+  </Accordion>
+
+  <Accordion title="MsgExecAuthz" icon="play">
+    Executes a transaction with granted authorization.
+
+    **Parameters:** *Varies by transaction type*
+  </Accordion>
+</AccordionGroup>
 
 ## Troubleshooting
 

@@ -28,8 +28,8 @@ The IXO Stack SDKs help you integrate the IXO Protocol, IXO Matrix, and related 
   Integrate conversational AI with `@ixo/assistant-sdk`
 </Card>
 
-<Card title="JAMBO Wallet SDK" icon="wallet" href="/sdk-reference/jambo-wallet-sdk">
-  Manage digital assets and credentials in the JAMBO wallet
+<Card title="JAMBO PWA SDK" icon="wallet" href="/sdk-reference/jambo-wallet-sdk">
+  Manage digital assets and credentials in JAMBO PWA experiences
 </Card>
 
 <Card title="SignX SDK" icon="signature" href="/sdk-reference/signx-sdk">
@@ -111,7 +111,7 @@ const result = await assistant.verify({
 });
 ```
 
-```typescript JAMBO Wallet
+```typescript JAMBO PWA
 import { createWallet } from "@ixo/jambo-wallet-sdk";
 
 // Initialize wallet
@@ -128,6 +128,10 @@ const credential = await wallet.createCredential({
 ```
 
 </CodeGroup>
+
+## End-to-end workflows
+
+For runnable patterns (client setup, entities, claims, evaluation) aligned with [Implementation examples](/guides/dev/examples), read [Developer workflows](/guides/dev/workflows). For DID, claim, and VC relationships, read [Identity and credentials](/guides/dev/identity-and-credentials).
 
 ## Key Features
 
@@ -149,7 +153,7 @@ const credential = await wallet.createCredential({
 - Evidence collection
 - Proof generation
 
-### JAMBO Wallet SDK
+### JAMBO PWA SDK
 - Credential management
 - Digital asset operations
 - Secure key storage
@@ -157,6 +161,7 @@ const credential = await wallet.createCredential({
 
 ## Next steps
 
+- [Developer workflows](/guides/dev/workflows) — SDK patterns for domains, claims, and verification
 - [SDK reference](/sdk-reference) — full reference for each SDK
 - [API reference](/api-reference) — IXO service APIs
 - [Developer overview](/guides/dev/overview) — entry points and task-oriented guides

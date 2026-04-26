@@ -1,0 +1,266 @@
+---
+title: "Oracles Client SDK"
+icon: "comments"
+description: "Agent-client interface for React apps that connect users to QiForge Agentic Oracles with chat, sessions, tools, payments, and optional live calls."
+---
+
+<Info>
+`@ixo/oracles-client-sdk` is the **frontend agent-client interface** used by applications that connect users to deployed oracles.  
+`@ixo/oracle-agent-sdk` (Agentic Oracles ADK) is for **scaffolding, implementing, and deploying oracle services** into the network.
+</Info>
+
+## Choose the right SDK
+
+| Need | Use |
+| --- | --- |
+| Build a user-facing React app that talks to existing oracles | `@ixo/oracles-client-sdk` |
+| Scaffold, implement, and deploy an oracle service | `@ixo/oracle-agent-sdk` (Agentic Oracles ADK) |
+
+For service-side development, see [Agentic Oracles ADK](/sdk-reference/agentic-oracles-adk).
+
+## What this SDK provides
+
+Use this SDK to:
+
+- authenticate with Matrix-backed user context
+- create and manage oracle chat sessions
+- stream responses in real time
+- render tool outputs and custom UI components
+- expose browser tools and AG-UI actions
+- handle payment-required claim flows
+- start optional live audio/video calls
+
+## Install
+
+```bash
+pnpm add @ixo/oracles-client-sdk zod
+```
+
+Or:
+
+```bash
+npm install @ixo/oracles-client-sdk zod
+```
+
+The SDK targets React 18+.
+
+## Prerequisites
+
+Before integrating, prepare:
+
+- a React app
+- a wallet object with IXO address, DID, and Matrix access token
+- a transaction signing function (`transactSignX` or equivalent)
+- the target oracle DID
+- oracle endpoint resolution from entity services, or explicit URL overrides
+
+```typescript
+type Wallet = {
+  address: string;
+  did: string;
+  matrix: {
+    accessToken: string;
+  };
+};
+
+type TransactSignX = (
+  messages: unknown[],
+  memo?: string
+) => Promise<unknown | undefined>;
+```
+
+## Quick start
+
+```tsx
+import { useEffect, useState } from "react";
+import {
+  OraclesProvider,
+  renderMessageContent,
+  useChat,
+  useOracleSessions,
+} from "@ixo/oracles-client-sdk";
+
+const wallet = {
+  address: "ixo1...",
+  did: "did:ixo:entity:user...",
+  matrix: { accessToken: "syt_..." },
+};
+
+async function transactSignX(
+  messages: unknown[],
+  memo?: string
+): Promise<unknown | undefined> {
+  return Promise.resolve(undefined);
+}
+
+export default function App() {
+  return (
+    <OraclesProvider initialWallet={wallet} transactSignX={transactSignX}>
+      <OracleChat oracleDid="did:ixo:entity:oracle..." />
+    </OraclesProvider>
+  );
+}
+
+function OracleChat({ oracleDid }: { oracleDid: string }) {
+  const [activeSessionId, setActiveSessionId] = useState<string>();
+  const { sessions, createSession, isLoading } = useOracleSessions(oracleDid);
+
+  useEffect(() => {
+    if (activeSessionId || isLoading) return;
+    const existing = sessions?.[0]?.sessionId;
+    if (existing) {
+      setActiveSessionId(existing);
+      return;
+    }
+    createSession().then((s) => setActiveSessionId(s.sessionId));
+  }, [activeSessionId, isLoading, sessions, createSession]);
+
+  if (!activeSessionId) return <div>Preparing oracle session...</div>;
+  return <ChatWindow oracleDid={oracleDid} sessionId={activeSessionId} />;
+}
+
+function ChatWindow({
+  oracleDid,
+  sessionId,
+}: {
+  oracleDid: string;
+  sessionId: string;
+}) {
+  const { messages, sendMessage, isSending, isLoading, error } = useChat({
+    oracleDid,
+    sessionId,
+    streamingMode: "batched",
+    onPaymentRequiredError: (claimIds) => {
+      console.log("Payment required for claims:", claimIds);
+    },
+  });
+
+  if (isLoading) return <div>Loading conversation...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <section>
+      {messages.map((message) => (
+        <article key={message.id}>{renderMessageContent(message.content)}</article>
+      ))}
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const message = String(formData.get("message") ?? "").trim();
+          if (!message) return;
+          sendMessage(message);
+          event.currentTarget.reset();
+        }}
+      >
+        <input name="message" placeholder="Ask the oracle..." disabled={isSending} />
+        <button type="submit" disabled={isSending}>
+          {isSending ? "Sending..." : "Send"}
+        </button>
+      </form>
+    </section>
+  );
+}
+```
+
+## Payments, memory, and errors
+
+Use `useContractOracle` for contract/invite/pay actions, `useMemoryEngine` for room memory operations, and `RequestError` for claim-aware error handling.
+
+```tsx
+import {
+  RequestError,
+  useChat,
+  useContractOracle,
+  useMemoryEngine,
+} from "@ixo/oracles-client-sdk";
+
+function OracleOperations({ oracleDid }: { oracleDid: string }) {
+  const [claimIds, setClaimIds] = useState<string[]>([]);
+
+  const chat = useChat({
+    oracleDid,
+    sessionId: "session-id",
+    onPaymentRequiredError: (requiredClaimIds) => setClaimIds(requiredClaimIds),
+  });
+
+  const contract = useContractOracle({
+    params: {
+      oracleDid,
+      userClaimCollectionId: "claim-collection-id",
+      adminAddress: "ixo1admin...",
+      claimId: "claim-id",
+      agentQuota: 1,
+    },
+  });
+
+  const memory = useMemoryEngine(oracleDid);
+
+  async function send(message: string) {
+    try {
+      await chat.sendMessage(message);
+    } catch (error) {
+      if (RequestError.isRequestError(error) && error.claims) {
+        console.log("Outstanding claims:", error.claims);
+        return;
+      }
+      throw error;
+    }
+  }
+
+  return (
+    <div>
+      <p>Outstanding claim IDs: {claimIds.join(", ") || "none"}</p>
+      <button onClick={() => contract.inviteOracle()} disabled={contract.isInvitingOracle}>
+        Invite oracle
+      </button>
+      <button onClick={() => contract.contractOracle({ useAuthz: true })} disabled={contract.isContractingOracle}>
+        Contract oracle
+      </button>
+      <button onClick={() => contract.payClaim()} disabled={contract.isPayingClaim}>
+        Pay claim
+      </button>
+      <button onClick={() => memory.enableMemoryEngine("@memory-engine:matrix.example")}>
+        Enable memory
+      </button>
+      <button onClick={() => send("Review this claim")}>Send message</button>
+    </div>
+  );
+}
+```
+
+<Warning>
+Keep transaction signing explicit and role-gate room administration, memory actions, and payment controls.
+</Warning>
+
+## API summary
+
+| API | Use it for |
+| --- | --- |
+| `OraclesProvider` | Provide wallet and transaction context. |
+| `useOracleSessions` | Create, list, delete, and refetch sessions. |
+| `useChat` | Send messages, stream responses, and handle payment-required events. |
+| `renderMessageContent` | Render message metadata into UI. |
+| `useAgAction` | Register validated frontend actions callable by the oracle. |
+| `useContractOracle` | Contract oracles, invite to rooms, and settle claims. |
+| `useMemoryEngine` | Manage room membership and memory-engine setup. |
+| `useGetOpenIdToken` | Retrieve Matrix OpenID tokens. |
+| `getOpenIdToken` | Manually fetch an OpenID token. |
+| `useLiveAgent` | Start/end optional live calls. |
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Agentic Oracles ADK" icon="sparkles" href="/sdk-reference/agentic-oracles-adk">
+    Service-side SDK for building and deploying oracle services.
+  </Card>
+  <Card title="Agentic Oracles" icon="robot" href="/articles/ixo-oracles">
+    Conceptual architecture and operating model.
+  </Card>
+  <Card title="SignX SDK" icon="signature" href="/sdk-reference/signx-sdk">
+    Integrate user-authorized signing into oracle workflows.
+  </Card>
+  <Card title="IXO Matrix" icon="comments" href="/articles/ixo-matrix">
+    Learn how rooms and shared context support conversations.
+  </Card>
+</CardGroup>

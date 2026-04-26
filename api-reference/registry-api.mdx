@@ -43,6 +43,13 @@ Historical environment literals for this surface have appeared in previous docs.
   </Card>
 </CardGroup>
 
+## Troubleshooting
+
+- **`401 Unauthorized` with Basic auth** — Wrong username/password or environment rotated credentials; re-read the deployment row in [Authentication matrix](/reference/authentication-matrix).
+- **`403 Forbidden`** — Authenticated but missing role or scope for that registry route; check operator RBAC and which program the credentials belong to.
+- **`404` on resource paths** — Registry API versions and path prefixes differ by deployment; confirm OpenAPI/base URL with your operator ([Networks and endpoints](/reference/networks-and-endpoints)).
+- **Payload validation errors** — Compare field names to the operator’s schema; many issues are missing required reporting fields, not transport failures ([Error handling](/api-reference/errors)).
+
 ## Related references
 
 <CardGroup cols={3}>

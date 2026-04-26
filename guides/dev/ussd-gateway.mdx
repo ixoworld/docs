@@ -38,21 +38,51 @@ cp env.example .env
 
 ### Required variables
 
-| Variable | Description | Example |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | `postgres://user:pass@localhost:5432/ixo-ussd-dev` |
-| `PIN_ENCRYPTION_KEY` | 32-character key for PIN encryption | generate with `openssl rand -hex 16` |
-| `LOG_LEVEL` | Logging verbosity | `debug`, `info`, `warn`, `error` |
+<AccordionGroup>
+  <Accordion title="DATABASE_URL" icon="database">
+    - **Description:** PostgreSQL connection string
+    - **Example:** `postgres://user:pass@localhost:5432/ixo-ussd-dev`
+  </Accordion>
+
+  <Accordion title="PIN_ENCRYPTION_KEY" icon="key">
+    - **Description:** 32-character key for PIN encryption
+    - **Example:** generate with `openssl rand -hex 16`
+  </Accordion>
+
+  <Accordion title="LOG_LEVEL" icon="list">
+    - **Description:** Logging verbosity
+    - **Example:** `debug`, `info`, `warn`, `error`
+  </Accordion>
+</AccordionGroup>
 
 ### Optional variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `NODE_ENV` | `development` | Environment mode |
-| `PORT` | `3000` | Server port |
-| `ZM_SERVICE_CODES` | `*1234#` | USSD service codes, comma-separated |
-| `IXO_API_URL` | `https://api.ixo.world` | IXO API endpoint |
-| `IXO_BLOCKCHAIN_URL` | `https://rpc.ixo.world` | IXO blockchain RPC |
+<AccordionGroup>
+  <Accordion title="NODE_ENV" icon="sliders">
+    - **Default:** `development`
+    - **Description:** Environment mode
+  </Accordion>
+
+  <Accordion title="PORT" icon="network-wired">
+    - **Default:** `3000`
+    - **Description:** Server port
+  </Accordion>
+
+  <Accordion title="ZM_SERVICE_CODES" icon="hashtag">
+    - **Default:** `*1234#`
+    - **Description:** USSD service codes, comma-separated
+  </Accordion>
+
+  <Accordion title="IXO_API_URL" icon="globe">
+    - **Default:** `https://api.ixo.world`
+    - **Description:** IXO API endpoint
+  </Accordion>
+
+  <Accordion title="IXO_BLOCKCHAIN_URL" icon="link">
+    - **Default:** `https://rpc.ixo.world`
+    - **Description:** IXO blockchain RPC
+  </Accordion>
+</AccordionGroup>
 
 To target the IXO testnet instead of mainnet:
 

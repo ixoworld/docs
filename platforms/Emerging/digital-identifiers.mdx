@@ -4,72 +4,59 @@ icon: "id-card"
 description: "Use decentralized identifiers and credentials in the Emerging Platform across solutions, including Emerging Household Energy."
 ---
 
-This page documents the **Emerging Platform** identity layer. Use it when you need reusable identifier and controller patterns. For household-energy workflows, pair this with the **Emerging Household Energy** guides.
+This page documents the **Emerging Platform** identity layer and the **cross-product IXO patterns** used by Emerging Household Energy and other solutions. Use it for reusable identifier and controller patterns. For household-energy workflow steps, pair this with the household-energy guides.
 
 ## What this covers
 
-- creating decentralized identifiers (DIDs) for projects, households, devices, and agents
-- managing controllers and update permissions
-- linking claims and credentials to identifiers
-- keeping sensitive personal data off-chain
-
-## Core model
-
-Each entity is represented by a DID and an associated domain record with:
-
-- identifier and type metadata
-- controller references
-- service endpoints
-- linked claims and credentials
-
-## Where this is used
-
-This platform capability is used by:
-
-- `/platforms/Emerging/household-monitoring`
-- `/platforms/Emerging/stove-use-monitoring`
-- `/platforms/Emerging/emerging-dmrv`
-
-## Cross-product IXO dependencies
-
-- **IXO Protocol** for DID and domain state anchoring: `/protocols/ixo-protocol`
-- **Impact Hub Registry** for entity and claim records: `/platforms/Emerging/registry`
-- **IXO Matrix** for encrypted payload storage when data should not be on-chain: `/articles/ixo-matrix`
-
-## Next steps
-
-- Read `/platforms/Emerging/domain-registration` for entity registration flow.
-- Read `/platforms/Emerging/registry` for query and record management.
----
-title: "Digital identifiers"
-icon: "id-card"
-description: "Use DID-based identity on the Emerging Platform and understand how Emerging Household Energy uses it."
----
-
-This page documents a **cross-product IXO dependency** used by both the **Emerging Platform** and the **Emerging Household Energy** solution. Use it when you need the identity model, not household workflow steps.
+- Creating decentralized identifiers (DIDs) for projects, households, devices, and agents
+- Managing controllers and update permissions
+- Linking claims and credentials to identifiers
+- Keeping sensitive personal data off-chain
 
 ## Scope
 
-Digital identifiers provide stable identity for entities such as projects, households, devices, and agents. In this section:
-
-- platform scope: identity model and control patterns
-- solution scope: household-energy entities that use the model
+- **Platform scope:** identity model, controller patterns, and how domains anchor DIDs
+- **Solution scope:** household-energy entities that use the same model (register households and devices before monitoring and reporting)
 
 ## Core model
+
+Each entity is represented by a **DID** and an associated **domain record** with:
+
+- Identifier and type metadata
+- **Controller** references (who may update the DID document and authorize changes)
+- Service endpoints
+- Linked **claims** and **credentials**
+
+At a glance:
 
 - A Decentralized Identifier (DID) identifies each entity.
 - Controllers manage updates and authorization.
 - Claims and credentials reference entity DIDs.
 - Registry state provides traceability for lifecycle events.
 
-## Where to apply this
+## Where this is used
 
-- Platform integration: identity-first registry and claim workflows.
-- Household Energy implementation: register households and devices before monitoring and reporting.
+This platform capability is used by:
+
+- [Household monitoring](/platforms/Emerging/household-monitoring)
+- [Stove use monitoring](/platforms/Emerging/stove-use-monitoring)
+- [Emerging dMRV](/platforms/Emerging/emerging-dmrv)
+
+**Where to apply this**
+
+- **Platform integration:** identity-first registry and claim workflows.
+- **Household Energy implementation:** register households and devices before monitoring and reporting.
+
+## Cross-product IXO dependencies
+
+- **IXO Protocol** for DID and domain state anchoring: [IXO Protocol](/protocols/ixo-protocol)
+- **Impact Hub Registry** for entity and claim records: [Emerging registry](/platforms/Emerging/registry)
+- **IXO Matrix** for encrypted payload storage when data should not be on-chain: [IXO Matrix](/articles/ixo-matrix)
+
+For a single developer-oriented overview of DID, claims, and verifiable credentials together, see [Identity and credentials](/guides/dev/identity-and-credentials).
 
 ## Related pages
 
-- Registry integration: `/platforms/Emerging/registry`
-- Domain-level setup: `/platforms/Emerging/domain-registration`
-- Credential lifecycle: `/platforms/Emerging/credential-issuance`
-- Household implementation: `/platforms/Emerging/household-monitoring`
+- [Domain registration](/platforms/Emerging/domain-registration) — entity registration flow
+- [Credential issuance](/platforms/Emerging/credential-issuance) — credential lifecycle
+- [Registry](/platforms/Emerging/registry) — query and record management

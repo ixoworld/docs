@@ -218,6 +218,8 @@ Basic health check for platform-as-a-service health probes.
 
 **Rate limiting:** 100 requests per minute per IP address. Requests exceeding this return HTTP 429.
 
+For generic HTTP status handling (retries, `5xx`, client errors), see [Error handling](/api-reference/errors). For environment-specific service URLs and auth, see [Networks and endpoints](/reference/networks-and-endpoints) and [Authentication matrix](/reference/authentication-matrix).
+
 ## Security notes
 
 - User PINs are encrypted at rest with AES-256 using the `PIN_ENCRYPTION_KEY` environment variable.

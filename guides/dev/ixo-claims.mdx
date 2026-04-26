@@ -44,8 +44,22 @@ Expected result:
 - accepted claim write or query response on the target surface;
 - clear traceability of whether execution happened through protocol gateways or a service API.
 
+## See also
+
+- [Identity and credentials](/guides/dev/identity-and-credentials) — how claims relate to DIDs and verifiable credentials
+- [Developer workflows](/guides/dev/workflows) — SDK-oriented create and evaluate patterns
+- [Blockchain RPC API](/api-reference/rpc-api)
+- [Registry API](/api-reference/registry-api)
+- [Product and SDK map](/reference/product-and-sdk-map)
+- [Networks and endpoints](/reference/networks-and-endpoints)
+- [Authentication matrix](/reference/authentication-matrix)
+
+## Troubleshooting
+
+- **Broadcast / transaction failures** — Read `rawLog` or `code` from the node response. `insufficient funds`, `unauthorized`, and `sequence mismatch` are common: fix fees, signer, or account sequence. Compare your `chainId` and RPC URL with [Networks and endpoints](/reference/networks-and-endpoints).
+- **GraphQL partial failures** — Blocksync may return `errors` alongside partial `data`. Treat the response as failed for downstream writes if any required field is null; re-check filters and IDs.
+- **DID or entity not found** — Confirm the entity is indexed on the network you query; registry vs indexer lag can produce temporary “not found” results.
+
 ## Next steps
 
-- Blockchain RPC API: `/api-reference/rpc-api`
-- Registry API: `/api-reference/registry-api`
-- Product and SDK map: `/reference/product-and-sdk-map`
+Use the [API introduction](/api-reference/intro-apis) matrix to pick RPC, REST, GraphQL, or Registry for each step of your workflow.
