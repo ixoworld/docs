@@ -63,12 +63,18 @@ const response = await MsgSendWithAuthenticator(
 
 Smart accounts support composite authenticators that combine multiple authentication methods for enhanced security and flexibility.
 
-<Accordion title="Composite Authenticator Types">
-  | Type | Description | Logic |
-  | ---- | ----------- | ----- |
-  | `AllOf` | Requires all sub-authenticators to approve | `authenticate(a) && authenticate(b) && ...` |
-  | `AnyOf` | Requires at least one sub-authenticator to approve | `authenticate(a) || authenticate(b) || ...` |
-</Accordion>
+### Composite authenticator types
+
+<AccordionGroup>
+  <Accordion title="AllOf" icon="link">
+    - **Description:** Requires all sub-authenticators to approve
+    - **Logic:** `authenticate(a) && authenticate(b) && ...`
+  </Accordion>
+  <Accordion title="AnyOf" icon="code-branch">
+    - **Description:** Requires at least one sub-authenticator to approve
+    - **Logic:** `authenticate(a) || authenticate(b) || ...`
+  </Accordion>
+</AccordionGroup>
 
 ### Example Configurations
 
@@ -105,11 +111,25 @@ Smart accounts support composite authenticators that combine multiple authentica
 
 ## Smart Account Function Reference
 
-| Function | Description | Parameters |
-| -------- | ----------- | ---------- |
-| `MsgAddAuthenticator` | Adds an authenticator to a smart account | `smartAccount: string, authenticator: string` |
-| `MsgRemoveAuthenticator` | Removes an authenticator from a smart account | `smartAccount: string, authenticator: string` |
-| `MsgSendWithAuthenticator` | Sends a transaction using an authenticator | `smartAccount: string, recipient: string, amount: string` |
+<AccordionGroup>
+  <Accordion title="MsgAddAuthenticator" icon="user-plus">
+    Adds an authenticator to a smart account.
+
+    **Parameters:** `smartAccount: string, authenticator: string`
+  </Accordion>
+
+  <Accordion title="MsgRemoveAuthenticator" icon="user-minus">
+    Removes an authenticator from a smart account.
+
+    **Parameters:** `smartAccount: string, authenticator: string`
+  </Accordion>
+
+  <Accordion title="MsgSendWithAuthenticator" icon="paper-plane">
+    Sends a transaction using an authenticator.
+
+    **Parameters:** `smartAccount: string, recipient: string, amount: string`
+  </Accordion>
+</AccordionGroup>
 
 ## Authentication Lifecycle
 

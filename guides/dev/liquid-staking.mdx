@@ -33,12 +33,18 @@ const response = await MsgLiquidUnstake(
 );
 ```
 
-<Accordion title="Unstaking Parameters">
-  | Parameter | Type | Description |
-  | --------- | ---- | ----------- |
-  | `amount` | string | Amount of liquid tokens to unstake |
-  | `staker` | string | Address of the staker performing the unstaking |
-</Accordion>
+### Unstaking parameters
+
+<AccordionGroup>
+  <Accordion title="amount" icon="coins">
+    - **Type:** `string`
+    - **Description:** Amount of liquid tokens to unstake
+  </Accordion>
+  <Accordion title="staker" icon="user">
+    - **Type:** `string`
+    - **Description:** Address of the staker performing the unstaking
+  </Accordion>
+</AccordionGroup>
 
 ## Governance and Administration
 
@@ -71,12 +77,31 @@ const response = await MsgUpdateWhitelistedValidators(
 
 ## Liquid Staking Function Reference
 
-| Function | Description | Parameters |
-| -------- | ----------- | ---------- |
-| `MsgLiquidStake` | Stakes tokens and receives liquid tokens | `amount: string, staker: string` |
-| `MsgLiquidUnstake` | Unstakes liquid tokens back to original tokens | `amount: string, staker: string` |
-| `MsgSubmitProposalUpdateLiquidStakeParams` | Submits parameter update proposal | `title: string, description: string, proposer: string` |
-| `MsgUpdateWhitelistedValidators` | Updates the list of allowed validators | `validators: string[], admin: string` |
+<AccordionGroup>
+  <Accordion title="MsgLiquidStake" icon="lock">
+    Stakes tokens and receives liquid tokens.
+
+    **Parameters:** `amount: string, staker: string`
+  </Accordion>
+
+  <Accordion title="MsgLiquidUnstake" icon="unlock">
+    Unstakes liquid tokens back to original tokens.
+
+    **Parameters:** `amount: string, staker: string`
+  </Accordion>
+
+  <Accordion title="MsgSubmitProposalUpdateLiquidStakeParams" icon="file-signature">
+    Submits parameter update proposal.
+
+    **Parameters:** `title: string, description: string, proposer: string`
+  </Accordion>
+
+  <Accordion title="MsgUpdateWhitelistedValidators" icon="list-check">
+    Updates the list of allowed validators.
+
+    **Parameters:** `validators: string[], admin: string`
+  </Accordion>
+</AccordionGroup>
 
 ## Module Parameters
 

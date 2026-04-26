@@ -17,13 +17,29 @@ const response = await CreateCollection(
 );
 ```
 
-| Parameter | Description |
-| --------- | ----------- |
-| `entityDid` | DID of the entity creating the collection |
-| `protocolDid` | DID of the protocol under which the collection falls |
-| `paymentsAccount` | Account to handle collection-related payments |
-| `signer` | (Optional) Transaction signer |
-| `cw20Address` | (Optional) CW20 token address for payments |
+### Parameters
+
+<AccordionGroup>
+  <Accordion title="entityDid" icon="fingerprint">
+    DID of the entity creating the collection
+  </Accordion>
+
+  <Accordion title="protocolDid" icon="file-code">
+    DID of the protocol under which the collection falls
+  </Accordion>
+
+  <Accordion title="paymentsAccount" icon="wallet">
+    Account to handle collection-related payments
+  </Accordion>
+
+  <Accordion title="signer (optional)" icon="user">
+    Transaction signer
+  </Accordion>
+
+  <Accordion title="cw20Address (optional)" icon="coins">
+    CW20 token address for payments
+  </Accordion>
+</AccordionGroup>
 
 ## Querying Collections
 
@@ -110,17 +126,61 @@ query MyQuery {
 
 ## Claims Function Reference
 
-| Function | Description | Parameters |
-| -------- | ----------- | ---------- |
-| `CreateCollection` | Creates a new collection | `entityDid, protocolDid, paymentsAccount, signer?, cw20Address?` |
-| `UpdateCollectionState` | Updates collection state | `collectionId, adminAddress, signer?` |
-| `MsgClaimIntent` | Submits a claim intent | `claimId, collectionId, adminAddress` |
-| `MsgExecAgentSubmit` | Submits a claim | `claimId, collectionId, adminAddress` |
-| `MsgExecAgentEvaluate` | Evaluates a claim | `claimId, collectionId, adminAddress` |
-| `GrantEntityAccountClaimsSubmitAuthz` | Grants submission authorization | *Varies by implementation* |
-| `GrantEntityAccountClaimsEvaluateAuthz` | Grants evaluation authorization | *Varies by implementation* |
-| `DisputeClaim` | Initiates a claim dispute | *Varies by implementation* |
-| `MsgExecWithdrawal` | Executes payment withdrawal | *Varies by implementation* |
+<AccordionGroup>
+  <Accordion title="CreateCollection" icon="folder-plus">
+    Creates a new collection.
+
+    **Parameters:** `entityDid, protocolDid, paymentsAccount, signer?, cw20Address?`
+  </Accordion>
+
+  <Accordion title="UpdateCollectionState" icon="pen-to-square">
+    Updates collection state.
+
+    **Parameters:** `collectionId, adminAddress, signer?`
+  </Accordion>
+
+  <Accordion title="MsgClaimIntent" icon="paper-plane">
+    Submits a claim intent.
+
+    **Parameters:** `claimId, collectionId, adminAddress`
+  </Accordion>
+
+  <Accordion title="MsgExecAgentSubmit" icon="upload">
+    Submits a claim.
+
+    **Parameters:** `claimId, collectionId, adminAddress`
+  </Accordion>
+
+  <Accordion title="MsgExecAgentEvaluate" icon="clipboard-check">
+    Evaluates a claim.
+
+    **Parameters:** `claimId, collectionId, adminAddress`
+  </Accordion>
+
+  <Accordion title="GrantEntityAccountClaimsSubmitAuthz" icon="key">
+    Grants submission authorization.
+
+    **Parameters:** *Varies by implementation*
+  </Accordion>
+
+  <Accordion title="GrantEntityAccountClaimsEvaluateAuthz" icon="key">
+    Grants evaluation authorization.
+
+    **Parameters:** *Varies by implementation*
+  </Accordion>
+
+  <Accordion title="DisputeClaim" icon="triangle-exclamation">
+    Initiates a claim dispute.
+
+    **Parameters:** *Varies by implementation*
+  </Accordion>
+
+  <Accordion title="MsgExecWithdrawal" icon="money-bill-transfer">
+    Executes payment withdrawal.
+
+    **Parameters:** *Varies by implementation*
+  </Accordion>
+</AccordionGroup>
 
 ## Troubleshooting
 

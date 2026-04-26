@@ -45,33 +45,72 @@ Data Assets can take many forms within the IXO ecosystem:
 
 <AccordionGroup>
   <Accordion title="Required Properties" icon="asterisk">
-    | Property | Type | Description |
-    |----------|------|-------------|
-    | `description` | `Text` | Summary of the dataset (50-5000 chars) |
-    | `name` | `Text` | Descriptive name of the dataset |
+    <AccordionGroup>
+      <Accordion title="description" icon="align-left">
+        - **Type:** `Text`
+        - **Description:** Summary of the dataset (50-5000 chars)
+      </Accordion>
+      <Accordion title="name" icon="tag">
+        - **Type:** `Text`
+        - **Description:** Descriptive name of the dataset
+      </Accordion>
+    </AccordionGroup>
 
     The description may include Markdown syntax with absolute URLs for images.
   </Accordion>
 
   <Accordion title="Recommended Properties" icon="star">
-    | Property | Type | Description |
-    |----------|------|-------------|
-    | `alternateName` | `Text` | Alternative names or aliases |
-    | `creator` | `Person/Organisation` | Author with ORCID/ROR ID |
-    | `citation` | `Text/CreativeWork` | Related academic citations |
-    | `identifier` | `URL/Text/PropertyValue` | DOI or other identifiers |
-    | `license` | `URL/CreativeWork` | Distribution license |
-    | `version` | `Text/Number` | Version identifier |
+    <AccordionGroup>
+      <Accordion title="alternateName" icon="tags">
+        - **Type:** `Text`
+        - **Description:** Alternative names or aliases
+      </Accordion>
+      <Accordion title="creator" icon="user">
+        - **Type:** `Person/Organisation`
+        - **Description:** Author with ORCID/ROR ID
+      </Accordion>
+      <Accordion title="citation" icon="book">
+        - **Type:** `Text/CreativeWork`
+        - **Description:** Related academic citations
+      </Accordion>
+      <Accordion title="identifier" icon="fingerprint">
+        - **Type:** `URL/Text/PropertyValue`
+        - **Description:** DOI or other identifiers
+      </Accordion>
+      <Accordion title="license" icon="file-contract">
+        - **Type:** `URL/CreativeWork`
+        - **Description:** Distribution license
+      </Accordion>
+      <Accordion title="version" icon="code-branch">
+        - **Type:** `Text/Number`
+        - **Description:** Version identifier
+      </Accordion>
+    </AccordionGroup>
   </Accordion>
 
   <Accordion title="Optional Properties" icon="circle-plus">
-    | Property | Type | Description |
-    |----------|------|-------------|
-    | `keywords` | `Text` | Search keywords |
-    | `spatialCoverage` | `Text/Place` | Geographic scope |
-    | `temporalCoverage` | `Text` | Time period covered |
-    | `variableMeasured` | `Text/PropertyValue` | Measured variables |
-    | `url` | `URL` | Dataset landing page |
+    <AccordionGroup>
+      <Accordion title="keywords" icon="magnifying-glass">
+        - **Type:** `Text`
+        - **Description:** Search keywords
+      </Accordion>
+      <Accordion title="spatialCoverage" icon="earth-africa">
+        - **Type:** `Text/Place`
+        - **Description:** Geographic scope
+      </Accordion>
+      <Accordion title="temporalCoverage" icon="clock">
+        - **Type:** `Text`
+        - **Description:** Time period covered
+      </Accordion>
+      <Accordion title="variableMeasured" icon="chart-column">
+        - **Type:** `Text/PropertyValue`
+        - **Description:** Measured variables
+      </Accordion>
+      <Accordion title="url" icon="link">
+        - **Type:** `URL`
+        - **Description:** Dataset landing page
+      </Accordion>
+    </AccordionGroup>
   </Accordion>
 </AccordionGroup>
 

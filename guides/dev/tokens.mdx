@@ -20,15 +20,30 @@ const response = await CreateToken(
 );
 ```
 
-<Accordion title="Token Domain Creation Parameters">
-  | Parameter | Type | Description |
-  | --------- | ---- | ----------- |
-  | `name` | string | The name of the token |
-  | `description` | string | A brief description of the token |
-  | `cap` | number | The maximum supply of the token |
-  | `tokenClass` | string | The class or category of the token |
-  | `signer` | WalletUsers | (Optional) Wallet user signing the transaction |
-</Accordion>
+### Token domain creation parameters
+
+<AccordionGroup>
+  <Accordion title="name" icon="tag">
+    - **Type:** `string`
+    - **Description:** The name of the token
+  </Accordion>
+  <Accordion title="description" icon="align-left">
+    - **Type:** `string`
+    - **Description:** A brief description of the token
+  </Accordion>
+  <Accordion title="cap" icon="arrow-up-wide-short">
+    - **Type:** `number`
+    - **Description:** The maximum supply of the token
+  </Accordion>
+  <Accordion title="tokenClass" icon="layer-group">
+    - **Type:** `string`
+    - **Description:** The class or category of the token
+  </Accordion>
+  <Accordion title="signer (optional)" icon="user">
+    - **Type:** `WalletUsers`
+    - **Description:** Wallet user signing the transaction
+  </Accordion>
+</AccordionGroup>
 
 <Tip>
   Token classes determine the behavior and properties of tokens. Common classes include "carbon", "impact", and "governance".
@@ -52,14 +67,26 @@ const response = await MintToken(
 );
 ```
 
-<Accordion title="Batch Minting Structure">
-  | Property | Type | Description |
-  | -------- | ---- | ----------- |
-  | `name` | string | Identifier for the batch |
-  | `index` | string | Unique index within the collection |
-  | `amount` | number | Quantity of tokens to mint |
-  | `collection` | string | Collection the batch belongs to |
-</Accordion>
+### Batch minting structure
+
+<AccordionGroup>
+  <Accordion title="name" icon="tag">
+    - **Type:** `string`
+    - **Description:** Identifier for the batch
+  </Accordion>
+  <Accordion title="index" icon="hashtag">
+    - **Type:** `string`
+    - **Description:** Unique index within the collection
+  </Accordion>
+  <Accordion title="amount" icon="coins">
+    - **Type:** `number`
+    - **Description:** Quantity of tokens to mint
+  </Accordion>
+  <Accordion title="collection" icon="folder">
+    - **Type:** `string`
+    - **Description:** Collection the batch belongs to
+  </Accordion>
+</AccordionGroup>
 
 ## Transferring Tokens
 
@@ -145,17 +172,55 @@ query MyQuery {
 
 ## Token Function Reference
 
-| Function | Description | Parameters |
-| -------- | ----------- | ---------- |
-| `CreateToken` | Creates a new token | `name: string, description: string, cap: number, tokenClass: string, signer?: WalletUser` |
-| `MintToken` | Mints new tokens | `contractAddress: string, batches: MintBatch[]` |
-| `TransferToken` | Transfers tokens | `tokens: TokenBatch[], toAddress?: string` |
-| `TransferTokenBatch` | Transfers multiple tokens | `tokens: TokenBatch[], toAddress: string` |
-| `RetireToken` | Retires tokens | `tokenId: string, amount: number` |
-| `StopToken` | Stops token operations | `tokenId: string` |
-| `TransferToken` | Transfers tokens | `tokens: TokenBatch[], toAddress?: string` |
-| `MsgGrantContract` | Grants contract authorization | `granter: string, grantee: string, contractId: string, msgTypeUrl: string` |
-| `MsgExecContract` | Executes contract operations | *Varies by implementation* |
+<AccordionGroup>
+  <Accordion title="CreateToken" icon="plus">
+    Creates a new token.
+
+    **Parameters:** `name: string, description: string, cap: number, tokenClass: string, signer?: WalletUser`
+  </Accordion>
+
+  <Accordion title="MintToken" icon="coins">
+    Mints new tokens.
+
+    **Parameters:** `contractAddress: string, batches: MintBatch[]`
+  </Accordion>
+
+  <Accordion title="TransferToken" icon="arrow-right-arrow-left">
+    Transfers tokens.
+
+    **Parameters:** `tokens: TokenBatch[], toAddress?: string`
+  </Accordion>
+
+  <Accordion title="TransferTokenBatch" icon="layer-group">
+    Transfers multiple tokens.
+
+    **Parameters:** `tokens: TokenBatch[], toAddress: string`
+  </Accordion>
+
+  <Accordion title="RetireToken" icon="ban">
+    Retires tokens.
+
+    **Parameters:** `tokenId: string, amount: number`
+  </Accordion>
+
+  <Accordion title="StopToken" icon="stop">
+    Stops token operations.
+
+    **Parameters:** `tokenId: string`
+  </Accordion>
+
+  <Accordion title="MsgGrantContract" icon="key">
+    Grants contract authorization.
+
+    **Parameters:** `granter: string, grantee: string, contractId: string, msgTypeUrl: string`
+  </Accordion>
+
+  <Accordion title="MsgExecContract" icon="play">
+    Executes contract operations.
+
+    **Parameters:** *Varies by implementation*
+  </Accordion>
+</AccordionGroup>
 
 ## Token Properties
 

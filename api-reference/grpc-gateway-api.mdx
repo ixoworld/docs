@@ -39,6 +39,13 @@ Authentication requirements vary by deployment.
   </Card>
 </CardGroup>
 
+## Troubleshooting
+
+- **`404` on REST paths** — Gateway build or route prefix differs by deployment (`/ixo/...` vs legacy prefixes). Compare the served OpenAPI/Swagger document from your node operator.
+- **`501 Not Implemented` / empty responses** — The mapped gRPC method may be disabled or not compiled into that binary.
+- **CORS errors from browsers** — Prefer server-side or mobile clients for protocol access; if you must call from a browser, use an operator-approved proxy.
+- **401/403** — Some deployments gate REST; align headers with [Authentication matrix](/reference/authentication-matrix). For writes, you still sign transactions—REST is often query-only.
+
 ## Related references
 
 <CardGroup cols={3}>

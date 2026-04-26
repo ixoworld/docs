@@ -78,9 +78,11 @@
             "pages": [
               "guides/dev/overview",
               "guides/dev/ixo-stack-sdks",
+              "guides/dev/workflows",
               "mcp/model-context-protocol",
               "guides/dev/ussd-gateway",
               "guides/dev/authentication",
+              "guides/dev/identity-and-credentials",
               "guides/dev/ixo-claims",
               "guides/digital-twins",
               "guides/domain-registration",
@@ -100,6 +102,10 @@
             "group": "APIs",
             "pages": [
               "api-reference/index",
+              "api-reference/intro-apis",
+              "api-reference/authentication",
+              "api-reference/errors",
+              "api-reference/pagination",
               "api-reference/rpc-api",
               "api-reference/grpc-gateway-api",
               "api-reference/blocksync-graphql-api",
@@ -109,12 +115,22 @@
             ]
           },
           {
+            "group": "Reference",
+            "pages": [
+              "reference/networks-and-endpoints",
+              "reference/authentication-matrix",
+              "reference/product-and-sdk-map",
+              "reference/glossary"
+            ]
+          },
+          {
             "group": "SDKs",
             "pages": [
               "sdk-reference/index",
               "sdk-reference/multiclient-sdk",
               "sdk-reference/signx-sdk",
               "sdk-reference/matrix-client-sdk",
+              "sdk-reference/oracles-client-sdk",
               "sdk-reference/agentic-oracles-adk",
               "sdk-reference/oracle-adk",
               "sdk-reference/jambo-wallet-sdk"
@@ -225,11 +241,11 @@
     },
     {
       "source": "/spatial-web-stack/sdks/oracle-agent-sdk",
-      "destination": "/sdk-reference/agentic-oracles-adk"
+      "destination": "/sdk-reference/oracles-client-sdk"
     },
     {
       "source": "/ixo-stack/sdks/oracle-agent-sdk",
-      "destination": "/sdk-reference/agentic-oracles-adk"
+      "destination": "/sdk-reference/oracles-client-sdk"
     },
     {
       "source": "/spatial-web-stack/sdks/signx-sdk",

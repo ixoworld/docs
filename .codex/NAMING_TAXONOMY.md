@@ -64,7 +64,7 @@ Use these names in H1s, navigation labels, overview pages, and prose.
 | Agentic Oracles ADK | `@ixo/oracle-agent-sdk` | Public docs name is Agentic Oracles ADK (Agent Development Kit). Preserve the current package literal exactly. |
 | Personal Agent ADK | `@ixo/assistant-sdk` | Public docs name is Personal Agent ADK. Preserve the current package literal exactly until the package itself changes. |
 | IXO SignX SDK | `@ixo/signx-sdk` | Always use the IXO prefix on first mention. |
-| JAMBO Wallet SDK | `@ixo/jambo-wallet-sdk` | Keep JAMBO as the docs-facing sub-brand. |
+| JAMBO PWA SDK | `@ixo/jambo-wallet-sdk` | Keep JAMBO as the docs-facing sub-brand. |
 | Qi Forge ADK | — | Umbrella for building Agentic Oracles: **Qi Forge CLI** and the no-code **Agentic Oracle-builder Skill**. Not a single npm package; distinct from **Agentic Oracles ADK** (`@ixo/oracle-agent-sdk`). |
 | Qi Forge CLI | — | CLI surface inside **Qi Forge ADK**. Add the package identifier only once it is verified. |
 
@@ -79,7 +79,7 @@ Use this map to remove naming judgment calls during rewrites.
 | `sdk-reference/agentic-oracles-adk.mdx` | Agentic Oracles ADK | `@ixo/oracle-agent-sdk`; canonical oracle/agent service ADK page. |
 | `sdk-reference/oracle-adk.mdx` | Personal Agent ADK | Agent development kit route for `@ixo/assistant-sdk`; `/sdk-reference/oracle-ai-sdk` redirects here. |
 | `sdk-reference/signx-sdk.mdx` | IXO SignX SDK | Keep IXO prefix on first mention. |
-| `sdk-reference/jambo-wallet-sdk.mdx` | JAMBO Wallet SDK | Keep JAMBO sub-brand. |
+| `sdk-reference/jambo-wallet-sdk.mdx` | JAMBO PWA SDK | Keep JAMBO sub-brand. |
 | `mcp/model-context-protocol.mdx` | Model Context Protocol (MCP) servers | First expansion must be singular. |
 | `platforms/Emerging/*.mdx` (platform capability pages) | Emerging Platform | Use for reusable platform capability. |
 | `platforms/Emerging/*.mdx` (solution implementation pages) | Emerging Household Energy | Use for the vertical implementation. |
@@ -147,7 +147,7 @@ On first mention, use the full canonical product name exactly:
 - `Agentic Oracles ADK` (`@ixo/oracle-agent-sdk`)
 - `Personal Agent ADK` (`@ixo/assistant-sdk`)
 - `IXO SignX SDK` (`@ixo/signx-sdk`)
-- `JAMBO Wallet SDK` (`@ixo/jambo-wallet-sdk`)
+- `JAMBO PWA SDK` (`@ixo/jambo-wallet-sdk`)
 - `Qi Intelligent Cooperating System`
 - `Qi Flow`
 - `Qi Flow Engine`
@@ -169,7 +169,7 @@ On first mention, use:
 - `Agentic Oracles ADK` (`@ixo/oracle-agent-sdk`)
 - `Personal Agent ADK` (`@ixo/assistant-sdk`)
 - `IXO SignX SDK` (`@ixo/signx-sdk`)
-- `JAMBO Wallet SDK` (`@ixo/jambo-wallet-sdk`)
+- `JAMBO PWA SDK` (`@ixo/jambo-wallet-sdk`)
 
 Do not use package literals as heading text. Keep package identifiers exact and in code font only.
 

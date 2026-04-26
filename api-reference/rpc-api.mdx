@@ -42,6 +42,13 @@ message MsgSubmitClaim {
 }
 ```
 
+## Troubleshooting
+
+- **`connection refused` / TLS errors** — Wrong host, port, or TLS termination. Confirm the literal in [Networks and endpoints](/reference/networks-and-endpoints) and your operator’s current RPC URL.
+- **`invalid JSON-RPC` / parse errors** — Request body not valid JSON-RPC 2.0; include `jsonrpc`, `id`, `method`, and `params` as required by the method.
+- **Transaction broadcast failures** — Inspect `code`, `codespace`, and `rawLog`. Common causes: insufficient fees, wrong `chain-id`, sequence mismatch, or missing signer permissions. See [Error handling](/api-reference/errors) and [Claims management](/guides/dev/ixo-claims#troubleshooting).
+- **Auth on RPC** — Many nodes allow unauthenticated read; writes require a valid signed tx, not an API key. Confirm policy in [Authentication matrix](/reference/authentication-matrix).
+
 ## Related references
 
 <CardGroup cols={3}>

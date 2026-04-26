@@ -17,25 +17,25 @@ const response = await CreateBond(
 );
 ```
 
-<Accordion title="Bond Parameters">
-  | Parameter | Description |
-  | --------- | ----------- |
-  | `bondDid` | Unique identifier for the bond |
-  | `token` | The bond's token denomination |
-  | `name` | Name of the bond |
-  | `description` | Description of the bond |
-  | `functionType` | Type of bonding curve ("augmented_function" or "bonding_function") |
-  | `functionParameters` | Array of parameters defining the bonding curve |
-  | `reserveTokens` | Array of accepted reserve tokens |
-  | `txFeePercentage` | Transaction fee percentage |
-  | `exitFeePercentage` | Exit fee percentage |
-  | `maxSupply` | Maximum supply of bond tokens |
-  | `orderQuantityLimits` | Limits on order quantities |
-  | `allowSells` | Whether selling of bonds is allowed |
-  | `allowReserveWithdrawals` | Whether reserve withdrawals are allowed |
-  | `alphaBond` | Whether this is an alpha bond |
-  | `batchBlocks` | Number of blocks per batch |
-</Accordion>
+### Bond parameters
+
+<AccordionGroup>
+  <Accordion title="bondDid" icon="fingerprint">Unique identifier for the bond</Accordion>
+  <Accordion title="token" icon="coins">The bond's token denomination</Accordion>
+  <Accordion title="name" icon="tag">Name of the bond</Accordion>
+  <Accordion title="description" icon="align-left">Description of the bond</Accordion>
+  <Accordion title="functionType" icon="chart-line">Type of bonding curve (`augmented_function` or `bonding_function`)</Accordion>
+  <Accordion title="functionParameters" icon="sliders">Array of parameters defining the bonding curve</Accordion>
+  <Accordion title="reserveTokens" icon="layer-group">Array of accepted reserve tokens</Accordion>
+  <Accordion title="txFeePercentage" icon="percent">Transaction fee percentage</Accordion>
+  <Accordion title="exitFeePercentage" icon="percent">Exit fee percentage</Accordion>
+  <Accordion title="maxSupply" icon="arrow-up-wide-short">Maximum supply of bond tokens</Accordion>
+  <Accordion title="orderQuantityLimits" icon="list">Limits on order quantities</Accordion>
+  <Accordion title="allowSells" icon="toggle-on">Whether selling of bonds is allowed</Accordion>
+  <Accordion title="allowReserveWithdrawals" icon="vault">Whether reserve withdrawals are allowed</Accordion>
+  <Accordion title="alphaBond" icon="star">Whether this is an alpha bond</Accordion>
+  <Accordion title="batchBlocks" icon="cubes">Number of blocks per batch</Accordion>
+</AccordionGroup>
 
 ## Modifying Bond Parameters
 
@@ -59,12 +59,25 @@ const response = await UpdateBondState(
 );
 ```
 
-| Available States | Description |
-| ---------------- | ----------- |
-| `HATCH` | Initial fundraising phase |
-| `OPEN` | Active trading phase |
-| `SETTLE` | Settlement phase |
-| `FAILED` | Failed bond state |
+### Available states
+
+<AccordionGroup>
+  <Accordion title="HATCH" icon="egg">
+    Initial fundraising phase
+  </Accordion>
+
+  <Accordion title="OPEN" icon="door-open">
+    Active trading phase
+  </Accordion>
+
+  <Accordion title="SETTLE" icon="scale-balanced">
+    Settlement phase
+  </Accordion>
+
+  <Accordion title="FAILED" icon="circle-xmark">
+    Failed bond state
+  </Accordion>
+</AccordionGroup>
 
 ## Trading Bonds
 
@@ -127,17 +140,61 @@ const response = await WithdrawReserve(
 
 ## Bond Function Reference
 
-| Function | Description | Parameters |
-| -------- | ----------- | ---------- |
-| `CreateBond` | Creates a new bond | `allowSells: boolean` |
-| `EditBond` | Modifies bond parameters | *Varies based on parameters to update* |
-| `UpdateBondState` | Changes bond lifecycle state | `state: string` |
-| `Buy` | Purchases bond tokens | `amount: number, maxPrice: number` |
-| `Sell` | Sells bond tokens | `amount: number, minPrice: number` |
-| `SetNextAlpha` | Sets next alpha value | *Varies by implementation* |
-| `MakeOutcomePayment` | Makes outcome payment | `amount: number` |
-| `WithdrawShare` | Withdraws share | `signer: WalletUser` |
-| `WithdrawReserve` | Withdraws from reserve | `signer: WalletUser, amount: number` |
+<AccordionGroup>
+  <Accordion title="CreateBond" icon="plus">
+    Creates a new bond.
+
+    **Parameters:** `allowSells: boolean`
+  </Accordion>
+
+  <Accordion title="EditBond" icon="pen-to-square">
+    Modifies bond parameters.
+
+    **Parameters:** *Varies based on parameters to update*
+  </Accordion>
+
+  <Accordion title="UpdateBondState" icon="arrows-rotate">
+    Changes bond lifecycle state.
+
+    **Parameters:** `state: string`
+  </Accordion>
+
+  <Accordion title="Buy" icon="cart-shopping">
+    Purchases bond tokens.
+
+    **Parameters:** `amount: number, maxPrice: number`
+  </Accordion>
+
+  <Accordion title="Sell" icon="store">
+    Sells bond tokens.
+
+    **Parameters:** `amount: number, minPrice: number`
+  </Accordion>
+
+  <Accordion title="SetNextAlpha" icon="chart-line">
+    Sets next alpha value.
+
+    **Parameters:** *Varies by implementation*
+  </Accordion>
+
+  <Accordion title="MakeOutcomePayment" icon="money-bill">
+    Makes outcome payment.
+
+    **Parameters:** `amount: number`
+  </Accordion>
+
+  <Accordion title="WithdrawShare" icon="hand-holding-dollar">
+    Withdraws share.
+
+    **Parameters:** `signer: WalletUser`
+  </Accordion>
+
+  <Accordion title="WithdrawReserve" icon="vault">
+    Withdraws from reserve.
+
+    **Parameters:** `signer: WalletUser, amount: number`
+  </Accordion>
+</AccordionGroup>
 
 ## Troubleshooting
 

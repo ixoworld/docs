@@ -13,19 +13,69 @@ This page is the canonical home for endpoint and network literals used across IX
 
 ## Endpoint matrix
 
-| Surface | Environment/context in docs | Canonical literal in docs | Source |
-|---|---|---|---|
-| IXO Protocol RPC | Developer example | `https://rpc.ixo.world` | `/guides/dev/examples` |
-| IXO Protocol REST (gRPC gateway) | Emerging platform examples | `https://rest.emerging.eco` | `/api-reference/grpc-gateway-api` |
-| IXO Matrix service | Developer example | `https://matrix.ixo.world` | `/guides/dev/examples` |
-| Emerging Platform API | OpenAPI development server | `https://dev.api.emerging.eco/emerging-platform/v1` | `/api-reference/openapi.yaml` |
+<AccordionGroup>
+  <Accordion title="IXO Protocol RPC" icon="server">
+    - **Environment / context in docs:** Developer example
+    - **Canonical literal:** `https://rpc.ixo.world`
+    - **Source:** [Implementation examples](/guides/dev/examples)
+  </Accordion>
+
+  <Accordion title="IXO Protocol REST (gRPC gateway)" icon="cloud">
+    - **Environment / context in docs:** Emerging platform examples
+    - **Canonical literal:** `https://rest.emerging.eco`
+    - **Source:** [gRPC gateway API](/api-reference/grpc-gateway-api)
+  </Accordion>
+
+  <Accordion title="IXO Matrix service" icon="comments">
+    - **Environment / context in docs:** Developer example
+    - **Canonical literal:** `https://matrix.ixo.world`
+    - **Source:** [Implementation examples](/guides/dev/examples)
+  </Accordion>
+
+  <Accordion title="Emerging Platform API" icon="globe">
+    - **Environment / context in docs:** OpenAPI development server
+    - **Canonical literal:** `https://dev.api.emerging.eco/emerging-platform/v1`
+    - **Source:** `api-reference/openapi.yaml` in repo
+  </Accordion>
+
+  <Accordion title="IXO Blocksync GraphQL" icon="compass">
+    - **Environment / context in docs:** Service deployment
+    - **Canonical literal:** _(no global default — operator supplies GraphQL HTTP endpoint)_
+    - **Source:** [Blocksync GraphQL API](/api-reference/blocksync-graphql-api)
+  </Accordion>
+
+  <Accordion title="Matrix state bot API" icon="snowflake">
+    - **Environment / context in docs:** Service deployment
+    - **Canonical literal:** _(no global default — operator supplies bot base URL)_
+    - **Source:** [Matrix state bot API](/api-reference/matrix-state-bot-api)
+  </Accordion>
+
+  <Accordion title="Registry API" icon="database">
+    - **Environment / context in docs:** Service deployment
+    - **Canonical literal:** _(no global default — operator supplies registry base URL)_
+    - **Source:** [Registry API](/api-reference/registry-api)
+  </Accordion>
+
+  <Accordion title="USSD gateway API" icon="tower-cell">
+    - **Environment / context in docs:** Self-hosted example
+    - **Canonical literal:** `http://YOUR_SERVER:3000` (set `PORT` as needed)
+    - **Source:** [USSD gateway API](/api-reference/ussd-api)
+  </Accordion>
+</AccordionGroup>
 
 ## Chain IDs in current docs
 
-| Literal | Status | Notes |
-|---|---|---|
-| `ixo-5` | Active in examples | Used in multiple developer examples and SDK setup snippets. |
-| `ixo-4` | Legacy/example reference | Present in older API docs pages; treat as historical until explicitly revalidated. |
+<AccordionGroup>
+  <Accordion title="ixo-5" icon="check">
+    - **Status:** Active in examples
+    - **Notes:** Used in multiple developer examples and SDK setup snippets.
+  </Accordion>
+
+  <Accordion title="ixo-4" icon="clock-rotate-left">
+    - **Status:** Legacy / example reference
+    - **Notes:** Present in older API docs pages; treat as historical until explicitly revalidated.
+  </Accordion>
+</AccordionGroup>
 
 ## Usage rules
 

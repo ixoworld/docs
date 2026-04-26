@@ -1,0 +1,104 @@
+---
+title: "Glossary"
+description: "Short definitions of IXO and Qi terms with links to detailed documentation."
+---
+
+Use this page to disambiguate vocabulary used across guides and API docs. For stack positioning, read [Core concepts](/core-concepts) and [Product and SDK map](/reference/product-and-sdk-map).
+
+## Identity and trust
+
+<AccordionGroup>
+  <Accordion title="Decentralized Identifier (DID)" icon="fingerprint">
+    Stable identifier for an entity, often in the `did:ixo:` namespace; see [Identity and credentials](/guides/dev/identity-and-credentials).
+  </Accordion>
+
+  <Accordion title="Domain (entity domain)" icon="cube">
+    Standard registration for a **digital twin**: DID, type, protocol, controllers, metadata; see [Core concepts — Domains](/core-concepts#domains) and [Entity domains](/guides/dev/ixo-domains).
+  </Accordion>
+
+  <Accordion title="Digital twin" icon="cubes">
+    The modeled counterpart of a real-world subject on the stack; see [Digital twins](/guides/digital-twins).
+  </Accordion>
+
+  <Accordion title="Claim" icon="file-signature">
+    Structured assertion with evidence, evaluated under protocol rules; see [Claims](/guides/dev/ixo-claims).
+  </Accordion>
+
+  <Accordion title="Verifiable credential (VC)" icon="id-card">
+    Issuer-signed, verifier-checkable credential about a **subject DID**; see [Credential issuance](/platforms/Emerging/credential-issuance).
+  </Accordion>
+
+  <Accordion title="Controller" icon="user-shield">
+    Party authorized to update a DID document or domain record within protocol rules; see [Identity and credentials](/guides/dev/identity-and-credentials).
+  </Accordion>
+</AccordionGroup>
+
+## Organizations and workflows
+
+<AccordionGroup>
+  <Accordion title="POD" icon="building-columns">
+    Programmable organizational domain—a secure place for people, agents, and services to cooperate; see [PODs](/articles/pods).
+  </Accordion>
+
+  <Accordion title="Flow" icon="route">
+    Governed sequence of steps coordinating work; see [Core concepts](/core-concepts) and user guides such as [Build a flow](/guides/users/build-a-flow).
+  </Accordion>
+
+  <Accordion title="Blueprint" icon="file-signature">
+    Reusable protocol template (rules, rubrics, evidence expectations); see [Build a blueprint](/guides/users/build-a-blueprint).
+  </Accordion>
+
+  <Accordion title="Oracle" icon="sparkles">
+    Verification, measurement, or decision-support capability—often AI-assisted; see [IXO Oracles](/articles/ixo-oracles) and [Oracle architecture](/guides/ixo-oracles-architecture).
+  </Accordion>
+</AccordionGroup>
+
+## APIs and infrastructure
+
+<AccordionGroup>
+  <Accordion title="API surface" icon="layer-group">
+    A concrete interface family (for example RPC or a specific REST service); see [API introduction](/api-reference/intro-apis).
+  </Accordion>
+
+  <Accordion title="Protocol gateway" icon="server">
+    Node-level access to IXO Protocol state and transactions (**RPC**, **REST over gRPC**); compare the matrix in [API introduction](/api-reference/intro-apis).
+  </Accordion>
+
+  <Accordion title="Service API" icon="cloud">
+    Operator-hosted HTTP or GraphQL services over indexed or app-layer data (**Blocksync**, **Registry**, **Matrix state bot**, **USSD**); auth varies by deployment ([Authentication matrix](/reference/authentication-matrix)).
+  </Accordion>
+
+  <Accordion title="Blocksync" icon="compass">
+    Indexed query layer for chain-derived data; see [IXO Blocksync](/articles/ixo-blocksync) and [Blocksync GraphQL API](/api-reference/blocksync-graphql-api).
+  </Accordion>
+
+  <Accordion title="IXO Matrix" icon="comments">
+    Encrypted cooperation and data-room layer; see [IXO Matrix](/articles/ixo-matrix).
+  </Accordion>
+
+  <Accordion title="Registry" icon="database">
+    Application API for Impact Hub Registry workflows; see [Registry](/guides/registry) and [Registry API](/api-reference/registry-api).
+  </Accordion>
+</AccordionGroup>
+
+## Cooperation layer
+
+<AccordionGroup>
+  <Accordion title="Qi" icon="sparkles">
+    Intelligent cooperating system over IXO-backed state—workspaces, tools, governed automation; see [Qi](/articles/qi-intelligent-cooperating-system).
+  </Accordion>
+
+  <Accordion title="IXO Graph" icon="circle-nodes">
+    Model of connected verifiable state; see [IXO Graph](/articles/ixo-graph).
+  </Accordion>
+</AccordionGroup>
+
+## Roles (human-facing)
+
+High-level **roles** (Developer, Evaluator, Funder, and others) are described in [Your role](/your-role). Use that page when deciding who submits claims, who verifies, and who funds programs.
+
+## Related
+
+- [Networks and endpoints](/reference/networks-and-endpoints)
+- [Authentication matrix](/reference/authentication-matrix)
+- [API reference index](/api-reference)

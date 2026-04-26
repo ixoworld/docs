@@ -47,12 +47,27 @@ The Cosmos SDK provides three built-in authorization implementations:
 
 IXO implements several custom authorization types for specific message types:
 
-| Authorization Type | Message Type | Description |
-|-------------------|--------------|-------------|
-| `SubmitClaimAuthorization` | `/ixo.claims.v1beta1.MsgSubmitClaim` | Authorization for submitting claims |
-| `EvaluateClaimAuthorization` | `/ixo.claims.v1beta1.MsgEvaluateClaim` | Authorization for evaluating claims |
-| `WithdrawPaymentAuthorization` | `/ixo.claims.v1beta1.MsgWithdrawPayment` | Authorization for withdrawing payments |
-| `CreateClaimAuthorization` | `/ixo.claims.v1beta1.MsgCreateClaimAuthorization` | Authorization for creating claims |
+<AccordionGroup>
+  <Accordion title="SubmitClaimAuthorization" icon="upload">
+    - **Message type:** `/ixo.claims.v1beta1.MsgSubmitClaim`
+    - **Description:** Authorization for submitting claims
+  </Accordion>
+
+  <Accordion title="EvaluateClaimAuthorization" icon="clipboard-check">
+    - **Message type:** `/ixo.claims.v1beta1.MsgEvaluateClaim`
+    - **Description:** Authorization for evaluating claims
+  </Accordion>
+
+  <Accordion title="WithdrawPaymentAuthorization" icon="money-bill-transfer">
+    - **Message type:** `/ixo.claims.v1beta1.MsgWithdrawPayment`
+    - **Description:** Authorization for withdrawing payments
+  </Accordion>
+
+  <Accordion title="CreateClaimAuthorization" icon="folder-plus">
+    - **Message type:** `/ixo.claims.v1beta1.MsgCreateClaimAuthorization`
+    - **Description:** Authorization for creating claims
+  </Accordion>
+</AccordionGroup>
 
 ### Constraints and Lists
 

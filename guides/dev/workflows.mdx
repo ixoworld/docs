@@ -1,0 +1,139 @@
+---
+title: "Developer workflows"
+icon: "diagram-project"
+description: "End-to-end patterns for the IXO MultiClient SDK: clients, entities, claims, and evaluation—aligned with implementation examples in this docs repo."
+---
+
+These workflows follow the same patterns as [Implementation examples](/guides/dev/examples). Method names and payloads can change between SDK releases—confirm types and exports in [`@ixo/impactxclient-sdk`](https://www.npmjs.com/package/@ixo/impactxclient-sdk) and the [ixo-multiclient-sdk repository](https://github.com/ixofoundation/ixo-multiclient-sdk) before shipping.
+
+<Info>
+  There is **no single blessed CLI** for every IXO operation in this docs set. Prefer the SDK, Cosmos-compatible wallets, or deployment-specific CLIs your operator documents. For HTTP examples (for example Emerging Platform domains), see [Domain registration](/guides/domain-registration).
+</Info>
+
+## Prerequisites
+
+1. Install dependencies: `@ixo/impactxclient-sdk` (and optional `@ixo/oracle-agent-sdk` for verification flows).
+2. Choose **RPC endpoint** and **chain ID** from [Networks and endpoints](/reference/networks-and-endpoints).
+3. Choose **auth** for each surface from [Authentication matrix](/reference/authentication-matrix); on-chain writes require a funded signer (wallet or key management you control).
+
+## 1. Initialize the client
+
+```typescript
+import { createClient } from "@ixo/impactxclient-sdk";
+
+const client = await createClient({
+  rpcEndpoint: "https://rpc.ixo.world",
+  chainId: "ixo-5",
+});
+```
+
+**Signing:** production flows attach a signer compatible with the chain (for example Keplr, Cosmostation, or a custodial signer). The examples below assume `client` can submit transactions for your account.
+
+**Errors:** RPC misconfiguration often surfaces as connection timeouts or JSON-RPC errors. Retry with a different node if the operator allows; confirm TLS and `chainId` match the network.
+
+## 2. Register or manage a domain (digital twin)
+
+Create an entity that backs your domain / digital twin (type and fields depend on your protocol):
+
+```typescript
+const entity = await client.createEntity({
+  type: "Asset",
+  name: "Solar Panel Array",
+  description: "Renewable energy installation",
+  location: { latitude: 51.5074, longitude: -0.1278 },
+  metadata: {
+    capacity: "5kW",
+    installation_date: "2023-01-15",
+  },
+});
+
+console.log("Entity id:", entity.id);
+
+const entityData = await client.getEntity(entity.id);
+```
+
+**Update state** (example):
+
+```typescript
+await client.updateEntity(entity.id, {
+  status: "active",
+  metadata: {
+    ...entityData.metadata,
+    last_maintenance: "2023-06-10",
+  },
+});
+```
+
+**Errors:** invalid `type` / metadata vs module expectations may return failed transactions—inspect `codespace` and `code` in the broadcast result and compare to protocol docs.
+
+## 3. Submit a claim
+
+```typescript
+const claim = await client.createClaim({
+  entityId: entity.id,
+  type: "Production",
+  data: {
+    energy_produced: "120kWh",
+    timestamp: Date.now(),
+  },
+  evidence: {
+    type: "MeterReading",
+    hash: "Qm...",
+    uri: "https://...",
+  },
+});
+
+console.log("Claim id:", claim.id);
+```
+
+**Errors:** missing `entityId`, schema mismatch, or insufficient authorization produce chain errors or rejected messages. Cross-check [Claims](/guides/dev/claims) and your entity’s controller keys.
+
+## 4. Evaluate or verify a claim (oracle-assisted)
+
+Illustrative pattern combining oracle client and evaluation (see [Implementation examples](/guides/dev/examples) for full context):
+
+```typescript
+import { createOracleClient } from "@ixo/oracle-agent-sdk";
+
+const oracle = await createOracleClient({
+  did: "did:ixo:oracle/123",
+  endpoint: "https://oracle.ixo.world",
+});
+
+const verification = await oracle.verify({
+  claimId: claim.id,
+  data: claimData,
+  context: { timestamp: Date.now() },
+});
+
+const evaluation = await client.evaluateClaim(claim.id, {
+  status: "Approved",
+  verifier: oracle.did,
+  evidence: verification,
+});
+```
+
+**Errors:** oracle `401`/`403` usually means wrong operator credential or DID; chain-side `evaluateClaim` failures often point to authorization or claim state.
+
+## 5. Issue and rely on verifiable credentials
+
+Credential **issuance and verification** are governed by your program’s issuer keys, schemas, and registry or Matrix storage—see [Credential issuance](/platforms/Emerging/credential-issuance) and [Identity and credentials](/guides/dev/identity-and-credentials). Implement issuance in the component that holds the issuer key; verifiers should check signature, issuer DID, schema, and revocation/status lists.
+
+For HTTP-oriented credential flows on Emerging, use the platform API docs ([Emerging API](/platforms/Emerging/emerging-api)) and the same auth rules as other service APIs.
+
+## Error handling
+
+- **HTTP service calls:** use [Error handling](/api-reference/errors) for status codes; add retry/backoff for `429` and transient `5xx`.
+- **GraphQL (Blocksync):** partial errors may appear in a top-level `errors` array while `data` is non-null—always check both; unauthenticated introspection may be disabled on some deployments.
+- **DID resolution:** if resolution fails, confirm the DID is registered on the expected network and that you query the correct registry or indexer endpoint.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="IXO Stack SDKs" icon="toolbox" href="/guides/dev/ixo-stack-sdks">
+    All SDK entry points and gateway tools
+  </Card>
+  <Card title="MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Module-level features on-chain
+  </Card>
+</CardGroup>

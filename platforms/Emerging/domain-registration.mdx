@@ -110,6 +110,55 @@ The **Emerging Platform** uses digital twin domains as reusable identity and sta
   </Card>
 </CardGroup>
 
+## Governance and DAO workflow
+
+**What “proposal to DAO” means here** — A domain change (new entity, protocol class, relayer, or material metadata) is packaged as a **proposal**: voters decide whether the network should treat that domain as verified and active for the intended program.
+
+1. **Draft** — Complete the entity document and evidence your template requires (controllers, relayer, protocol DID, optional credentials). Use [Digital identifiers](/platforms/Emerging/digital-identifiers) and [Data integrity](/platforms/Emerging/data-integrity) as guardrails.
+2. **Submit** — Send the proposal through the governance surface your deployment uses (for example on-chain gov module parameters, a **Studio**/**Portal** workflow, or operator-specific APIs—confirm with your program operator). The exact transaction or HTTP call is deployment-specific; align with [Emerging API](/platforms/Emerging/emerging-api) and [Networks and endpoints](/reference/networks-and-endpoints).
+3. **Vote** — Token holders, committee members, or allow-listed voters evaluate risk, relayer assignment, and protocol fit. Outcomes are typically **pass**, **fail**, or **abstain** with a quorum threshold.
+4. **Execute** — On approval, state transitions run (verification flags, registry pointers, service enablement). On rejection, the domain stays inactive or reverts to the previous version depending on module rules.
+
+For how DAOs fit the wider IXO story, see [DAOs](/articles/daos). For who typically drafts vs votes vs funds programs, see [Your role](/your-role).
+
+## Who does what (roles)
+
+<AccordionGroup>
+  <Accordion title="Integration, keys, automation" icon="code">
+    - **Typical role:** Developer
+    - **Doc entry:** [Your role — Developer](/your-role)
+  </Accordion>
+
+  <Accordion title="Evidence review, rubrics, approvals" icon="clipboard-check">
+    - **Typical role:** Evaluator
+    - **Doc entry:** [Your role — Evaluator](/your-role)
+  </Accordion>
+
+  <Accordion title="Capital and outcome-linked funding" icon="hand-holding-dollar">
+    - **Typical role:** Funder
+    - **Doc entry:** [Your role — Funder](/your-role)
+  </Accordion>
+
+  <Accordion title="Implementation and service delivery" icon="handshake">
+    - **Typical role:** Service provider
+    - **Doc entry:** [Your role — Service provider](/your-role)
+  </Accordion>
+</AccordionGroup>
+
+## Checklists
+
+**Before submitting a domain proposal**
+
+- Controllers and keys match who will operate the entity on-chain.
+- Protocol / class DID is the one your template expects.
+- Relayer or service endpoints are reachable from your environment.
+- Evidence and metadata align with [Digital certification](/platforms/Emerging/digital-certification) where applicable.
+
+**After vote**
+
+- Poll domain status via GraphQL (see [Query examples](#query-examples) on this page) or your operator dashboard.
+- Rotate credentials if the proposal changed controllers or services ([Authentication matrix](/reference/authentication-matrix)).
+
 ## Query Examples
 
 ### Find Available Protocols
