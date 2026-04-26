@@ -1,167 +1,63 @@
 ---
 title: 'IXO Stack SDKs'
 icon: 'code'
-description: 'Build advanced applications on the IXO Stack using the comprehensive suite of IXO development tools'
+description: 'Developer entry point to SDK workflows, with the canonical SDK and kit overview in the SDK reference'
 ---
 
-<Tip>
-The IXO Stack SDKs help you integrate the IXO Protocol, IXO Matrix, and related services from TypeScript. Deployable **gateway tools** extend IXO to offline and mobile channels (including USSD).
-</Tip>
+<Info>
+The canonical SDK and kit overview is now maintained at [IXO and Qi Developer Kits](/sdk-reference/index).  
+Use this page as a developer workflow entry point.
+</Info>
 
-## Available SDKs
-
-<CardGroup>
-
-<Card title="IXO MultiClient SDK" icon="network-wired" href="/sdk-reference/multiclient-sdk">
-  Connect with IXO and Cosmos networks for interchain operations
-</Card>
-
-<Card title="Matrix Client SDK" icon="database" href="/sdk-reference/matrix-client-sdk">
-  Build secure data rooms and encrypted communication channels
-</Card>
-
-<Card title="Agentic Oracles ADK" icon="sparkles" href="/sdk-reference/agentic-oracles-adk">
-  Build oracle and agent services with `@ixo/oracle-agent-sdk`
-</Card>
-
-<Card title="Personal Agent ADK" icon="brain" href="/sdk-reference/oracle-adk">
-  Integrate conversational AI with `@ixo/assistant-sdk`
-</Card>
-
-<Card title="JAMBO PWA SDK" icon="wallet" href="/sdk-reference/jambo-wallet-sdk">
-  Manage digital assets and credentials in JAMBO PWA experiences
-</Card>
-
-<Card title="SignX SDK" icon="signature" href="/sdk-reference/signx-sdk">
-  Enable secure mobile-to-web authentication and transaction signing
-</Card>
-
-</CardGroup>
-
-## Gateway tools
-
-Fork or deploy these tools to extend IXO services to additional channels and environments.
+## Start here
 
 <CardGroup>
-
-<Card title="IXO USSD gateway" icon="tower-cell" href="/articles/ixo-ussd">
-  Give any GSM mobile phone access to IXO services — no smartphone or data plan required
-</Card>
-
+  <Card title="SDK and kit overview (canonical)" icon="book" href="/sdk-reference/index">
+    Choose the right SDK or kit, including Oracles Client SDK, Agentic Oracles ADK, and JAMBO PWA SDK.
+  </Card>
+  <Card title="Developer workflows" icon="diagram-project" href="/guides/dev/workflows">
+    Follow end-to-end implementation patterns for entities, claims, evaluation, and integrations.
+  </Card>
+  <Card title="Identity and credentials" icon="id-card" href="/guides/dev/identity-and-credentials">
+    Understand DID, claim, and credential relationships used across SDK workflows.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/index">
+    Review service and infrastructure APIs used by SDK-based implementations.
+  </Card>
 </CardGroup>
 
-## Installation
+## SDK quick links
 
-```bash
-# Install core SDKs
-npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
-npm install @ixo/assistant-sdk @ixo/jambo-wallet-sdk
-```
-
-## Basic Setup
-
-<CodeGroup>
-
-```typescript IXO MultiClient SDK
-import { createClient } from "@ixo/impactxclient-sdk";
-
-// Initialize client
-const chain = await createClient({
-  rpcEndpoint: RPC_ENDPOINT,
-  chainId: "ixo-5"
-});
-
-// Create digital twin
-const twin = await chain.entity.create({
-  type: "DigitalTwin",
-  controller: "did:ixo:org/123"
-});
-```
-
-```typescript IXO Matrix Client SDK
-import { createMatrixClient } from "@ixo/matrixclient-sdk";
-
-// Initialize Matrix client
-const matrix = await createMatrixClient({
-  baseUrl: MATRIX_ENDPOINT,
-  accessToken: USER_TOKEN
-});
-
-// Create secure data room
-const room = await matrix.createRoom({
-  name: "Secure Data Room",
-  encryption: true,
-  visibility: "private"
-});
-```
-
-```typescript Assistant
-import { createAssistant } from "@ixo/assistant-sdk";
-
-// Initialize assistant
-const assistant = await createAssistant({
-  type: "VerificationAgent",
-  capabilities: ["verification", "analytics"]
-});
-
-// Process verification request
-const result = await assistant.verify({
-  data: inputData,
-  context: verificationContext
-});
-```
-
-```typescript JAMBO PWA
-import { createWallet } from "@ixo/jambo-wallet-sdk";
-
-// Initialize wallet
-const wallet = await createWallet({
-  storageType: "secure",
-  network: "mainnet"
-});
-
-// Manage credentials
-const credential = await wallet.createCredential({
-  type: "VerifiableCredential",
-  issuer: "did:ixo:issuer/123"
-});
-```
-
-</CodeGroup>
-
-## End-to-end workflows
-
-For runnable patterns (client setup, entities, claims, evaluation) aligned with [Implementation examples](/guides/dev/examples), read [Developer workflows](/guides/dev/workflows). For DID, claim, and VC relationships, read [Identity and credentials](/guides/dev/identity-and-credentials).
-
-## Key Features
-
-### MultiClient SDK
-- Interchain transactions and queries
-- Digital twin management
-- Entity state management
-- Blockchain service management
-
-### Matrix Client SDK
-- End-to-end encrypted data rooms
-- Secure messaging and file storage
-- Access control management
-- Real-time data streaming
-
-### Personal Agent ADK
-- AI-powered agent services
-- Analytics processing
-- Evidence collection
-- Proof generation
-
-### JAMBO PWA SDK
-- Credential management
-- Digital asset operations
-- Secure key storage
-- Transaction signing
+<CardGroup cols={2}>
+  <Card title="IXO MultiClient SDK" icon="network-wired" href="/sdk-reference/multiclient-sdk">
+    Interchain protocol interactions and entity workflows.
+  </Card>
+  <Card title="IXO Matrix Client SDK" icon="database" href="/sdk-reference/matrix-client-sdk">
+    Encrypted rooms, messaging, and shared state integrations.
+  </Card>
+  <Card title="Oracles Client SDK" icon="comments" href="/sdk-reference/oracles-client-sdk">
+    Frontend agent-client interfaces for deployed oracles.
+  </Card>
+  <Card title="Agentic Oracles ADK" icon="sparkles" href="/sdk-reference/agentic-oracles-adk">
+    Scaffold, implement, and deploy oracle services.
+  </Card>
+  <Card title="Personal Agent ADK" icon="brain" href="/sdk-reference/oracle-adk">
+    Personal conversational assistant integrations.
+  </Card>
+  <Card title="JAMBO PWA SDK" icon="wallet" href="/sdk-reference/jambo-wallet-sdk">
+    JAMBO PWA integrations with wallet-enabled workflows.
+  </Card>
+  <Card title="IXO SignX SDK" icon="signature" href="/sdk-reference/signx-sdk">
+    User authentication and transaction signing flows.
+  </Card>
+  <Card title="IXO USSD gateway" icon="tower-cell" href="/articles/ixo-ussd">
+    Extend IXO services to offline and feature-phone channels.
+  </Card>
+</CardGroup>
 
 ## Next steps
 
-- [Developer workflows](/guides/dev/workflows) — SDK patterns for domains, claims, and verification
-- [SDK reference](/sdk-reference) — full reference for each SDK
-- [API reference](/api-reference) — IXO service APIs
-- [Developer overview](/guides/dev/overview) — entry points and task-oriented guides
+- [IXO and Qi Developer Kits](/sdk-reference/index) — canonical SDK and kit overview
+- [Developer workflows](/guides/dev/workflows) — implementation patterns for domains, claims, and verification
+- [API reference](/api-reference/index) — IXO service APIs
+- [Developer overview](/guides/dev/overview) — task-oriented entry points
