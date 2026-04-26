@@ -1,166 +1,155 @@
 ---
-title: 'Managing Smart Accounts'
-description: 'Create and configure accounts with advanced authentication capabilities on the IXO blockchain using the IXO MultiClient SDK'
+title: "Manage smart accounts"
+description: "Add, remove, and toggle authenticators on IXO smart accounts to extend Cosmos SDK signing with conditional rules."
 ---
 
-<Tip>
-Smart accounts provide a robust and extensible framework for authenticating transactions on the IXO blockchain. Unlike traditional authentication methods, smart accounts allow you to use multiple types of authenticators, each with their own set of rules and conditions for transaction approval.
-</Tip>
+The IXO `smartaccount` module replaces the default Cosmos SDK signature ante handler with an opt-in pluggable system. Each account can register one or more **authenticators** — signature verifiers, message filters, spend-limit contracts, or composite logic — that execute on every transaction the account opts in to. If no authenticators are selected, transactions fall back to the standard Cosmos SDK signature flow.
 
-## Understanding Smart Accounts
+## Before you start
 
-<Accordion title="Smart Account Architecture">
-  Smart accounts operate as a replacement for the default Cosmos SDK authentication mechanism through an ante handler (executed before transaction messages are processed). Key components include:
-  
-  - **Circuit Breaker**: Allows the module to be disabled if necessary
-  - **Authenticator Selection**: Users opt-in to using authenticators for each message
-  - **Authenticator Execution**: Multiple authenticators can be combined to create complex authentication logic
-</Accordion>
+You need:
 
-<Tip>
-  If no authenticators are selected, transactions default to the classic Cosmos SDK authentication method using standard signatures.
-</Tip>
+- An IXO account with `uixo` for fees on the network you target — see [Networks and endpoints](/reference/networks-and-endpoints).
+- An offline signer — see the [SDK README](https://github.com/ixofoundation/ixo-multiclient-sdk#creating-signers).
+- An authenticator type and config payload to register. The supported types are defined in the [smartaccount types proto](https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/smartaccount/v1beta1).
 
-## Managing Authenticators
-
-### Adding an Authenticator
-
-Add a new authenticator to a smart account to enhance its security capabilities.
-
-```typescript
-const response = await MsgAddAuthenticator(
-  "smart_account_address", // Address of the smart account
-  "authenticator_address"  // Address of the authenticator
-);
+```bash
+npm install @ixo/impactxclient-sdk
 ```
 
-### Removing an Authenticator
+```ts
+import { ixo, createSigningClient } from "@ixo/impactxclient-sdk";
 
-Remove an authenticator from a smart account when it's no longer needed.
-
-```typescript
-const response = await MsgRemoveAuthenticator(
-  "smart_account_address", // Address of the smart account
-  "authenticator_address"  // Address of the authenticator
-);
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-## Using Smart Accounts
+## Add an authenticator
 
-### Sending Transactions with Authenticators
+```ts
+const addAuthenticatorMsg = {
+  typeUrl: "/ixo.smartaccount.v1beta1.MsgAddAuthenticator",
+  value: ixo.smartaccount.v1beta1.MsgAddAuthenticator.fromPartial({
+    sender: signerAddress,
+    authenticatorType: "SignatureVerification",
+    data: new TextEncoder().encode(JSON.stringify({ pubkey: pubkeyHex })),
+  }),
+};
 
-Execute a transaction that uses the smart account's authenticator for verification.
-
-```typescript
-const response = await MsgSendWithAuthenticator(
-  "smart_account_address", // Address of the smart account
-  "recipient_address",     // Address of the recipient
-  "1000000uixo"            // Amount to send
-);
+await signingClient.signAndBroadcast(signerAddress, [addAuthenticatorMsg], "auto");
 ```
 
-## Composite Authenticators
+The chain assigns an `id` to each authenticator on success. Read it from transaction events to reference the authenticator in subsequent transactions.
 
-Smart accounts support composite authenticators that combine multiple authentication methods for enhanced security and flexibility.
+## Remove an authenticator
 
-### Composite authenticator types
+```ts
+const removeAuthenticatorMsg = {
+  typeUrl: "/ixo.smartaccount.v1beta1.MsgRemoveAuthenticator",
+  value: ixo.smartaccount.v1beta1.MsgRemoveAuthenticator.fromPartial({
+    sender: signerAddress,
+    id: 1n,
+  }),
+};
+```
+
+## Pause the module (governance)
+
+`MsgSetActiveState` is the circuit breaker — only the module's gov authority can broadcast it.
+
+```ts
+const setActiveMsg = ixo.smartaccount.v1beta1.MsgSetActiveState.fromPartial({
+  authority: govAuthority,
+  active: false,
+});
+```
+
+When `active` is `false`, the smart-account ante handler is skipped and all transactions use the default Cosmos SDK signature path.
+
+## Use authenticators on a transaction
+
+A transaction opts in to specific authenticators via the **`AuthenticatorTxExtension`** TX extension. The full pattern depends on your signing flow — see the [smartaccount module README](https://github.com/ixofoundation/ixo-blockchain/tree/main/x/smartaccount) and the [README for the IXO MultiClient SDK](https://github.com/ixofoundation/ixo-multiclient-sdk) for current helpers. The extension carries the list of authenticator IDs to use for each signer.
+
+## Composite authenticators
+
+Composite authenticators combine sub-authenticators using boolean logic.
 
 <AccordionGroup>
   <Accordion title="AllOf" icon="link">
-    - **Description:** Requires all sub-authenticators to approve
-    - **Logic:** `authenticate(a) && authenticate(b) && ...`
+    Approves only when every sub-authenticator approves: `auth(a) && auth(b) && ...`.
   </Accordion>
   <Accordion title="AnyOf" icon="code-branch">
-    - **Description:** Requires at least one sub-authenticator to approve
-    - **Logic:** `authenticate(a) || authenticate(b) || ...`
+    Approves when at least one sub-authenticator approves: `auth(a) || auth(b) || ...`.
+  </Accordion>
+  <Accordion title="PartitionedAllOf" icon="user-group">
+    Multi-signature where signatures are split across sub-authenticators (one signer per sub-authenticator).
   </Accordion>
 </AccordionGroup>
 
-### Example Configurations
+Example shapes:
 
-<Accordion title="One-Click Trading">
-  ```
-  AllOf(
-    SignatureVerification(usersPubKey),
-    AnyOf(
-      MessageFilter(SwapMsg1),
-      MessageFilter(SwapMsg2)
-    ),
-    CosmwasmAuthenticator(spendLimitContract, params)
-  )
-  ```
-  This configuration allows a hot key to execute only swap messages and fails if the transaction would leave the user with a balance below a certain threshold.
-</Accordion>
+```text
+// One-click trading: hot key restricted to swap messages with on-chain spend-limit guard
+AllOf(
+  SignatureVerification(usersPubKey),
+  AnyOf(
+    MessageFilter(SwapMsg1),
+    MessageFilter(SwapMsg2)
+  ),
+  CosmwasmAuthenticator(spendLimitContract, params)
+)
 
-<Accordion title="Multi-signature">
-  ```
-  PartitionedAllOf(pubkey1, pubkey2, pubkey3)
-  ```
-  This creates a simple multi-signature scheme requiring signatures from multiple keys to authorize transactions.
-</Accordion>
+// Multisig (2-of-3): each signer satisfies one branch
+PartitionedAllOf(pubkey1, pubkey2, pubkey3)
 
-<Accordion title="Cosigner Protection">
-  ```
-  AllOf(
-    SignatureVerification(cosignerPubKey),
-    AnyOf(...user_authenticators)
-  )
-  ```
-  This requires an off-chain cosigner service to approve all transactions, providing an additional layer of security.
-</Accordion>
+// Cosigner protection: cosigner approves alongside a user-selected set
+AllOf(
+  SignatureVerification(cosignerPubKey),
+  AnyOf(...userAuthenticators)
+)
+```
 
-## Smart Account Function Reference
+## Authentication phases
 
-<AccordionGroup>
-  <Accordion title="MsgAddAuthenticator" icon="user-plus">
-    Adds an authenticator to a smart account.
+Each authenticator runs through a three-phase lifecycle on every transaction:
 
-    **Parameters:** `smartAccount: string, authenticator: string`
-  </Accordion>
+1. **Authenticate** — verify the transaction is authorized.
+2. **Track** — record any state changes the authenticator needs (committed regardless of transaction outcome).
+3. **Confirm execution** — validate the post-execution effects.
 
-  <Accordion title="MsgRemoveAuthenticator" icon="user-minus">
-    Removes an authenticator from a smart account.
+## Verify the result
 
-    **Parameters:** `smartAccount: string, authenticator: string`
-  </Accordion>
-
-  <Accordion title="MsgSendWithAuthenticator" icon="paper-plane">
-    Sends a transaction using an authenticator.
-
-    **Parameters:** `smartAccount: string, recipient: string, amount: string`
-  </Accordion>
-</AccordionGroup>
-
-## Authentication Lifecycle
-
-Smart account authentication follows a three-phase process to ensure security and flexibility:
-
-<Accordion title="Authentication Phases">
-  1. **Authenticate**: Verifies the transaction is authorized
-  2. **Track**: Records any state changes required for authentication, committed regardless of transaction success
-  3. **Confirm Execution**: Allows authenticators to validate the transaction's effects post-execution
-</Accordion>
+Query an account's authenticators through the `ixo.smartaccount.v1beta1.Query/AccountAuthenticators` endpoint on the [gRPC gateway API](/api-reference/grpc-gateway-api). Module params (including `is_smart_account_active`) are read from `Query/Params`.
 
 ## Troubleshooting
 
-<Accordion title="Invalid Authenticator Issues">
-  - Ensure the smart account and authenticator addresses are correctly formatted
-  - Verify the authenticator is authorized for the operation
-  - Check that the authenticator ID is valid and exists on the account
-</Accordion>
+<AccordionGroup>
+  <Accordion title="unknown authenticator type" icon="circle-xmark">
+    `authenticatorType` must match one of the registered types in the chain's `smartaccount` module. Check `Query/Params.maximum_unauthenticated_gas` and the module's registered types.
+  </Accordion>
+  <Accordion title="authenticator id not found" icon="binoculars">
+    `MsgRemoveAuthenticator` fails when `id` does not exist for `sender`. Query `AccountAuthenticators` to confirm the id.
+  </Accordion>
+  <Accordion title="module inactive" icon="pause">
+    When `is_smart_account_active` is `false`, `MsgAddAuthenticator` and `MsgRemoveAuthenticator` are rejected. The module is gated by gov via `MsgSetActiveState`.
+  </Accordion>
+  <Accordion title="signature verification failed" icon="key">
+    Ensure the TX extension lists the correct authenticator IDs in the order matching the signer set, and that the data payload registered with `MsgAddAuthenticator` is the canonical encoding for that authenticator type.
+  </Accordion>
+</AccordionGroup>
 
-<Accordion title="Transaction Failures">
-  - Confirm the smart account has sufficient balance for the transaction and fees
-  - Verify the recipient address is valid
-  - Check that the authentication logic is correctly configured
-</Accordion>
+## Next steps
 
-<Accordion title="Composite Authenticator Problems">
-  - Ensure all required signatures are provided for partitioned authenticators
-  - Verify the composition logic matches your security requirements
-  - Check that each sub-authenticator is correctly configured
-</Accordion>
-
-<Tip>
-  Smart accounts are currently controlled by a "circuit breaker" parameter (`is_smart_account_active`). If this parameter is set to false, the module will not be used and transactions will fall back to classic Cosmos SDK authentication.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="IXO MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Module-level features and types.
+  </Card>
+  <Card title="Smart account proto" icon="github" href="https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/smartaccount/v1beta1">
+    Source of truth for smart-account messages.
+  </Card>
+  <Card title="Session keys" icon="key" href="/guides/dev/session-keys">
+    Issue scoped session keys backed by smart-account authenticators.
+  </Card>
+  <Card title="Manage authorization" icon="user-shield" href="/guides/dev/authz">
+    Use Cosmos authz alongside smart-account authenticators.
+  </Card>
+</CardGroup>

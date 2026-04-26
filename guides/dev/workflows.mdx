@@ -1,139 +1,188 @@
 ---
 title: "Developer workflows"
 icon: "diagram-project"
-description: "End-to-end patterns for the IXO MultiClient SDK: clients, entities, claims, and evaluation—aligned with implementation examples in this docs repo."
+description: "End-to-end IXO MultiClient SDK patterns: query client, signing client, entities, claims, and oracle-assisted evaluation."
 ---
 
-These workflows follow the same patterns as [Implementation examples](/guides/dev/examples). Method names and payloads can change between SDK releases—confirm types and exports in [`@ixo/impactxclient-sdk`](https://www.npmjs.com/package/@ixo/impactxclient-sdk) and the [ixo-multiclient-sdk repository](https://github.com/ixofoundation/ixo-multiclient-sdk) before shipping.
+These workflows show the canonical message patterns from the [`@ixo/impactxclient-sdk` README](https://github.com/ixofoundation/ixo-multiclient-sdk#readme). For full type definitions, see [`@ixo/impactxclient-sdk`](https://www.npmjs.com/package/@ixo/impactxclient-sdk) and the [proto definitions](https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo).
 
 <Info>
-  There is **no single blessed CLI** for every IXO operation in this docs set. Prefer the SDK, Cosmos-compatible wallets, or deployment-specific CLIs your operator documents. For HTTP examples (for example Emerging Platform domains), see [Domain registration](/guides/domain-registration).
+  There is **no single blessed CLI** for every IXO operation. Prefer the SDK, Cosmos-compatible wallets, or deployment-specific CLIs your operator documents. For HTTP-oriented domain examples, see [Domain registration](/guides/domain-registration).
 </Info>
 
 ## Prerequisites
 
-1. Install dependencies: `@ixo/impactxclient-sdk` (and optional `@ixo/oracle-agent-sdk` for verification flows).
+1. Install dependencies: `@ixo/impactxclient-sdk`. For Agentic Oracle integration, see [Agentic Oracles ADK](/sdk-reference/oracle-adk).
 2. Choose **RPC endpoint** and **chain ID** from [Networks and endpoints](/reference/networks-and-endpoints).
-3. Choose **auth** for each surface from [Authentication matrix](/reference/authentication-matrix); on-chain writes require a funded signer (wallet or key management you control).
+3. Choose **auth** for each surface from [Authentication matrix](/reference/authentication-matrix). On-chain writes require a funded signer (wallet or key management you control).
 
-## 1. Initialize the client
-
-```typescript
-import { createClient } from "@ixo/impactxclient-sdk";
-
-const client = await createClient({
-  rpcEndpoint: "https://rpc.ixo.world",
-  chainId: "ixo-5",
-});
+```bash
+npm install @ixo/impactxclient-sdk
 ```
 
-**Signing:** production flows attach a signer compatible with the chain (for example Keplr, Cosmostation, or a custodial signer). The examples below assume `client` can submit transactions for your account.
+## 1. Initialize query and signing clients
 
-**Errors:** RPC misconfiguration often surfaces as connection timeouts or JSON-RPC errors. Retry with a different node if the operator allows; confirm TLS and `chainId` match the network.
-
-## 2. Register or manage a domain (digital twin)
-
-Create an entity that backs your domain / digital twin (type and fields depend on your protocol):
+Reads use `createQueryClient`. Writes need a signer-backed `createSigningClient`. Both target the same RPC endpoint.
 
 ```typescript
-const entity = await client.createEntity({
-  type: "Asset",
-  name: "Solar Panel Array",
-  description: "Renewable energy installation",
-  location: { latitude: 51.5074, longitude: -0.1278 },
-  metadata: {
-    capacity: "5kW",
-    installation_date: "2023-01-15",
-  },
-});
+import {
+  ixo,
+  createQueryClient,
+  createSigningClient,
+} from "@ixo/impactxclient-sdk";
 
-console.log("Entity id:", entity.id);
+const RPC_ENDPOINT = "https://rpc.ixo.world";
 
-const entityData = await client.getEntity(entity.id);
+const queryClient = await createQueryClient(RPC_ENDPOINT);
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-**Update state** (example):
+**Errors:** RPC misconfiguration surfaces as connection timeouts or JSON-RPC errors. Try a different node if your operator allows; confirm TLS and `chainId` against the network row in [Networks and endpoints](/reference/networks-and-endpoints).
+
+For signer setup (Cosmos-kit, Keplr, or `getOfflineSigner` from `cosmjs-utils`), see [SDK README — Creating signers](https://github.com/ixofoundation/ixo-multiclient-sdk#creating-signers).
+
+## 2. Register an entity (digital twin)
+
+Compose `MsgCreateEntity`, sign and broadcast.
 
 ```typescript
-await client.updateEntity(entity.id, {
-  status: "active",
-  metadata: {
-    ...entityData.metadata,
-    last_maintenance: "2023-06-10",
-  },
-});
+const createEntityMsg = {
+  typeUrl: "/ixo.entity.v1beta1.MsgCreateEntity",
+  value: ixo.entity.v1beta1.MsgCreateEntity.fromPartial({
+    ownerAddress: signerAddress,
+    entityType: "asset",
+    context: [
+      ixo.iid.v1beta1.Context.fromPartial({
+        key: "class",
+        val: "did:ixo:entity:protocol123",
+      }),
+    ],
+    verification: [],
+    controller: [],
+    service: [],
+    linkedResource: [],
+    accordedRight: [],
+    linkedEntity: [],
+    linkedClaim: [],
+  }),
+};
+
+const response = await signingClient.signAndBroadcast(
+  signerAddress,
+  [createEntityMsg],
+  "auto",
+);
 ```
 
-**Errors:** invalid `type` / metadata vs module expectations may return failed transactions—inspect `codespace` and `code` in the broadcast result and compare to protocol docs.
+Read the resulting entity through the query client:
+
+```typescript
+const entities = await queryClient.ixo.entity.v1beta1.entityList();
+```
+
+**Errors:** invalid `entityType` or context key/value pairs that the chain does not accept return failed transactions. Inspect `code` and `rawLog` on the broadcast response.
 
 ## 3. Submit a claim
 
 ```typescript
-const claim = await client.createClaim({
-  entityId: entity.id,
-  type: "Production",
-  data: {
-    energy_produced: "120kWh",
-    timestamp: Date.now(),
-  },
-  evidence: {
-    type: "MeterReading",
-    hash: "Qm...",
-    uri: "https://...",
-  },
-});
+const submitClaimMsg = {
+  typeUrl: "/ixo.claims.v1beta1.MsgSubmitClaim",
+  value: ixo.claims.v1beta1.MsgSubmitClaim.fromPartial({
+    creator: signerAddress,
+    claimId: "bafkreih...",
+    collectionId: "12",
+    adminAddress: collectionAdminAddress,
+  }),
+};
 
-console.log("Claim id:", claim.id);
+await signingClient.signAndBroadcast(signerAddress, [submitClaimMsg], "auto");
 ```
 
-**Errors:** missing `entityId`, schema mismatch, or insufficient authorization produce chain errors or rejected messages. Cross-check [Claims](/guides/dev/claims) and your entity’s controller keys.
+**Errors:** missing `collectionId`, schema mismatch, or insufficient authorization produce chain errors. Cross-check [Claims management](/guides/dev/ixo-claims) and [Custom authorisations for IXO Claims](/guides/dev/authz-custom).
 
-## 4. Evaluate or verify a claim (oracle-assisted)
+## 4. Evaluate a claim (oracle-assisted)
 
-Illustrative pattern combining oracle client and evaluation (see [Implementation examples](/guides/dev/examples) for full context):
+An Agentic Oracle returns a determination off-chain; the on-chain record is written by `MsgEvaluateClaim`. The example below assumes an Agentic Oracle service exposes a verify endpoint your code calls — see [Agentic Oracles ADK](/sdk-reference/oracle-adk) for the canonical SDK home and [Build agentic oracles](/guides/ixo-oracles-architecture) for the architecture.
 
 ```typescript
-import { createOracleClient } from "@ixo/oracle-agent-sdk";
-
-const oracle = await createOracleClient({
-  did: "did:ixo:oracle/123",
-  endpoint: "https://oracle.ixo.world",
+const verification = await callOracleVerify({
+  oracleEndpoint: "https://oracle.example",
+  claimId: "bafkreih...",
 });
 
-const verification = await oracle.verify({
-  claimId: claim.id,
-  data: claimData,
-  context: { timestamp: Date.now() },
-});
+const evaluateMsg = {
+  typeUrl: "/ixo.claims.v1beta1.MsgEvaluateClaim",
+  value: ixo.claims.v1beta1.MsgEvaluateClaim.fromPartial({
+    creator: signerAddress,
+    claimId: "bafkreih...",
+    collectionId: "12",
+    oracle: oracleAddress,
+    adminAddress: collectionAdminAddress,
+    status: 1,
+    reason: 0,
+    verificationProof: verification.proofCid,
+    amount: [],
+  }),
+};
 
-const evaluation = await client.evaluateClaim(claim.id, {
-  status: "Approved",
-  verifier: oracle.did,
-  evidence: verification,
-});
+await signingClient.signAndBroadcast(signerAddress, [evaluateMsg], "auto");
 ```
 
-**Errors:** oracle `401`/`403` usually means wrong operator credential or DID; chain-side `evaluateClaim` failures often point to authorization or claim state.
+<Note>
+  `callOracleVerify` is a placeholder for whatever HTTP, MCP, or SDK call your Agentic Oracle exposes. The on-chain side is what `@ixo/impactxclient-sdk` covers — the off-chain agent service is your application code.
+</Note>
 
-## 5. Issue and rely on verifiable credentials
+**Errors:** oracle `401`/`403` typically means wrong operator credential or DID. Chain-side `MsgEvaluateClaim` failures usually point to authorization (no `EvaluateClaimAuthorization`) or claim state.
 
-Credential **issuance and verification** are governed by your program’s issuer keys, schemas, and registry or Matrix storage—see [Credential issuance](/platforms/Emerging/credential-issuance) and [Identity and credentials](/guides/dev/identity-and-credentials). Implement issuance in the component that holds the issuer key; verifiers should check signature, issuer DID, schema, and revocation/status lists.
+## 5. Issue tokens against an evaluated claim
 
-For HTTP-oriented credential flows on Emerging, use the platform API docs ([Emerging API](/platforms/Emerging/emerging-api)) and the same auth rules as other service APIs.
+After approval, mint tokens with `MsgMintToken` against your token contract — see [Manage tokens](/guides/dev/tokens) for the full message family.
+
+```typescript
+const mintMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgMintToken",
+  value: ixo.token.v1beta1.MsgMintToken.fromPartial({
+    minter: signerAddress,
+    contractAddress: tokenContractAddress,
+    owner: recipientAddress,
+    mintBatch: [
+      ixo.token.v1beta1.MintBatch.fromPartial({
+        name: "CARBON",
+        index: "bafkreih...",
+        amount: "3600",
+        collection: "did:ixo:entity:collection456",
+        tokenData: [],
+      }),
+    ],
+  }),
+};
+
+await signingClient.signAndBroadcast(signerAddress, [mintMsg], "auto");
+```
+
+## 6. Verifiable credentials
+
+Credential issuance and verification are governed by your program's issuer keys, schemas, and registry or IXO Matrix storage — see [Credential issuance](/platforms/Emerging/credential-issuance) and [Identity and credentials](/articles/identity-and-credentials). Implement issuance in the component that holds the issuer key; verifiers should check signature, issuer DID, schema, and revocation/status lists. For HTTP-oriented credential flows on Emerging, see [Emerging API](/platforms/Emerging/emerging-api) and the matching auth rules in [Authentication matrix](/reference/authentication-matrix).
 
 ## Error handling
 
 - **HTTP service calls:** use [Error handling](/api-reference/errors) for status codes; add retry/backoff for `429` and transient `5xx`.
-- **GraphQL (Blocksync):** partial errors may appear in a top-level `errors` array while `data` is non-null—always check both; unauthenticated introspection may be disabled on some deployments.
+- **GraphQL (Blocksync):** partial errors may appear in a top-level `errors` array while `data` is non-null — always check both. Unauthenticated introspection may be disabled on some deployments.
 - **DID resolution:** if resolution fails, confirm the DID is registered on the expected network and that you query the correct registry or indexer endpoint.
 
 ## Next steps
 
 <CardGroup cols={2}>
-  <Card title="SDK and kit overview" icon="toolbox" href="/sdk-reference/index">
-    Canonical SDK and kit overview with route selection guidance
+  <Card title="IXO MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Module-level features on protocol.
   </Card>
-  <Card title="MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
-    Module-level features on-chain
+  <Card title="SDK and kit overview" icon="toolbox" href="/sdk-reference/index">
+    Canonical SDK overview and route selection.
+  </Card>
+  <Card title="Implementation examples" icon="lightbulb" href="/guides/dev/examples">
+    Worked end-to-end flows.
+  </Card>
+  <Card title="Agentic Oracles ADK" icon="brain" href="/sdk-reference/oracle-adk">
+    Build the off-chain side of evaluation.
   </Card>
 </CardGroup>

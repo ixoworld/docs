@@ -1,133 +1,148 @@
 ---
-title: 'Managing Liquid Staking'
-description: 'Stake and unstake tokens while maintaining liquidity on the IXO blockchain using the IXO MultiClient SDK'
+title: "Manage liquid staking"
+description: "Stake and unstake IXO tokens through the liquid staking module to receive stIXO."
 ---
 
-<Tip>
-Liquid staking allows users to stake their tokens while maintaining liquidity through receipt tokens. This enables participation in network security while preserving the ability to transfer or use staked assets.
-</Tip>
+The IXO `liquidstake` module lets users stake `uixo` and receive a liquid representation (`stuixo`) that can be transferred and used in bonds, AMMs, and DeFi while underlying delegations earn validator rewards. The module routes stake to a whitelisted validator set with weights, distributes rewards through `weighted_rewards_receivers`, and supports a circuit-breaker pause and burn-to-unstake-instantly for the protocol.
 
-## Performing Liquid Staking
+## Before you start
 
-Stake your tokens and receive liquid staking tokens in return.
+You need:
 
-```typescript
-const response = await MsgLiquidStake(
-  "1000000uixo", // Amount to stake
-  "staker_address" // Address of the staker
-);
+- An IXO account funded with `uixo` for staking and fees on the network you target — see [Networks and endpoints](/reference/networks-and-endpoints).
+- An offline signer — see the [SDK README](https://github.com/ixofoundation/ixo-multiclient-sdk#creating-signers).
+- Awareness that governance changes (params, whitelisted validators, reward receivers, pause) require `cosmos.gov.v1.MsgSubmitProposal` wrapping the relevant `MsgUpdate*` message — they are not callable directly by users.
+
+```bash
+npm install @ixo/impactxclient-sdk
 ```
 
-<Tip>
-  When you liquid stake IXO tokens, you receive ZERO liquid staking tokens that represent your staked position. These tokens are used in the IXO Perpetual Carbon Offsetting Protocol.
-</Tip>
+```ts
+import { ixo, createSigningClient } from "@ixo/impactxclient-sdk";
 
-## Performing Liquid Unstaking
-
-Convert your liquid staking tokens back to the original tokens.
-
-```typescript
-const response = await MsgLiquidUnstake(
-  "1000000uixo", // Amount to unstake
-  "staker_address" // Address of the staker
-);
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-### Unstaking parameters
+## Stake `uixo` for `stuixo`
 
-<AccordionGroup>
-  <Accordion title="amount" icon="coins">
-    - **Type:** `string`
-    - **Description:** Amount of liquid tokens to unstake
-  </Accordion>
-  <Accordion title="staker" icon="user">
-    - **Type:** `string`
-    - **Description:** Address of the staker performing the unstaking
-  </Accordion>
-</AccordionGroup>
+```ts
+const stakeMsg = {
+  typeUrl: "/ixo.liquidstake.v1beta1.MsgLiquidStake",
+  value: ixo.liquidstake.v1beta1.MsgLiquidStake.fromPartial({
+    delegatorAddress: signerAddress,
+    amount: { denom: "uixo", amount: "1000000" },
+  }),
+};
 
-## Governance and Administration
-
-### Submitting Parameter Update Proposals
-
-Create a governance proposal to update liquid staking parameters.
-
-```typescript
-const response = await MsgSubmitProposalUpdateLiquidStakeParams(
-  "proposal_title", // Title of the proposal
-  "proposal_description", // Description of the proposal
-  "proposer_address" // Address of the proposer
-);
+await signingClient.signAndBroadcast(signerAddress, [stakeMsg], "auto");
 ```
 
-### Managing Whitelisted Validators
+Stake is distributed across the active whitelisted validator set in proportion to their `target_weight`. The minted `stuixo` amount reflects the current `nav` (net asset value) of the staked pool.
 
-Update the list of validators that can receive delegations from the liquid staking pool.
+## Unstake `stuixo` for `uixo`
 
-```typescript
-const response = await MsgUpdateWhitelistedValidators(
-  ["validator1_address", "validator2_address"], // List of validator addresses
-  "admin_address" // Address of the admin
-);
+```ts
+const unstakeMsg = {
+  typeUrl: "/ixo.liquidstake.v1beta1.MsgLiquidUnstake",
+  value: ixo.liquidstake.v1beta1.MsgLiquidUnstake.fromPartial({
+    delegatorAddress: signerAddress,
+    amount: { denom: "stuixo", amount: "1000000" },
+  }),
+};
+
+await signingClient.signAndBroadcast(signerAddress, [unstakeMsg], "auto");
 ```
 
-<Tip>
-  Only whitelisted validators can receive delegations from the liquid staking module. This helps maintain security and reliability of the staking pool.
-</Tip>
+Unstaking enqueues an unbonding entry in the staking module — the underlying `uixo` is returned after the chain unbonding period.
 
-## Liquid Staking Function Reference
+## Governance-controlled operations
 
-<AccordionGroup>
-  <Accordion title="MsgLiquidStake" icon="lock">
-    Stakes tokens and receives liquid tokens.
+The following messages cannot be broadcast by ordinary users — they must be wrapped in a `cosmos.gov.v1.MsgSubmitProposal` with the `liquidstake` module's authority as the signer.
 
-    **Parameters:** `amount: string, staker: string`
-  </Accordion>
+```ts
+const updateParamsMsg = ixo.liquidstake.v1beta1.MsgUpdateParams.fromPartial({
+  authority: govAuthority,
+  params: ixo.liquidstake.v1beta1.Params.fromPartial({
+    liquidBondDenom: "stuixo",
+  }),
+});
 
-  <Accordion title="MsgLiquidUnstake" icon="unlock">
-    Unstakes liquid tokens back to original tokens.
+const updateValidatorsMsg = ixo.liquidstake.v1beta1.MsgUpdateWhitelistedValidators.fromPartial({
+  authority: govAuthority,
+  whitelistedValidators: [
+    ixo.liquidstake.v1beta1.WhitelistedValidator.fromPartial({
+      validatorAddress: "ixovaloper1...",
+      targetWeight: "1",
+    }),
+  ],
+});
 
-    **Parameters:** `amount: string, staker: string`
-  </Accordion>
+const updateReceiversMsg = ixo.liquidstake.v1beta1.MsgUpdateWeightedRewardsReceivers.fromPartial({
+  authority: govAuthority,
+  weightedRewardsReceivers: [
+    ixo.liquidstake.v1beta1.WeightedAddress.fromPartial({
+      address: "ixo1treasury...",
+      weight: "1",
+    }),
+  ],
+});
 
-  <Accordion title="MsgSubmitProposalUpdateLiquidStakeParams" icon="file-signature">
-    Submits parameter update proposal.
+const pauseMsg = ixo.liquidstake.v1beta1.MsgSetModulePaused.fromPartial({
+  authority: govAuthority,
+  paused: true,
+});
+```
 
-    **Parameters:** `title: string, description: string, proposer: string`
-  </Accordion>
+Wrap these as gov proposals using `cosmos.gov.v1.MsgSubmitProposal` (see the Cosmos SDK [gov module documentation](https://docs.cosmos.network/main/build/modules/gov)).
 
-  <Accordion title="MsgUpdateWhitelistedValidators" icon="list-check">
-    Updates the list of allowed validators.
+## Burn-to-unstake (admin)
 
-    **Parameters:** `validators: string[], admin: string`
-  </Accordion>
-</AccordionGroup>
+```ts
+const burnMsg = {
+  typeUrl: "/ixo.liquidstake.v1beta1.MsgBurn",
+  value: ixo.liquidstake.v1beta1.MsgBurn.fromPartial({
+    address: signerAddress,
+    amount: { denom: "stuixo", amount: "1000000" },
+  }),
+};
+```
 
-## Module Parameters
+`MsgBurn` removes `stuixo` from circulation without queuing an unbonding — used by the protocol to reconcile the supply.
 
-<Accordion title="Liquid Staking Parameters">
-  - **Whitelisted Validators**: List of validators eligible to receive delegations
-  - **Liquid Bonding Period**: Time required for unbonding liquid staked tokens
-  - **Fee Parameters**: Protocol fees for staking/unstaking operations
-  - **Minimum Stake**: Minimum amount that can be liquid staked
-</Accordion>
+## Verify the result
+
+Query staked balances and `stuixo` supply through the [gRPC gateway API](/api-reference/grpc-gateway-api) and `ixo.liquidstake.v1beta1` endpoints. Underlying delegations and unbonding entries are visible through the standard `cosmos.staking.v1beta1` queries.
 
 ## Troubleshooting
 
-<Accordion title="Staking and Unstaking Issues">
-  - Ensure the staker has sufficient balance for the operation
-  - Verify the amount is within allowed limits (above minimum stake)
-  - Check that the staking token is supported by the module
-</Accordion>
+<AccordionGroup>
+  <Accordion title="no whitelisted validators" icon="circle-xmark">
+    `MsgLiquidStake` fails when the whitelist is empty. Wait for a governance proposal to populate `whitelisted_validators` before staking.
+  </Accordion>
+  <Accordion title="module paused" icon="pause">
+    When `MsgSetModulePaused` is `true`, all user-initiated stake/unstake messages are rejected. Check params via the gov query.
+  </Accordion>
+  <Accordion title="invalid denom" icon="coin">
+    `MsgLiquidStake.amount.denom` must equal the chain `bond_denom` (typically `uixo`). `MsgLiquidUnstake.amount.denom` must equal `liquid_bond_denom` (typically `stuixo`).
+  </Accordion>
+  <Accordion title="invalid governance authority" icon="key">
+    `MsgUpdateParams`, `MsgUpdateWhitelistedValidators`, `MsgUpdateWeightedRewardsReceivers`, and `MsgSetModulePaused` only accept the gov authority address as `authority`.
+  </Accordion>
+</AccordionGroup>
 
-<Accordion title="Validator Management Issues">
-  - Confirm the validator addresses are correctly formatted
-  - Verify the admin has the necessary permissions to update validators
-  - Ensure the validators are active on the network
-</Accordion>
+## Next steps
 
-<Accordion title="Governance Proposal Issues">
-  - Check that the proposal title and description meet required formats
-  - Verify the proposer has sufficient tokens for proposal deposit
-  - Ensure the parameters being proposed are valid
-</Accordion>
+<CardGroup cols={2}>
+  <Card title="IXO MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Module-level features and types.
+  </Card>
+  <Card title="Liquid staking proto" icon="github" href="https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/liquidstake/v1beta1">
+    Source of truth for liquid staking messages.
+  </Card>
+  <Card title="Manage bonds" icon="chart-line" href="/guides/dev/bonds">
+    Use `stuixo` as a reserve token in bonds.
+  </Card>
+  <Card title="Cosmos gov module" icon="building-columns" href="https://docs.cosmos.network/main/build/modules/gov">
+    Submit governance proposals for `liquidstake` updates.
+  </Card>
+</CardGroup>

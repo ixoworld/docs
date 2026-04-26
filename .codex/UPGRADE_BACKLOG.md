@@ -212,6 +212,31 @@ Use checkboxes to track completion. Keep task summaries short and file-specific.
   - Done when:
     - each major concept has one canonical home
 
+## Developer guides audit — Apr 2026
+
+Source: `~/.cursor/plans/developer_guides_audit_b84f6fcb.plan.md`
+
+This audit reviewed every page under `guides/dev/` for duplication, broken or invented APIs, missing task scaffolding, and IA orphans. The bulk has been implemented. Items below are residual.
+
+### Decisions (recorded for future contributors)
+
+- `guides/dev/evaluation-engine.mdx` — DELETED (was empty); redirect to `/guides/dev/agent-evaluations` lives in `docs.json`.
+- `guides/dev/claims.mdx` — DELETED (invented message names and superseded by `ixo-claims.mdx`); redirect in place.
+- `guides/dev/introduction.mdx` — DELETED (duplicated `overview.mdx` with non-functional cards); redirect in place.
+- `guides/dev/identity-and-credentials.mdx` — MOVED to `articles/identity-and-credentials.mdx` per `CONTENT_MODEL_AND_IA.md` (concept article belongs in `articles/`); redirect in place; all internal links updated.
+- `guides/dev/ixo-domains.mdx` — KEPT as a routing page accessible by URL but **intentionally absent from nav**; many concept pages link to it (glossary, core-concepts, articles/cdt-systems, articles/assets, articles/domain-config). Adding it to nav would duplicate `overview.mdx`.
+- `guides/dev/ixo-stack-sdks.mdx` — REDUCED to a short pointer page; kept in nav for redirect compatibility (`/guides/dev/spatial-web-sdks` → here).
+- All canonical chain message shapes (entities, tokens, bonds, liquid-staking, smart accounts, claims, authz) — VERIFIED against `ixofoundation/ixo-blockchain` proto files. `MsgSendWithAuthenticator` and `MsgSubmitProposalUpdateLiquidStakeParams` confirmed as not existing — replaced with the `AuthenticatorTxExtension` pattern and the standard Cosmos `MsgSubmitProposal` wrapping.
+- `@ixo/oracle-agent-sdk` snippets — flagged as illustrative; npm package is not publicly published. Canonical home is `sdk-reference/oracle-adk.mdx`.
+
+### Residual / follow-up
+
+- [ ] Confirm the canonical npm slug for the Oracle ADK once the package is published; replace the illustrative snippets in `guides/dev/workflows.mdx` and `guides/dev/examples.mdx` with verified API calls.
+- [ ] Decide whether `guides/dev/ixo-stack-sdks.mdx` should be folded into `guides/dev/overview.mdx` and replaced with a redirect (currently kept as a thin pointer for backward compatibility).
+- [ ] When Mintlify nested-group nav is reviewed, validate the new sub-groups under Developer Guides (Identity and access, Domains and entities, Claims and verification, Tokens and bonds, Channels and integrations, Operate) — adjust labels if site analytics show consistent mismatch.
+- [ ] Cross-check the verified message shapes after every IXO blockchain release; update `tokens.mdx`, `bonds.mdx`, `liquid-staking.mdx`, `smart-accounts.mdx`, `entities.mdx` if proto signatures change.
+- [ ] Consider creating `reference/oracle-adk-status.mdx` with the public availability matrix so guides can defer instead of re-explaining.
+
 ## Phase 6 — Editorial polish and QA
 
 - [ ] Run a repo-wide grammar and formatting cleanup after structural fixes.

@@ -1,133 +1,174 @@
 ---
-title: 'Managing Authorization'
-description: 'Learn how to manage permissions and authorizations using the IXO MultiClient SDK'
+title: "Manage authorization"
+description: "Grant, revoke, and execute Cosmos authz and feegrant messages on the IXO Protocol."
 ---
 
-<tip>
-  Authorization (AuthZ) allows accounts to grant permissions to other accounts for executing specific types of transactions. This guide shows you how to implement common authorization scenarios.
-</tip>
+<Tip>
+  Authorization (`x/authz`) lets one account grant another the right to broadcast specific message types on its behalf, scoped by amount, time, or message URL. `x/feegrant` lets one account pay another's transaction fees. Both are standard Cosmos SDK modules — IXO uses the upstream message types directly.
+</Tip>
 
-## Granting Send Authorization
+## Before you start
 
-Grant permission to another account to send tokens on your behalf.
+You need:
 
-```typescript
-const response = await MsgGrantSend(
-  "1000000uixo",     // Amount to authorize
-  "granter_address", // Address granting permission
-  "grantee_address"  // Address receiving permission
-);
+- An IXO account with `uixo` for fees on the network you target — see [Networks and endpoints](/reference/networks-and-endpoints).
+- An offline signer — see the [SDK README](https://github.com/ixofoundation/ixo-multiclient-sdk#creating-signers).
+- The granter and grantee bech32 addresses.
+
+```bash
+npm install @ixo/impactxclient-sdk
 ```
 
-<AccordionGroup>
-  <Accordion title="amount" icon="coins">
-    - **Type:** `string`
-    - **Description:** Token amount and denomination to authorize
-  </Accordion>
+```ts
+import { cosmos, createSigningClient } from "@ixo/impactxclient-sdk";
 
-  <Accordion title="granter" icon="user">
-    - **Type:** `string`
-    - **Description:** Address granting the authorization
-  </Accordion>
-
-  <Accordion title="grantee" icon="user-plus">
-    - **Type:** `string`
-    - **Description:** Address receiving the authorization
-  </Accordion>
-</AccordionGroup>
-
-## Executing IBC Send with Authorization
-
-Send tokens through IBC channels using previously granted authorization.
-
-```typescript
-const response = await MsgExecSendIbc(
-  "channel-0",       // IBC channel
-  "grantee_address", // Address with authorization
-  "1000000uixo"      // Amount to send
-);
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-## Managing Fee Allowances
+## Grant a send authorization
 
-### Granting Fee Allowance
+`SendAuthorization` lets the grantee call `cosmos.bank.v1beta1.MsgSend` from the granter, capped at `spend_limit`.
 
-Authorize another account to use your tokens for transaction fees.
+```ts
+const sendAuth = cosmos.bank.v1beta1.SendAuthorization.fromPartial({
+  spendLimit: [{ denom: "uixo", amount: "1000000" }],
+});
 
-```typescript
-const response = await MsgGrantAllowanceFeegrant(
-  "granter_address", // Address granting allowance
-  "grantee_address"  // Address receiving allowance
-);
+const grantMsg = {
+  typeUrl: "/cosmos.authz.v1beta1.MsgGrant",
+  value: cosmos.authz.v1beta1.MsgGrant.fromPartial({
+    granter: granterAddress,
+    grantee: granteeAddress,
+    grant: cosmos.authz.v1beta1.Grant.fromPartial({
+      authorization: {
+        typeUrl: "/cosmos.bank.v1beta1.SendAuthorization",
+        value: cosmos.bank.v1beta1.SendAuthorization.encode(sendAuth).finish(),
+      },
+    }),
+  }),
+};
+
+await signingClient.signAndBroadcast(granterAddress, [grantMsg], "auto");
 ```
 
-### Revoking Fee Allowance
+For broader grants (e.g. authorize any IBC transfer message URL), use `cosmos.authz.v1beta1.GenericAuthorization` with the target `msg` type URL.
 
-Remove a previously granted fee allowance.
+## Execute a granted message
 
-```typescript
-const response = await MsgRevokeAllowance(
-  "granter_address", // Address that granted allowance
-  "grantee_address"  // Address to revoke from
-);
+The grantee wraps the message they were authorized to send inside `cosmos.authz.v1beta1.MsgExec`.
+
+```ts
+const innerSend = cosmos.bank.v1beta1.MsgSend.fromPartial({
+  fromAddress: granterAddress,
+  toAddress: recipientAddress,
+  amount: [{ denom: "uixo", amount: "100000" }],
+});
+
+const execMsg = {
+  typeUrl: "/cosmos.authz.v1beta1.MsgExec",
+  value: cosmos.authz.v1beta1.MsgExec.fromPartial({
+    grantee: granteeAddress,
+    msgs: [
+      {
+        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+        value: cosmos.bank.v1beta1.MsgSend.encode(innerSend).finish(),
+      },
+    ],
+  }),
+};
+
+await signingClient.signAndBroadcast(granteeAddress, [execMsg], "auto");
 ```
 
-## AuthZ Function Reference
+For an IBC transfer, replace the inner message with `ibc.applications.transfer.v1.MsgTransfer`.
 
-### Core Functions
+## Revoke an authorization
 
-<AccordionGroup>
-  <Accordion title="MsgGrantSend" icon="key">
-    Grants send authorization.
+```ts
+const revokeMsg = {
+  typeUrl: "/cosmos.authz.v1beta1.MsgRevoke",
+  value: cosmos.authz.v1beta1.MsgRevoke.fromPartial({
+    granter: granterAddress,
+    grantee: granteeAddress,
+    msgTypeUrl: "/cosmos.bank.v1beta1.MsgSend",
+  }),
+};
+```
 
-    **Parameters:** `amount: string, granter: string, grantee: string`
-  </Accordion>
+## Grant a fee allowance
 
-  <Accordion title="MsgExecSendIbc" icon="paper-plane">
-    Executes IBC send with authorization.
+```ts
+const basicAllowance = cosmos.feegrant.v1beta1.BasicAllowance.fromPartial({
+  spendLimit: [{ denom: "uixo", amount: "500000" }],
+});
 
-    **Parameters:** `channel: string, grantee: string, amount: string`
-  </Accordion>
+const grantAllowanceMsg = {
+  typeUrl: "/cosmos.feegrant.v1beta1.MsgGrantAllowance",
+  value: cosmos.feegrant.v1beta1.MsgGrantAllowance.fromPartial({
+    granter: granterAddress,
+    grantee: granteeAddress,
+    allowance: {
+      typeUrl: "/cosmos.feegrant.v1beta1.BasicAllowance",
+      value: cosmos.feegrant.v1beta1.BasicAllowance.encode(basicAllowance).finish(),
+    },
+  }),
+};
+```
 
-  <Accordion title="MsgGrantAllowanceFeegrant" icon="hand-holding-dollar">
-    Grants fee allowance.
+## Revoke a fee allowance
 
-    **Parameters:** `granter: string, grantee: string`
-  </Accordion>
+```ts
+const revokeAllowanceMsg = {
+  typeUrl: "/cosmos.feegrant.v1beta1.MsgRevokeAllowance",
+  value: cosmos.feegrant.v1beta1.MsgRevokeAllowance.fromPartial({
+    granter: granterAddress,
+    grantee: granteeAddress,
+  }),
+};
+```
 
-  <Accordion title="MsgRevokeAllowance" icon="ban">
-    Revokes a fee allowance.
+The grantee then sets the granter's address as the `feePayer` in the transaction's fee object — the granter is debited instead of the grantee.
 
-    **Parameters:** `granter: string, grantee: string`
-  </Accordion>
+## Verify the result
 
-  <Accordion title="MsgExecAuthz" icon="play">
-    Executes a transaction with granted authorization.
+Query active grants through the [gRPC gateway API](/api-reference/grpc-gateway-api):
 
-    **Parameters:** *Varies by transaction type*
-  </Accordion>
-</AccordionGroup>
+- `cosmos.authz.v1beta1.Query/Grants` — grants between a granter and grantee
+- `cosmos.authz.v1beta1.Query/GranterGrants` — all grants issued by a granter
+- `cosmos.authz.v1beta1.Query/GranteeGrants` — all grants received by a grantee
+- `cosmos.feegrant.v1beta1.Query/Allowance` — fee allowance status
 
 ## Troubleshooting
 
-<Accordion title="Invalid Authorization Parameters">
-  - Ensure addresses are correctly formatted
-  - Verify the amount is within allowed limits
-  - Check that the denomination is supported
-</Accordion>
-
-<Accordion title="Execution Failures">
-  - Confirm the authorization hasn't expired
-  - Verify the grantee has sufficient permissions
-  - Check that the authorization type matches the operation
-</Accordion>
-
-<Accordion title="Fee Allowance Issues">
-  - Ensure the granter has sufficient balance
-  - Verify the allowance hasn't been exceeded
-  - Check for any time-based restrictions
-</Accordion>
+<AccordionGroup>
+  <Accordion title="invalid authorization parameters" icon="circle-xmark">
+    Confirm bech32 addresses are valid for the chain prefix (`ixo`), the denom is supported, and the amount is within `spend_limit`.
+  </Accordion>
+  <Accordion title="execution failures" icon="triangle-exclamation">
+    Confirm the grant has not expired, the grantee's transaction message URL exactly matches the authorization's allowed type, and the spend limit has not been exhausted.
+  </Accordion>
+  <Accordion title="fee allowance issues" icon="hand-holding-dollar">
+    Ensure the granter has sufficient balance for the allowance, the allowance type matches the use case (`BasicAllowance` vs `PeriodicAllowance` vs `AllowedMsgAllowance`), and the transaction's `feePayer` is set to the granter.
+  </Accordion>
+</AccordionGroup>
 
 <Tip>
-  Authorizations can be time-limited. Monitor expiration dates and renewal requirements for critical permissions.
+  Use `AllowedMsgAllowance` to combine fee payment with a strict whitelist of message URLs the grantee may submit at the granter's expense.
 </Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Custom authorizations" icon="key" href="/guides/dev/authz-custom">
+    Use IXO-specific authz types for entities, claims, and tokens.
+  </Card>
+  <Card title="Smart accounts" icon="user-shield" href="/guides/dev/smart-accounts">
+    Add programmable authenticators on top of authz.
+  </Card>
+  <Card title="Cosmos authz module" icon="building-columns" href="https://docs.cosmos.network/main/build/modules/authz">
+    Full reference for `x/authz`.
+  </Card>
+  <Card title="Cosmos feegrant module" icon="building-columns" href="https://docs.cosmos.network/main/build/modules/feegrant">
+    Full reference for `x/feegrant`.
+  </Card>
+</CardGroup>
