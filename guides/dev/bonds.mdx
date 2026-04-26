@@ -1,217 +1,211 @@
 ---
-title: 'Managing Bonds'
-description: 'Create and manage financial instruments on the IXO blockchain using the IXO MultiClient SDK'
+title: "Manage bonds"
+description: "Create and manage algorithmic bonds, trade them, and settle outcome payments on the IXO Protocol."
 ---
 
-<Tip>
-  Bonds use mathematical bonding curves to determine token prices. The bond state affects which operations are allowed at any given time.
-</Tip>
+The IXO Protocol bonds module provides universal token bonding-curve functions to mint, burn, swap, and settle bonds. Bonds price their tokens via a bonding curve (`function_type` and `function_parameters`), accept one or more `reserve_tokens`, and pass through a lifecycle of `HATCH → OPEN → SETTLE` (or `FAILED`). Alpha bonds add risk-adjustment via the `oracle_did`-controlled `MsgSetNextAlpha`.
 
-## Creating a Bond
+## Before you start
 
-Create a new financial instrument with specific parameters and bonding curve.
+You need:
 
-```typescript
-const response = await CreateBond(
-  true  // allowSells parameter determines if selling bonds is permitted
-);
+- An IXO account with sufficient `uixo` for fees on the network you target — see [Networks and endpoints](/reference/networks-and-endpoints).
+- An offline signer — see the [SDK README on creating signers](https://github.com/ixofoundation/ixo-multiclient-sdk#creating-signers).
+- For `MsgCreateBond`: a controller DID, a creator DID, optional oracle DID for alpha bonds, and reserve token denoms.
+- For `MsgWithdrawReserve`: the bond's `allow_reserve_withdrawals` flag must be `true`.
+
+```bash
+npm install @ixo/impactxclient-sdk
 ```
 
-### Bond parameters
+```ts
+import { ixo, createSigningClient } from "@ixo/impactxclient-sdk";
 
-<AccordionGroup>
-  <Accordion title="bondDid" icon="fingerprint">Unique identifier for the bond</Accordion>
-  <Accordion title="token" icon="coins">The bond's token denomination</Accordion>
-  <Accordion title="name" icon="tag">Name of the bond</Accordion>
-  <Accordion title="description" icon="align-left">Description of the bond</Accordion>
-  <Accordion title="functionType" icon="chart-line">Type of bonding curve (`augmented_function` or `bonding_function`)</Accordion>
-  <Accordion title="functionParameters" icon="sliders">Array of parameters defining the bonding curve</Accordion>
-  <Accordion title="reserveTokens" icon="layer-group">Array of accepted reserve tokens</Accordion>
-  <Accordion title="txFeePercentage" icon="percent">Transaction fee percentage</Accordion>
-  <Accordion title="exitFeePercentage" icon="percent">Exit fee percentage</Accordion>
-  <Accordion title="maxSupply" icon="arrow-up-wide-short">Maximum supply of bond tokens</Accordion>
-  <Accordion title="orderQuantityLimits" icon="list">Limits on order quantities</Accordion>
-  <Accordion title="allowSells" icon="toggle-on">Whether selling of bonds is allowed</Accordion>
-  <Accordion title="allowReserveWithdrawals" icon="vault">Whether reserve withdrawals are allowed</Accordion>
-  <Accordion title="alphaBond" icon="star">Whether this is an alpha bond</Accordion>
-  <Accordion title="batchBlocks" icon="cubes">Number of blocks per batch</Accordion>
-</AccordionGroup>
-
-## Modifying Bond Parameters
-
-Update an existing bond's configuration.
-
-```typescript
-const response = await EditBond();
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-<Tip>
-  You can update parameters like name, description, order quantity limits, sanity rate, and sanity margin percentage.
-</Tip>
+## Create a bond
 
-## Managing Bond State
+```ts
+const createBondMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgCreateBond",
+  value: ixo.bonds.v1beta1.MsgCreateBond.fromPartial({
+    bondDid: "did:ixo:bond:abc123",
+    token: "BOND",
+    name: "Solar Farm Alpha Bond",
+    description: "Outcome-linked bond for verified solar production",
+    functionType: "augmented_function",
+    functionParameters: [
+      ixo.bonds.v1beta1.FunctionParam.fromPartial({ param: "p0", value: "1" }),
+    ],
+    creatorDid: "did:ixo:creator123",
+    controllerDid: "did:ixo:controller123",
+    oracleDid: "did:ixo:oracle123",
+    reserveTokens: ["uixo"],
+    txFeePercentage: "0.5",
+    exitFeePercentage: "1.0",
+    feeAddress: feeAddress,
+    reserveWithdrawalAddress: reserveAddress,
+    maxSupply: { denom: "BOND", amount: "1000000" },
+    orderQuantityLimits: [],
+    sanityRate: "0",
+    sanityMarginPercentage: "0",
+    allowSells: true,
+    allowReserveWithdrawals: false,
+    alphaBond: true,
+    batchBlocks: "1",
+    outcomePayment: "0",
+    creatorAddress: signerAddress,
+  }),
+};
 
-Change the lifecycle state of a bond.
-
-```typescript
-const response = await UpdateBondState(
-  "OPEN"  // New state for the bond
-);
+await signingClient.signAndBroadcast(signerAddress, [createBondMsg], "auto");
 ```
 
-### Available states
+## Edit, set alpha, transition state
 
-<AccordionGroup>
-  <Accordion title="HATCH" icon="egg">
-    Initial fundraising phase
-  </Accordion>
+```ts
+const editMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgEditBond",
+  value: ixo.bonds.v1beta1.MsgEditBond.fromPartial({
+    bondDid: "did:ixo:bond:abc123",
+    name: "Solar Farm Alpha Bond v2",
+    description: "Updated description",
+    orderQuantityLimits: "",
+    sanityRate: "",
+    sanityMarginPercentage: "",
+    editorDid: "did:ixo:editor123",
+    editorAddress: signerAddress,
+  }),
+};
 
-  <Accordion title="OPEN" icon="door-open">
-    Active trading phase
-  </Accordion>
+const setAlphaMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgSetNextAlpha",
+  value: ixo.bonds.v1beta1.MsgSetNextAlpha.fromPartial({
+    bondDid: "did:ixo:bond:abc123",
+    alpha: "0.85",
+    delta: "0.05",
+    oracleDid: "did:ixo:oracle123",
+    oracleAddress: oracleSignerAddress,
+  }),
+};
 
-  <Accordion title="SETTLE" icon="scale-balanced">
-    Settlement phase
-  </Accordion>
-
-  <Accordion title="FAILED" icon="circle-xmark">
-    Failed bond state
-  </Accordion>
-</AccordionGroup>
-
-## Trading Bonds
-
-### Buying Bonds
-
-Purchase bond tokens using reserve tokens.
-
-```typescript
-const response = await Buy(
-  1000000,  // Amount of bonds to buy
-  100       // Maximum price willing to pay
-);
+const updateStateMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgUpdateBondState",
+  value: ixo.bonds.v1beta1.MsgUpdateBondState.fromPartial({
+    bondDid: "did:ixo:bond:abc123",
+    state: "OPEN",
+    editorDid: "did:ixo:editor123",
+    editorAddress: signerAddress,
+  }),
+};
 ```
 
-### Selling Bonds
+Bond states are: `HATCH` (initial fundraising), `OPEN` (active trading), `SETTLE` (settlement), `FAILED`.
 
-Sell bond tokens back to the reserve pool (if allowed).
+## Buy, sell, swap
 
-```typescript
-const response = await Sell(
-  1000000,  // Amount of bonds to sell
-  100       // Minimum price willing to accept
-);
+```ts
+const buyMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgBuy",
+  value: ixo.bonds.v1beta1.MsgBuy.fromPartial({
+    buyerDid: "did:ixo:buyer123",
+    amount: { denom: "BOND", amount: "1000000" },
+    maxPrices: [{ denom: "uixo", amount: "100" }],
+    bondDid: "did:ixo:bond:abc123",
+    buyerAddress: signerAddress,
+  }),
+};
+
+const sellMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgSell",
+  value: ixo.bonds.v1beta1.MsgSell.fromPartial({
+    sellerDid: "did:ixo:seller123",
+    amount: { denom: "BOND", amount: "1000000" },
+    bondDid: "did:ixo:bond:abc123",
+    sellerAddress: signerAddress,
+  }),
+};
+
+const swapMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgSwap",
+  value: ixo.bonds.v1beta1.MsgSwap.fromPartial({
+    swapperDid: "did:ixo:swapper123",
+    bondDid: "did:ixo:bond:abc123",
+    from: { denom: "uixo", amount: "1000" },
+    toToken: "uatom",
+    swapperAddress: signerAddress,
+  }),
+};
 ```
 
-## Managing Bond Outcomes
+## Outcome payments and withdrawals
 
-### Making Outcome Payments
+```ts
+const outcomePayMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgMakeOutcomePayment",
+  value: ixo.bonds.v1beta1.MsgMakeOutcomePayment.fromPartial({
+    senderDid: "did:ixo:funder123",
+    amount: "1000000",
+    bondDid: "did:ixo:bond:abc123",
+    senderAddress: signerAddress,
+  }),
+};
 
-Add funds to the outcome payment reserve.
+const withdrawShareMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgWithdrawShare",
+  value: ixo.bonds.v1beta1.MsgWithdrawShare.fromPartial({
+    recipientDid: "did:ixo:holder123",
+    bondDid: "did:ixo:bond:abc123",
+    recipientAddress: signerAddress,
+  }),
+};
 
-```typescript
-const response = await MakeOutcomePayment(
-  1000000  // Amount for the outcome payment
-);
+const withdrawReserveMsg = {
+  typeUrl: "/ixo.bonds.v1beta1.MsgWithdrawReserve",
+  value: ixo.bonds.v1beta1.MsgWithdrawReserve.fromPartial({
+    withdrawerDid: "did:ixo:treasury123",
+    amount: [{ denom: "uixo", amount: "500000" }],
+    bondDid: "did:ixo:bond:abc123",
+    withdrawerAddress: signerAddress,
+  }),
+};
 ```
 
-### Withdrawing Funds
+## Verify the result
 
-#### Withdraw Share
-
-Claim your share of the bond's returns.
-
-```typescript
-const response = await WithdrawShare(
-  WalletUsers.tester  // Signer of the transaction
-);
-```
-
-#### Withdraw Reserve
-
-Withdraw funds from the bond's reserve (if allowed).
-
-```typescript
-const response = await WithdrawReserve(
-  WalletUsers.tester,  // Signer of the transaction
-  1000000             // Amount to withdraw
-);
-```
-
-## Bond Function Reference
-
-<AccordionGroup>
-  <Accordion title="CreateBond" icon="plus">
-    Creates a new bond.
-
-    **Parameters:** `allowSells: boolean`
-  </Accordion>
-
-  <Accordion title="EditBond" icon="pen-to-square">
-    Modifies bond parameters.
-
-    **Parameters:** *Varies based on parameters to update*
-  </Accordion>
-
-  <Accordion title="UpdateBondState" icon="arrows-rotate">
-    Changes bond lifecycle state.
-
-    **Parameters:** `state: string`
-  </Accordion>
-
-  <Accordion title="Buy" icon="cart-shopping">
-    Purchases bond tokens.
-
-    **Parameters:** `amount: number, maxPrice: number`
-  </Accordion>
-
-  <Accordion title="Sell" icon="store">
-    Sells bond tokens.
-
-    **Parameters:** `amount: number, minPrice: number`
-  </Accordion>
-
-  <Accordion title="SetNextAlpha" icon="chart-line">
-    Sets next alpha value.
-
-    **Parameters:** *Varies by implementation*
-  </Accordion>
-
-  <Accordion title="MakeOutcomePayment" icon="money-bill">
-    Makes outcome payment.
-
-    **Parameters:** `amount: number`
-  </Accordion>
-
-  <Accordion title="WithdrawShare" icon="hand-holding-dollar">
-    Withdraws share.
-
-    **Parameters:** `signer: WalletUser`
-  </Accordion>
-
-  <Accordion title="WithdrawReserve" icon="vault">
-    Withdraws from reserve.
-
-    **Parameters:** `signer: WalletUser, amount: number`
-  </Accordion>
-</AccordionGroup>
+Query bond state through the [Blocksync GraphQL API](/api-reference/blocksync-graphql-api) or `ixo.bonds.v1beta1` query endpoints on the [gRPC gateway API](/api-reference/grpc-gateway-api).
 
 ## Troubleshooting
 
-<Accordion title="Bond Creation Issues">
-  - Ensure all function parameters are correctly specified
-  - Verify the bonding curve parameters are valid
-  - Check that reserve tokens are properly configured
-</Accordion>
+<AccordionGroup>
+  <Accordion title="invalid function type or parameters" icon="circle-xmark">
+    `function_type` must be one of the supported curve types (`power_function`, `sigmoid_function`, `swapper_function`, `augmented_function`). Each requires a specific set of `function_parameters` — see the [bonds proto](https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/bonds/v1beta1).
+  </Accordion>
+  <Accordion title="state transition rejected" icon="lock">
+    State transitions are constrained by the bond's lifecycle. `HATCH → OPEN` requires the hatch threshold to be met. `OPEN → SETTLE` is typically called once the outcome obligation is met or the bond expires.
+  </Accordion>
+  <Accordion title="reserve withdrawal not allowed" icon="vault">
+    `MsgWithdrawReserve` fails when `allow_reserve_withdrawals` is `false` on `MsgCreateBond`. This flag is immutable.
+  </Accordion>
+  <Accordion title="alpha update unauthorized" icon="key">
+    Only the bond's `oracle_address` (resolving from `oracle_did`) can broadcast `MsgSetNextAlpha`. Confirm the signer matches.
+  </Accordion>
+</AccordionGroup>
 
-<Accordion title="State Transition Errors">
-  - Confirm the current state allows the requested transition
-  - Verify all conditions for state change are met
-  - Check authorization for state changes
-</Accordion>
+## Next steps
 
-<Accordion title="Trading Problems">
-  - Ensure sufficient balance for purchases
-  - Verify sells are allowed if attempting to sell
-  - Check price limits are reasonable
-</Accordion>
+<CardGroup cols={2}>
+  <Card title="IXO MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Module-level features and types.
+  </Card>
+  <Card title="Bonds proto definitions" icon="github" href="https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/bonds/v1beta1">
+    Source of truth for bond messages.
+  </Card>
+  <Card title="Manage tokens" icon="coins" href="/guides/dev/tokens">
+    Mint outcome tokens against settled bonds.
+  </Card>
+  <Card title="Liquid staking" icon="lock" href="/guides/dev/liquid-staking">
+    Stake IXO tokens for use in bonded protocols.
+  </Card>
+</CardGroup>

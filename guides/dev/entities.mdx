@@ -1,162 +1,186 @@
 ---
-title: 'Managing Entities'
-description: 'Create and manage NFT-backed identities on the IXO blockchain using the IXO MultiClient SDK'
+title: "Manage entities"
+description: "Create, transfer, verify, and govern entity domains on the IXO Protocol with the IXO MultiClient SDK."
 ---
 
-<tip>
-  Entities in IXO represent NFT-backed identities that bridge decentralized identifiers with tangible assets. Each entity consists of an IID Document, an NFT, and associated metadata, providing a robust framework for decentralized operations.
-</tip>
+This guide shows the chain-level message patterns for managing **entities** on the IXO Protocol using the [`@ixo/impactxclient-sdk`](https://www.npmjs.com/package/@ixo/impactxclient-sdk). For the data model, read [Entity domains](/guides/dev/ixo-domains) and [Domain configuration](/articles/domain-config) first.
 
-## Creating an Entity
+## Before you start
 
-Create a new entity with a specified type and context information.
+You need:
 
-```typescript
-const entityType = "asset";
-const context = [{ key: "class", val: "did:ixo:entity:protocol123" }];
-const response = await Entity.CreateEntity(entityType, context);
-const entityDid = utils.common.getValueFromEvents(response, "wasm", "token_id");
-console.log({ entityDid });
+- A funded IXO account on the network you target — see [Networks and endpoints](/reference/networks-and-endpoints).
+- An offline signer (Cosmos-kit, Keplr, or `getOfflineSigner` from `cosmjs-utils`) — see the [SDK README on creating signers](https://github.com/ixofoundation/ixo-multiclient-sdk#creating-signers).
+- The [`@ixo/impactxclient-sdk`](https://www.npmjs.com/package/@ixo/impactxclient-sdk) installed.
+
+```bash
+npm install @ixo/impactxclient-sdk
 ```
 
-<Info>
- #### Protocols as canonical classes
+The signing client follows the canonical three-step pattern: compose, sign, broadcast.
 
- Entities can be of different types (e.g., "asset") and include context information that defines their class and properties. The context helps establish the entity's relationship to protocols and inherited properties.
-</Info>
+```ts
+import { ixo, createSigningClient } from "@ixo/impactxclient-sdk";
 
-## Transferring Entity Ownership
-
-Transfer ownership of one or more entities to another party.
-
-```typescript
-const entities = [entityDid];
-const recipientDid = "did:ixo:recipient123";
-const memo = "Transfer to new owner";
-await Entity.TransferEntity(WalletUsers.tester, entities, recipientDid, memo);
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-## Managing Entity Accounts
+## Create an entity
 
-Entity accounts enable delegated operations and Capability-based permissions for entity management.
+```ts
+const message = {
+  typeUrl: "/ixo.entity.v1beta1.MsgCreateEntity",
+  value: ixo.entity.v1beta1.MsgCreateEntity.fromPartial({
+    ownerAddress: signerAddress,
+    entityType: "asset",
+    context: [
+      ixo.iid.v1beta1.Context.fromPartial({
+        key: "class",
+        val: "did:ixo:entity:protocol123",
+      }),
+    ],
+    verification: [],
+    controller: [],
+    service: [],
+    linkedResource: [],
+    accordedRight: [],
+    linkedEntity: [],
+    linkedClaim: [],
+  }),
+};
 
-### Creating an Entity Account
-
-Set up a named account for an entity to manage specific functions.
-
-```typescript
-const accountName = "treasury";
-await Entity.CreateEntityAccount(entityDid, accountName);
+const response = await signingClient.signAndBroadcast(signerAddress, [message], "auto");
 ```
 
-### Granting Account Authorization
+The chain returns a transaction with events that include the new entity DID.
 
-Authorize an account to perform specific operations on behalf of the entity.
+<Note>
+  Field names mirror the [`x/entity` proto definitions](https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/entity/v1beta1). Inspect `entity.proto` for the authoritative field list and any version-specific changes.
+</Note>
 
-```typescript
-const genericAuthMsg = "/cosmos.bank.v1beta1.MsgSend";
-await Entity.GrantEntityAccountAuthz(
-  entityDid,
-  "treasury",
-  WalletUsers.alice,
-  WalletUsers.tester,
-  genericAuthMsg
-);
+## Transfer entity ownership
+
+`MsgTransferEntity` reassigns the underlying entity NFT to a new controller account.
+
+```ts
+const transferMsg = {
+  typeUrl: "/ixo.entity.v1beta1.MsgTransferEntity",
+  value: ixo.entity.v1beta1.MsgTransferEntity.fromPartial({
+    id: entityDid,
+    ownerAddress: currentOwnerAddress,
+    recipientDid: "did:ixo:recipient123",
+  }),
+};
+
+await signingClient.signAndBroadcast(currentOwnerAddress, [transferMsg], "auto");
 ```
 
-### Revoking Account Authorization
+## Update verification status
 
-Remove previously granted permissions from an entity account.
+A verifying authority (oracle, registry, or DAO controller) calls `MsgUpdateEntityVerified` to flip the verified flag for one or more entities it is permitted to attest.
 
-```typescript
-await Entity.MsgRevokeEntityAccountAuthz(
-  entityDid,
-  "treasury",
-  WalletUsers.alice,
-  "/cosmos.bank.v1beta1.MsgSend"
-);
+```ts
+const verifyMsg = {
+  typeUrl: "/ixo.entity.v1beta1.MsgUpdateEntityVerified",
+  value: ixo.entity.v1beta1.MsgUpdateEntityVerified.fromPartial({
+    id: entityDid,
+    relayerNode: relayerDid,
+    entityVerified: true,
+  }),
+};
+
+await signingClient.signAndBroadcast(signerAddress, [verifyMsg], "auto");
 ```
 
-## Updating Entity Status
+## Manage entity accounts
 
-Change an entity's verification status to indicate validation or approval.
+Entities can hold named sub-accounts (for example `treasury`, `payouts`, `operations`) that can transact on behalf of the entity under explicit authz grants.
 
-```typescript
-const entityDids = [entityDid];
-await Entity.UpdateEntityVerified(
-  WalletUsers.tester,
-  entityDids,
-  relayerDid,
-  true
-);
+```ts
+const createAccountMsg = {
+  typeUrl: "/ixo.entity.v1beta1.MsgCreateEntityAccount",
+  value: ixo.entity.v1beta1.MsgCreateEntityAccount.fromPartial({
+    id: entityDid,
+    ownerAddress: signerAddress,
+    name: "treasury",
+  }),
+};
+
+const grantMsg = {
+  typeUrl: "/ixo.entity.v1beta1.MsgGrantEntityAccountAuthz",
+  value: ixo.entity.v1beta1.MsgGrantEntityAccountAuthz.fromPartial({
+    id: entityDid,
+    ownerAddress: signerAddress,
+    name: "treasury",
+    granteeAddress: granteeAddress,
+    grant: /* cosmos.authz.v1beta1.Grant */ undefined,
+  }),
+};
+
+const revokeMsg = {
+  typeUrl: "/ixo.entity.v1beta1.MsgRevokeEntityAccountAuthz",
+  value: ixo.entity.v1beta1.MsgRevokeEntityAccountAuthz.fromPartial({
+    id: entityDid,
+    ownerAddress: signerAddress,
+    name: "treasury",
+    granteeAddress: granteeAddress,
+    msgTypeUrl: "/cosmos.bank.v1beta1.MsgSend",
+  }),
+};
 ```
 
-## Entity Function Reference
+Construct the `grant` value using `cosmos.authz.v1beta1.Grant.fromPartial({...})` with the matching authorization. See [Authentication and authorization](/guides/dev/authentication) and [Custom authorisations for IXO Claims](/guides/dev/authz-custom).
 
-<AccordionGroup>
-  <Accordion title="CreateEntity" icon="plus">
-    Creates a new entity.
+## Verify the result
 
-    **Parameters:** `entityType?, context?, relayerNodeDid?, relayerNode?, signer?`
-  </Accordion>
+Query the entity through the [Blocksync GraphQL API](/api-reference/blocksync-graphql-api):
 
-  <Accordion title="TransferEntity" icon="arrow-right-arrow-left">
-    Transfers entity ownership.
+```graphql
+query GetEntity($did: String!) {
+  entity(id: $did) {
+    id
+    type
+    status
+    relayerNode
+    owner
+    controller
+    accounts {
+      name
+      address
+    }
+  }
+}
+```
 
-    **Parameters:** `signer?, entities[], recipientDid?, memo?`
-  </Accordion>
-
-  <Accordion title="UpdateEntityVerified" icon="badge-check">
-    Updates verification status.
-
-    **Parameters:** `signer?, entityDids[], relayerDid?, entityVerified?`
-  </Accordion>
-
-  <Accordion title="CreateEntityAccount" icon="user-plus">
-    Creates an entity account.
-
-    **Parameters:** `entityDid, name?, signer?`
-  </Accordion>
-
-  <Accordion title="GrantEntityAccountAuthz" icon="key">
-    Grants account authorization.
-
-    **Parameters:** `entityDid, name?, grantee?, signer?, genericAuthMsg?`
-  </Accordion>
-
-  <Accordion title="MsgRevokeEntityAccountAuthz" icon="ban">
-    Revokes authorization.
-
-    **Parameters:** `entityDid, name?, grantee?, msgTypeUrl?, signer?`
-  </Accordion>
-</AccordionGroup>
-
-## Entity Data Structure
-
-<Accordion title="Entity Components">
-- **Entity DID**: Unique decentralized identifier
-- **NFT**: Non-fungible token representing ownership
-- **IID Document**: Interchain identity document with verification methods
-- **Metadata**: Additional entity information and properties
-- **Entity Accounts**: Named accounts with specific permissions
-</Accordion>
+Or use the gRPC gateway directly — see [gRPC gateway API](/api-reference/grpc-gateway-api) for the entity module endpoints.
 
 ## Troubleshooting
 
-<Accordion title="Invalid Entity Type">
-  - Ensure the entityType matches one of the supported types
-  - Verify the context information is properly formatted
-  - Check that the entity type is allowed in the module parameters
-</Accordion>
+<AccordionGroup>
+  <Accordion title="invalid entity type" icon="circle-xmark">
+    The `entityType` value must match a type the chain accepts. Inspect module params via the gRPC gateway or query the `EntityList` endpoint to confirm allowed types on your network.
+  </Accordion>
+  <Accordion title="unauthorized" icon="lock">
+    The signer must be a current controller or relayer with the right capability. Confirm the signer address is in the entity's controller set or has an active authz grant.
+  </Accordion>
+  <Accordion title="account already exists" icon="user-xmark">
+    Account names are unique per entity. Pick a different name or revoke and re-grant authz on the existing account.
+  </Accordion>
+</AccordionGroup>
 
-<Accordion title="Authorization Errors">
-  - Confirm the signer has appropriate permissions for the operation
-  - Verify the relayer node DID is valid and active
-  - Check that the message type URL is correctly formatted
-</Accordion>
+## Next steps
 
-<Accordion title="Account Management Issues">
-  - Ensure account names are unique within the entity
-  - Verify authorization message types match intended permissions
-  - Check that the grantee address is valid
-</Accordion>
+<CardGroup cols={2}>
+  <Card title="Configure domain settings" icon="sliders" href="/guides/dev/domain-settings">
+    Update controllers, services, resources, and accorded rights.
+  </Card>
+  <Card title="Domain privacy patterns" icon="lock" href="/guides/dev/domain-privacy">
+    Decide what to keep on protocol vs in IXO Matrix.
+  </Card>
+  <Card title="IXO MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Full SDK reference and module list.
+  </Card>
+  <Card title="Entity proto definitions" icon="github" href="https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/entity/v1beta1">
+    Source of truth for message shapes.
+  </Card>
+</CardGroup>

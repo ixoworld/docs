@@ -1,377 +1,238 @@
 ---
-title: 'Implementation Examples'
-description: 'Code examples and tutorials for IXO development'
+title: "Implementation examples"
+description: "Worked end-to-end TypeScript examples for IXO MultiClient SDK and IXO Matrix Client SDK."
 ---
 
-<Tip>
-  This page provides practical code examples and tutorials to help you implement common patterns and use cases with the IXO SDKs.
-</Tip>
+These examples follow the canonical patterns from the [`@ixo/impactxclient-sdk`](https://www.npmjs.com/package/@ixo/impactxclient-sdk) and [`@ixo/matrixclient-sdk`](https://www.npmjs.com/package/@ixo/matrixclient-sdk) READMEs. Use them as starting templates — exact field shapes are generated from the [chain proto definitions](https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo).
 
-## Digital Twin Management
+For the step-by-step explanation behind each pattern, read [Developer workflows](/guides/dev/workflows) first.
 
-### Creating a Digital Twin
+## Setup
 
-```typescript
-import { createClient } from "@ixo/impactxclient-sdk";
-
-// Initialize client
-const client = await createClient({
-  rpcEndpoint: "https://rpc.ixo.world",
-  chainId: "ixo-5"
-});
-
-// Create digital twin entity
-const entity = await client.createEntity({
-  type: "Asset",
-  name: "Solar Panel Array",
-  description: "Renewable energy installation",
-  location: {
-    latitude: 51.5074,
-    longitude: -0.1278
-  },
-  metadata: {
-    capacity: "5kW",
-    installation_date: "2023-01-15"
-  }
-});
-
-console.log("Entity created:", entity.id);
-
-// Query entity
-const entityData = await client.getEntity(entity.id);
-console.log("Entity data:", entityData);
+```bash
+npm install @ixo/impactxclient-sdk @ixo/matrixclient-sdk
 ```
 
-### Updating Entity State
+```ts
+import {
+  ixo,
+  createQueryClient,
+  createSigningClient,
+} from "@ixo/impactxclient-sdk";
 
-```typescript
-// Update entity state
-await client.updateEntity(entity.id, {
-  status: "active",
-  metadata: {
-    ...entityData.metadata,
-    last_maintenance: "2023-06-10"
-  }
-});
+import {
+  createMatrixApiClient,
+  createMatrixRoomBotClient,
+  createMatrixStateBotClient,
+  createMatrixClaimBotClient,
+} from "@ixo/matrixclient-sdk";
 
-// Add relationships
-await client.addEntityRelationships(entity.id, [
-  {
-    type: "contains",
-    target: "did:ixo:entity/456",
-    properties: {
-      startDate: Date.now()
-    }
-  }
-]);
+const RPC_ENDPOINT = "https://rpc.ixo.world";
+const HOME_SERVER_URL = "https://devmx.ixo.earth";
+
+const queryClient = await createQueryClient(RPC_ENDPOINT);
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-## Secure Data Management
+## Digital twin: create an entity
 
-### Creating a Data Room
+```ts
+const createEntity = async (signerAddress: string) => {
+  const message = {
+    typeUrl: "/ixo.entity.v1beta1.MsgCreateEntity",
+    value: ixo.entity.v1beta1.MsgCreateEntity.fromPartial({
+      ownerAddress: signerAddress,
+      entityType: "asset",
+      context: [
+        ixo.iid.v1beta1.Context.fromPartial({
+          key: "class",
+          val: "did:ixo:entity:protocol123",
+        }),
+      ],
+      verification: [],
+      controller: [],
+      service: [],
+      linkedResource: [],
+      accordedRight: [],
+      linkedEntity: [],
+      linkedClaim: [],
+    }),
+  };
 
-```typescript
-import { createMatrixClient } from "@ixo/matrixclient-sdk";
+  return signingClient.signAndBroadcast(signerAddress, [message], "auto");
+};
 
-// Initialize Matrix client
-const matrix = await createMatrixClient({
-  baseUrl: "https://matrix.ixo.world",
-  accessToken: "YOUR_ACCESS_TOKEN"
-});
-
-// Create encrypted room
-const room = await matrix.createRoom({
-  name: "Project Data Room",
-  encryption: true,
-  preset: "private_chat",
-  initialState: [{
-    type: "m.room.encryption",
-    state_key: "",
-    content: { algorithm: "m.megolm.v1.aes-sha2" }
-  }]
-});
-
-console.log("Room created:", room.roomId);
-
-// Set room permissions
-await matrix.setRoomPermissions(room.roomId, {
-  readAccess: ["@alice:ixo.world"],
-  writeAccess: ["@bob:ixo.world"]
-});
+const entities = await queryClient.ixo.entity.v1beta1.entityList();
 ```
 
-### Storing and Retrieving Data
+## Source an entity room (IXO Matrix)
 
-```typescript
-// Store data
-await matrix.sendEvent(room.roomId, "data.store", {
-  type: "ProjectMetrics",
-  data: {
-    energy_produced: "120kWh",
-    timestamp: Date.now()
-  },
-  metadata: {
-    version: "1.0"
-  }
+Each entity has an associated encrypted Matrix room — its data room. Source it with the room bot, which creates the room if needed and invites the caller.
+
+```ts
+const matrixRoomBotClient = createMatrixRoomBotClient({
+  homeServerUrl: HOME_SERVER_URL,
+  botUrl: "https://devmx.ixo.earth/bots/room",
+  accessToken: matrixAccessToken,
 });
 
-// Store file
-const fileEvent = await matrix.sendFile(room.roomId, {
-  file: fileData,
-  filename: "metrics.json",
-  mimetype: "application/json"
-});
+const sourceRoomResponse = await matrixRoomBotClient.room.v1beta1.sourceRoomAndJoin(
+  "did:ixo:entity:abc...xyz",
+  ucanToken,
+);
 
-// Retrieve data
-const events = await matrix.getRoomEvents(room.roomId, {
-  types: ["data.store"],
-  limit: 10
-});
-
-events.forEach(event => {
-  console.log("Data:", event.getContent().data);
-});
+const roomId = sourceRoomResponse.roomId;
 ```
 
-## Claims and Verification
+The `ucanToken` carries the caller's capability to act on the entity. The optional `accessToken` is the user's Matrix Client-Server access token, used only for the local join — never sent to the bot server. See [Matrix authentication](/api-reference/matrix-state-bot-api).
 
-### Submitting a Claim
+## Upload telemetry into the data room
 
-```typescript
-// Submit verification claim
-const claim = await client.createClaim({
-  entityId: entity.id,
-  type: "Production",
-  data: {
-    energy_produced: "120kWh",
-    timestamp: Date.now()
-  },
-  evidence: {
-    type: "MeterReading",
-    hash: "Qm...",
-    uri: "https://..."
-  }
+```ts
+const matrixApiClient = createMatrixApiClient({
+  homeServerUrl: HOME_SERVER_URL,
+  accessToken: matrixAccessToken,
 });
 
-console.log("Claim created:", claim.id);
+const upload = await matrixApiClient.media.v1beta1.upload(
+  "telemetry-2025-04.json",
+  "application/json",
+  telemetryFile,
+);
+
+const mxcUri = upload.content_uri;
 ```
 
-### Verifying a Claim
+## Read or set room state via the State Bot
 
-```typescript
-import { createOracleClient } from "@ixo/oracle-agent-sdk";
+Use the State Bot to attach structured profile or settings data to an entity room.
 
-// Initialize oracle client
-const oracle = await createOracleClient({
-  did: "did:ixo:oracle/123",
-  endpoint: "https://oracle.ixo.world"
+```ts
+const matrixStateBotClient = createMatrixStateBotClient({
+  homeServerUrl: HOME_SERVER_URL,
+  botUrl: "https://devmx.ixo.earth/bots/state",
+  accessToken: matrixAccessToken,
 });
 
-// Verify claim
-const verification = await oracle.verify({
-  claimId: claim.id,
-  data: claimData,
-  context: {
-    location: {
-      latitude: 51.5074,
-      longitude: -0.1278,
-      precision: 6
-    },
-    timestamp: Date.now()
-  }
-});
+const stateData = await matrixStateBotClient.state.v1beta1.queryState(
+  roomId,
+  "impactsX",
+  "profile",
+  ucanToken,
+);
 
-// Generate attestation
-const attestation = await oracle.generateAttestation({
-  verification,
-  method: "Ed25519Signature2020"
-});
-
-// Submit evaluation
-const evaluation = await client.evaluateClaim(claim.id, {
-  status: "Approved",
-  verifier: oracle.did,
-  evidence: attestation
-});
+await matrixStateBotClient.state.v1beta1.setState(
+  roomId,
+  "impactsX",
+  "profile",
+  JSON.stringify({ displayName: "Solar Farm Alpha", capacityKw: 5000 }),
+  ucanToken,
+);
 ```
 
-## Complete Use Cases
+<Note>
+  Always read state before overwriting. The State Bot does not merge — it replaces the value at the path you set.
+</Note>
 
-### Digital MRV System
+## Claim flow: submit, evaluate, mint
 
-This example demonstrates a complete digital MRV (Measurement, Reporting, Verification) system for renewable energy:
+End-to-end flow for a digital MRV outcome:
 
-```typescript
-// 1. Create project entity
-const project = await client.createEntity({
-  type: "Project",
-  name: "Solar Farm Alpha",
-  description: "10MW Solar Installation",
-  location: { latitude: 51.5074, longitude: -0.1278 }
+```ts
+const collectionId = "12";
+const adminAddress = "ixo1...";
+const oracleAddress = "ixo1oracle...";
+const tokenContractAddress = "ixo1contract...";
+
+// 1. Submit a claim referencing evidence stored in the data room
+const submitClaimMsg = {
+  typeUrl: "/ixo.claims.v1beta1.MsgSubmitClaim",
+  value: ixo.claims.v1beta1.MsgSubmitClaim.fromPartial({
+    creator: signerAddress,
+    claimId: "bafkreih...",
+    collectionId,
+    adminAddress,
+  }),
+};
+
+await signingClient.signAndBroadcast(signerAddress, [submitClaimMsg], "auto");
+
+// 2. Optional Claim Bot helpers (off-chain co-ordination)
+const matrixClaimBotClient = createMatrixClaimBotClient({
+  homeServerUrl: HOME_SERVER_URL,
+  botUrl: "https://devmx.ixo.earth/bots/claim",
+  accessToken: matrixAccessToken,
 });
 
-// 2. Create device entities
-const device = await client.createEntity({
-  type: "Device",
-  name: "Smart Meter 001",
-  description: "Energy production meter",
-  metadata: { serial: "SM001", type: "production" }
-});
+const claimRecord = await matrixClaimBotClient.claim.v1beta1.queryClaim(
+  collectionId,
+  "bafkreih...",
+  ucanToken,
+);
 
-// 3. Create relationships
-await client.addEntityRelationships(project.id, [
-  { type: "contains", target: device.id }
-]);
+// 3. Evaluate after the Agentic Oracle has produced a verification
+const evaluateMsg = {
+  typeUrl: "/ixo.claims.v1beta1.MsgEvaluateClaim",
+  value: ixo.claims.v1beta1.MsgEvaluateClaim.fromPartial({
+    creator: signerAddress,
+    claimId: "bafkreih...",
+    collectionId,
+    oracle: oracleAddress,
+    adminAddress,
+    status: 1, // Approved
+    reason: 0,
+    verificationProof: "bafkrei-proof-cid",
+    amount: [],
+  }),
+};
 
-// 4. Create data room
-const room = await matrix.createRoom({
-  name: `${project.name} Data Room`,
-  encryption: true
-});
+await signingClient.signAndBroadcast(signerAddress, [evaluateMsg], "auto");
 
-// 5. Store device data
-await matrix.sendEvent(room.roomId, "data.telemetry", {
-  deviceId: device.id,
-  readings: [
-    { timestamp: Date.now(), value: "120", unit: "kWh" }
-  ]
-});
+// 4. Mint outcome tokens against the approved claim
+const mintMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgMintToken",
+  value: ixo.token.v1beta1.MsgMintToken.fromPartial({
+    minter: signerAddress,
+    contractAddress: tokenContractAddress,
+    owner: recipientAddress,
+    mintBatch: [
+      ixo.token.v1beta1.MintBatch.fromPartial({
+        name: "CARBON",
+        index: "bafkreih...",
+        amount: "3600",
+        collection: "did:ixo:entity:collection456",
+        tokenData: [],
+      }),
+    ],
+  }),
+};
 
-// 6. Submit claim
-const claim = await client.createClaim({
-  entityId: project.id,
-  type: "EnergyProduction",
-  data: {
-    period: "2023-06",
-    total_production: "3600kWh"
-  }
-});
-
-// 7. Verify with oracle
-const verification = await oracle.verify({
-  claimId: claim.id,
-  data: await matrix.getRoomEvents(room.roomId, {
-    types: ["data.telemetry"],
-    limit: 100
-  })
-});
-
-// 8. Evaluate claim
-await client.evaluateClaim(claim.id, {
-  status: "Approved",
-  verifier: oracle.did,
-  evidence: verification.attestation
-});
-
-// 9. Issue tokens
-const tokens = await client.issueTokens({
-  recipient: projectOwnerAddress,
-  amount: "3600",
-  denom: "carbon.credit",
-  metadata: {
-    project: project.id,
-    claim: claim.id,
-    period: "2023-06"
-  }
-});
+await signingClient.signAndBroadcast(signerAddress, [mintMsg], "auto");
 ```
 
-### Secure Collaboration Platform
+<Note>
+  The off-chain oracle call is your application code — see [Agentic Oracles ADK](/sdk-reference/oracle-adk) and [Build agentic oracles](/guides/ixo-oracles-architecture).
+</Note>
 
-This example demonstrates a secure collaboration platform for sensitive data:
+## Agentic Oracle integration
 
-```typescript
-// 1. Create Organisation
-const org = await client.createEntity({
-  type: "Organisation",
-  name: "Research Consortium",
-  description: "Collaborative research group"
-});
+The off-chain oracle service is built with the [Agentic Oracles ADK](/sdk-reference/oracle-adk) and [Personal Agent ADK](/sdk-reference/oracle-adk). The on-chain side uses `@ixo/impactxclient-sdk` to record `MsgEvaluateClaim`. Wire the two together with whatever HTTP, MCP, or messaging layer your service exposes.
 
-// 2. Create project
-const project = await client.createEntity({
-  type: "Project",
-  name: "Climate Research Initiative",
-  description: "Data collection and analysis project"
-});
+The IXO Oracles ecosystem is private. To request access, see [Build agentic oracles](/guides/ixo-oracles-architecture).
 
-// 3. Create relationship
-await client.addEntityRelationships(org.id, [
-  { type: "manages", target: project.id }
-]);
+## Next steps
 
-// 4. Create data room
-const dataRoom = await matrix.createRoom({
-  name: "Research Data Room",
-  encryption: true
-});
-
-// 5. Create discussion room
-const discussionRoom = await matrix.createRoom({
-  name: "Research Discussion",
-  encryption: true
-});
-
-// 6. Set permissions
-const members = ["@alice:ixo.world", "@bob:ixo.world", "@charlie:ixo.world"];
-
-await matrix.setRoomPermissions(dataRoom.roomId, {
-  readAccess: members,
-  writeAccess: members.slice(0, 2) // Only Alice and Bob can write
-});
-
-await matrix.setRoomPermissions(discussionRoom.roomId, {
-  readAccess: members,
-  writeAccess: members // All can participate in discussion
-});
-
-// 7. Store research data
-await matrix.sendFile(dataRoom.roomId, {
-  file: researchData,
-  filename: "climate_data_2023.csv",
-  mimetype: "text/csv"
-});
-
-// 8. Start discussion
-await matrix.sendMessage(discussionRoom.roomId, {
-  msgtype: "m.text",
-  body: "I've uploaded the latest climate data. Let's discuss the findings."
-});
-
-// 9. Create verification workflow
-const verification = await oracle.createVerification({
-  type: "DataQualityCheck",
-  subject: dataRoom.roomId,
-  rules: {
-    completeness: 0.95,
-    accuracy: 0.9
-  }
-});
-
-// 10. Generate report
-const report = await verification.generateReport();
-await matrix.sendEvent(dataRoom.roomId, "verification.report", report);
-```
-
-## Next Steps
-
-<CardGroup>
-  <Card title="API Reference" icon="book" href="/api-docs/introduction">
-    Detailed API documentation
+<CardGroup cols={2}>
+  <Card title="API reference" icon="book" href="/api-reference/index">
+    REST, RPC, GraphQL, and service APIs.
   </Card>
-  
-  <Card title="SDK Overview" icon="code" href="/sdk-reference/index">
-    Learn more about the IXO SDKs
+  <Card title="IXO MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Module-level features on protocol.
   </Card>
-  
+  <Card title="IXO Matrix Client SDK" icon="cube" href="/sdk-reference/matrix-client-sdk">
+    Matrix data rooms and bot clients.
+  </Card>
   <Card title="GitHub" icon="github" href="https://github.com/ixofoundation">
-    Source code and examples
-  </Card>
-  
-  <Card title="Community" icon="users" href="https://ixofoundation.slack.com/archives/C04UERAUHQT">
-    Developer community and support
+    Source code and reference implementations.
   </Card>
 </CardGroup>
-
-{/* theme: info */}
-> For technical support or questions about these examples, join our [Developer Community](https://ixofoundation.slack.com/archives/C04UERAUHQT) or contact our [Developer Relations Team](mailto:assistant@ixo.world).

@@ -1,260 +1,218 @@
 ---
-title: 'Managing Tokens'
-description: 'Create, mint, transfer, and manage EIP-1155 compatible tokens on the IXO blockchain using the IXO MultiClient SDK'
+title: "Manage tokens"
+description: "Create, mint, transfer, retire, and govern IXO Protocol tokens with the IXO MultiClient SDK."
 ---
 
-<Tip>
-The Token module implements EIP-1155 compatible multi-token smart contracts on the IXO blockchain. This standard supports both fungible and non-fungible tokens within a single contract, allowing for efficient batch operations and versatile token management.
-</Tip>
+The IXO Protocol token module wraps the `ixo1155` smart contract — a CosmWasm implementation of the EIP-1155 multi-token standard. Each token domain has a token class (entity DID), a fixed cap, and supports both fungible and non-fungible balances within a single contract.
 
-## Creating a Token Domain
+This guide shows the chain-level message patterns. For the data model and contract details, read the [`x/token` proto definitions](https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/token/v1beta1) and the [`@ixo/impactxclient-sdk` README](https://github.com/ixofoundation/ixo-multiclient-sdk#readme).
 
-Create a new token domain with defined properties and parameters.
+## Before you start
 
-```typescript
-const response = await CreateToken(
-  "TokenName",          // Name of the token
-  "Token Description",  // Description of the token
-  1000000,              // Cap (maximum supply) of the token
-  "TokenClass"          // Class of the token
-);
+You need:
+
+- An IXO account with sufficient `uixo` for fees on the network you target — see [Networks and endpoints](/reference/networks-and-endpoints).
+- An offline signer — see the [SDK README on creating signers](https://github.com/ixofoundation/ixo-multiclient-sdk#creating-signers).
+- The token protocol entity DID (the value used as `class`). Token class is validated against an existing entity.
+- For minting, a deployed token contract address (set via `MsgCreateToken`).
+- For credit transfers, a valid `WithdrawPaymentAuthorization` if you act on behalf of another account — see [Custom authorisations for IXO Claims](/guides/dev/authz-custom).
+
+```bash
+npm install @ixo/impactxclient-sdk
 ```
 
-### Token domain creation parameters
+```ts
+import { ixo, createSigningClient } from "@ixo/impactxclient-sdk";
 
-<AccordionGroup>
-  <Accordion title="name" icon="tag">
-    - **Type:** `string`
-    - **Description:** The name of the token
-  </Accordion>
-  <Accordion title="description" icon="align-left">
-    - **Type:** `string`
-    - **Description:** A brief description of the token
-  </Accordion>
-  <Accordion title="cap" icon="arrow-up-wide-short">
-    - **Type:** `number`
-    - **Description:** The maximum supply of the token
-  </Accordion>
-  <Accordion title="tokenClass" icon="layer-group">
-    - **Type:** `string`
-    - **Description:** The class or category of the token
-  </Accordion>
-  <Accordion title="signer (optional)" icon="user">
-    - **Type:** `WalletUsers`
-    - **Description:** Wallet user signing the transaction
-  </Accordion>
-</AccordionGroup>
-
-<Tip>
-  Token classes determine the behavior and properties of tokens. Common classes include "carbon", "impact", and "governance".
-</Tip>
-
-## Minting Tokens
-
-Issue new tokens for a specified contract in batches.
-
-```typescript
-const response = await MintToken(
-  "contractAddress1234", // Contract address for the token
-  [
-    {
-      name: "Batch1",
-      index: "1",
-      amount: 1000,
-      collection: "Collection1"
-    }
-  ]
-);
+const signingClient = await createSigningClient(RPC_ENDPOINT, offlineSigner);
 ```
 
-### Batch minting structure
+## Create a token
 
-<AccordionGroup>
-  <Accordion title="name" icon="tag">
-    - **Type:** `string`
-    - **Description:** Identifier for the batch
-  </Accordion>
-  <Accordion title="index" icon="hashtag">
-    - **Type:** `string`
-    - **Description:** Unique index within the collection
-  </Accordion>
-  <Accordion title="amount" icon="coins">
-    - **Type:** `number`
-    - **Description:** Quantity of tokens to mint
-  </Accordion>
-  <Accordion title="collection" icon="folder">
-    - **Type:** `string`
-    - **Description:** Collection the batch belongs to
-  </Accordion>
-</AccordionGroup>
+`MsgCreateToken` registers a new token name under a token-protocol entity. Cap `"0"` means unlimited supply.
 
-## Transferring Tokens
+```ts
+const createMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgCreateToken",
+  value: ixo.token.v1beta1.MsgCreateToken.fromPartial({
+    minter: signerAddress,
+    class: "did:ixo:entity:protocol123",
+    name: "CARBON",
+    description: "Verified carbon offset units",
+    image: "ipfs://bafy.../image.png",
+    tokenType: "ixo1155",
+    cap: "1000000",
+  }),
+};
 
-Transfer tokens to another address individually or in batches.
-
-```typescript
-const response = await TransferToken(
-  [
-    {
-      id: "tokenId1234", // ID of the token
-      amount: 100        // Amount to transfer
-    }
-  ],
-  "recipientAddress1234" // Address of the recipient
-);
+await signingClient.signAndBroadcast(signerAddress, [createMsg], "auto");
 ```
 
-### Batch Transfers
+## Mint tokens
 
-For transferring multiple tokens in a single transaction:
+`MsgMintToken` issues new units in batches against an existing token contract. Each batch references a unique `index` and a `collection` DID.
 
-```typescript
-const response = await TransferTokenBatch(
-  [
-    { id: "tokenId1", amount: 100 },
-    { id: "tokenId2", amount: 50 }
-  ],
-  "recipientAddress1234"
-);
+```ts
+const mintMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgMintToken",
+  value: ixo.token.v1beta1.MsgMintToken.fromPartial({
+    minter: signerAddress,
+    contractAddress: tokenContractAddress,
+    owner: ownerAddress,
+    mintBatch: [
+      ixo.token.v1beta1.MintBatch.fromPartial({
+        name: "CARBON",
+        index: "bafkreih...",
+        amount: "1000",
+        collection: "did:ixo:entity:collection456",
+        tokenData: [],
+      }),
+    ],
+  }),
+};
+
+await signingClient.signAndBroadcast(signerAddress, [mintMsg], "auto");
 ```
 
-## Token Lifecycle Management
+## Transfer tokens
 
-### Retiring Tokens
+`MsgTransferToken` moves balances between accounts. All tokens in a single message must belong to the same contract.
 
-Retire tokens to remove them from circulation while maintaining their transaction history.
+```ts
+const transferMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgTransferToken",
+  value: ixo.token.v1beta1.MsgTransferToken.fromPartial({
+    owner: signerAddress,
+    recipient: recipientAddress,
+    tokens: [
+      ixo.token.v1beta1.TokenBatch.fromPartial({
+        id: "bafkreih...",
+        amount: "100",
+      }),
+    ],
+  }),
+};
 
-```typescript
-const response = await RetireToken(
-  "tokenId1234", // ID of the token
-  100            // Amount to retire
-);
+await signingClient.signAndBroadcast(signerAddress, [transferMsg], "auto");
 ```
 
-### Stopping Tokens
+## Retire tokens
 
-Permanently halt all operations for a token.
+`MsgRetireToken` permanently removes tokens from circulation while preserving their on-chain history. Use this for end-claims such as voluntary carbon retirement.
 
-```typescript
-const response = await StopToken(
-  "tokenId1234" // ID of the token
-);
+```ts
+const retireMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgRetireToken",
+  value: ixo.token.v1beta1.MsgRetireToken.fromPartial({
+    owner: signerAddress,
+    tokens: [
+      ixo.token.v1beta1.TokenBatch.fromPartial({
+        id: "bafkreih...",
+        amount: "50",
+      }),
+    ],
+    jurisdiction: "ZA-WC-7700",
+    reason: "Voluntary retirement on behalf of buyer X",
+  }),
+};
 ```
 
-### Transferring Tokens
-Put tokens into a "transferred" state when these are moved to a different registry system. This specifically applies to Internationally Transferred Mitigation Outcomes (ITMOs) - standardized units representing greenhouse gas emission reductions that can be transferred between countries under Article 6.2 of the Paris Agreement.
+The `jurisdiction` field follows the format `<country-code>[-<sub-national-code>[-<postal-code>]]`. Only the country code is required.
 
-```typescript
-const response = await TransferToken(
-  "tokenId1234", // ID of the token
-  100            // Amount to transfer
-);
+## Transfer credit (ITMO state change)
+
+`MsgTransferCredit` flips tokens to a "transferred" state when units are moved off-protocol to a different registry — for example, Internationally Transferred Mitigation Outcomes (ITMOs) under Article 6.2 of the Paris Agreement. It accepts an optional `authorization_id` for delegated transfers.
+
+```ts
+const creditTransferMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgTransferCredit",
+  value: ixo.token.v1beta1.MsgTransferCredit.fromPartial({
+    owner: signerAddress,
+    tokens: [
+      ixo.token.v1beta1.TokenBatch.fromPartial({
+        id: "bafkreih...",
+        amount: "100",
+      }),
+    ],
+    jurisdiction: "CH",
+    reason: "ITMO transfer to Swiss national registry",
+    authorizationId: "auth-2025-001",
+  }),
+};
 ```
 
-## Querying Token Data
+## Cancel, pause, or stop a token
 
-Retrieve token information using the IXO Blocksync GraphQL API.
+| Operation | Message | Effect |
+|---|---|---|
+| Cancel batches | `MsgCancelToken` | Owner cancels specific token batches with a reason. |
+| Pause minting | `MsgPauseToken` | Minter halts further minting on a contract. `paused: true` to halt, `false` to resume. |
+| Stop the contract | `MsgStopToken` | Minter permanently stops the token contract. Irreversible. |
+
+```ts
+const pauseMsg = {
+  typeUrl: "/ixo.token.v1beta1.MsgPauseToken",
+  value: ixo.token.v1beta1.MsgPauseToken.fromPartial({
+    minter: signerAddress,
+    contractAddress: tokenContractAddress,
+    paused: true,
+  }),
+};
+```
+
+## Verify the result
+
+Query token state through the [Blocksync GraphQL API](/api-reference/blocksync-graphql-api):
 
 ```graphql
-query MyQuery {
-  token(id: "tokenId1234") {
+query Token($id: String!) {
+  token(id: $id) {
     id
     name
     description
     cap
     class
-    owner
+    minter
     minted
     transferred
+    retired
+    cancelled
   }
 }
 ```
 
-## Token Function Reference
-
-<AccordionGroup>
-  <Accordion title="CreateToken" icon="plus">
-    Creates a new token.
-
-    **Parameters:** `name: string, description: string, cap: number, tokenClass: string, signer?: WalletUser`
-  </Accordion>
-
-  <Accordion title="MintToken" icon="coins">
-    Mints new tokens.
-
-    **Parameters:** `contractAddress: string, batches: MintBatch[]`
-  </Accordion>
-
-  <Accordion title="TransferToken" icon="arrow-right-arrow-left">
-    Transfers tokens.
-
-    **Parameters:** `tokens: TokenBatch[], toAddress?: string`
-  </Accordion>
-
-  <Accordion title="TransferTokenBatch" icon="layer-group">
-    Transfers multiple tokens.
-
-    **Parameters:** `tokens: TokenBatch[], toAddress: string`
-  </Accordion>
-
-  <Accordion title="RetireToken" icon="ban">
-    Retires tokens.
-
-    **Parameters:** `tokenId: string, amount: number`
-  </Accordion>
-
-  <Accordion title="StopToken" icon="stop">
-    Stops token operations.
-
-    **Parameters:** `tokenId: string`
-  </Accordion>
-
-  <Accordion title="MsgGrantContract" icon="key">
-    Grants contract authorization.
-
-    **Parameters:** `granter: string, grantee: string, contractId: string, msgTypeUrl: string`
-  </Accordion>
-
-  <Accordion title="MsgExecContract" icon="play">
-    Executes contract operations.
-
-    **Parameters:** *Varies by implementation*
-  </Accordion>
-</AccordionGroup>
-
-## Token Properties
-
-<Accordion title="Token Attributes">
-  - **ID**: Unique identifier for the token
-  - **Name**: Human-readable name
-  - **Description**: Detailed description
-  - **Cap**: Maximum supply limit
-  - **Class**: Category determining behavior
-  - **Owner**: Address controlling the token
-  - **Minted**: Amount already created
-  - **Transferred**: Amount sent to other addresses
-  - **Retired**: Amount removed from circulation
-</Accordion>
+Or read directly from the token contract via the [gRPC gateway API](/api-reference/grpc-gateway-api).
 
 ## Troubleshooting
 
-<Accordion title="Token Creation Issues">
-  - Ensure the token name is unique
-  - Verify the cap is a positive number
-  - Check that the token class is supported
-  - Confirm the signer has sufficient permissions
-</Accordion>
+<AccordionGroup>
+  <Accordion title="invalid class DID" icon="circle-xmark">
+    `class` must be a valid entity DID for an existing token-protocol entity. Confirm the entity exists and that you control it.
+  </Accordion>
+  <Accordion title="cap exceeded" icon="arrow-up-wide-short">
+    `MsgMintToken` will fail if the new total would exceed the token `cap`. Either raise the cap by recreating the token or split issuance across additional token names.
+  </Accordion>
+  <Accordion title="contract paused or stopped" icon="ban">
+    Minting is rejected on paused contracts and on stopped contracts. Issue `MsgPauseToken` with `paused: false` to resume; `MsgStopToken` cannot be reversed.
+  </Accordion>
+  <Accordion title="unauthorized credit transfer" icon="lock">
+    Delegated `MsgTransferCredit` requires a `WithdrawPaymentAuthorization` referencing the supplied `authorization_id`. See [Custom authorisations for IXO Claims](/guides/dev/authz-custom).
+  </Accordion>
+</AccordionGroup>
 
-<Accordion title="Minting Problems">
-  - Verify the contract address is correct
-  - Ensure the batch details are properly formatted
-  - Check that minting won't exceed the token cap
-  - Confirm you have authorization to mint
-</Accordion>
+## Next steps
 
-<Accordion title="Transfer Failures">
-  - Verify the recipient address is valid
-  - Ensure sufficient token balance
-  - Check that the token ID exists
-  - Confirm the token is not paused or stopped
-</Accordion>
+<CardGroup cols={2}>
+  <Card title="IXO MultiClient SDK" icon="server" href="/sdk-reference/multiclient-sdk">
+    Full SDK reference including signing client setup.
+  </Card>
+  <Card title="Token proto definitions" icon="github" href="https://github.com/ixofoundation/ixo-blockchain/tree/main/proto/ixo/token/v1beta1">
+    Source of truth for token messages.
+  </Card>
+  <Card title="Bonds module" icon="line-chart" href="/guides/dev/bonds">
+    Add bonding-curve pricing and reserves to tokens.
+  </Card>
+  <Card title="Custom authorisations" icon="key" href="/guides/dev/authz-custom">
+    Delegate token operations safely.
+  </Card>
+</CardGroup>

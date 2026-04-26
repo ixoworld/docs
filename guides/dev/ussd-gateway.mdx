@@ -84,12 +84,7 @@ cp env.example .env
   </Accordion>
 </AccordionGroup>
 
-To target the IXO testnet instead of mainnet:
-
-```bash
-IXO_API_URL=https://api.testnet.ixo.world
-IXO_BLOCKCHAIN_URL=https://rpc.testnet.ixo.world
-```
+To target the IXO testnet instead of mainnet, set `IXO_API_URL` and `IXO_BLOCKCHAIN_URL` to the testnet rows from [Networks and endpoints](/reference/networks-and-endpoints).
 
 ## Step 3 — Set up the database and start the server
 
@@ -199,7 +194,17 @@ pnpm build && node dist/src/migrations/run-migrations.js
 
 ## Next steps
 
-- [USSD gateway API reference](/api-reference/ussd-api) — request and response format, session endpoints, error codes
-- [IXO USSD gateway — architecture overview](/articles/ixo-ussd) — state machine design and integration model
-- [Architecture patterns guide](https://github.com/ixoworld/ixo-ussd/blob/main/docs/ARCHITECTURE_PATTERNS_GUIDE.md) — how to build custom USSD flows
-- [IXO networks and endpoints](/reference/networks-and-endpoints) — mainnet and testnet connection details
+<CardGroup cols={2}>
+  <Card title="USSD gateway API reference" icon="code" href="/api-reference/ussd-api">
+    Review request/response formats, session endpoints, and error codes.
+  </Card>
+  <Card title="IXO USSD gateway architecture" icon="diagram-project" href="/articles/ixo-ussd">
+    Understand the state machine design and integration model.
+  </Card>
+  <Card title="Architecture patterns guide" icon="book-open" href="https://github.com/ixoworld/ixo-ussd/blob/main/docs/ARCHITECTURE_PATTERNS_GUIDE.md">
+    Build custom USSD flows with reusable architecture patterns.
+  </Card>
+  <Card title="IXO networks and endpoints" icon="network-wired" href="/reference/networks-and-endpoints">
+    Use the right mainnet and testnet connection details.
+  </Card>
+</CardGroup>

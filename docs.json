@@ -79,18 +79,59 @@
               "guides/dev/overview",
               "guides/dev/ixo-stack-sdks",
               "guides/dev/workflows",
-              "mcp/model-context-protocol",
-              "guides/dev/ussd-gateway",
-              "guides/dev/authentication",
-              "guides/dev/identity-and-credentials",
-              "guides/dev/ixo-claims",
-              "guides/digital-twins",
-              "guides/domain-registration",
-              "guides/dev/domain-settings",
-              "guides/dev/domain-privacy",
-              "guides/digital-mrv",
-              "guides/registry",
-              "guides/ixo-oracles-architecture"
+              "guides/dev/examples",
+              {
+                "group": "Identity and access",
+                "pages": [
+                  "guides/dev/authentication",
+                  "articles/identity-and-credentials",
+                  "guides/dev/session-keys",
+                  "guides/dev/smart-accounts",
+                  "guides/dev/authz",
+                  "guides/dev/authz-custom"
+                ]
+              },
+              {
+                "group": "Domains and entities",
+                "pages": [
+                  "guides/digital-twins",
+                  "guides/dev/entities",
+                  "guides/domain-registration",
+                  "guides/dev/domain-settings",
+                  "guides/dev/domain-privacy"
+                ]
+              },
+              {
+                "group": "Claims and verification",
+                "pages": [
+                  "guides/dev/ixo-claims",
+                  "guides/dev/agent-evaluations",
+                  "guides/digital-mrv"
+                ]
+              },
+              {
+                "group": "Tokens and bonds",
+                "pages": [
+                  "guides/dev/tokens",
+                  "guides/dev/bonds",
+                  "guides/dev/liquid-staking"
+                ]
+              },
+              {
+                "group": "Channels and integrations",
+                "pages": [
+                  "mcp/model-context-protocol",
+                  "guides/dev/ussd-gateway",
+                  "guides/dev/image-handling"
+                ]
+              },
+              {
+                "group": "Operate",
+                "pages": [
+                  "guides/registry",
+                  "guides/ixo-oracles-architecture"
+                ]
+              }
             ]
           }
         ]
@@ -158,6 +199,22 @@
     {
       "source": "/guides/dev/spatial-web-sdks",
       "destination": "/guides/dev/ixo-stack-sdks"
+    },
+    {
+      "source": "/guides/dev/introduction",
+      "destination": "/guides/dev/overview"
+    },
+    {
+      "source": "/guides/dev/identity-and-credentials",
+      "destination": "/articles/identity-and-credentials"
+    },
+    {
+      "source": "/guides/dev/evaluation-engine",
+      "destination": "/guides/dev/agent-evaluations"
+    },
+    {
+      "source": "/guides/dev/claims",
+      "destination": "/guides/dev/ixo-claims"
     },
     {
       "source": "/sdk-reference/oracle-ai-sdk",

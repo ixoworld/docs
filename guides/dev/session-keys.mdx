@@ -1,175 +1,161 @@
 ---
-title: 'Session Keys'
-description: 'Implement one-click signing in IXO web applications using session-based keys'
+title: "Session signing with SignX"
+description: "Sign transactions in browser apps without per-action wallet confirmations using the SignX SDK and the user's Impacts X mobile wallet."
 ---
 
-<Tip>
-  Session keys enable streamlined transaction signing in IXO web applications through Smart Accounts and secure mobile wallet integration.
-</Tip>
+The IXO `@ixo/signx-sdk` orchestrates mobile-to-web authentication and transaction signing through QR code scanning by the Impacts X mobile wallet. A web app generates a QR code, the user scans it with their Impacts X app, and the SDK long-polls a relayer server until the wallet returns either a login payload or a signed-and-broadcast transaction. Once a transaction session is open, additional transactions are added to the same session without re-scanning the QR — the wallet activates the next transaction in sequence on each broadcast.
 
-## Overview
+This is the publicly documented signing path. There is no in-browser private key — every signature comes from the user's mobile wallet.
 
-Session-based signing keys allow users to:
-- Sign multiple transactions without repeated wallet confirmations
-- Maintain security through time-limited authorizations
-- Restrict signing capabilities to specific transaction types
-- Control access through their IXO Mobile wallet
+## Before you start
 
-## Core Components
+You need:
 
-<CardGroup>
-  <Card title="Smart Accounts" icon="wallet">
-    Flexible authentication system separating fee payment from transaction authorization
-  </Card>
+- A web app (React or other) running over HTTPS.
+- A reachable [`ixo-message-relayer`](https://github.com/ixofoundation/ixo-message-relayer) endpoint, or an IXO-operated equivalent for your network — see [Networks and endpoints](/reference/networks-and-endpoints).
+- The Impacts X mobile app installed by your user ([App Store](https://apps.apple.com/app/impacts-x/id6444948058) / [Play Store](https://play.google.com/store/apps/details?id=com.ixo.mobile)).
+- `@ixo/signx-sdk` and `@ixo/impactxclient-sdk` installed:
 
-  <Card title="Session Keys" icon="key">
-    Time-limited browser-based keys for specific transaction types
-  </Card>
+```bash
+npm install @ixo/signx-sdk @ixo/impactxclient-sdk
+```
 
-  <Card title="Mobile Wallet" icon="mobile">
-    Master key control and authorization management
-  </Card>
-</CardGroup>
+## Initialize the SignX client
 
-## Implementation Flow
+```ts
+import { SignX } from "@ixo/signx-sdk";
 
-<Steps>
-  1. **Initial Access**
-     - User opens IXO web application
-     - System generates authorization request
-     - QR code displayed with SignX message
+const signXClient = new SignX({
+  endpoint: "https://your-message-relayer.example.com",
+  sitename: "Your dApp",
+  network: "mainnet",
+});
+```
 
-  2. **Mobile Authorization**
-     - User scans QR with IXO Mobile
-     - Wallet validates SignX message
-     - User confirms authorization
+`network` is one of `mainnet | testnet | devnet`. The `sitename` is shown to the user inside the Impacts X app on every confirmation.
 
-  3. **Session Establishment**
-     - Browser receives signed payload
-     - Session key generated locally
-     - Transaction permissions configured
-</Steps>
+## Log the user in
 
-## Transaction Processing
+`login()` returns the QR payload to render and starts long-polling for the wallet's response. Subscribe to `SIGN_X_LOGIN_SUCCESS` and `SIGN_X_LOGIN_ERROR` to receive the result.
+
+```ts
+const loginRequest = await signXClient.login({ matrix: true });
+
+signXClient.on("SIGN_X_LOGIN_SUCCESS", (event) => {
+  const { name, address, pubKey, did, algo, matrix } = event.data;
+  // persist the user; pubKey is hex-encoded, decode if you need bytes.
+});
+
+signXClient.on("SIGN_X_LOGIN_ERROR", (error) => {
+  // user cancelled, polling timed out, or the wallet returned an error.
+});
+```
+
+Pass `{ useDeeplink: true }` on mobile devices so the SDK opens the Impacts X app via deeplink before polling — this prevents some mobile browsers from cancelling the long-polling request when the user navigates away.
+
+## Sign and broadcast a transaction
+
+Build the transaction body using the `@ixo/impactxclient-sdk` registry, then pass the hex-encoded `txBody` to `signXClient.transact()`. The wallet signs the transaction and broadcasts it on the user's behalf.
+
+```ts
+import { createRegistry, ixo } from "@ixo/impactxclient-sdk";
+import { toHex } from "@cosmjs/encoding";
+
+const registry = createRegistry();
+
+const messages = [
+  {
+    typeUrl: "/ixo.entity.v1beta1.MsgCreateEntity",
+    value: ixo.entity.v1beta1.MsgCreateEntity.fromPartial({
+      ownerAddress: user.address,
+      entityType: "asset",
+      context: [],
+      verification: [],
+      controller: [],
+      service: [],
+      linkedResource: [],
+      accordedRight: [],
+      linkedEntity: [],
+      linkedClaim: [],
+    }),
+  },
+];
+
+const txBodyHex = toHex(registry.encodeTxBody({ messages, memo: "" }));
+
+const transactRequest = await signXClient.transact({
+  address: user.address,
+  did: user.did,
+  pubkey: user.pubKey,
+  timestamp: new Date().toISOString(),
+  transactions: [{ sequence: 1, txBodyHex }],
+});
+
+signXClient.on("SIGN_X_TRANSACT_SUCCESS", (event) => {
+  // event.data.transactionHash, event.data.code (0 on success)
+});
+
+signXClient.on("SIGN_X_TRANSACT_ERROR", (error) => {
+  // wallet rejected, broadcast failed, or session timed out.
+});
+```
+
+If `transactRequest.sessionHash` is present a new session was opened — render a QR with `transactRequest`. If it is absent the transaction was added to the existing session — call `signXClient.pollNextTransaction()` and update the UI to indicate the next signature is pending in the wallet.
+
+The wallet returns the chain's broadcast result (`code`, `transactionHash`, …) directly through `SIGN_X_TRANSACT_SUCCESS`.
+
+## Manage the session
+
+Every transaction extends the session's `validUntil` timestamp. Inspect `signXClient.transactSessionHash` to know whether a session is active and `signXClient.transactSequence` for the current sequence the wallet is being asked to sign.
+
+```ts
+window.addEventListener("beforeunload", () => {
+  signXClient.stopPolling("Page closing", "SIGN_X_TRANSACT_ERROR");
+});
+```
+
+Sessions are intentionally not persisted across browser refresh — `transactSessionHash` lives in memory only. After a refresh, the next `transact()` call starts a new session and renders a fresh QR.
+
+## Transaction-type restrictions
+
+Restricting which message types a session can sign is enforced **on the wallet** — the Impacts X app inspects each transaction body against the user's saved policy before signing. The web SDK does not impose its own filter. To restrict the messages a session can sign in your dApp, build the txBody only for the message types your flow needs and refuse to call `transact()` for anything else; pair this with smart-account authenticators (see [Manage smart accounts](/guides/dev/smart-accounts)) for an on-chain enforcement layer.
+
+When you build a `MsgGrant` (`cosmos.authz.v1beta1.MsgGrant`) with a `GenericAuthorization`, the `msg` field is the **fully qualified message URL**, e.g. `/ixo.entity.v1beta1.MsgCreateEntity`. The same convention applies everywhere transaction filtering is configured.
+
+## Verify the result
+
+`SIGN_X_TRANSACT_SUCCESS` returns the transaction hash directly. To independently verify, query `cosmos.tx.v1beta1.GetTx` on the [gRPC gateway API](/api-reference/grpc-gateway-api) with that hash, or fetch the transaction from the [Blocksync GraphQL API](/api-reference/blocksync-graphql-api).
+
+## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="Signing Process" icon="signature">
-    ```typescript
-    try {
-      // 1. Create transaction
-      const tx = {
-        typeUrl: "/ixo.entity.v1beta1.MsgCreateEntity",
-        value: entityData
-      };
-
-      // 2. Sign with session key
-      const signedTx = await sessionKey.sign(tx);
-
-      // 3. Broadcast to network
-      const result = await client.broadcast(signedTx);
-      
-      return result;
-    } catch (error) {
-      if (error.code === 'SESSION_EXPIRED') {
-        // Handle session expiry
-        await refreshSession();
-      } else if (error.code === 'UNAUTHORIZED_TX_TYPE') {
-        // Handle unauthorized transaction type
-        throw new Error('Transaction type not allowed with current session key');
-      } else {
-        // Handle other errors
-        throw error;
-      }
-    }
-    ```
+  <Accordion title="QR code never resolves" icon="qrcode">
+    Confirm `endpoint` points to a reachable Message Relayer for the same `network` as the user's wallet, and that `network` matches the chain the user logged in on. Check the relayer is healthy.
   </Accordion>
-
-  <Accordion title="Authorization Scope" icon="shield-check">
-    ```typescript
-    // Session key configuration
-    const sessionConfig = {
-      duration: "1h",           // Time limit
-      allowedTypes: [          // Permitted transactions
-        "MsgCreateEntity",
-        "MsgUpdateEntity"
-      ],
-      restrictions: {          // Optional limits
-        maxTransactions: 100,
-        maxAmount: "1000uixo"
-      },
-      network: {              // Network configuration
-        chainId: "ixo-5",
-        rpcUrl: "https://rpc.ixo.world"
-      }
-    };
-    ```
+  <Accordion title="Long-polling cancelled on mobile" icon="mobile">
+    Mobile browsers may cancel ongoing requests when navigating to deeplinks. Pass `useDeeplink: true` to `login`, `matrixLogin`, `dataPass`, and as the third argument to `transact` so the SDK opens the deeplink first and waits 300 ms before polling.
   </Accordion>
-
-  <Accordion title="Session Management" icon="arrows-rotate">
-    ```typescript
-    // Monitor session status
-    sessionKey.on('expiring', async (timeLeft) => {
-      if (timeLeft < 300000) { // 5 minutes
-        await notifyUser('Session expiring soon');
-      }
-    });
-
-    // Handle session cleanup
-    window.addEventListener('beforeunload', () => {
-      sessionKey.cleanup();
-    });
-    ```
+  <Accordion title="Wallet rejected the transaction" icon="ban">
+    The wallet may reject if the message type is outside the user's signing policy, the chain ID does not match, or the user manually denies. `SIGN_X_TRANSACT_ERROR` carries the reason. Re-issue the transaction after the user adjusts their policy.
+  </Accordion>
+  <Accordion title="Session expired mid-flow" icon="clock">
+    `transactSessionHash` is cleared when the relayer reports the session expired. The next `transact()` call starts a new session — surface this to the user (a fresh QR is needed). Call `stopPolling(message, event, false)` to stop polling without clearing the session if you want to retain it.
   </Accordion>
 </AccordionGroup>
 
-## Security Considerations
+## Next steps
 
-<CardGroup>
-  <Card title="Time Limits" icon="clock">
-    - Automatic session expiration
-    - Configurable duration
-    - Forced re-authorization
+<CardGroup cols={2}>
+  <Card title="SignX SDK reference" icon="key" href="/sdk-reference/signx-sdk">
+    Methods, events, and types.
   </Card>
-
-  <Card title="Scope Control" icon="shield">
-    - Transaction type restrictions
-    - Optional spending limits
-    - Granular permissions
+  <Card title="SignX SDK README" icon="github" href="https://github.com/ixofoundation/ixo-signx#readme">
+    Source of truth for the SDK.
   </Card>
-
-  <Card title="Key Management" icon="key">
-    - Mobile wallet control
-    - Session revocation
-    - Access monitoring
+  <Card title="Smart accounts" icon="user-shield" href="/guides/dev/smart-accounts">
+    Add on-chain enforcement of which message types may be signed.
   </Card>
-</CardGroup>
-
-## Best Practices
-
-<AccordionGroup>
-  <Accordion title="Implementation" icon="code">
-    - Validate QR code sources
-    - Handle session expiry gracefully
-    - Implement proper error handling
-    - Monitor session status
-  </Accordion>
-
-  <Accordion title="Security" icon="lock">
-    - Use appropriate session durations
-    - Restrict transaction types
-    - Monitor active sessions
-    - Implement session cleanup
-  </Accordion>
-</AccordionGroup>
-
-## Related Resources
-
-<CardGroup>
-  <Card title="Smart Accounts" icon="book" href="/guides/dev/smart-accounts">
-    Learn about IXO Smart Account system
-  </Card>
-
-  <Card title="SignX Integration" icon="plug" href="/sdk-reference/signx-sdk">
-    Implement secure transaction signing
+  <Card title="Manage authorization" icon="lock" href="/guides/dev/authz">
+    Combine SignX with Cosmos `x/authz` and `x/feegrant`.
   </Card>
 </CardGroup>
