@@ -1,0 +1,940 @@
+---
+title: "Build an Agent Skill"
+icon: "puzzle-piece"
+description: "Create portable skills that give IXO and Qi agents repeatable capabilities, clear instructions, safe scripts, and reusable workflow patterns."
+---
+
+Agent Skills are portable capability packages for AI agents.
+
+A skill tells an agent:
+
+- when to use the capability
+- what information it needs
+- which steps to follow
+- which tools or scripts it may use
+- what output to produce
+- how to handle errors, uncertainty, and user confirmation
+
+In the IXO and Qi stack, skills help agents operate with more discipline. Instead of improvising from a prompt, an agent can load a skill, follow its instructions, run documented scripts, and produce outputs that fit a real workflow.
+
+Use skills to make agent behavior repeatable, inspectable, and easier to review.
+
+<Tip>
+Build an Agent Skill when you want an AI agent to perform a repeatable capability reliably: follow a workflow, use a script, generate an artifact, inspect evidence, prepare a checklist, or interact with a documented process.
+</Tip>
+
+## When to build a skill
+
+Build a skill when the capability is reusable.
+
+Good examples:
+
+<CardGroup cols={3}>
+  <Card title="Evidence review checklist" icon="badge-check">
+    Help an agent compare required evidence against submitted evidence for a claim.
+  </Card>
+
+  <Card title="Document generator" icon="file-lines">
+    Generate structured outputs such as invoices, reports, attestations, or summaries.
+  </Card>
+
+  <Card title="Data transformer" icon="shuffle">
+    Convert input files into structured formats that can be reviewed or submitted into a workflow.
+  </Card>
+
+  <Card title="Workflow assistant" icon="diagram-project">
+    Guide an agent through a known operational process with clear steps and outputs.
+  </Card>
+
+  <Card title="API interaction pattern" icon="plug">
+    Give an agent safe, documented instructions for interacting with an approved external service.
+  </Card>
+
+  <Card title="IXO-specific task helper" icon="circle-nodes">
+    Help agents prepare claim metadata, evidence summaries, credential checklists, or workflow reports.
+  </Card>
+</CardGroup>
+
+Do not use a skill as a substitute for protocol permissions, backend services, or governed state transitions.
+
+A skill can help an agent prepare, inspect, summarize, or generate. Actions that change IXO-backed state should still go through declared APIs, MCP tools, SDKs, or governed workflows.
+
+## Skill or something else?
+
+Pick the building block that matches what you are implementing.
+
+<AccordionGroup>
+  <Accordion title="Agent Skill" icon="puzzle-piece">
+    Reusable **agent instructions**, scripts, templates, or artifact generation—the topic of this guide.
+  </Accordion>
+  <Accordion title="MCP tool" icon="plug">
+    A **live tool interface** for agents to call IXO-backed services. See [Model Context Protocol](/mcp/model-context-protocol).
+  </Accordion>
+  <Accordion title="Agentic Oracles ADK" icon="robot">
+    A **backend oracle service** that observes state, evaluates evidence, or triggers workflows. See [Agentic Oracles](/articles/ixo-oracles).
+  </Accordion>
+  <Accordion title="Oracles Client SDK" icon="message-bot">
+    A **React interface** for users to interact with oracles. See [Oracles Client SDK](/sdk-reference/oracles-client-sdk).
+  </Accordion>
+  <Accordion title="IXO Protocol, SDK, or API" icon="diagram-project">
+    A **protocol-level state change** or governed integration. Use [IXO Protocol](/protocols/ixo-protocol) and the [SDK reference](/sdk-reference/index), not a skill file alone.
+  </Accordion>
+</AccordionGroup>
+
+## How skills work
+
+Skills use progressive disclosure.
+
+At startup, an agent can discover skills from metadata such as the skill name and description. When a skill is relevant, the agent loads the `SKILL.md` instructions. If the skill includes scripts, the agent can execute those scripts and use the output without loading the full script source into its context.
+
+This is why the quality of `SKILL.md` matters. The agent relies on it to know when to use the skill, what inputs to collect, how to run scripts, and how to interpret results.
+
+## Required structure
+
+Every skill is a folder.
+
+At minimum, the folder must contain `SKILL.md`.
+
+```text
+skills/
+└── your-skill-name/
+    └── SKILL.md
+```
+
+A fuller skill may include prompts, scripts, examples, templates, and a skill-specific license.
+
+```text
+skills/
+└── your-skill-name/
+    ├── SKILL.md
+    ├── prompts/
+    │   └── detailed.md
+    ├── scripts/
+    │   └── helper.py
+    ├── examples/
+    │   └── example-input.json
+    ├── templates/
+    │   └── template.html
+    └── LICENSE.txt
+```
+
+## Naming rules
+
+The folder name must match the `name` field in `SKILL.md`.
+
+Use:
+
+```text
+claim-evidence-checklist
+digital-mrv-report
+invoice-creator
+```
+
+Avoid:
+
+```text
+ClaimEvidenceChecklist
+claim_evidence_checklist
+claim--evidence
+-claim-review
+claim-review-
+```
+
+Use lowercase letters, numbers, and single hyphens.
+
+## Create your first skill
+
+This example creates a skill called `claim-evidence-checklist`.
+
+The skill helps an agent generate a checklist that compares required evidence against submitted evidence for a claim.
+
+### 1. Create the folder
+
+From the repository root:
+
+```bash
+mkdir -p skills/claim-evidence-checklist/scripts
+mkdir -p skills/claim-evidence-checklist/examples
+```
+
+### 2. Add `SKILL.md`
+
+Create:
+
+```text
+skills/claim-evidence-checklist/SKILL.md
+```
+
+Use this template:
+
+````md
+---
+name: claim-evidence-checklist
+description: Generate a review checklist for an IXO claim by comparing required evidence against submitted evidence and identifying gaps before human or oracle review.
+license: Apache-2.0
+compatibility: Claude, Qi Agents
+allowed-tools: Read Write Bash
+metadata:
+  author: IXO
+  version: "1.0.0"
+  category: verification
+---
+
+# Claim Evidence Checklist
+
+## Overview
+
+This skill helps an AI agent prepare a structured evidence checklist for an IXO claim.
+
+Use it when a user needs to review whether a claim has enough evidence for verification, attestation, dispute resolution, or escalation.
+
+The skill does not verify the claim by itself. It prepares a checklist that can support human review, Agentic Oracle evaluation, or a governed IXO workflow.
+
+## When to use this skill
+
+Use this skill when the user asks to:
+
+- review evidence for a claim
+- identify missing evidence
+- prepare a verification checklist
+- compare submitted evidence against program requirements
+- summarize evidence readiness before claim review
+- support a digital MRV or outcomes verification process
+
+Do not use this skill to make final verification decisions unless the surrounding workflow explicitly grants that authority.
+
+## Inputs needed
+
+Ask for or locate:
+
+1. Claim ID or claim reference
+2. Claim type
+3. Entity or project the claim is about
+4. Required evidence list
+5. Submitted evidence list
+6. Review rules or acceptance criteria, if available
+7. Reviewer or verifier role, if relevant
+
+If any required information is missing, ask for it or mark it as unknown.
+
+## Workflow
+
+Follow these steps:
+
+1. Identify the claim and the entity it concerns.
+2. List the evidence required for this claim type.
+3. List the evidence that has been submitted.
+4. Match submitted evidence against required evidence.
+5. Mark each requirement as:
+   - `present`
+   - `missing`
+   - `partial`
+   - `unknown`
+6. Summarize risks, gaps, and next actions.
+7. Do not invent evidence.
+8. Do not treat user-provided statements as verified IXO state unless they come from an approved source.
+9. If a governed workflow action is required, direct the user to the relevant IXO API, SDK, MCP tool, or review process.
+
+## Output format
+
+Return a concise review report:
+
+```text
+Claim: [claim ID]
+Claim type: [claim type]
+Entity: [entity or project]
+
+Evidence checklist:
+- [status] [required evidence] — [submitted evidence or gap]
+
+Summary:
+- Present:
+- Missing:
+- Partial:
+- Unknown:
+
+Recommended next action:
+- [request more evidence / send to verifier / escalate / continue review]
+```
+
+## Script
+
+This skill includes a helper script:
+
+```bash
+python scripts/build_checklist.py examples/claim-review-input.json checklist.md
+```
+
+The script reads JSON input and writes a Markdown checklist. It classifies each requirement as present, missing, or optional-not-submitted (counted in `unknown`); extend the script if you need a `partial` state.
+
+Use the script when the user provides structured claim and evidence data or asks for a file output.
+
+## Script input format
+
+```json
+{
+  "claim_id": "claim-001",
+  "claim_type": "delivery-completed",
+  "entity": "Clean Cooking Project A",
+  "required_evidence": [
+    {
+      "type": "delivery_receipt",
+      "description": "Signed delivery receipt from field partner",
+      "required": true
+    },
+    {
+      "type": "geo_photo",
+      "description": "Geotagged installation photo",
+      "required": true
+    }
+  ],
+  "submitted_evidence": [
+    {
+      "type": "delivery_receipt",
+      "title": "Signed delivery receipt",
+      "reference": "evidence-123"
+    }
+  ]
+}
+```
+
+## Script output
+
+The script writes a Markdown checklist and prints a JSON summary.
+
+Expected success output (matches what the script prints for the example input above):
+
+```json
+{
+  "status": "success",
+  "claim_id": "claim-001",
+  "claim_type": "delivery-completed",
+  "entity": "Clean Cooking Project A",
+  "required": 2,
+  "submitted": 1,
+  "present": 1,
+  "missing": 1,
+  "unknown": 0,
+  "output_file": "checklist.md"
+}
+```
+
+## Safety and correctness rules
+
+- Do not invent claim state, evidence, permissions, or verification results.
+- Separate user-provided information from verified IXO-backed state.
+- Treat this checklist as decision support, not final attestation.
+- Ask for clarification when required evidence or claim type is missing.
+- Do not expose private claim data, credentials, or evidence outside the requested workflow.
+- Do not submit, attest, reject, or dispute a claim unless the user explicitly asks and the required governed interface is available.
+````
+
+You now have the full `SKILL.md` for this walkthrough. The next sections add the script and example files that `SKILL.md` refers to.
+
+### 3. Add a helper script
+
+Create:
+
+```text
+skills/claim-evidence-checklist/scripts/build_checklist.py
+```
+
+Use this script:
+
+```python
+#!/usr/bin/env python3
+"""
+Build a Markdown evidence checklist for a claim.
+
+Usage:
+  python scripts/build_checklist.py <input.json> <output.md>
+
+Example:
+  python scripts/build_checklist.py examples/claim-review-input.json checklist.md
+"""
+
+import json
+import sys
+from pathlib import Path
+from typing import Any, Optional
+
+
+def load_json(path: str) -> dict[str, Any]:
+    with open(path, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def normalize_type(value: Any) -> str:
+    return str(value or "").strip().lower()
+
+
+def build_checklist(data: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    claim_id = data.get("claim_id", "unknown")
+    claim_type = data.get("claim_type", "unknown")
+    entity = data.get("entity", "unknown")
+
+    required_evidence = data.get("required_evidence", [])
+    submitted_evidence = data.get("submitted_evidence", [])
+
+    if not isinstance(required_evidence, list):
+        raise ValueError("required_evidence must be a list")
+
+    if not isinstance(submitted_evidence, list):
+        raise ValueError("submitted_evidence must be a list")
+
+    submitted_by_type: dict[str, list[dict[str, Any]]] = {}
+
+    for item in submitted_evidence:
+        if not isinstance(item, dict):
+            continue
+
+        evidence_type = normalize_type(item.get("type"))
+        if not evidence_type:
+            continue
+
+        submitted_by_type.setdefault(evidence_type, []).append(item)
+
+    rows: list[str] = []
+    missing = 0
+    present = 0
+    unknown = 0
+
+    for requirement in required_evidence:
+        if not isinstance(requirement, dict):
+            unknown += 1
+            rows.append("- unknown — Invalid evidence requirement entry")
+            continue
+
+        evidence_type = normalize_type(requirement.get("type"))
+        description = requirement.get("description", evidence_type or "Unnamed evidence requirement")
+        is_required = requirement.get("required", True)
+
+        matches = submitted_by_type.get(evidence_type, [])
+
+        if matches:
+            present += 1
+            references = ", ".join(
+                str(match.get("reference") or match.get("title") or "submitted evidence")
+                for match in matches
+            )
+            rows.append(f"- present — {description} ({references})")
+        elif is_required:
+            missing += 1
+            rows.append(f"- missing — {description}")
+        else:
+            unknown += 1
+            rows.append(f"- unknown — Optional evidence not submitted: {description}")
+
+    recommended_action = (
+        "Request missing evidence before verification."
+        if missing > 0
+        else "Ready for reviewer or verifier assessment."
+    )
+
+    markdown = "\n".join(
+        [
+            f"# Evidence Checklist: {claim_id}",
+            "",
+            f"Claim type: {claim_type}",
+            f"Entity: {entity}",
+            "",
+            "## Checklist",
+            "",
+            *rows,
+            "",
+            "## Summary",
+            "",
+            f"- Present: {present}",
+            f"- Missing: {missing}",
+            f"- Unknown or optional: {unknown}",
+            "",
+            "## Recommended next action",
+            "",
+            recommended_action,
+            "",
+        ]
+    )
+
+    summary = {
+        "status": "success",
+        "claim_id": claim_id,
+        "claim_type": claim_type,
+        "entity": entity,
+        "required": len(required_evidence),
+        "submitted": len(submitted_evidence),
+        "present": present,
+        "missing": missing,
+        "unknown": unknown,
+    }
+
+    return markdown, summary
+
+
+def main(
+    input_file: Optional[str] = None,
+    output_file: Optional[str] = None,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    if not input_file:
+        raise ValueError("input_file is required")
+
+    if not output_file:
+        raise ValueError("output_file is required")
+
+    data = load_json(input_file)
+    markdown, summary = build_checklist(data)
+
+    output_path = Path(output_file)
+    output_path.write_text(markdown, encoding="utf-8")
+
+    summary["output_file"] = str(output_path)
+    return summary
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Usage: python scripts/build_checklist.py <input.json> <output.md>", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        result = main(input_file=sys.argv[1], output_file=sys.argv[2])
+        print(json.dumps(result, indent=2))
+    except Exception as error:
+        print(f"Error: {error}", file=sys.stderr)
+        sys.exit(1)
+```
+
+### 4. Add example input
+
+Create:
+
+```text
+skills/claim-evidence-checklist/examples/claim-review-input.json
+```
+
+Use this example:
+
+```json
+{
+  "claim_id": "claim-001",
+  "claim_type": "delivery-completed",
+  "entity": "Clean Cooking Project A",
+  "required_evidence": [
+    {
+      "type": "delivery_receipt",
+      "description": "Signed delivery receipt from field partner",
+      "required": true
+    },
+    {
+      "type": "geo_photo",
+      "description": "Geotagged installation photo",
+      "required": true
+    },
+    {
+      "type": "beneficiary_confirmation",
+      "description": "Beneficiary confirmation record",
+      "required": true
+    }
+  ],
+  "submitted_evidence": [
+    {
+      "type": "delivery_receipt",
+      "title": "Signed delivery receipt",
+      "reference": "evidence-123"
+    },
+    {
+      "type": "geo_photo",
+      "title": "Installation photo",
+      "reference": "evidence-456"
+    }
+  ]
+}
+```
+
+### 5. Test the script
+
+From the repository root:
+
+```bash
+cd skills/claim-evidence-checklist
+python scripts/build_checklist.py examples/claim-review-input.json checklist.md
+```
+
+Expected terminal output:
+
+```json
+{
+  "status": "success",
+  "claim_id": "claim-001",
+  "claim_type": "delivery-completed",
+  "entity": "Clean Cooking Project A",
+  "required": 3,
+  "submitted": 2,
+  "present": 2,
+  "missing": 1,
+  "unknown": 0,
+  "output_file": "checklist.md"
+}
+```
+
+Open `checklist.md` and confirm that it lists present and missing evidence clearly.
+
+### 6. Validate the skill
+
+Return to the repository root:
+
+```bash
+cd ../..
+./scripts/validate-skill.sh skills/claim-evidence-checklist
+```
+
+<Info>
+  The skills contribution target repository may ship a `scripts/validate-skill.sh` helper. If your checkout does not include that script, run through the same checks manually using the list below (and the [Pre-submit checklist](#pre-submit-checklist)).
+</Info>
+
+The validator checks:
+
+- The skill folder exists.
+- The folder name uses the required format.
+- `SKILL.md` exists.
+- YAML frontmatter exists.
+- The `name` field exists.
+- The `name` field matches the folder name.
+- The `description` field exists.
+- The description length is within the allowed limit.
+
+Fix any validation errors before submitting.
+
+### 7. Submit the skill
+
+Use the normal contribution flow.
+
+```bash
+git checkout -b add-claim-evidence-checklist
+git add skills/claim-evidence-checklist
+git commit -m "Add claim-evidence-checklist skill"
+git push origin add-claim-evidence-checklist
+```
+
+Then open a pull request against the main repository.
+
+Skills are reviewed for correctness, quality, security, and compliance before publication.
+
+After approval, the skill is packaged and published with a content identifier, or CID. Any change to the skill creates a new content identifier.
+
+## Writing a strong `SKILL.md`
+
+The `SKILL.md` file is the operating manual for the agent.
+
+A good skill tells the agent exactly what to do without forcing it to guess.
+
+<AccordionGroup>
+  <Accordion title="Start with the purpose" icon="bullseye">
+    Explain the capability in one or two sentences.
+
+    Good:
+
+    ```text
+    This skill helps an agent prepare an evidence checklist for an IXO claim.
+    ```
+
+    Weak:
+
+    ```text
+    This skill helps with claims.
+    ```
+  </Accordion>
+  <Accordion title="Define when to use it" icon="route">
+    Give clear trigger conditions.
+
+    Example:
+
+    ```text
+    Use this skill when the user asks to review evidence, identify missing documents, or prepare a claim for verification.
+    ```
+  </Accordion>
+  <Accordion title="List required inputs" icon="list-check">
+    Tell the agent what information it must collect before acting.
+
+    Example:
+
+    ```text
+    Required inputs:
+    - claim ID
+    - claim type
+    - required evidence list
+    - submitted evidence list
+    - reviewer role
+    ```
+  </Accordion>
+  <Accordion title="Give step-by-step instructions" icon="list-ol">
+    Avoid vague instructions. Make the workflow explicit.
+
+    Example:
+
+    ```text
+    1. Identify the claim type.
+    2. Load the required evidence list.
+    3. Compare submitted evidence against each requirement.
+    4. Mark each item present, missing, partial, or unknown.
+    5. Produce a summary and recommended next action.
+    ```
+  </Accordion>
+  <Accordion title="Specify the output format" icon="file-lines">
+    Agents are more reliable when they know exactly what to produce.
+
+    Use tables, JSON schemas, Markdown templates, or structured sections.
+  </Accordion>
+  <Accordion title="Document scripts" icon="terminal">
+    If the skill includes scripts, document each script in `SKILL.md`.
+
+    Include:
+    - what the script does
+    - how to run it
+    - required inputs
+    - expected outputs
+    - common errors
+  </Accordion>
+  <Accordion title="Add safety rules" icon="shield-check">
+    Tell the agent what not to do.
+
+    For IXO and Qi workflows, make clear that the agent must not invent verified state, bypass permissions, expose private data, or perform state-changing actions outside declared interfaces.
+  </Accordion>
+</AccordionGroup>
+
+## Script standards
+
+Skills may include scripts for work that should be deterministic, reusable, or too detailed to keep in the agent context.
+
+Every script should satisfy three requirements:
+
+<Steps>
+  <Step title="It runs from the command line">
+    The agent must be able to execute it through a shell command.
+
+    ```bash
+    python scripts/build_checklist.py input.json output.md
+    ```
+  </Step>
+
+  <Step title="It exposes a returning main function">
+    Python scripts should provide a `main()` function that accepts keyword arguments and returns a result (the tutorial script uses `typing.Optional` for path arguments).
+
+    ```python
+    from typing import Any, Optional
+
+    def main(
+        input_file: Optional[str] = None,
+        output_file: Optional[str] = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return {"status": "success", "output_file": output_file or ""}
+    ```
+  </Step>
+
+  <Step title="It is documented in SKILL.md">
+    The agent should not have to read the source code to understand normal usage.
+  </Step>
+</Steps>
+
+Prefer standalone scripts with no external dependencies. If dependencies are required, document them clearly.
+
+## Frontmatter reference
+
+| Field | Required | Purpose |
+| ----- | -------- | ------- |
+| `name` | Yes | Skill identifier. Must match the folder name. |
+| `description` | Yes | Short discovery description used by agents to decide when the skill is relevant. |
+| `license` | No | License for the skill, such as `MIT` or `Apache-2.0`. |
+| `compatibility` | No | Agent runtimes or environments the skill is designed for. |
+| `allowed-tools` | No | Tool access the skill expects, such as `Read`, `Write`, or `Bash`. |
+| `metadata` | No | Additional key-value information such as author, version, or category. |
+
+Use the description field carefully. It is one of the first signals an agent uses to decide whether the skill applies.
+
+## IXO and Qi safety guidance
+
+Skills are powerful because they can shape agent behavior. Write them as operational instructions, not open-ended prompts.
+
+For IXO and Qi workflows:
+
+<CardGroup cols={3}>
+  <Card title="Do not invent state" icon="database">
+    If a claim, credential, entity, or evidence record is not available, mark it as missing or unknown.
+  </Card>
+
+  <Card title="Respect authority" icon="fingerprint">
+    Make clear which actions require a user, verifier, oracle, credential, or governed workflow.
+  </Card>
+
+  <Card title="Separate support from decision" icon="scale-balanced">
+    A skill can support review without making final attestations unless the workflow explicitly allows it.
+  </Card>
+
+  <Card title="Use declared interfaces" icon="plug">
+    Direct state-changing actions through IXO APIs, SDKs, MCP tools, or protocol workflows.
+  </Card>
+
+  <Card title="Protect sensitive data" icon="lock">
+    Do not include secrets, credentials, private keys, access tokens, or private evidence in skill files.
+  </Card>
+
+  <Card title="Make outputs inspectable" icon="badge-check">
+    Prefer structured outputs that humans, agents, and workflow systems can review.
+  </Card>
+</CardGroup>
+
+## Common skill patterns
+
+### Instruction-only skill
+
+Use this for simple behaviors that do not need scripts.
+
+```text
+skills/
+└── greeting-assistant/
+    └── SKILL.md
+```
+
+Good for:
+
+- writing style guides
+- review checklists
+- workflow instructions
+- question-answering procedures
+- data classification rules
+
+### Script-backed skill
+
+Use this when the agent needs deterministic processing.
+
+```text
+skills/
+└── report-generator/
+    ├── SKILL.md
+    ├── scripts/
+    │   └── generate_report.py
+    └── examples/
+        └── input.json
+```
+
+Good for:
+
+- generating files
+- transforming data
+- validating inputs
+- producing structured reports
+- calculating totals or metrics
+
+### Template-backed skill
+
+Use this when the output should follow a reusable document structure.
+
+```text
+skills/
+└── attestation-summary/
+    ├── SKILL.md
+    ├── templates/
+    │   └── summary-template.md
+    └── examples/
+        └── example.md
+```
+
+Good for:
+
+- invoices
+- attestations
+- MRV reports
+- evidence summaries
+- governance briefs
+
+### IXO workflow skill
+
+Use this when the agent needs to support a repeatable IXO or Qi workflow.
+
+```text
+skills/
+└── digital-mrv-claim-review/
+    ├── SKILL.md
+    ├── scripts/
+    │   └── build_review_packet.py
+    └── examples/
+        └── mrv-claim-input.json
+```
+
+Good for:
+
+- claim intake
+- evidence readiness checks
+- verifier handoff packets
+- program rule checklists
+- agentic oracle review support
+
+## Pre-submit checklist
+
+Before opening a pull request, confirm:
+
+- The folder name matches the skill `name`.
+- `SKILL.md` exists.
+- `SKILL.md` has valid YAML frontmatter.
+- `name` and `description` are present.
+- The description clearly explains when the skill should be used.
+- Instructions are clear, structured, and complete.
+- Scripts run from the command line.
+- Scripts have a returning `main()` function.
+- Scripts are documented in `SKILL.md`.
+- Example inputs work.
+- No secrets or credentials are included.
+- No harmful or unsafe instructions are included.
+- The local validator passes when your repository provides `scripts/validate-skill.sh`.
+
+When that script exists:
+
+```bash
+./scripts/validate-skill.sh skills/your-skill-name
+```
+
+## Review and publishing
+
+After you submit a pull request, the skill is reviewed before it is published.
+
+Review checks include:
+
+- Correctness
+- Instruction quality
+- Security
+- Compliance with the skill structure
+- Safe script behavior
+- Clear documentation
+
+When the skill is approved and merged, it is packaged and published. The published skill receives a content identifier, or CID, which agents can use to fetch that version of the skill.
+
+Because CIDs are content-addressed, updating a skill creates a new CID.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Agentic Oracles" icon="robot" href="/articles/ixo-oracles">
+    Learn how oracle services observe state, evaluate evidence, and trigger workflow actions.
+  </Card>
+
+  <Card title="Qi Intelligent Cooperating System" icon="diagram-project" href="/articles/qi-intelligent-cooperating-system">
+    Understand how humans, agents, applications, and services cooperate over IXO-backed state.
+  </Card>
+
+  <Card title="Model Context Protocol" icon="plug" href="/mcp/model-context-protocol">
+    Use MCP when agents need live access to IXO-backed tools and governed actions.
+  </Card>
+
+  <Card title="Oracles Client SDK" icon="message-bot" href="/sdk-reference/oracles-client-sdk">
+    Build React interfaces where users interact with Agentic Oracles.
+  </Card>
+
+  <Card title="What you can build" icon="layer-group" href="/guides/what-you-can-build">
+    Choose a workflow such as claims review, digital MRV, evidence review, or outcomes financing.
+  </Card>
+
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Review the vocabulary for entities, claims, evidence, workflows, state, and cooperation.
+  </Card>
+</CardGroup>
