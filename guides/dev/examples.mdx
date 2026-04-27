@@ -84,7 +84,7 @@ const sourceRoomResponse = await matrixRoomBotClient.room.v1beta1.sourceRoomAndJ
 const roomId = sourceRoomResponse.roomId;
 ```
 
-The `ucanToken` carries the caller's capability to act on the entity. The optional `accessToken` is the user's Matrix Client-Server access token, used only for the local join — never sent to the bot server. See [Matrix authentication](/api-reference/matrix-state-bot-api).
+The `ucanToken` carries the caller's capability to act on the entity. The optional `accessToken` is the user's Matrix client-server access token, used only for the local join — never sent to the bot server. See [Matrix authentication](/api-reference/matrix-state-bot-api).
 
 ## Upload telemetry into the data room
 
