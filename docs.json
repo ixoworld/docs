@@ -61,7 +61,8 @@
               "articles/ixo-blocksync",
               "articles/ixo-oracles",
               "articles/pods",
-              "articles/projects"
+              "articles/projects",
+              "articles/claim-evaluation-protocol"
             ]
           }
         ]
