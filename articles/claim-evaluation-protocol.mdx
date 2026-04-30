@@ -1,0 +1,376 @@
+---
+title: "Claim evaluation protocol"
+description: "How Claims, evidence, rubrics, Agentic Oracles, and UDID records fit together in accountable IXO evaluation workflows."
+icon: "clipboard-check"
+---
+
+Claim evaluation is the process of deciding whether a submitted Claim is supported by the evidence and rules that govern it.
+
+Use this article when you need the architecture model behind agent-assisted verification on IXO. It explains the concepts, boundaries, and safety rules for evaluation workflows. Use the linked developer guides and reference pages for exact SDK methods, package identifiers, endpoint values, and protocol message shapes.
+
+<Info>
+  This page is a concept and architecture article. It does not replace the canonical [Claims management guide](/guides/dev/ixo-claims), [Agent evaluations guide](/guides/dev/agent-evaluations), [Developer workflows](/guides/dev/workflows), or [Product and SDK map](/reference/product-and-sdk-map).
+</Info>
+
+## The core question
+
+A claim evaluation workflow answers one practical question:
+
+```text
+A Claim has been submitted.
+Does the available evidence satisfy the governed rules,
+and what action is allowed next?
+```
+
+The answer should not be an unstructured model response. In IXO evaluation workflows, the accountable output is a structured record that explains:
+
+- which Claim was evaluated
+- which evidence was inspected
+- which authority allowed the evaluator to act
+- which rubric or protocol was applied
+- which checks passed, failed, or require review
+- what decision or recommendation was made
+- what state transition, payment, credential, dispute, or review step is allowed next
+
+When the workflow reaches a determination point, the result can be recorded as a Universal Decision and Impact Determination (UDID). A UDID connects the decision, impact, evidence, authority, and proof trail so the determination can be inspected later.
+
+## Why this matters
+
+Claims often represent real-world work, identity, compliance, impact, delivery, or eligibility. Without a governed evaluation model, verification can drift into screenshots, emails, spreadsheets, ad hoc chat messages, and opaque expert judgment.
+
+Agentic Oracles can help with evidence review and decision support, but automation introduces its own risks:
+
+- the agent may act outside delegated authority
+- evidence may be incomplete, stale, or forged
+- a model may summarize confidently without citing sources
+- a rubric may be too vague to reproduce
+- state changes or payments may happen before a valid determination exists
+- reviewers may be unable to replay the decision
+
+The evaluation protocol pattern keeps automation bounded. Agents can help gather context, normalize evidence, apply checks, and produce Evaluation Claims, while the workflow still records authority, evidence, rubric results, human review, and final determinations.
+
+<Warning>
+  Do not treat a model response, chat transcript, or private scratchpad as the source of truth for settlement, credential issuance, or state updates. The accountable record is the combination of Claim, evidence, authority, UDID, and workflow state.
+</Warning>
+
+## System model
+
+The evaluation pattern connects IXO Protocol, IXO Graph, Qi Intelligent Cooperating System, and Agentic Oracles.
+
+<Steps>
+  <Step title="A Claim enters a governed context">
+    A participant, service, device, or agent submits a Claim to a Claim Collection, directly or through a workflow. The Claim identifies the subject, claim type, issuer, evidence references, and relevant protocol or domain context.
+  </Step>
+
+  <Step title="The workflow resolves authority and state">
+    The workflow checks who may evaluate the Claim, which rubric applies, which evidence may be inspected, and what actions are allowed after evaluation. The workflow may also define the allowed evidence sources and evidence processing rules.
+  </Step>
+
+  <Step title="Evidence becomes typed facts">
+    Evidence processors retrieve, parse, verify, and normalize submitted material into a typed fact set. The final rubric should evaluate facts, not raw files or free-form model text. The fact set should be deterministic and reproducible.
+  </Step>
+
+  <Step title="The rubric evaluates the facts">
+    A governed rubric applies ordered checks, thresholds, disqualifiers, escalation rules, and reason codes to the typed facts. The rubric should be explicit, ordered, and reason-coded.
+  </Step>
+
+  <Step title="A UDID records the determination">
+    When the workflow reaches a decision point, a UDID records what was decided, why, under which authority, with which impact, and with what proof. The UDID should be deterministic, reproducible, and cryptographically signed.
+  </Step>
+
+  <Step title="The workflow acts or escalates">
+    The Flow, verifier, protocol, or authorized service routes the result to approval, rejection, dispute, payment, credential issuance, state update, or human review. The workflow should not allow unbounded authority to act on the result.
+  </Step>
+</Steps>
+
+## Core concepts
+
+<AccordionGroup>
+  <Accordion title="Claim" icon="file-signature">
+    A structured assertion about an entity, asset, service, event, outcome, identity, eligibility, or state. A Claim should carry or reference the evidence needed for evaluation.
+  </Accordion>
+
+  <Accordion title="Claim Collection" icon="folder-tree">
+    A governance and grouping context for related Claims. A collection can define claim types, owners, evaluators, payment settings, dispute rules, and accepted evidence.
+  </Accordion>
+
+  <Accordion title="Evidence" icon="paperclip">
+    Material used to evaluate the Claim: documents, measurements, observations, attestations, media, sensor records, credentials, Matrix events, or external records.
+  </Accordion>
+
+  <Accordion title="Agentic Oracle" icon="robot">
+    An autonomous or semi-autonomous evaluator that operates with identity, scoped authority, permitted tools, and auditable output. An Agentic Oracle should not become the sole final authority for high-value or irreversible decisions. The Agentic Oracle should be able to produce a deterministic, reproducible, and cryptographically signed UDID when a determination is made.
+  </Accordion>
+
+  <Accordion title="Evaluation kit" icon="toolbox">
+    A reusable package of schemas, evidence rules, fact producers, rubrics, reason codes, fixtures, tests, and workflow instructions for one evaluation domain or claim type. The evaluation kit should be deterministic, reproducible, and testable.
+  </Accordion>
+
+  <Accordion title="Rubric" icon="table">
+    The governed rulebook used to evaluate typed facts. A practical rubric defines required evidence, disqualifiers, thresholds, escalation rules, reason codes, and allowed outcomes. The rubric should be explicit, ordered, and reason-coded.
+  </Accordion>
+
+  <Accordion title="Fact ledger" icon="list-check">
+    The normalized set of typed facts produced from evidence before the rubric runs. The fact ledger lets different evidence sources feed the same deterministic decision machinery. The fact ledger should be deterministic, reproducible, and cryptographically signed.
+  </Accordion>
+
+  <Accordion title="UDID" icon="stamp">
+    A Universal Decision and Impact Determination. A UDID records the final decision and impact determination when the workflow reaches a determination point. The UDID should be deterministic, reproducible, and cryptographically signed.
+  </Accordion>
+</AccordionGroup>
+
+## Source-of-truth boundaries
+
+Keep each layer responsible for one part of the evaluation system.
+
+<AccordionGroup>
+  <Accordion title="IXO Protocol" icon="link">
+    - **Owns:** Claim lifecycle state, protocol messages, authorization, and on-chain records.
+    - **Does not own:** Private evidence payloads or model reasoning.
+  </Accordion>
+
+  <Accordion title="IXO Graph" icon="circle-nodes">
+    - **Owns:** Shared context for entities, Claims, evidence, authority, workflows, decisions, and outcomes.
+    - **Does not own:** Unstructured chat as canonical state.
+  </Accordion>
+
+  <Accordion title="Qi Intelligent Cooperating System" icon="people-arrows">
+    - **Owns:** Human-agent workflow state, review routing, decision points, and next actions.
+    - **Does not own:** Raw protocol message definitions.
+  </Accordion>
+
+  <Accordion title="Agentic Oracles" icon="robot">
+    - **Owns:** Evidence review, fact production, rubric application, recommendations, and Evaluation Claims.
+    - **Does not own:** Unbounded authority to approve, pay, issue credentials, or update high-value state. The Agentic Oracle should be able to produce a deterministic, reproducible, and cryptographically signed UDID when a determination is made.
+  </Accordion>
+
+  <Accordion title="IXO Matrix" icon="comments">
+    - **Owns:** Encrypted collaboration, human review rooms, alerts, and private evidence discussion.
+    - **Does not own:** The canonical rubric or final determination.
+  </Accordion>
+
+  <Accordion title="SDK and API references" icon="book">
+    - **Owns:** Exact package identifiers, methods, endpoints, and request shapes for the evaluation kit.
+    - **Does not own:** Broad architecture ownership.
+  </Accordion>
+</AccordionGroup>
+
+This boundary prevents one page, runtime, or service from becoming a hidden source of truth for the whole workflow.
+
+## Evaluation kit structure
+
+An evaluation kit should separate domain-specific evidence handling from shared evaluation mechanics.
+
+<CardGroup cols={2}>
+  <Card title="Shared runtime artifacts" icon="gears">
+    Claim loader, context resolver, evidence resolver, fact-ledger validator, rubric interpreter, trace store, UDID compiler, signing adapter, and human-review notifier.
+  </Card>
+
+  <Card title="Domain-specific kit artifacts" icon="boxes-stacked">
+    Claim schema, evidence roles, external connectors, extractors, normalizers, fact producers, decision table, reason codes, fixtures, and human-review prompts.
+  </Card>
+</CardGroup>
+
+The important design rule is that the evaluator should not directly decide over raw evidence. It should turn evidence into typed facts, then evaluate those facts against a governed rubric.
+
+```text
+Raw evidence
+  -> evidence processors
+  -> typed fact ledger
+  -> governed rubric
+  -> UDID when a determination is made
+```
+
+## Fact ledger pattern
+
+The fact ledger is the bridge between messy evidence and repeatable decisions.
+
+Raw evidence can include PDFs, images, sensor logs, API responses, credentials, signatures, spreadsheets, Matrix events, and external attestations. A rubric should not need to know how each source was parsed. It should receive stable facts with provenance. The fact ledger should be deterministic, reproducible, and cryptographically signed.
+
+```json
+{
+  "id": "field.legalName.reconciliation",
+  "value": "normalized_match",
+  "confidence": 0.98,
+  "producer": "legal-name-reconciler@1.0.0",
+  "sources": [
+    {
+      "type": "claim-jsonld",
+      "path": "$.assertion.legalName"
+    },
+    {
+      "type": "registry-response",
+      "path": "$.entity.legalName"
+    }
+  ]
+}
+```
+
+A useful fact includes:
+
+- a stable identifier
+- a typed value
+- a producer and version
+- source references
+- confidence, when relevant
+- failure behavior
+- enough provenance for replay
+
+## Rubric pattern
+
+A rubric should be explicit, ordered, and reason-coded. It should make escalation as concrete as approval or rejection. The source of truth for the rubric is typically a JSON file in the evaluation kit.
+
+```json
+{
+  "id": "LEIV-R002",
+  "description": "Registry extract is mandatory",
+  "when": {
+    "fact": "document.registryExtract.present",
+    "equals": false
+  },
+  "then": {
+    "outcome": "rejected",
+    "reasonCode": "LEIV-201-MISSING-REGISTRY-EXTRACT"
+  }
+}
+```
+
+Use this order when designing rubric checks:
+
+1. admissibility checks
+2. hard safety vetoes
+3. missing mandatory evidence
+4. invalid or conflicting evidence
+5. manual-review triggers
+6. partial-success logic
+7. approval logic
+
+<Tip>
+  Treat ambiguity as a routing condition, not a reason to force a binary answer. A good rubric can say "manual review required" with the same precision as "approved" or "rejected".
+</Tip>
+
+## Outcome model
+
+An evaluation profile should define outcomes in operational terms before mapping them to any exact protocol enum or service field.
+
+<AccordionGroup>
+  <Accordion title="approved" icon="circle-check">
+    - **Meaning:** Evidence satisfies the governed rubric.
+    - **Typical workflow behavior:** Continue to the allowed state transition, settlement, credential step, or record update.
+  </Accordion>
+
+  <Accordion title="rejected" icon="circle-xmark">
+    - **Meaning:** The Claim fails a hard rule or lacks mandatory support.
+    - **Typical workflow behavior:** Record the rejection and reason code; do not proceed to approval-only actions.
+  </Accordion>
+
+  <Accordion title="manual_review_required" icon="user-check">
+    - **Meaning:** The evidence is ambiguous, conflicting, or outside automated authority.
+    - **Typical workflow behavior:** Pause automation and route to a human or governance review.
+  </Accordion>
+
+  <Accordion title="partial_success" icon="scale-balanced">
+    - **Meaning:** Part of the Claim is supported under a governed rule.
+    - **Typical workflow behavior:** Continue only if the rubric defines the allowed partial action.
+  </Accordion>
+
+  <Accordion title="disputed" icon="comments">
+    - **Meaning:** A participant challenges the evaluation or determination.
+    - **Typical workflow behavior:** Route to the dispute workflow.
+  </Accordion>
+</AccordionGroup>
+
+If your implementation maps these statuses to `MsgEvaluateClaim` fields, service API fields, or SDK helper methods, use the canonical developer guides and API references for the exact literals.
+
+## Human review
+
+Human review is a controlled checkpoint, not an informal chat.
+
+A review request should include:
+
+- Claim ID and Claim Collection
+- Claim subject and type
+- evaluator DID or service identity (the Agentic Oracle DID)
+- rubric ID and version (the rubric JSON file)
+- reason code (the reason code for the outcome)
+- evidence references or redacted evidence links (the evidence that was inspected)
+- fact ledger summary (the typed facts that were evaluated)
+- proposed outcome (the recommended or proposed next action)
+- questions requiring human judgment (the questions that require human judgment)
+- deadline or escalation policy (the deadline or escalation policy for the review)
+- required response shape (the required response shape for the review)
+
+IXO Matrix can support encrypted review rooms and structured notifications. The final decision should still be recorded as a workflow record, UDID, protocol transaction, or another canonical artifact rather than only as a chat message.
+
+## Safety rules
+
+Use these rules before allowing an Agentic Oracle to affect value, credentials, or state.
+
+<AccordionGroup>
+  <Accordion title="Do not let an LLM directly approve a Claim" icon="triangle-exclamation">
+    The model may extract, classify, summarize, or recommend. Approval should pass through governed rubric logic and the workflow authority model. The Agentic Oracle should be able to produce a deterministic, reproducible, and cryptographically signed UDID when a determination is made.
+  </Accordion>
+
+  <Accordion title="Do not treat a CID as authenticity proof" icon="link">
+    A CID proves content integrity for the referenced object. It does not prove that a document is genuine, current, complete, or issued by an authorized source. A CID is not a UDID.
+  </Accordion>
+
+  <Accordion title="Do not let the evaluator change its own rubric" icon="lock">
+    Rubric changes require proposal, review, versioning, and governance. Runtime optimization should not silently change thresholds, disqualifiers, or reason-code mappings. The rubric should be deterministic, reproducible, and reason-coded.
+  </Accordion>
+
+  <Accordion title="Do not commit high-value actions on ambiguous evidence" icon="hand">
+    Ambiguity should route to human review, dispute handling, or a request for more evidence. The workflow should not allow unbounded authority to act on the result.
+  </Accordion>
+
+  <Accordion title="Do not store sensitive full traces publicly" icon="shield-halved">
+    Use redacted public traces and encrypted private traces when evidence contains personal, commercial, or regulated data. The public trace should be deterministic, reproducible, and cryptographically signed.
+  </Accordion>
+</AccordionGroup>
+
+## First implementation move
+
+Start with one narrow evaluation workflow that cannot directly approve, pay, issue credentials, or update high-value state.
+
+Define:
+
+- one Claim type
+- one Claim Collection
+- one Flow
+- one rubric (the rubric JSON file)
+- one evidence schema (the evidence schema JSON file)
+- one fact ledger schema (the fact ledger schema JSON file)
+- one Agentic Oracle or evaluator identity (the Agentic Oracle DID)
+- one human review path (the human review JSON file)
+- one dispute or correction path (the dispute or correction JSON file)
+- one test suite with approval, rejection, ambiguity, and adversarial cases (the test suite JSON file)
+
+After the evaluation is repeatable and reviewable, you can decide whether any low-risk actions may move from recommendation to proposal, and from proposal to bounded execution. The workflow should not allow unbounded authority to act on the result.
+
+## Related docs
+
+<CardGroup cols={2}>
+  <Card title="Agent evaluations" icon="clipboard-check" href="/guides/dev/agent-evaluations">
+    Design Qi evaluation workflows with UCAN authority, Claims, evidence, rubrics, and UDID records.
+  </Card>
+
+  <Card title="Claims management" icon="file-signature" href="/guides/dev/ixo-claims">
+    Build Claim workflows while keeping protocol and service responsibilities separate.
+  </Card>
+
+  <Card title="Developer workflows" icon="diagram-project" href="/guides/dev/workflows">
+    Review SDK-oriented examples for submitting Claims and recording evaluations.
+  </Card>
+
+  <Card title="IXO Graph" icon="circle-nodes" href="/articles/ixo-graph">
+    Understand the shared graph of entities, Claims, evidence, authority, workflows, decisions, and outcomes.
+  </Card>
+
+  <Card title="Agentic Oracles" icon="robot" href="/articles/ixo-oracles">
+    Learn how oracle and agent services fit into the IXO stack.
+  </Card>
+
+  <Card title="Product and SDK map" icon="map" href="/reference/product-and-sdk-map">
+    Confirm canonical product names, SDK names, package identifiers, and routes.
+  </Card>
+</CardGroup>
