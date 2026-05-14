@@ -1,0 +1,223 @@
+---
+title: "The Stack"
+icon: "layer-group"
+description: "Trust and AI Infrastructure for Intelligent Cooperation."
+---
+
+Most organisations are not blocked because they lack AI tools. They are blocked because people and agents operate on conflicting information, decisions are disconnected from evidence, workflows break across organisational boundaries, automation cannot be trusted with real-world consequences, and nobody can clearly prove what happened, who acted, or whether outcomes were achieved.
+
+The IXO Stack — **IXO Protocol** as the verifiable state layer and the **Qi Intelligent Cooperating System** as the human–AI cooperation layer — addresses that class of problem. It is not chat-based AI automation; it is outcome-driven coordination infrastructure for humans, AI agents, organisations, data systems, governance processes, and financial systems operating against shared, verifiable state.
+
+## The two layers
+
+IXO defines **what is true and verifiable**. Qi defines **how intelligent actors cooperate** over that state inside real workflows.
+
+<CardGroup cols={2}>
+  <Card title="IXO: the verifiable state layer" icon="cube" href="/protocols/ixo-protocol">
+    Identity, claims, evidence, credentials, governance, programmable coordination, payments, and outcomes — modelled as cryptographically verifiable state on the [IXO Graph](/articles/ixo-graph).
+  </Card>
+
+  <Card title="Qi: the intelligent cooperating system" icon="brain-circuit" href="/articles/qi-intelligent-cooperating-system">
+    Humans and AI agents working together over IXO-backed state through shared context, declared interfaces, governed workflows, and inspectable actions.
+  </Card>
+</CardGroup>
+
+A useful rule: **use IXO** to define, verify, persist, or query the shared state of reality; **use Qi** to interpret, reason, decide, automate, or act on that reality.
+
+### What IXO records
+
+IXO maps real-world systems into cryptographically verifiable digital state. Typical state transitions include:
+
+- a carbon reduction event
+- a youth skills credential
+- a pathogen detection signal
+- a delivery confirmation
+- a governance decision
+- a machine telemetry reading
+- an evaluation outcome
+- an AI-generated recommendation
+
+These are recorded as reality-backed state, not spreadsheets, screenshots, or unverifiable API logs. See [IXO Protocol](/protocols/ixo-protocol) for the on-chain primitives and [IXO Graph](/articles/ixo-graph) for the shared, queryable map.
+
+### What Qi coordinates
+
+Qi creates persistent cooperative environments where context is shared, memory persists, authority is explicit, actions are governed, and outcomes are verifiable. It is designed around **intent, shared state, flows, capabilities, and outcomes** — moving teams from generating AI outputs to producing accountable outcomes. See [Qi Intelligent Cooperating System](/articles/qi-intelligent-cooperating-system).
+
+## Core building blocks
+
+These are the four building blocks every reader should recognise before going deeper.
+
+<AccordionGroup>
+  <Accordion title="Shared state" icon="circle-nodes">
+    Humans, AI agents, applications, and workflows operate against the same evolving source of truth. Shared state is synchronised with conflict-free replicated data types (CRDTs) so multi-party collaboration does not require a centralised authority. It produces continuity, coordination, accountability, durable memory, and explainability across actors.
+
+    Read more: [Core concepts — state, data, context, and action](/core-concepts#state-data-context-and-action).
+  </Accordion>
+
+  <Accordion title="PODs" icon="building-columns">
+    A **POD** (Programmable Organisational Domain) is a governed cooperation environment — a team, company, project, field operation, supply chain, public health response, financing facility, or research collaboration. Every POD has identity, governance, shared memory, verifiable history, programmable permissions, and financial coordination primitives. PODs are the operational trust boundary for AI-enabled organisations.
+
+    Read more: [IXO PODs](/articles/pods). Hands-on: [Build a POD](/guides/users/build-a-pod).
+  </Accordion>
+
+  <Accordion title="Qi Flows" icon="route">
+    **Qi Flows** coordinate work between humans and AI agents. Flows are state-driven, governance checkpoints are programmable, humans remain in the loop, and evidence and outcomes are first-class objects. A Flow can orchestrate AI services, request evaluations, trigger payments, issue credentials, update governance state, coordinate field operations, manage disputes, and route work dynamically — embedded directly into collaborative workspaces, not separate orchestration dashboards.
+
+    Hands-on: [Build a Flow](/guides/users/build-a-flow).
+  </Accordion>
+
+  <Accordion title="Agentic Oracles" icon="robot">
+    An **Agentic Oracle** is not just a model endpoint. It is a governed economic actor with identity, permissions, policies, payment mechanisms, reputation, verifiable execution records, and evaluatable outcomes. Examples include document evaluation, carbon verification, epidemiology, accounting, legal review, and sensor anomaly detection agents. Every action can be authorised, audited, evaluated, disputed, and settled.
+
+    Read more: [Agentic Oracles](/articles/ixo-oracles) and [Oracle architecture](/guides/ixo-oracles-architecture). Evaluation model: [Claim evaluation protocol](/articles/claim-evaluation-protocol).
+  </Accordion>
+</AccordionGroup>
+
+## Trust architecture
+
+The trust architecture is what makes intelligent automation safe for consequential work.
+
+<AccordionGroup>
+  <Accordion title="Identity" icon="fingerprint">
+    IXO uses **Decentralized Identifiers (DIDs)** to establish cryptographically verifiable identity for people, organisations, agents, devices, workflows, and governance domains. This enables portable trust, sovereign identity, verifiable delegation, and cross-platform interoperability.
+
+    The system aligns with [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-model/), [W3C DID Core](https://www.w3.org/TR/did-core/), and [W3C Data Integrity](https://www.w3.org/TR/vc-data-integrity/). See [Identity and credentials](/articles/identity-and-credentials).
+  </Accordion>
+
+  <Accordion title="Capabilities and permissions" icon="key">
+    Qi uses object-capability security for fine-grained authorisation. Permissions are explicit, delegated, time-bound, revocable, and scoped to intent and resources, so organisations can safely authorise agents to access systems, perform actions, operate tools, and coordinate with other agents — without granting blanket control.
+
+    Capability delegation patterns are informed by [UCAN](https://github.com/ucan-wg) and [ZCAP-LD](https://w3c-ccg.github.io/zcap-spec/). See [Authentication](/guides/dev/authentication), [Session keys](/guides/dev/session-keys), and [Authz](/guides/dev/authz).
+  </Accordion>
+
+  <Accordion title="End-to-end encryption" icon="lock">
+    Collaboration and shared state are protected with end-to-end encryption so platform operators cannot inspect private operational data, organisations retain sovereignty over their information, and AI cooperation occurs within controlled trust boundaries.
+
+    Secure coordination is built on the [Matrix Protocol](https://matrix.org). See [IXO Matrix](/articles/ixo-matrix).
+  </Accordion>
+
+  <Accordion title="Verifiable outcomes" icon="badge-check">
+    Outcomes — evidence, evaluations, approvals, causal reasoning, financial settlement, governance decisions — become part of a durable, verifiable audit graph. Organisations can then automate trust, finance verified outcomes, coordinate across institutional boundaries, evaluate AI performance, and improve decision quality over time.
+
+    Read more: [Claim evaluation protocol](/articles/claim-evaluation-protocol) and [Digital MRV](/guides/digital-mrv).
+  </Accordion>
+</AccordionGroup>
+
+## Typical deployment layers
+
+A production IXO + Qi deployment composes several layers, each with a canonical home in the docs.
+
+| Layer | Purpose | Canonical reference |
+|---|---|---|
+| IXO verifiable state | Identity, claims, governance, settlement | [IXO Protocol](/protocols/ixo-protocol) |
+| Graph substrate | Shared, queryable map of entities and relationships | [IXO Graph](/articles/ixo-graph) |
+| POD runtime | Organisational cooperation environments | [IXO PODs](/articles/pods) |
+| Qi Flow engine | Human–AI workflow coordination | [Qi Intelligent Cooperating System](/articles/qi-intelligent-cooperating-system) |
+| Agentic Oracles | AI services and accountable automation | [Agentic Oracles](/articles/ixo-oracles) |
+| Matrix federation | Encrypted collaboration and shared documents | [IXO Matrix](/articles/ixo-matrix) |
+| Indexing and query | Read-side access to protocol state | [IXO Blocksync](/articles/ixo-blocksync) |
+| Endpoints and networks | Chain IDs, RPC, REST, Matrix base URLs | [Networks and endpoints](/reference/networks-and-endpoints) |
+| External integrations | ERP, CRM, sensors, APIs, AI models | [Integrations](/articles/ixo-integrations) |
+
+## Why this matters
+
+AI systems can increasingly reason, plan, operate tools, execute workflows, and coordinate actions. But intelligence without trust creates systemic risk. The next layer of infrastructure must answer:
+
+- Who authorised this action?
+- What evidence supports this decision?
+- Which agent performed the work?
+- Can the outcome be independently verified?
+- Can governance intervene?
+- Can financial settlement be automated safely?
+
+IXO and Qi are designed to answer these questions at infrastructure level. The internet connected information; this stack connects accountable action — for trusted cooperation, verifiable outcomes, governed AI systems, and programmable institutions.
+
+## What you can build
+
+<CardGroup cols={2}>
+  <Card title="Outcome finance" icon="coins" href="/guides/users/build-obf">
+    Carbon markets, impact finance, youth livelihoods, development finance, and grant disbursement systems that move value only when outcomes are evidenced and verified.
+  </Card>
+
+  <Card title="Digital MRV" icon="chart-line" href="/guides/digital-mrv">
+    Measurement, reporting, and verification systems with cryptographic trust, automated evaluation, and verifiable certification.
+  </Card>
+
+  <Card title="AI-native operations" icon="robot" href="/guides/ixo-oracles-architecture">
+    AI-assisted accounting, public health coordination, digital compliance, supply chain verification, and scientific collaboration with governed AI delegation and verifiable execution.
+  </Card>
+
+  <Card title="Sovereign collaboration" icon="shield-halved" href="/articles/pods">
+    Federated research, public–private coordination, regulated data exchanges, and decentralised service marketplaces with sovereign data ownership and interoperable identity.
+  </Card>
+</CardGroup>
+
+See [What you can build](/guides/what-you-can-build) for a fuller list of build paths with first-step guides.
+
+## Design principles
+
+<AccordionGroup>
+  <Accordion title="Humans remain accountable" icon="user-shield">
+    Humans stay in the loop for governance, policy, accountability, oversight, escalation, and strategic judgement. AI systems augment coordination capacity. They do not replace institutional responsibility.
+  </Accordion>
+
+  <Accordion title="Trust must be verifiable" icon="badge-check">
+    Assertions are insufficient. The system must support evidence, provenance, cryptographic verification, reproducibility, evaluation, and dispute resolution.
+  </Accordion>
+
+  <Accordion title="Cooperation requires shared reality" icon="circle-nodes">
+    Organisations fail when coordination fragments. Shared verifiable state is the coordination substrate for people, agents, systems, and institutions.
+  </Accordion>
+
+  <Accordion title="Intelligence must produce outcomes" icon="bullseye">
+    The value of AI is not generated by conversations. It is generated by decisions, coordination, execution, and measurable outcomes.
+  </Accordion>
+</AccordionGroup>
+
+## Frequently asked questions
+
+<AccordionGroup>
+  <Accordion title="Is this a blockchain platform?" icon="cube">
+    Partially. Blockchain is used where durable public verification and settlement are necessary. Most operational collaboration occurs off-chain using encrypted shared state. The architecture balances sovereignty, scalability, privacy, interoperability, and auditability. See [IXO Protocol](/protocols/ixo-protocol) and [IXO Matrix](/articles/ixo-matrix).
+  </Accordion>
+
+  <Accordion title="Does this replace existing enterprise systems?" icon="plug">
+    No. IXO and Qi integrate with existing CRMs, ERPs, AI platforms, databases, identity providers, messaging systems, and analytics systems. The goal is trusted coordination across systems, not replacement. See [Integrations](/articles/ixo-integrations) and [Model Context Protocol (MCP) servers](/mcp/model-context-protocol).
+  </Accordion>
+
+  <Accordion title="Can organisations control their own data?" icon="lock">
+    Yes. The architecture is designed around sovereign identity, end-to-end encryption, federated infrastructure, explicit permissions, and portable trust. See [Domain privacy](/guides/dev/domain-privacy) and [IXO Matrix](/articles/ixo-matrix).
+  </Accordion>
+
+  <Accordion title="Can AI agents perform real operational work?" icon="robot">
+    Yes — within governed trust boundaries. Agents can evaluate, coordinate, classify, generate, monitor, trigger workflows, and propose actions. Sensitive operations can require approvals, evaluations, multi-party authorisation, policy enforcement, and human oversight. See [Agent evaluations](/guides/dev/agent-evaluations) and [Claim evaluation protocol](/articles/claim-evaluation-protocol).
+  </Accordion>
+</AccordionGroup>
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Act on Reality" icon="earth-africa" href="/introduction">
+    Outcome-first positioning and a short verified-claims walkthrough.
+  </Card>
+
+  <Card title="Core concepts" icon="lightbulb-exclamation-on" href="/core-concepts">
+    Vocabulary and mental models for entities, claims, evidence, state, and cooperation.
+  </Card>
+
+  <Card title="What you can build" icon="rocket" href="/guides/what-you-can-build">
+    Pick a first POD, Flow, Blueprint, Oracle, asset, or Market.
+  </Card>
+
+  <Card title="Developer overview" icon="code" href="/guides/dev/overview">
+    SDKs, APIs, and implementation entry points.
+  </Card>
+
+  <Card title="Glossary" icon="book" href="/reference/glossary">
+    Short definitions of IXO and Qi terms.
+  </Card>
+
+  <Card title="Product and SDK map" icon="map" href="/reference/product-and-sdk-map">
+    Which surface owns what across the stack.
+  </Card>
+</CardGroup>
