@@ -17,7 +17,6 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "guides/what-you-can-build",
               "your-role",
               "core-concepts",
               "the-stack"
@@ -60,7 +59,6 @@
               "articles/ixo-matrix",
               "articles/ixo-ussd",
               "articles/ixo-blocksync",
-              "articles/ixo-oracles",
               "articles/pods",
               "articles/projects",
               "articles/claim-evaluation-protocol"
@@ -130,10 +128,105 @@
               {
                 "group": "Operate",
                 "pages": [
-                  "guides/registry",
-                  "guides/ixo-oracles-architecture"
+                  "guides/registry"
                 ]
               }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Build an Oracle",
+        "groups": [
+          {
+            "group": "Start here",
+            "pages": [
+              "build-an-oracle/index",
+              "build-an-oracle/quickstart",
+              "build-an-oracle/for-ai-agents"
+            ]
+          },
+          {
+            "group": "Build",
+            "pages": [
+              "build-an-oracle/build/overview",
+              "build-an-oracle/build/create-oracle-app",
+              "build-an-oracle/build/enable-bundled-plugins",
+              "build-an-oracle/build/write-a-plugin",
+              {
+                "group": "Plugin recipes",
+                "pages": [
+                  "build-an-oracle/build/plugin-recipes/add-a-tool",
+                  "build-an-oracle/build/plugin-recipes/add-a-sub-agent",
+                  "build-an-oracle/build/plugin-recipes/add-a-middleware",
+                  "build-an-oracle/build/plugin-recipes/add-http-endpoints",
+                  "build-an-oracle/build/plugin-recipes/add-config-and-env",
+                  "build-an-oracle/build/plugin-recipes/share-state",
+                  "build-an-oracle/build/plugin-recipes/declare-dependencies",
+                  "build-an-oracle/build/plugin-recipes/set-visibility"
+                ]
+              },
+              "build-an-oracle/build/test-your-oracle",
+              "build-an-oracle/build/identity-and-auth",
+              "build-an-oracle/build/observability",
+              "build-an-oracle/build/deploy"
+            ]
+          },
+          {
+            "group": "Deep dive",
+            "pages": [
+              "build-an-oracle/understand/what-is-qiforge",
+              "build-an-oracle/understand/architecture",
+              "build-an-oracle/understand/request-lifecycle",
+              "build-an-oracle/understand/plugins-vs-skills",
+              "build-an-oracle/understand/plugin-anatomy",
+              "build-an-oracle/understand/manifest",
+              "build-an-oracle/understand/visibility-tiers",
+              "build-an-oracle/understand/shared-state",
+              "build-an-oracle/understand/contexts",
+              "build-an-oracle/understand/meta-tools-and-loading"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "build-an-oracle/reference/createoracleapp",
+              "build-an-oracle/reference/plugin-api",
+              "build-an-oracle/reference/plugin-context",
+              "build-an-oracle/reference/runtime-context",
+              "build-an-oracle/reference/manifest-schema",
+              "build-an-oracle/reference/state-schema",
+              "build-an-oracle/reference/environment-variables",
+              "build-an-oracle/reference/api-endpoints",
+              "build-an-oracle/reference/cli",
+              "build-an-oracle/reference/client-sdk",
+              "build-an-oracle/reference/glossary",
+              {
+                "group": "Bundled plugins",
+                "pages": [
+                  "build-an-oracle/reference/bundled-plugins/overview",
+                  "build-an-oracle/reference/bundled-plugins/memory",
+                  "build-an-oracle/reference/bundled-plugins/portal",
+                  "build-an-oracle/reference/bundled-plugins/firecrawl",
+                  "build-an-oracle/reference/bundled-plugins/domain-indexer",
+                  "build-an-oracle/reference/bundled-plugins/composio",
+                  "build-an-oracle/reference/bundled-plugins/sandbox",
+                  "build-an-oracle/reference/bundled-plugins/skills",
+                  "build-an-oracle/reference/bundled-plugins/editor",
+                  "build-an-oracle/reference/bundled-plugins/agui",
+                  "build-an-oracle/reference/bundled-plugins/slack",
+                  "build-an-oracle/reference/bundled-plugins/tasks",
+                  "build-an-oracle/reference/bundled-plugins/credits",
+                  "build-an-oracle/reference/bundled-plugins/calls",
+                  "build-an-oracle/reference/bundled-plugins/user-preferences"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "build-an-oracle/troubleshooting"
             ]
           }
         ]
@@ -173,9 +266,6 @@
               "sdk-reference/multiclient-sdk",
               "sdk-reference/signx-sdk",
               "sdk-reference/matrix-client-sdk",
-              "sdk-reference/oracles-client-sdk",
-              "sdk-reference/agentic-oracles-adk",
-              "sdk-reference/oracle-adk",
               "sdk-reference/jambo-wallet-sdk"
             ]
           }
@@ -198,6 +288,214 @@
     }
   },
   "redirects": [
+    {
+      "source": "/build-an-oracle/concepts/architecture",
+      "destination": "/build-an-oracle/understand/architecture"
+    },
+    {
+      "source": "/build-an-oracle/concepts/plugins",
+      "destination": "/build-an-oracle/understand/plugin-anatomy"
+    },
+    {
+      "source": "/build-an-oracle/concepts/manifest",
+      "destination": "/build-an-oracle/understand/manifest"
+    },
+    {
+      "source": "/build-an-oracle/concepts/visibility-tiers",
+      "destination": "/build-an-oracle/understand/visibility-tiers"
+    },
+    {
+      "source": "/build-an-oracle/concepts/contexts",
+      "destination": "/build-an-oracle/understand/contexts"
+    },
+    {
+      "source": "/build-an-oracle/concepts/meta-tools",
+      "destination": "/build-an-oracle/understand/meta-tools-and-loading"
+    },
+    {
+      "source": "/build-an-oracle/concepts/shared-state",
+      "destination": "/build-an-oracle/understand/shared-state"
+    },
+    {
+      "source": "/build-an-oracle/concepts/dependencies",
+      "destination": "/build-an-oracle/build/plugin-recipes/declare-dependencies"
+    },
+    {
+      "source": "/build-an-oracle/guides/create-your-oracle",
+      "destination": "/build-an-oracle/build/create-oracle-app"
+    },
+    {
+      "source": "/build-an-oracle/guides/write-your-first-plugin",
+      "destination": "/build-an-oracle/build/write-a-plugin"
+    },
+    {
+      "source": "/build-an-oracle/guides/plugin-tools",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-a-tool"
+    },
+    {
+      "source": "/build-an-oracle/guides/plugin-sub-agents",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-a-sub-agent"
+    },
+    {
+      "source": "/build-an-oracle/guides/plugin-middlewares",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-a-middleware"
+    },
+    {
+      "source": "/build-an-oracle/guides/plugin-http-endpoints",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-http-endpoints"
+    },
+    {
+      "source": "/build-an-oracle/guides/plugin-config-env",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-config-and-env"
+    },
+    {
+      "source": "/build-an-oracle/guides/plugin-shared-state",
+      "destination": "/build-an-oracle/build/plugin-recipes/share-state"
+    },
+    {
+      "source": "/build-an-oracle/guides/testing-your-oracle",
+      "destination": "/build-an-oracle/build/test-your-oracle"
+    },
+    {
+      "source": "/build-an-oracle/guides/using-bundled-plugins",
+      "destination": "/build-an-oracle/build/enable-bundled-plugins"
+    },
+    {
+      "source": "/build-an-oracle/guides/identity-and-auth",
+      "destination": "/build-an-oracle/build/identity-and-auth"
+    },
+    {
+      "source": "/build-an-oracle/guides/deployment",
+      "destination": "/build-an-oracle/build/deploy"
+    },
+    {
+      "source": "/build-an-oracle/guides/observability",
+      "destination": "/build-an-oracle/build/observability"
+    },
+    {
+      "source": "/build-an-oracle/reference/plugin-catalog",
+      "destination": "/build-an-oracle/reference/bundled-plugins/overview"
+    },
+    {
+      "source": "/build-an-oracle/how-it-works/architecture",
+      "destination": "/build-an-oracle/understand/architecture"
+    },
+    {
+      "source": "/build-an-oracle/how-it-works/request-lifecycle",
+      "destination": "/build-an-oracle/understand/request-lifecycle"
+    },
+    {
+      "source": "/build-an-oracle/how-it-works/plugins-vs-skills",
+      "destination": "/build-an-oracle/understand/plugins-vs-skills"
+    },
+    {
+      "source": "/build-an-oracle/how-it-works/contexts",
+      "destination": "/build-an-oracle/understand/contexts"
+    },
+    {
+      "source": "/build-an-oracle/how-it-works/meta-tools-and-loading",
+      "destination": "/build-an-oracle/understand/meta-tools-and-loading"
+    },
+    {
+      "source": "/build-an-oracle/plugins/overview",
+      "destination": "/build-an-oracle/build/overview"
+    },
+    {
+      "source": "/build-an-oracle/plugins/anatomy",
+      "destination": "/build-an-oracle/understand/plugin-anatomy"
+    },
+    {
+      "source": "/build-an-oracle/plugins/manifest",
+      "destination": "/build-an-oracle/understand/manifest"
+    },
+    {
+      "source": "/build-an-oracle/plugins/visibility",
+      "destination": "/build-an-oracle/build/plugin-recipes/set-visibility"
+    },
+    {
+      "source": "/build-an-oracle/plugins/tools",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-a-tool"
+    },
+    {
+      "source": "/build-an-oracle/plugins/sub-agents",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-a-sub-agent"
+    },
+    {
+      "source": "/build-an-oracle/plugins/middlewares",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-a-middleware"
+    },
+    {
+      "source": "/build-an-oracle/plugins/http-endpoints",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-http-endpoints"
+    },
+    {
+      "source": "/build-an-oracle/plugins/shared-state",
+      "destination": "/build-an-oracle/build/plugin-recipes/share-state"
+    },
+    {
+      "source": "/build-an-oracle/plugins/config-and-env",
+      "destination": "/build-an-oracle/build/plugin-recipes/add-config-and-env"
+    },
+    {
+      "source": "/build-an-oracle/plugins/dependencies",
+      "destination": "/build-an-oracle/build/plugin-recipes/declare-dependencies"
+    },
+    {
+      "source": "/build-an-oracle/plugins/write-your-first",
+      "destination": "/build-an-oracle/build/write-a-plugin"
+    },
+    {
+      "source": "/build-an-oracle/plugins/testing",
+      "destination": "/build-an-oracle/build/test-your-oracle"
+    },
+    {
+      "source": "/build-an-oracle/plugins/catalog",
+      "destination": "/build-an-oracle/reference/bundled-plugins/overview"
+    },
+    {
+      "source": "/build-an-oracle/building/create-oracle-app",
+      "destination": "/build-an-oracle/build/create-oracle-app"
+    },
+    {
+      "source": "/build-an-oracle/building/using-bundled-plugins",
+      "destination": "/build-an-oracle/build/enable-bundled-plugins"
+    },
+    {
+      "source": "/build-an-oracle/building/identity-and-auth",
+      "destination": "/build-an-oracle/build/identity-and-auth"
+    },
+    {
+      "source": "/build-an-oracle/building/observability",
+      "destination": "/build-an-oracle/build/observability"
+    },
+    {
+      "source": "/build-an-oracle/building/deployment",
+      "destination": "/build-an-oracle/build/deploy"
+    },
+    {
+      "source": "/articles/ixo-oracles",
+      "destination": "/build-an-oracle"
+    },
+    {
+      "source": "/guides/ixo-oracles-architecture",
+      "destination": "/build-an-oracle/understand/architecture"
+    },
+    {
+      "source": "/guides/what-you-can-build",
+      "destination": "/build-an-oracle"
+    },
+    {
+      "source": "/sdk-reference/oracles-client-sdk",
+      "destination": "/build-an-oracle/reference/client-sdk"
+    },
+    {
+      "source": "/sdk-reference/agentic-oracles-adk",
+      "destination": "/build-an-oracle"
+    },
+    {
+      "source": "/sdk-reference/oracle-adk",
+      "destination": "/build-an-oracle"
+    },
     {
       "source": "/guides/dev/spatial-web-sdks",
       "destination": "/guides/dev/ixo-stack-sdks"
@@ -349,6 +647,9 @@
   ],
   "styling": {
     "codeblocks": "system"
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude"]
   },
   "logo": {
     "light": "/logo/light.svg",

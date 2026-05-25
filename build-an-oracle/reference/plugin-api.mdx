@@ -1,0 +1,204 @@
+---
+title: "Plugin API"
+description: "OraclePlugin — the abstract class every plugin extends. Every hook signature, the defineOraclePlugin POJO helper, and the related types."
+icon: "puzzle-piece"
+---
+
+## Overview
+
+`OraclePlugin` is the abstract class every plugin extends. It declares three required fields — `name`, `version`, `manifest` — and a set of optional hooks the runtime invokes during boot and per request.
+
+```ts
+import { OraclePlugin } from '@ixo/oracle-runtime';
+```
+
+For a stateless plugin you can skip the class and use the `defineOraclePlugin` POJO helper instead. Both produce the same internal representation.
+
+## OraclePlugin (abstract class)
+
+```ts
+export abstract class OraclePlugin {
+  abstract readonly name: string;
+  abstract readonly version: string;
+  abstract readonly manifest: PluginManifest;
+
+  readonly dependsOn?: string[];
+  readonly softDependsOn?: string[];
+  readonly configSchema?: z.ZodObject<any>;
+
+  autoDetect?(env: NodeJS.ProcessEnv): boolean;
+  readonly autoDetectHint?: string;
+
+  getTools?(ctx: PluginContext): PluginTool[] | Promise<PluginTool[]>;
+  getRequestTools?(rtCtx: RuntimeContext): PluginTool[] | Promise<PluginTool[]>;
+
+  getSubAgents?(ctx: PluginContext): PluginSubAgent[];
+  getRequestSubAgents?(rtCtx: RuntimeContext): PluginSubAgent[] | Promise<PluginSubAgent[]>;
+
+  getMiddlewares?(ctx: PluginContext): AgentMiddleware[];
+
+  getSharedState?(): Record<string, (state: any, runCtx: RuntimeContext) => unknown>;
+
+  getNestModules?(ctx?: PluginContext): Array<Type | DynamicModule>;
+  getAuthExcludedRoutes?(): AuthExcludedRoute[];
+}
+```
+
+## Required fields
+
+<AccordionGroup>
+  <Accordion title="name" icon="tag">
+    - **Type:** `string`
+    - **Convention:** kebab-case unique identifier.
+
+    Used by `features`, `dependsOn`, `softDependsOn`, `qiforge inspect`, the meta-tools. Boot fails on collision with another plugin's name.
+  </Accordion>
+
+  <Accordion title="version" icon="code-branch">
+    - **Type:** `string`
+
+    Plugin version. Surfaced in `qiforge inspect` output. Not used for compatibility checking in v1.
+  </Accordion>
+
+  <Accordion title="manifest" icon="scroll">
+    - **Type:** `PluginManifest`
+
+    The agent's structured interface to the plugin. See [Manifest schema](/build-an-oracle/reference/manifest-schema).
+  </Accordion>
+</AccordionGroup>
+
+## Optional fields
+
+<AccordionGroup>
+  <Accordion title="dependsOn" icon="link">
+    - **Type:** `string[]`
+
+    Hard dependencies. Boot fails if any listed plugin is not loaded. Used to topologically order plugins.
+  </Accordion>
+
+  <Accordion title="softDependsOn" icon="link-slash">
+    - **Type:** `string[]`
+
+    Soft dependencies. Your plugin loads either way; the runtime logs one line per missing soft dep at boot. Branch at runtime via `ctx.availablePlugins.has(...)`.
+  </Accordion>
+
+  <Accordion title="configSchema" icon="key">
+    - **Type:** `z.ZodObject<any>`
+
+    Plugin-owned env vars. Merged with every other plugin's schema and the base Tier-0 schema at boot, then `process.env` is validated against the result.
+  </Accordion>
+
+  <Accordion title="autoDetectHint" icon="comment">
+    - **Type:** `string`
+
+    Human-readable explanation of what `autoDetect` checks (e.g. `'REDIS_URL'`). Surfaced in boot logs when the plugin is skipped.
+  </Accordion>
+</AccordionGroup>
+
+## Hooks
+
+<AccordionGroup>
+  <Accordion title="autoDetect(env)" icon="magnifying-glass">
+    ```ts
+    autoDetect?(env: NodeJS.ProcessEnv): boolean;
+    ```
+
+    Predicate the loader runs when the plugin is left at `'auto'` (or has no explicit `features` entry). Return `false` to skip the plugin. Plugins without `autoDetect` are on-by-default.
+  </Accordion>
+
+  <Accordion title="getTools(ctx)" icon="screwdriver-wrench">
+    ```ts
+    getTools?(ctx: PluginContext): PluginTool[] | Promise<PluginTool[]>;
+    ```
+
+    Boot-time tools. Called once per request build and cached. Use when registration depends only on config and identity.
+  </Accordion>
+
+  <Accordion title="getRequestTools(rtCtx)" icon="rotate">
+    ```ts
+    getRequestTools?(rtCtx: RuntimeContext): PluginTool[] | Promise<PluginTool[]>;
+    ```
+
+    Per-request tools. Called fresh on every agent build with the full `RuntimeContext`. Outputs are merged with `getTools`.
+  </Accordion>
+
+  <Accordion title="getSubAgents(ctx)" icon="sitemap">
+    ```ts
+    getSubAgents?(ctx: PluginContext): PluginSubAgent[];
+    ```
+
+    Sub-agents the runtime auto-wraps as tools. Same call lifecycle as `getTools`.
+  </Accordion>
+
+  <Accordion title="getRequestSubAgents(rtCtx)" icon="rotate">
+    ```ts
+    getRequestSubAgents?(rtCtx: RuntimeContext): PluginSubAgent[] | Promise<PluginSubAgent[]>;
+    ```
+
+    Per-request sub-agents. Merged with `getSubAgents`.
+  </Accordion>
+
+  <Accordion title="getMiddlewares(ctx)" icon="filter">
+    ```ts
+    getMiddlewares?(ctx: PluginContext): AgentMiddleware[];
+    ```
+
+    LangChain `AgentMiddleware` instances inserted after the four always-on framework middlewares (tool-validation, retry, page-context, safety-guardrail). Plugin middlewares run in topological dependency order across plugins.
+  </Accordion>
+
+  <Accordion title="getSharedState()" icon="share-nodes">
+    ```ts
+    getSharedState?(): Record<string, (state: any, runCtx: RuntimeContext) => unknown>;
+    ```
+
+    Read-only accessors this plugin exposes for other plugins to consume via `ctx.shared.<key>`. Key collisions across plugins fail boot.
+  </Accordion>
+
+  <Accordion title="getNestModules(ctx)" icon="server">
+    ```ts
+    getNestModules?(ctx?: PluginContext): Array<Type | DynamicModule>;
+    ```
+
+    NestJS modules spread into `RuntimeAppModule.imports`. Full DI access to Tier-0 services. Use for long-lived services and HTTP controllers.
+
+    `ctx` is optional — older plugins that omit the argument still work.
+  </Accordion>
+
+  <Accordion title="getAuthExcludedRoutes()" icon="globe">
+    ```ts
+    getAuthExcludedRoutes?(): AuthExcludedRoute[];
+    ```
+
+    Routes contributed by this plugin's controllers that must NOT pass through `AuthHeaderMiddleware`. Returns `AuthExcludedRoute[]` (`{ path, method? }`). `path` matches the same way as NestJS `MiddlewareConsumer.exclude(...)` — use the full path the controller mounts at.
+  </Accordion>
+</AccordionGroup>
+
+## defineOraclePlugin
+
+For plugins without constructor args, the POJO form:
+
+```ts
+import { defineOraclePlugin } from '@ixo/oracle-runtime';
+
+export default defineOraclePlugin({
+  name: 'hello',
+  version: '0.1.0',
+  manifest: { /* ... */ },
+  getTools(ctx) { /* ... */ },
+});
+```
+
+`defineOraclePlugin` is an identity function — it returns its argument with type-checking applied. The resulting object is interchangeable with a class instance for everything the runtime does.
+
+## Error handling
+
+If a hook throws at request build time, the runtime logs the error with the plugin name and skips that plugin's contribution for that request. The rest of the agent build continues. Same `Promise.allSettled` semantics for sub-agent init.
+
+Boot-time errors in `autoDetect`, `configSchema` validation, or `manifest` validation fail boot loudly.
+
+## Related references
+
+- [PluginContext](/build-an-oracle/reference/plugin-context)
+- [RuntimeContext](/build-an-oracle/reference/runtime-context)
+- [Manifest schema](/build-an-oracle/reference/manifest-schema)
+- [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) — the 14 bundled plugins.

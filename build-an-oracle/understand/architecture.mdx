@@ -1,0 +1,112 @@
+---
+title: "Architecture"
+description: "The three layers — your oracle, the runtime, the bundled plugins — and how they fit together."
+icon: "diagram-project"
+---
+
+## The three layers
+
+A QiForge deployment has exactly three layers. Knowing what each one owns saves a lot of confusion.
+
+```mermaid
+graph TB
+    subgraph Your["YOUR ORACLE (apps/your-oracle/)"]
+        Main["main.ts (~30 lines)"]
+        Plugins["Your plugins"]
+        Modules["Your Nest modules (optional)"]
+    end
+
+    subgraph Runtime["@ixo/oracle-runtime"]
+        Core["Always-on Nest modules<br/>Sessions · Messages · WS · Secrets · UCAN · Auth · Subscription · Throttler · Checkpointer"]
+        Bundled["14 bundled plugins<br/>memory · skills · sandbox · editor · agui · portal · firecrawl · domain-indexer · composio · slack · credits · user-preferences · tasks · calls"]
+        Agent["LangChain agent<br/>built per request"]
+    end
+
+    Matrix[("Matrix homeserver")]
+    Chain[("IXO chain")]
+    LLM[("LLM provider")]
+
+    Your --> Runtime
+    Core --> Agent
+    Bundled --> Agent
+    Agent -.encrypted.-> Matrix
+    Agent -.UCAN.-> Chain
+    Agent -.invoke.-> LLM
+    User["User"] -->|"HTTP + UCAN"| Agent
+```
+
+### Layer 1 — Your oracle
+
+Typically `apps/your-oracle/src/main.ts` (a `createOracleApp(...)` call), a `config.ts` for identity, and any custom plugins or Nest modules.
+
+**You own:** the entry point, your oracle's identity, custom plugins, custom Nest modules.
+
+**You don't own:** the agent loop, the graph state shape, the checkpointer, the auth flow, the meta-tools, the bundled plugins' internals.
+
+### Layer 2 — `@ixo/oracle-runtime`
+
+The framework. Owns the bootstrap (`createOracleApp`), the always-on Nest modules (Sessions, Messages, WebSocket, Secrets, UCAN, Auth, Subscription, Throttler, Health), the per-request agent builder, the four always-on middlewares, the Matrix-backed SQLite checkpointer, and the plugin API.
+
+You never edit this layer. Updates come via `pnpm update @ixo/oracle-runtime`.
+
+### Layer 3 — Bundled plugins
+
+14 plugins shipped inside the runtime package, each independently toggleable via `features`. See the [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) for what each one does.
+
+## Bootstrap, in one picture
+
+```mermaid
+graph LR
+    A["resolve plugins<br/>(features + autoDetect)"] --> B["topo sort<br/>by dependsOn"]
+    B --> C["validate manifests"]
+    C --> D["compose env schema<br/>base + plugin configSchemas"]
+    D --> E["populate 6 registries"]
+    E --> F["build RuntimeAppModule"]
+    F --> G["NestFactory.create"]
+    G --> H["schedule Matrix init<br/>(background)"]
+    G --> I["listen on PORT"]
+```
+
+The HTTP server accepts requests immediately; auth-requiring routes 401 until Matrix init finishes and the UCAN signing mnemonic loads.
+
+Defined in [`create-oracle-app.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/create-oracle-app.ts).
+
+## The six registries
+
+Plugins don't talk to the runtime directly. They push contributions into one of six registries at boot; the agent builder reads from them per request.
+
+| Registry | Holds | Collision rule |
+| --- | --- | --- |
+| ToolRegistry | All plugin tools | Flat namespace — collision is a boot error |
+| SubAgentRegistry | All plugin sub-agents | Flat namespace — collision is a boot error |
+| MiddlewareRegistry | All plugin middlewares | Ordered topologically; no names |
+| ManifestRegistry | All plugin manifests | Title collision = soft warn |
+| ConfigSchemaRegistry | All plugin Zod schemas | Merged; later wins with warning |
+| SharedStateRegistry | Plugin shared-state accessors | Flat namespace — collision is a boot error |
+
+Source: [`packages/oracle-runtime/src/registries/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/registries/).
+
+## What's pluggable vs fixed
+
+| Pluggable | Fixed |
+| --- | --- |
+| Plugin set (bundled toggles + your plugins) | Agent loop (LangChain `createAgent`) |
+| `nestModules` (your Nest modules) | Graph state shape (except one new `loadedPlugins` field) |
+| `authExcludedRoutes` (host + plugin) | Checkpointer (Matrix-backed SQLite) |
+| LLM provider (env-driven) | Auth flow (UCAN delegation) |
+| `hooks.checkpointerForUser` (advanced) | The four always-on middlewares |
+| System prompt (via `OracleConfig.prompt`) | The Tier-1 block format |
+| Anything inside a custom plugin | The six registries |
+
+If you find yourself wanting to swap something on the "Fixed" side, you're probably trying to do something the framework explicitly doesn't allow — and you should either work within the model (e.g. write a plugin) or fork the runtime.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Request lifecycle" icon="timeline" href="/build-an-oracle/understand/request-lifecycle">
+    What happens between user message and streamed response.
+  </Card>
+  <Card title="Build your first oracle" icon="play" href="/build-an-oracle/build/create-oracle-app">
+    The recipe for wiring `createOracleApp`.
+  </Card>
+</CardGroup>

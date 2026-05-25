@@ -1,0 +1,288 @@
+---
+title: "For AI agents"
+description: "Dense single-page reference. Every signature, every option, every env var, plus a copy-pasteable plugin template. Built so an AI agent can scaffold a QiForge oracle from this page alone."
+icon: "robot"
+---
+
+This page is for AI tools (Cursor, Claude Code, Codex, …) scaffolding a QiForge oracle. Humans should read [Quickstart](/build-an-oracle/quickstart) and [Build a plugin](/build-an-oracle/build/write-a-plugin) instead.
+
+If you are an AI agent: read top-to-bottom once. Every signature you need is inlined. Source paths cite the canonical files on the QiForge runtime ([`packages/oracle-runtime`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime)) and the reference oracle ([`apps/qiforge-example`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/apps/qiforge-example)).
+
+<Note>
+**If you are working inside a scaffolded oracle project** (one created with `qiforge-cli --init` or `qiforge-cli new`), there is already a Claude Code skill at `.claude/skills/qiforge-oracle/SKILL.md` with project-local guidance: adding plugins, adding tools, wiring env, writing tests with `createTestRuntime`. Load it first — it carries denser, scenario-specific references than this page.
+</Note>
+
+## TL;DR — what you produce
+
+A QiForge oracle is **one `main.ts`** that calls `createOracleApp({ config, plugins, … })` plus **one folder per plugin** under `src/plugins/<name>/`. The runtime handles HTTP, auth, the agent graph, the checkpointer, Matrix, and bundles 14 plugins by default. You ship glue code, not infrastructure.
+
+## main.ts shape
+
+```ts
+import { createOracleApp } from '@ixo/oracle-runtime';
+import { MyPlugin } from './plugins/my-plugin/my-plugin.plugin.js';
+
+const app = await createOracleApp({
+  config: {
+    name: 'My Oracle',
+    org: 'Acme',
+    description: 'One-line pitch the system prompt will use.',
+  },
+  plugins: [new MyPlugin()],
+  features: {
+    composio: false,        // opt out of bundled composio
+    firecrawl: 'auto',      // (default) — autoDetect from env
+  },
+});
+
+await app.listen(Number(process.env.PORT ?? 3000));
+```
+
+Source: [`apps/qiforge-example/src/main.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts).
+
+## createOracleApp — full options
+
+[`packages/oracle-runtime/src/bootstrap/create-oracle-app.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/create-oracle-app.ts)
+
+```ts
+interface CreateOracleAppOptions {
+  config: OracleConfig;                                           // required
+  features?: Partial<Record<BundledFeatureName | string, FeatureToggle>>;
+  plugins?: OraclePlugin[];
+  nestModules?: Array<Type | DynamicModule>;
+  authExcludedRoutes?: AuthExcludedRoute[];
+  bundledPlugins?: OraclePlugin[];                                // test override
+  env?: NodeJS.ProcessEnv;                                        // test override
+  skipMatrixInit?: boolean;                                       // test override
+  skipGracefulShutdown?: boolean;                                 // test override
+  logger?: PluginLogger;
+  hooks?: MainAgentHooks;
+}
+
+type FeatureToggle = boolean | 'auto';
+
+interface OracleConfig {
+  name: string;
+  org?: string;
+  description?: string;
+  prompt?: { opening?: string; communicationStyle?: string; capabilities?: string };
+}
+
+interface AuthExcludedRoute { path: string; method?: RequestMethod }
+
+interface MainAgentHooks {
+  checkpointerForUser?: (userDid: string) => Promise<BaseCheckpointSaver>;
+  resolveModel?: (role: ModelRole, params?: ChatOpenAIFields) => ChatModel;
+  getRoomTitle?: (roomId: string) => Promise<string | undefined>;
+  safetyModel?: BaseChatModel;
+  validationSkipToolNames?: string[];
+  operationalMode?: string;
+  editorSection?: string;
+  composioContext?: string;
+  userSecretsContext?: string;
+  degradedServicesBlock?: string;
+}
+```
+
+`createOracleApp` returns an `OracleApp`:
+
+```ts
+interface OracleApp {
+  getNestApp(): INestApplication;
+  ambient: AmbientServices;
+  plugins: { status(): { loaded: string[]; excluded: { plugin: string; reason: string }[]; softDepGaps: { plugin: string; missing: string }[] } };
+  beforeListen(fn: (nestApp: INestApplication) => Promise<void> | void): void;
+  onError(handler: (err: Error, source: string) => void): void;
+  onPluginStatusChange(handler: (event: { plugin: string; from: 'pending'|'loaded'|'failed'; to: 'pending'|'loaded'|'failed'; reason?: string }) => void): void;
+  listen(port?: number): Promise<void>;
+}
+```
+
+## OraclePlugin — all 9 hooks
+
+[`packages/oracle-runtime/src/plugin-api/oracle-plugin.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/oracle-plugin.ts)
+
+```ts
+abstract class OraclePlugin {
+  abstract readonly name: string;                     // kebab-case
+  abstract readonly version: string;
+  abstract readonly manifest: PluginManifest;
+
+  readonly dependsOn?: string[];                      // hard deps — boot fails if missing
+  readonly softDependsOn?: string[];                  // soft deps — branches on availability
+  readonly configSchema?: z.ZodObject<any>;           // merged into runtime env schema
+
+  autoDetect?(env: NodeJS.ProcessEnv): boolean;       // skip plugin when false
+  readonly autoDetectHint?: string;                   // surfaced in boot errors
+
+  getTools?(ctx: PluginContext): PluginTool[] | Promise<PluginTool[]>;
+  getSubAgents?(ctx: PluginContext): PluginSubAgent[];
+  getRequestTools?(rtCtx: RuntimeContext): PluginTool[] | Promise<PluginTool[]>;
+  getRequestSubAgents?(rtCtx: RuntimeContext): PluginSubAgent[] | Promise<PluginSubAgent[]>;
+  getMiddlewares?(ctx: PluginContext): AgentMiddleware[];
+  getSharedState?(): Record<string, (state: any, runCtx: RuntimeContext) => unknown>;
+  getNestModules?(ctx?: PluginContext): Array<Type | DynamicModule>;
+  getAuthExcludedRoutes?(): AuthExcludedRoute[];
+}
+```
+
+## PluginManifest
+
+```ts
+interface PluginManifest {
+  title: string;                                                       // human name
+  summary: string;                                                     // one-line, shown in Tier-1 prompt for `always`
+  whenToUse: string[];                                                 // triggers
+  whenNotToUse?: string[];                                             // anti-patterns
+  examples?: { user: string; thought?: string; tool: string; args?: Record<string, unknown> }[];
+  tags?: string[];
+  category?: 'data' | 'communication' | 'automation' | 'memory' | 'integration' | 'ui' | 'auth' | 'observability' | 'core';
+  visibility?: 'always' | 'on-demand' | 'silent';                      // default: 'on-demand'
+  stability?: 'stable' | 'beta' | 'experimental';
+}
+```
+
+## PluginTool, PluginSubAgent
+
+```ts
+interface PluginTool {
+  name: string;
+  description: string;
+  schema: z.ZodType;
+  handler: (args: unknown, ctx: RuntimeContext) => Promise<unknown>;
+  visibility?: 'always' | 'on-demand' | 'silent';                      // override plugin default per tool
+}
+
+interface PluginSubAgent {
+  name: string;                                                        // e.g. 'call_memory_agent'
+  description: string;
+  systemPrompt: string | ((ctx: PluginContext) => string);
+  tools: PluginTool[] | ((ctx: PluginContext) => PluginTool[]);
+  model?: ModelRole;                                                   // default 'subagent'
+  middlewares?: AgentMiddleware[];
+  forwardTools?: boolean | string[];                                   // forward tool calls to main message stream
+  onComplete?: (result: string, ctx: RuntimeContext) => Promise<void>;
+}
+```
+
+## Visibility rules
+
+| Visibility | Bound at boot? | In Tier-1 prompt? | Discoverable via `list_capabilities`? |
+| --- | --- | --- | --- |
+| `always` | yes | yes | yes |
+| `on-demand` (default) | no — until `load_capability(name)` | no | yes |
+| `silent` | yes, but agent doesn't see them | no | no |
+
+## Bundled plugins (14)
+
+From [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts):
+
+| Name | Visibility | Default | Required env |
+| --- | --- | --- | --- |
+| `memory` | always | on | `MEMORY_MCP_URL`, `MEMORY_ENGINE_URL` |
+| `portal` | on-demand | on | — |
+| `firecrawl` | on-demand | auto-detect | `FIRECRAWL_MCP_URL` |
+| `domain-indexer` | always | on | — |
+| `composio` | on-demand | auto-detect | `COMPOSIO_API_KEY` |
+| `sandbox` | always | auto-detect | `SANDBOX_MCP_URL` |
+| `skills` | always | on (needs `sandbox`) | — |
+| `editor` | on-demand | on (needs Matrix) | — |
+| `agui` | on-demand | on | — |
+| `slack` | silent | auto-detect | `SLACK_BOT_OAUTH_TOKEN` |
+| `tasks` | stub | auto-detect (stub) | `REDIS_URL` |
+| `credits` | silent | on unless `DISABLE_CREDITS=true` | — |
+| `calls` | stub | on (stub) | — |
+| `user-preferences` | always | on | — |
+
+Toggle via `features` in `createOracleApp`: `true` forces on, `false` forces off, `'auto'` runs `autoDetect`.
+
+Per-plugin reference pages: [`/build-an-oracle/reference/bundled-plugins/overview`](/build-an-oracle/reference/bundled-plugins/overview).
+
+## Core (Tier-0) env vars
+
+From [`packages/oracle-runtime/src/config/base-env-schema.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts):
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `ORACLE_ENTITY_DID` | yes | The oracle's IXO entity DID |
+| `ORACLE_MNEMONIC` | yes | Wallet mnemonic for chain signing |
+| `ORACLE_MATRIX_USER_ID` | yes | Matrix user ID the bot logs in as |
+| `ORACLE_MATRIX_PASSWORD` | yes | Matrix bot password |
+| `ORACLE_MATRIX_HOMESERVER_URL` | yes | Matrix homeserver URL |
+| `IXO_NETWORK_RPC_URL` | yes | IXO chain RPC endpoint |
+| `OPENAI_API_KEY` *or* `ANTHROPIC_API_KEY` | yes | At least one LLM provider key |
+| `LANGSMITH_API_KEY` | optional | Enables LangSmith tracing |
+| `LANGSMITH_TRACING` | optional | `true` to enable |
+| `LANGSMITH_PROJECT` | optional | LangSmith project name |
+| `CORS_ORIGIN` | optional | Wildcard `*` is default |
+| `PORT` | optional | HTTP port; defaults to 3000 |
+
+Plugin-specific env vars merge in via each plugin's `configSchema`.
+
+## Copy-pasteable plugin template
+
+```ts
+// src/plugins/example/example.plugin.ts
+import { OraclePlugin, type PluginManifest, type PluginTool, type RuntimeContext } from '@ixo/oracle-runtime';
+import { z } from 'zod';
+
+const manifest: PluginManifest = {
+  title: 'Example',
+  summary: 'One-line description shown in the Tier-1 prompt block.',
+  whenToUse: ['User asks about example things'],
+  whenNotToUse: ['User asks about unrelated things'],
+  visibility: 'on-demand',
+  stability: 'experimental',
+};
+
+export class ExamplePlugin extends OraclePlugin {
+  readonly name = 'example';
+  readonly version = '0.1.0';
+  readonly manifest = manifest;
+
+  readonly configSchema = z.object({
+    EXAMPLE_API_KEY: z.string().min(1),
+  });
+
+  autoDetect(env: NodeJS.ProcessEnv): boolean {
+    return Boolean(env.EXAMPLE_API_KEY);
+  }
+  readonly autoDetectHint = 'EXAMPLE_API_KEY';
+
+  override getTools(): PluginTool[] {
+    return [
+      {
+        name: 'get_example',
+        description: 'Fetch an example.',
+        schema: z.object({ query: z.string() }),
+        handler: async (args, rtCtx: RuntimeContext) => {
+          const { query } = args as { query: string };
+          rtCtx.logger.log(`Example tool called with ${query}`);
+          return { result: `echo: ${query}` };
+        },
+      },
+    ];
+  }
+}
+```
+
+Then in `main.ts`:
+
+```ts
+import { ExamplePlugin } from './plugins/example/example.plugin.js';
+
+const app = await createOracleApp({
+  config: { name: 'My Oracle' },
+  plugins: [new ExamplePlugin()],
+});
+await app.listen(Number(process.env.PORT ?? 3000));
+```
+
+## Where to dig deeper
+
+- [`/build-an-oracle/reference/createoracleapp`](/build-an-oracle/reference/createoracleapp) — every option in detail.
+- [`/build-an-oracle/reference/plugin-api`](/build-an-oracle/reference/plugin-api) — hook-by-hook reference.
+- [`/build-an-oracle/build/plugin-recipes/add-a-tool`](/build-an-oracle/build/plugin-recipes/add-a-tool) — one recipe per capability.
+- [`/build-an-oracle/reference/environment-variables`](/build-an-oracle/reference/environment-variables) — every env var grouped.
+- [`/build-an-oracle/reference/bundled-plugins/overview`](/build-an-oracle/reference/bundled-plugins/overview) — every bundled plugin.
+- Canonical reference oracle: [`apps/qiforge-example/src/main.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts) and the Weather plugin under [`apps/qiforge-example/src/plugins/weather/`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/apps/qiforge-example/src/plugins/weather).

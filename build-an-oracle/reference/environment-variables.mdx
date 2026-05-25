@@ -1,0 +1,126 @@
+---
+title: "Environment variables"
+description: "Tier-0 (core) vars the runtime always requires, plus per-plugin vars contributed by each bundled plugin's configSchema."
+icon: "key"
+---
+
+## How env validation works
+
+The runtime composes one big Zod schema at boot: the **Tier-0 base schema** (always required) plus every loaded plugin's **`configSchema`**. `process.env` is validated against the merged schema. Missing required vars fail boot with `[boot-error] Plugin '<name>' env validation failed for '<field>'`.
+
+Disabling a plugin (via `features` or `autoDetect`) removes its env requirements automatically.
+
+## Tier-0 (core)
+
+Always required by the runtime. Source: `packages/oracle-runtime/src/config/base-env-schema.ts`.
+
+### Runtime
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `NODE_ENV` | `'development' \| 'production' \| 'test'` | `'development'` | |
+| `PORT` | number (coerced) | `3000` | Override at `app.listen(port)` if needed. |
+| `ORACLE_NAME` | string | — | Required. |
+| `CORS_ORIGIN` | string | `'*'` | Wildcard disables credentials. |
+| `NETWORK` | `'mainnet' \| 'testnet' \| 'devnet'` | — | Required. |
+
+### Matrix
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `MATRIX_BASE_URL` | string | — | Required. |
+| `MATRIX_RECOVERY_PHRASE` | string | — | Required. |
+| `MATRIX_STORE_PATH` | string | `'./matrix-storage'` | Must persist across restarts. |
+| `MATRIX_ORACLE_ADMIN_USER_ID` | string | — | Required. |
+| `MATRIX_ORACLE_ADMIN_PASSWORD` | string | — | Required. |
+| `MATRIX_ORACLE_ADMIN_ACCESS_TOKEN` | string | — | Required. |
+| `MATRIX_ACCOUNT_ROOM_ID` | string | — | Required. |
+| `MATRIX_VALUE_PIN` | string | — | Required. |
+
+### Storage
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `SQLITE_DATABASE_PATH` | string | — | Required. Must persist across restarts. |
+
+### Blocksync / chain
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `BLOCKSYNC_GRAPHQL_URL` | string | — | Required. |
+| `ORACLE_DID` | string | — | Required. The oracle's own DID (`did:ixo:ixo1...`) used as signer identity. |
+| `ORACLE_ENTITY_DID` | string | — | Required. The oracle's on-chain entity record. |
+| `SECP_MNEMONIC` | string | — | Required. |
+| `RPC_URL` | string | — | Required. |
+
+### LLM
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `LLM_PROVIDER` | `'openrouter' \| 'nebius'` | `'openrouter'` | |
+| `OPENAI_API_KEY` | string | — | Optional. |
+| `OPEN_ROUTER_API_KEY` | string | — | Required if `LLM_PROVIDER=openrouter`. |
+| `NEBIUS_API_KEY` | string | — | Required if `LLM_PROVIDER=nebius`. |
+
+Cross-field: the API key for the selected `LLM_PROVIDER` must be present; otherwise boot fails with a named-field error.
+
+### Misc
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `ORACLE_SECRETS` | string | `''` | Comma-separated `KEY=value` pairs surfaced as `x-os-*` headers to capabilities. |
+| `LIVE_AGENT_AUTH_API_KEY` | string | `''` | Optional. |
+
+### LangSmith tracing (optional)
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `LANGSMITH_TRACING` | string | — | Set to `'true'` to enable. |
+| `LANGSMITH_API_KEY` | string | — | |
+| `LANGSMITH_PROJECT` | string | — | |
+| `LANGSMITH_ENDPOINT` | string | — | Optional override of the LangSmith API URL. |
+
+Declared in the base schema so they show up in `qiforge env` output. LangChain auto-wires when these are present in `process.env`; the runtime never reads them directly.
+
+## Per-plugin
+
+Only required when the named plugin is loaded.
+
+| Plugin | Variable | Required | Notes |
+| --- | --- | --- | --- |
+| `memory` | `MEMORY_MCP_URL` | Yes | Must be a valid HTTP(S) URL. |
+| `memory` | `MEMORY_ENGINE_URL` | Yes | Must be a valid HTTP(S) URL. |
+| `firecrawl` | `FIRECRAWL_MCP_URL` | Yes | Must be a valid HTTP(S) URL. |
+| `domain-indexer` | `DOMAIN_INDEXER_URL` | No | URL override; otherwise resolved from `NETWORK`. |
+| `composio` | `COMPOSIO_API_KEY` | Yes (when loaded) | |
+| `composio` | `COMPOSIO_BASE_URL` | No | Defaults to `https://composio.ixo.earth`. |
+| `sandbox` | `SANDBOX_MCP_URL` | Yes | Must be a valid URL. |
+| `skills` | `SKILLS_CAPSULES_BASE_URL` | No | Defaults to bundled URL. |
+| `slack` | `SLACK_BOT_OAUTH_TOKEN` | Yes | Triggers autoDetect. |
+| `slack` | `SLACK_APP_TOKEN` | No | |
+| `slack` | `SLACK_USE_SOCKET_MODE` | No | Defaults to `'true'`. |
+| `slack` | `SLACK_MAX_RECONNECT_ATTEMPTS` | No | Coerced to number; default `10`. |
+| `slack` | `SLACK_RECONNECT_DELAY_MS` | No | Coerced to number; default `1000`. |
+| `credits` | `SUBSCRIPTION_URL` | No | URL. |
+| `credits` | `SUBSCRIPTION_ORACLE_MCP_URL` | No | URL. |
+| `credits` | `DISABLE_CREDITS` | No | Set to `'true'` to skip the plugin. |
+| `tasks` | `REDIS_URL` | Yes (when loaded) | Triggers autoDetect. |
+
+## Variables read but not owned
+
+Some plugins read variables that live in another schema:
+
+- **`composio`** reads the core `NETWORK` and forwards it as `x-ixo-network`.
+- **`skills`** reads `NETWORK` and forwards as `X-IXO-Network`.
+- **`sandbox`** reads `ORACLE_SECRETS` (core) and `SKILLS_CAPSULES_BASE_URL` (owned by `skills`) and forwards them as headers.
+
+These are declared in the plugin's sibling schemas (typed `optional()`); a missing value just skips the matching header instead of failing the plugin build.
+
+## Generating an `.env` template
+
+`qiforge env` (ships with TASK-33) generates a `.env` template for your installed plugin set. Until that lands, write the file by hand using this reference.
+
+## Related references
+
+- [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) — env vars per plugin in catalog form.
+- [Plugin config and env guide](/build-an-oracle/build/plugin-recipes/add-config-and-env) — declaring your own plugin's vars.

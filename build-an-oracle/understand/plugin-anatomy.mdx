@@ -1,0 +1,93 @@
+---
+title: "Anatomy of a plugin"
+description: "The nine hooks an OraclePlugin can declare and where each one plugs into the runtime."
+icon: "microscope"
+---
+
+## Where each hook plugs in
+
+```mermaid
+graph LR
+    subgraph PluginCls["Your OraclePlugin"]
+        Manifest["manifest"]
+        ConfigSchema["configSchema"]
+        Deps["dependsOn / softDependsOn"]
+        AutoDetect["autoDetect"]
+        GetTools["getTools / getRequestTools"]
+        GetSA["getSubAgents / getRequestSubAgents"]
+        GetMW["getMiddlewares"]
+        GetNM["getNestModules"]
+        GetAuthEx["getAuthExcludedRoutes"]
+        GetShared["getSharedState"]
+    end
+
+    subgraph Runtime
+        Loader["Plugin loader"]
+        Composer["Schema composer"]
+        Regs["6 registries"]
+        RAM["RuntimeAppModule"]
+        AuthMW["AuthHeaderMiddleware.exclude(...)"]
+        Agent["Per-request agent"]
+    end
+
+    AutoDetect --> Loader
+    Deps --> Loader
+    Manifest --> Regs --> Agent
+    ConfigSchema --> Composer
+    GetTools --> Regs
+    GetSA --> Regs
+    GetMW --> Regs
+    GetShared --> Regs
+    GetNM --> RAM
+    GetAuthEx --> AuthMW
+```
+
+The runtime never reaches inside your plugin. Every contribution flows through one of these channels.
+
+## The nine hooks at a glance
+
+| Hook | What it contributes | When called |
+| --- | --- | --- |
+| `manifest` | The agent-facing interface — title, summary, `whenToUse`, examples, visibility | Boot (validation + Tier-1 composition) |
+| `configSchema` | A Zod object merged into the global env schema | Boot (env validation) |
+| `dependsOn` / `softDependsOn` | Plugin ordering constraints | Boot (topo sort) |
+| `autoDetect(env)` | Decide whether to load based on env | Boot (resolution) |
+| `getTools(ctx)` / `getRequestTools(rtCtx)` | LLM-callable tools | Boot cache + per-request |
+| `getSubAgents(ctx)` / `getRequestSubAgents(rtCtx)` | Focused inner agents (auto-wrapped as tools) | Boot cache + per-request |
+| `getMiddlewares(ctx)` | `beforeModel` / `afterModel` / `onError` hooks | Boot cache |
+| `getNestModules(ctx?)` | Nest modules (HTTP routes, services) | Boot, once |
+| `getAuthExcludedRoutes()` | Routes that skip UCAN auth | Boot, once |
+| `getSharedState()` | Read-only accessors other plugins can consume | Boot, once |
+
+Boot-time hooks (`getTools`, `getSubAgents`, `getMiddlewares`) are called once and the results are cached for every request. The per-request variants run on every agent build — use them only when the contribution depends on live state (e.g. `loadedPlugins`, current user, `rtCtx.shared.*`).
+
+## Two contexts
+
+| Context | Holds | Hooks that receive it |
+| --- | --- | --- |
+| `PluginContext` | `config`, `identity`, `availablePlugins`, `logger` | `getTools`, `getSubAgents`, `getMiddlewares`, `getNestModules` |
+| `RuntimeContext` | Everything in `PluginContext` plus `user`, `session`, `history`, `secrets`, `matrix`, `ucan`, `llm`, `emit`, `shared`, `abortSignal`, `loadedPlugins` | `getRequestTools`, `getRequestSubAgents`, all handlers, all middleware hooks |
+
+A tool registered via boot-time `getTools` still gets a fresh `RuntimeContext` when its handler fires. "Boot-time" refers to *registration*, not *execution*. See [Contexts](/build-an-oracle/understand/contexts) for the field list.
+
+## Error semantics
+
+| Hook throws… | Effect |
+| --- | --- |
+| `autoDetect`, manifest validation, `configSchema`, `getNestModules`, `getAuthExcludedRoutes`, `getSharedState` | Boot fails. Loud failures because misconfiguration in production is worse than no plugin. |
+| `getTools` / `getSubAgents` / `getMiddlewares` (boot warm or per-request) | Logged with plugin name; plugin's contribution skipped for that build. Other plugins continue. |
+| Tool / sub-agent `handler` | Becomes an error `ToolMessage` the agent sees; one retry on validation errors. |
+| Middleware hook | Propagates as a turn error. |
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/build/write-a-plugin">
+    Scaffold and ship one.
+  </Card>
+  <Card title="Manifest" icon="scroll" href="/build-an-oracle/understand/manifest">
+    The agent-facing interface.
+  </Card>
+</CardGroup>
+
+Source: [`packages/oracle-runtime/src/plugin-api/oracle-plugin.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/oracle-plugin.ts).

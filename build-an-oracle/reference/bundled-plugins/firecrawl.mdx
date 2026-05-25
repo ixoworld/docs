@@ -1,0 +1,67 @@
+---
+title: "firecrawl"
+description: "Web search and scraping of human-readable pages via Firecrawl."
+icon: "globe"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/firecrawl/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/firecrawl/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `on-demand` |
+| Stability | `stable` |
+| Category | `data` |
+| Default state | Auto-detect (env: `FIRECRAWL_MCP_URL`) |
+| Depends on | — |
+
+## Summary
+
+Web search and scraping via Firecrawl. Exposes a sub-agent (`call_firecrawl_agent`) that wraps the upstream Firecrawl MCP server's `firecrawl_search` and `firecrawl_scrape` tools. The manifest specifically routes the main agent away from API endpoints (use [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox)) and IXO entities (use [`domain-indexer`](/build-an-oracle/reference/bundled-plugins/domain-indexer)).
+
+## Environment variables
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `FIRECRAWL_MCP_URL` | yes | Firecrawl MCP HTTP(S) URL. Also triggers auto-detect. |
+
+## What it contributes
+
+- **Tools (inside the sub-agent):** `firecrawl_search`, `firecrawl_scrape`.
+- **Sub-agents:** `call_firecrawl_agent`.
+- **Middlewares:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { firecrawl: false }, // never load
+  // features: { firecrawl: true }, // force load (will fail env validation if FIRECRAWL_MCP_URL missing)
+  // features: { firecrawl: 'auto' }, // run autoDetect (default)
+});
+```
+
+## When to use it
+
+- User asks the agent to search the web for current information.
+- User wants the contents of a specific page summarised or extracted.
+- A question can only be answered by recent public web content.
+
+## When NOT to use it
+
+- Fetching from an API endpoint (URLs containing `/api/`, `/v1/`, `/v2/`, `/v3/`, or that return JSON/XML) — use [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox).
+- IXO entity lookups — use [`domain-indexer`](/build-an-oracle/reference/bundled-plugins/domain-indexer).
+- Personal memory or past-conversation recall — use [`memory`](/build-an-oracle/reference/bundled-plugins/memory).
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a sub-agent" icon="diagram-project" href="/build-an-oracle/build/plugin-recipes/add-a-sub-agent">
+    How sub-agents like `call_firecrawl_agent` are built.
+  </Card>
+  <Card title="Plugin vs Skill" icon="scale-balanced" href="/build-an-oracle/understand/plugins-vs-skills">
+    When to wrap an MCP server as a plugin vs ship it as a skill.
+  </Card>
+</CardGroup>

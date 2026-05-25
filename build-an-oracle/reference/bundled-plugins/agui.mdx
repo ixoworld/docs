@@ -1,0 +1,62 @@
+---
+title: "agui"
+description: "Renders interactive UI components (tables, charts, forms) in the user's browser via AG-UI actions."
+icon: "table"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/agui/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/agui/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `on-demand` |
+| Stability | `stable` |
+| Category | `ui` |
+| Default state | On |
+| Depends on | — |
+
+## Summary
+
+Renders interactive UI components (tables, charts, forms) in the user's browser. The client declares its renderable actions on each `sendMessage` via `state.agActions`; the runtime wraps each into a `PluginTool` and exposes them through the `call_ag-ui_agent` sub-agent. When no actions are declared the plugin contributes nothing.
+
+## Environment variables
+
+This plugin has no required env vars.
+
+## What it contributes
+
+- **Tools:** none directly — tools are owned by the per-request sub-agent.
+- **Sub-agents:** `call_ag-ui_agent` — built only when `state.agActions` is non-empty.
+- **Middlewares:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { agui: false }, // never load
+  // features: { agui: true }, // force load (default)
+});
+```
+
+## When to use it
+
+- User asks for an interactive table, chart, or form to be rendered.
+- A response is best shown as a structured UI component rather than plain text.
+
+## When NOT to use it
+
+- No AG-UI actions are declared on this request — the sub-agent is not built.
+- A plain text answer is sufficient — do not render UI just because you can.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a sub-agent" icon="diagram-project" href="/build-an-oracle/build/plugin-recipes/add-a-sub-agent">
+    The pattern AG-UI uses to wrap FE-declared actions.
+  </Card>
+  <Card title="portal" icon="window-maximize" href="/build-an-oracle/reference/bundled-plugins/portal">
+    Sibling plugin for FE-declared browser tools.
+  </Card>
+</CardGroup>

@@ -1,0 +1,318 @@
+---
+title: "CLI reference"
+description: "Every qiforge-cli command — installation, authentication, oracle scaffolding, plugin scaffolding, entity ops, chat."
+icon: "terminal"
+---
+
+`qiforge-cli` ([source](https://github.com/ixoworld/ixo-oracles-cli)) scaffolds new oracles, scaffolds new plugins inside an existing oracle, provisions on-chain identity + Matrix bots, and gives you an SSE chat client for testing.
+
+## Installation
+
+```sh
+npm install -g qiforge-cli
+# or
+pnpm add -g qiforge-cli
+```
+
+**pnpm users:** after install, approve build scripts for `protobufjs`:
+
+```sh
+pnpm approve-builds -g
+# select protobufjs when prompted
+```
+
+Verify:
+
+```sh
+qiforge-cli --help
+```
+
+Requires Node 22+. Authentication needs either the IXO Mobile App (SignX QR) or a 12/24-word mnemonic (offline mode).
+
+## Commands at a glance
+
+| Command | Purpose |
+| --- | --- |
+| `qiforge-cli` | Interactive menu (auth → choose command). |
+| `qiforge-cli --init` / `qiforge-cli init` | Clone the QiForge boilerplate, create entity, write `.env`. |
+| `qiforge-cli new <name>` | Scaffold a standalone oracle from bundled code templates (no git clone). |
+| `qiforge-cli plugin new <name>` | Scaffold a new plugin into an existing oracle project. |
+| `qiforge-cli create-entity` | Create the on-chain entity record + Matrix bot. |
+| `qiforge-cli update-entity` | Update an existing entity (e.g. add controllers). |
+| `qiforge-cli update-oracle-api-url` | Update the oracle's API URL (default is `localhost`). |
+| `qiforge-cli setup-encryption-key` | Set up the P-256 encryption key for an existing oracle. |
+| `qiforge-cli create-composio-key` | Mint a Composio API key tied to the oracle. |
+| `qiforge-cli create-user` | Create a new user account. |
+| `qiforge-cli chat` | Stream messages to a running oracle over SSE. |
+| `qiforge-cli offline-login` | Authenticate with a local mnemonic (no mobile app). |
+| `qiforge-cli logout` | Clear stored credentials. |
+| `qiforge-cli --help`, `-h` | Show help. |
+
+## Authentication
+
+Two modes:
+
+<AccordionGroup>
+  <Accordion title="SignX (default)" icon="qrcode">
+    Uses the IXO Mobile App for QR-code-based authentication. Keep the app open during the session.
+
+    ```sh
+    qiforge-cli
+    # Select "SignX Wallet (QR code with mobile app)" when prompted.
+    ```
+  </Accordion>
+
+  <Accordion title="Offline wallet" icon="key">
+    Uses a local mnemonic. No mobile app needed. Credentials are stored in `~/.wallet.json`.
+
+    Interactive:
+
+    ```sh
+    qiforge-cli offline-login
+    ```
+
+    Non-interactive:
+
+    ```sh
+    qiforge-cli offline-login \
+      --network devnet \
+      --mnemonic "your twelve word mnemonic phrase here" \
+      --matrixPassword "your-matrix-password"
+    ```
+
+    **Flags:**
+    | Flag | Description |
+    | --- | --- |
+    | `--network` | `devnet`, `testnet`, `mainnet` |
+    | `--mnemonic` | Mnemonic phrase for wallet derivation. |
+    | `--matrixPassword` | Matrix account password. |
+    | `--name` | Display name (falls back to Matrix profile name). |
+  </Accordion>
+</AccordionGroup>
+
+## qiforge-cli --init
+
+Scaffolds a new oracle project end-to-end by cloning the [QiForge boilerplate](https://github.com/ixoworld/qiforge):
+
+- Creates a project directory and clones the boilerplate.
+- Creates a blockchain entity with linked resources stored in Matrix.
+- Provisions a Matrix bot account.
+- Writes `oracle.config.json` and `.env`.
+
+Interactive:
+
+```sh
+qiforge-cli --init
+```
+
+Non-interactive (for CI):
+
+```sh
+qiforge-cli --init --no-interactive \
+  --name my-oracle-project \
+  --network devnet \
+  --oracle-name "My Oracle" \
+  --price 100 \
+  --api-url http://localhost:4000 \
+  --pin 123456
+```
+
+**Init flags:**
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--name` | Project name (required in non-interactive mode). | — |
+| `--path` | Project directory path. | `./<name>` |
+| `--repo` | Template repository URL. | `git@github.com:ixoworld/qiforge.git` |
+| `--force` | Overwrite existing directory. | `false` |
+
+Plus all `create-entity` flags (see below).
+
+## qiforge-cli new
+
+Scaffolds a standalone oracle from bundled code templates — no git clone. Faster than `--init`, doesn't need network access for the boilerplate, useful when you want a fork that diverges immediately.
+
+```sh
+qiforge-cli new my-oracle
+```
+
+The command optionally runs `pnpm install` and can also create the oracle entity + Matrix account in the same flow.
+
+## qiforge-cli plugin new
+
+Scaffolds a new plugin into an **existing** oracle project. Run it from inside the project; the CLI walks up to find a `package.json` that depends on `@ixo/oracle-runtime` and writes the plugin there.
+
+```sh
+qiforge-cli plugin new climate
+```
+
+Generated layout (under `src/plugins/<name>/`):
+
+```text
+src/plugins/climate/
+├── climate.plugin.ts          # OraclePlugin class with a manifest stub + one sample tool
+├── climate.plugin.test.ts     # 3 tests using createTestRuntime
+├── climate.fixtures/          # placeholder for fixtures
+└── README-climate.md          # the manifest mirrored as docs
+```
+
+Name validation: kebab-case, must not collide with bundled plugin names.
+
+## qiforge-cli create-entity
+
+Creates the on-chain entity record and Matrix bot. Used both standalone (e.g. when re-provisioning) and as part of `--init`.
+
+```sh
+qiforge-cli create-entity --no-interactive \
+  --network devnet \
+  --oracle-name "My Oracle" \
+  --price 100 \
+  --org-name "My Org" \
+  --description "Oracle description" \
+  --api-url http://localhost:4000 \
+  --model "anthropic/claude-sonnet-4" \
+  --pin 123456
+```
+
+**Flags:**
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--network` | `devnet`, `testnet`, `mainnet`. | `devnet` |
+| `--oracle-name` | Oracle name. | `My oracle` |
+| `--price` | Price in IXO credits. | `100` |
+| `--org-name` | Organisation name. | `IXO` |
+| `--logo` | Logo URL. | Auto-generated. |
+| `--cover-image` | Cover image URL. | Same as logo. |
+| `--location` | Location string. | `New York, NY` |
+| `--description` | Entity description. | Default placeholder. |
+| `--website` | Website URL. | — |
+| `--api-url` | Oracle API URL. | `http://localhost:4000` |
+| `--project-path` | Project directory for saving config. | Current directory. |
+| `--pin` | 6-digit PIN for Matrix vault. | Prompted. |
+| `--model` | LLM model identifier. | `moonshotai/kimi-k2.5` |
+| `--skills` | Comma-separated skill list. | — |
+| `--prompt-opening` | Opening prompt for the oracle. | — |
+| `--prompt-style` | Communication style. | — |
+| `--prompt-capabilities` | Capabilities description. | — |
+| `--mcp-servers` | JSON array `[{"url":"..."}]`. | — |
+
+Supported model identifiers (from the interactive menu):
+
+```text
+moonshotai/kimi-k2.5             # default
+anthropic/claude-sonnet-4
+openai/gpt-4o
+google/gemini-2.5-pro
+meta-llama/llama-4-maverick
+```
+
+Or pass any custom identifier as `--model`.
+
+## qiforge-cli update-entity
+
+Updates an existing entity. Used to add controllers, rotate keys, or modify metadata after the initial create-entity.
+
+```sh
+qiforge-cli update-entity
+```
+
+Accepts account DIDs as controllers (in addition to entity DIDs).
+
+## qiforge-cli update-oracle-api-url
+
+Updates the URL the oracle entity advertises. Default is `localhost:4000`; switch to your deployed URL before going live.
+
+```sh
+qiforge-cli update-oracle-api-url
+```
+
+## qiforge-cli setup-encryption-key
+
+Provisions a P-256 `keyAgreement` encryption key for an existing oracle that was created before encryption was mandatory.
+
+```sh
+qiforge-cli setup-encryption-key
+```
+
+## qiforge-cli create-composio-key
+
+Mints a Composio API key tied to your oracle's DID. Required if your oracle uses the bundled `composio` plugin.
+
+```sh
+qiforge-cli create-composio-key
+```
+
+Prompts for the oracle DID and a key label, then writes the key to your Composio account.
+
+## qiforge-cli create-user
+
+Creates a new user account (DID + Matrix account) — useful for testing your oracle against multiple identities.
+
+```sh
+qiforge-cli create-user
+```
+
+## qiforge-cli chat
+
+Streams messages to a running oracle over SSE. Renders tool calls, assistant messages, and errors in the terminal.
+
+```sh
+qiforge-cli chat
+```
+
+Interactive — prompts for the oracle URL (or uses the saved one from `--init` / `new`).
+
+## qiforge-cli logout
+
+```sh
+qiforge-cli logout
+```
+
+Clears stored authentication. Future commands prompt for auth again.
+
+## What `--init` writes
+
+```text
+your-oracle-project/
+├── oracle.config.json          # Oracle config (name, model, prompt, entityDid, …)
+├── apps/
+│   └── app/
+│       ├── .env                # Tier-0 vars + initial plugin vars
+│       ├── oracle.config.json  # Copy for Docker builds
+│       └── …
+├── packages/
+└── …
+```
+
+The CLI also scaffolds a **`qiforge-oracle` Claude Code skill** at `.claude/skills/qiforge-oracle/` so any AI agent you point at the project (Claude Code, Cursor, etc.) immediately has dense, scenario-specific guidance on the framework — adding plugins, adding tools, wiring env, writing tests with `createTestRuntime`, debugging boot. The skill is project-local: it ships inside every scaffolded oracle, no separate install needed. See the [skill source](https://github.com/ixoworld/ixo-oracles-cli/tree/main/src/templates/starter/.claude/skills/qiforge-oracle) in the CLI repo.
+
+Generated `.env` skeleton:
+
+```text
+PORT=4000
+ORACLE_NAME=your-oracle-name
+
+MATRIX_BASE_URL=https://matrix.ixo.world
+MATRIX_ORACLE_ADMIN_ACCESS_TOKEN=...
+MATRIX_ORACLE_ADMIN_PASSWORD=...
+MATRIX_ORACLE_ADMIN_USER_ID=...
+
+OPEN_ROUTER_API_KEY=
+LANGSMITH_API_KEY=
+LANGSMITH_PROJECT=
+
+ORACLE_ADDRESS=...
+ORACLE_DID=...
+ORACLE_MNEMONIC=...
+MATRIX_VAULT_PIN=...
+ENTITY_DID=...
+```
+
+Fill in the plugin-specific vars before booting.
+
+## Related references
+
+- [Identity and auth guide](/build-an-oracle/build/identity-and-auth) — what `create-entity` and `setup-encryption-key` set up.
+- [Environment variables](/build-an-oracle/reference/environment-variables) — what to put in the `.env` the CLI writes.
+- [CLI source](https://github.com/ixoworld/ixo-oracles-cli) — every command's implementation.

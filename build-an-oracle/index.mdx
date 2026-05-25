@@ -1,0 +1,99 @@
+---
+title: "Build an Oracle"
+description: "QiForge is the framework for shipping Agentic Oracles — AI agents with a verifiable identity, encrypted per-user storage, and a plugin runtime that takes ~30 lines of TypeScript to wire up."
+icon: "compass"
+---
+
+An **Agentic Oracle** is an AI agent that owns a verifiable identity (an IXO entity DID), authenticates via UCAN delegation, stores conversations in encrypted per-user Matrix rooms, and composes its capabilities from typed plugins. **QiForge ships the runtime** ([`@ixo/oracle-runtime`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime)) — your oracle is a `main.ts` plus the plugins you want.
+
+## What QiForge does for you
+
+```ts
+import { createOracleApp } from '@ixo/oracle-runtime';
+import { MyPlugin } from './plugins/my-plugin/my-plugin.plugin.js';
+
+const app = await createOracleApp({
+  config: { name: 'My Oracle', org: 'Acme' },
+  plugins: [new MyPlugin()],
+});
+await app.listen();
+```
+
+That's a working oracle. One call to [`createOracleApp`](/build-an-oracle/build/create-oracle-app) and the framework gives you:
+
+<CardGroup cols={2}>
+  <Card title="A NestJS app, fully wired" icon="server">
+    HTTP + WebSocket, request validation, OpenAPI at `/docs`, CORS, throttling, graceful shutdown — already configured.
+  </Card>
+  <Card title="UCAN-based identity and auth" icon="shield-halved">
+    Every request validates an `x-ucan-delegation` header. The oracle has an IXO entity DID; users sign capabilities they delegate to it.
+  </Card>
+  <Card title="Encrypted per-user storage" icon="lock">
+    Each user gets a Matrix room; conversation history + agent checkpoints are E2E-encrypted and synced automatically.
+  </Card>
+  <Card title="A LangGraph agent" icon="diagram-project">
+    Per-request agent build, dynamic tool loading via meta-tools, four always-on middlewares (tool validation, retry, page context, safety guardrail).
+  </Card>
+  <Card title="14 bundled plugins" icon="boxes-stacked">
+    `memory`, `skills`, `sandbox`, `portal`, `firecrawl`, `composio`, `editor`, `agui`, `slack`, `credits`, `user-preferences`, and more — toggle them via the `features` map.
+  </Card>
+  <Card title="A plugin API for your code" icon="puzzle-piece">
+    9 typed hooks let your plugin contribute tools, sub-agents, middlewares, HTTP routes, shared state, and env vars. Boot-time and per-request flavours.
+  </Card>
+</CardGroup>
+
+You ship the green box on top. The framework handles the rest.
+
+## Where do you want to start?
+
+<CardGroup cols={3}>
+  <Card title="Build now" icon="rocket" href="/build-an-oracle/quickstart">
+    10-minute quickstart → recipes → ship. Code-first the whole way.
+  </Card>
+  <Card title="Deep dive" icon="lightbulb" href="/build-an-oracle/understand/what-is-qiforge">
+    The mental model, the runtime layers, plugins vs skills.
+  </Card>
+  <Card title="I'm an AI agent" icon="robot" href="/build-an-oracle/for-ai-agents">
+    One dense page with every signature, env var, and template you need.
+  </Card>
+</CardGroup>
+
+## Quick map
+
+<CardGroup cols={2}>
+  <Card title="Build track" icon="hammer" href="/build-an-oracle/build/overview">
+    Task-by-task recipes. `createOracleApp`, plugin recipes, testing, deploy.
+  </Card>
+  <Card title="Deep dive" icon="book" href="/build-an-oracle/understand/what-is-qiforge">
+    Concepts. Read when you want depth — never required to ship.
+  </Card>
+  <Card title="Reference" icon="square-list" href="/build-an-oracle/reference/createoracleapp">
+    Every option, every env var, every bundled plugin in a flat table.
+  </Card>
+  <Card title="CLI" icon="terminal" href="/build-an-oracle/reference/cli">
+    `qiforge-cli` commands — init, dev, build, plugin scaffolds, inspect.
+  </Card>
+</CardGroup>
+
+## What people build with this
+
+<CardGroup cols={2}>
+  <Card title="Domain-specific agents" icon="leaf">
+    Climate oracles that analyse emissions data, carbon DAO assistants, supply-chain MRV agents.
+  </Card>
+  <Card title="Workflow copilots" icon="diagram-project">
+    AG-UI copilots driving a portal, filling forms, navigating the browser. Bundled `agui` + `portal` plugins.
+  </Card>
+  <Card title="Integration hubs" icon="plug">
+    Agents calling Gmail, GitHub, Linear, Slack, Notion through the bundled `composio` plugin.
+  </Card>
+  <Card title="Skill runners" icon="code">
+    Discover + execute IXO skill capsules inside a per-user Linux sandbox. Bundled `skills` + `sandbox` plugins.
+  </Card>
+</CardGroup>
+
+## Don't skip these
+
+1. [Quickstart](/build-an-oracle/quickstart) — get a working oracle in front of you before reading anything else.
+2. [`createOracleApp` options](/build-an-oracle/build/create-oracle-app) — every option you can pass.
+3. [Write a plugin](/build-an-oracle/build/write-a-plugin) — the canonical end-to-end recipe.

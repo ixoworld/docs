@@ -1,0 +1,71 @@
+---
+title: "composio"
+description: "External SaaS tools (Gmail, GitHub, Linear, Slack, Notion, Jira, …) invoked on behalf of the user."
+icon: "plug"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/composio/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/composio/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `on-demand` |
+| Stability | `stable` |
+| Category | `integration` |
+| Default state | Auto-detect (env: `COMPOSIO_API_KEY`) |
+| Depends on | — |
+
+## Summary
+
+Hundreds of SaaS tools (Gmail, GitHub, Linear, Slack, Google Calendar, Notion, Jira, HubSpot, …) invoked on behalf of the user through Composio. Tools are discovered dynamically per request: the plugin mints a UCAN invocation addressed to the composio-worker, opens a session for the current user, and exposes each returned tool to the agent. Auth is UCAN-only — if minting fails the plugin contributes zero tools that turn.
+
+## Environment variables
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `COMPOSIO_API_KEY` | yes | Composio API key. Triggers auto-detect. |
+| `COMPOSIO_BASE_URL` | no | Defaults to `https://composio.ixo.earth`. |
+| `NETWORK` | no | Read but not owned (declared by the core base env schema). Forwarded as the `x-ixo-network` header so the composio-worker routes to the right IXO environment. |
+
+## What it contributes
+
+- **Tools:** dynamic catalog returned per request (one tool per upstream Composio tool, e.g. `COMPOSIO_MANAGE_CONNECTIONS`, `COMPOSIO_SEARCH_TOOLS`, plus toolkit-specific actions).
+- **Sub-agents:** none.
+- **Middlewares:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { composio: false }, // never load
+  // features: { composio: true }, // force load (will fail env validation if COMPOSIO_API_KEY missing)
+  // features: { composio: 'auto' }, // run autoDetect (default)
+});
+```
+
+## When to use it
+
+- ALWAYS call `COMPOSIO_MANAGE_CONNECTIONS` first — before calling any other Composio tool — to verify the required toolkit is connected. If the response contains a `redirect_url`, surface it as a clickable markdown link and stop; do not attempt the action.
+- User asks to send, read, or search emails (Gmail, Outlook).
+- User asks to create or modify issues, pull requests, or stars (GitHub, Linear, Jira).
+- User asks to manage calendar events, files, or documents in a SaaS app.
+- No native skill covers the requested action — call `COMPOSIO_SEARCH_TOOLS` before giving up.
+
+## When NOT to use it
+
+- A native skill or sub-agent already covers the action — prefer the skill.
+- Normal conversation or general question with no external SaaS interaction.
+- NEVER fabricate or guess any URL yourself — the only valid auth link is the `redirect_url` returned by `COMPOSIO_MANAGE_CONNECTIONS`.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Identity and auth" icon="id-card" href="/build-an-oracle/build/identity-and-auth">
+    How UCAN invocations are minted per request.
+  </Card>
+  <Card title="Visibility tiers" icon="layer-group" href="/build-an-oracle/understand/visibility-tiers">
+    Why composio is `on-demand` instead of `always`.
+  </Card>
+</CardGroup>

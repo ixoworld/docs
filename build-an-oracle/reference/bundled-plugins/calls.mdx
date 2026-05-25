@@ -1,0 +1,30 @@
+---
+title: "calls"
+description: "LiveKit call integration — stub. Full implementation deferred."
+icon: "phone"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) (stub manifest)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `silent` |
+| Stability | `experimental` |
+| Default state | Stub (no auto-detect) |
+
+## Status: deferred
+
+`calls` is a **stub** entry in `BUNDLED_PLUGINS` so feature toggles work. The legacy `apps/app` codebase had a `@Controller('calls')` for LiveKit integration; the `getNestModules` API hook would technically unblock a real implementation. Deferred for now.
+
+See the framework's [follow-ups](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/docs/spec-and-roadmap/follow-ups.md) for the rebuild plan.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Bundled plugins" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
+    The full bundled set.
+  </Card>
+  <Card title="Add HTTP endpoints" icon="route" href="/build-an-oracle/build/plugin-recipes/add-http-endpoints">
+    The hook a real `calls` plugin would use.
+  </Card>
+</CardGroup>

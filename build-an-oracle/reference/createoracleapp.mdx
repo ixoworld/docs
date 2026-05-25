@@ -1,0 +1,238 @@
+---
+title: "createOracleApp"
+description: "The single entry point of every QiForge oracle. Full signature, every option, the returned OracleApp shape, and the boot sequence the function runs."
+icon: "code"
+---
+
+## Overview
+
+`createOracleApp(opts: CreateOracleAppOptions): Promise<OracleApp>` resolves the plugin set, validates env, populates registries, builds the dynamic `RuntimeAppModule`, bootstraps NestJS, and returns an `OracleApp` whose `listen()` runs `beforeListen` callbacks then starts the HTTP server.
+
+Matrix init runs in the background — the returned promise resolves as soon as Nest is built. Status flips via `onPluginStatusChange`.
+
+```ts
+import { createOracleApp } from '@ixo/oracle-runtime';
+```
+
+## CreateOracleAppOptions
+
+```ts
+export interface CreateOracleAppOptions {
+  config: OracleConfig;
+  features?: Partial<Record<BundledFeatureName | (string & {}), FeatureToggle>>;
+  plugins?: OraclePlugin[];
+  nestModules?: Array<Type | DynamicModule>;
+  authExcludedRoutes?: AuthExcludedRoute[];
+  bundledPlugins?: OraclePlugin[];
+  env?: NodeJS.ProcessEnv;
+  skipMatrixInit?: boolean;
+  skipGracefulShutdown?: boolean;
+  logger?: Logger;
+  hooks?: MainAgentHooks;
+}
+```
+
+<AccordionGroup>
+  <Accordion title="config" icon="id-card">
+    - **Type:** `OracleConfig`
+    - **Required:** yes
+
+    Inline oracle config — `name`, optional `org`, optional `description`, optional `prompt`. The runtime fills in `entityDid` from the `ORACLE_ENTITY_DID` env var, so don't put it here.
+
+    ```ts
+    config: {
+      name: 'My Oracle',
+      org: 'My Org',
+      description: 'What this oracle is for',
+      prompt: {
+        opening: '...',
+        communicationStyle: '...',
+        capabilities: '...',
+      },
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="features" icon="toggle-on">
+    - **Type:** `Partial<Record<BundledFeatureName | (string & {}), FeatureToggle>>` where `FeatureToggle = boolean | 'auto'`
+    - **Required:** no
+
+    Override the default opt-in state per plugin. Keys are plugin names. Values: `true` (force on), `false` (force off), `'auto'` (run `autoDetect(env)`). Omitted keys are treated as `'auto'`.
+
+    ```ts
+    features: {
+      slack: false,
+      composio: true,
+      domainIndexer: 'auto',
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="plugins" icon="puzzle-piece">
+    - **Type:** `OraclePlugin[]`
+    - **Required:** no
+
+    Your plugin instances. Plus any bundled plugins you want to instantiate with constructor args (`new EditorPlugin({ matrixClient })`, `new CreditsPlugin({ redis, network })`). The plugin loader dedupes by `name`, so an explicit instance overrides the bundled default of the same name.
+  </Accordion>
+
+  <Accordion title="nestModules" icon="server">
+    - **Type:** `Array<Type | DynamicModule>`
+    - **Required:** no
+
+    Your own NestJS modules. Spread into `RuntimeAppModule.imports`. They get full DI access to the Tier-0 services (Sessions, Messages, Secrets, UCAN, …) and can declare controllers, providers, `OnModuleInit`, `OnModuleDestroy`.
+  </Accordion>
+
+  <Accordion title="authExcludedRoutes" icon="globe">
+    - **Type:** `AuthExcludedRoute[]`
+    - **Required:** no
+
+    Host-declared routes that must not pass through `AuthHeaderMiddleware`. Use for routes contributed by `nestModules` (webhooks, OAuth callbacks, public probes). Symmetric with each plugin's `getAuthExcludedRoutes()` hook — both lists merge onto the runtime's built-in exclusions (`/health`, `/docs`).
+
+    ```ts
+    import { RequestMethod } from '@nestjs/common';
+
+    authExcludedRoutes: [
+      { path: 'version', method: RequestMethod.GET },
+    ]
+    ```
+  </Accordion>
+
+  <Accordion title="bundledPlugins" icon="boxes-stacked">
+    - **Type:** `OraclePlugin[]`
+    - **Required:** no
+
+    Override the bundled plugin set. Provided primarily for tests so the harness can spin up `createOracleApp` without dragging in the full bundled catalog. Production callers should leave this unset.
+  </Accordion>
+
+  <Accordion title="env" icon="file-lines">
+    - **Type:** `NodeJS.ProcessEnv`
+    - **Required:** no
+
+    Override `process.env`. Tests use this to inject a clean env. Production code should leave it unset.
+  </Accordion>
+
+  <Accordion title="skipMatrixInit" icon="circle-pause">
+    - **Type:** `boolean`
+    - **Required:** no
+
+    Skip starting the Matrix background init. Tests set this so the factory resolves without touching real Matrix. Do not use in production.
+  </Accordion>
+
+  <Accordion title="skipGracefulShutdown" icon="circle-pause">
+    - **Type:** `boolean`
+    - **Required:** no
+
+    Skip registering the SIGTERM/SIGINT shutdown handler. Tests set this so the harness does not leak process-level listeners. Do not use in production.
+  </Accordion>
+
+  <Accordion title="logger" icon="scroll">
+    - **Type:** `Logger`
+    - **Required:** no
+
+    Override the bootstrap logger. Falls back to NestJS `Logger`.
+  </Accordion>
+
+  <Accordion title="hooks" icon="link">
+    - **Type:** `MainAgentHooks`
+    - **Required:** no
+
+    Optional overrides for the agent-build hooks (checkpointer, model resolver, prompt section snippets). Merged on top of the runtime's defaults — host hooks win. The runtime supplies a per-user SQLite checkpointer by default; pass `{ checkpointerForUser: ... }` here to swap it for an alternate implementation.
+  </Accordion>
+</AccordionGroup>
+
+## OracleApp
+
+The resolved `OracleApp` exposes:
+
+```ts
+export interface OracleApp {
+  getNestApp(): INestApplication;
+  ambient: AmbientServices;
+  plugins: { status(): PluginStatusReport };
+  beforeListen(fn: (nestApp: INestApplication) => Promise<void> | void): void;
+  onError(handler: (err: Error, source: string) => void): void;
+  onPluginStatusChange(handler: (event: PluginStatusChangeEvent) => void): void;
+  listen(port?: number): Promise<void>;
+}
+```
+
+<AccordionGroup>
+  <Accordion title="getNestApp()" icon="server">
+    Returns the underlying `INestApplication`. Use it to add Express middleware, register global filters, or do anything else NestJS exposes. Mainly an escape hatch — `nestModules` and `beforeListen` cover most cases.
+  </Accordion>
+
+  <Accordion title="ambient" icon="layer-group">
+    The production `AmbientServices` bag — used by `MessagesController` to build per-request `RuntimeContext`s before invoking `createMainAgent`. Forks normally don't touch this directly.
+  </Accordion>
+
+  <Accordion title="plugins.status()" icon="list-check">
+    Returns a snapshot of loader/exclusion/soft-dep state.
+
+    ```ts
+    {
+      loaded: string[];
+      excluded: Array<{ plugin: string; reason: string }>;
+      softDepGaps: Array<{ plugin: string; missing: string }>;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="beforeListen(fn)" icon="circle-play">
+    Register a callback that runs after Nest is built but before HTTP starts accepting. Multiple registrations run in order, awaiting each.
+  </Accordion>
+
+  <Accordion title="onError(handler)" icon="triangle-exclamation">
+    Subscribe to background errors. The runtime currently surfaces Matrix init failures here (with `source: 'matrix-init'`). If no handler is registered, errors log to the bootstrap logger.
+  </Accordion>
+
+  <Accordion title="onPluginStatusChange(handler)" icon="bell">
+    Subscribe to plugin lifecycle changes. The current emitter is the Matrix init flow:
+
+    ```ts
+    { plugin: 'matrix', from: 'pending', to: 'loaded' | 'failed', reason?: string }
+    ```
+
+    Multiple handlers may register; each is invoked for every event.
+  </Accordion>
+
+  <Accordion title="listen(port?)" icon="play">
+    Start the HTTP server. Honours `beforeListen` callbacks first. Port resolution: explicit `port` arg → `PORT` env (validated) → `5678` default. Throws if called twice.
+  </Accordion>
+</AccordionGroup>
+
+## Behaviour
+
+The function executes these steps in order:
+
+1. Validates `config` (`name` required).
+2. Resolves plugin set: bundled + your plugins, deduped by `name`, with `features` toggles and `autoDetect` predicates applied. Excluded plugins surface in `plugins.status().excluded` with their reason.
+3. Topologically sorts by `dependsOn`. Cycles or missing hard deps fail boot.
+4. Validates every plugin's manifest. Hard violations fail boot.
+5. Composes env schema (base + all loaded plugins' `configSchema`) and validates `process.env`. Missing required vars fail boot with `[boot-error] Plugin '<name>' env validation failed for '<field>'`.
+6. Cross-field check: the API key for the selected `LLM_PROVIDER` is present. (Schema-merge can't express this.)
+7. Builds the internal `OracleIdentity` from `config` + validated env.
+8. Populates the six registries (tools, sub-agents, middlewares, manifests, configSchema, sharedState).
+9. Collects `getNestModules` from every loaded plugin.
+10. Builds the dynamic `RuntimeAppModule` and bootstraps NestJS (`NestFactory.create`). CORS enabled with the framework's allowed headers. Swagger UI mounts at `/docs`.
+11. Builds `AmbientServices`.
+12. Warms the boot caches (each registry runs its boot-time hooks once).
+13. Wires the default checkpointer (`UserMatrixSqliteSyncService` + `SqliteSaver`), then merges host `hooks` over it.
+14. Populates the `OracleRuntimeBundleHolder` so `MessagesController` can read it on each request.
+15. Schedules background Matrix init (unless `skipMatrixInit: true`). Registers a graceful-shutdown handler (unless `skipGracefulShutdown: true`).
+16. Returns the `OracleApp`.
+
+Step 15 (Matrix init) runs asynchronously and does not block the returned promise. `listen()` blocks on `beforeListen` callbacks before starting HTTP.
+
+## Throws
+
+- `Error('createOracleApp: \'config\' is required.')` — `config` missing.
+- `Error('createOracleApp: \'config.name\' is required.')` — `config.name` empty.
+- Plugin resolution errors (cycle, missing hard dep, manifest invalid, env invalid). Each error is reported via `logger.error` with `[boot-error] …` prefix and a remediation hint.
+- `Error('createOracleApp: ORACLE_ENTITY_DID env is required and was empty after validation.')` — when the validated env's `ORACLE_ENTITY_DID` is empty.
+- `Error('OracleApp.listen called twice.')` — when `listen()` is called more than once.
+
+## Related guides
+
+- [Create your oracle](/build-an-oracle/build/create-oracle-app) — hands-on walkthrough.
+- [Using bundled plugins](/build-an-oracle/build/enable-bundled-plugins) — the `features` field in detail.
+- [Plugin API reference](/build-an-oracle/reference/plugin-api) — what plugin instances must implement.

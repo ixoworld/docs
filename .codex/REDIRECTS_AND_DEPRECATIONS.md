@@ -70,5 +70,33 @@ Example:
 | added | n/a | `/reference/networks-and-endpoints` | Establish canonical home for endpoint and network literals | New reference route |
 | added | n/a | `/reference/authentication-matrix` | Establish canonical home for auth headers and surface-level auth ownership | New reference route |
 | added | n/a | `/reference/product-and-sdk-map` | Establish canonical home for product-to-SDK naming and route mapping | New reference route |
+| changed | `/build-an-oracle/how-it-works/architecture` | `/build-an-oracle/understand/architecture` | Audience-split IA: concept pages moved under `understand/` to signal optional reading | Builder tracks live under `build/` |
+| changed | `/build-an-oracle/how-it-works/request-lifecycle` | `/build-an-oracle/understand/request-lifecycle` | Audience-split IA | Same as above |
+| changed | `/build-an-oracle/how-it-works/plugins-vs-skills` | `/build-an-oracle/understand/plugins-vs-skills` | Audience-split IA | Same as above |
+| changed | `/build-an-oracle/how-it-works/contexts` | `/build-an-oracle/understand/contexts` | Audience-split IA | Same as above |
+| changed | `/build-an-oracle/how-it-works/meta-tools-and-loading` | `/build-an-oracle/understand/meta-tools-and-loading` | Audience-split IA | Same as above |
+| changed | `/build-an-oracle/plugins/overview` | `/build-an-oracle/build/overview` | Build-track index — entry point for developers | Replaces the conceptual plugins overview |
+| changed | `/build-an-oracle/plugins/anatomy` | `/build-an-oracle/understand/plugin-anatomy` | Plugin internals are concept material | Renamed to make subject explicit |
+| changed | `/build-an-oracle/plugins/manifest` | `/build-an-oracle/understand/manifest` | Manifest is a concept; schema reference lives at `/reference/manifest-schema` | Concept vs reference split |
+| changed | `/build-an-oracle/plugins/visibility` | `/build-an-oracle/build/plugin-recipes/set-visibility` | Recipe is the developer destination | Concept half lives at `/understand/visibility-tiers` |
+| changed | `/build-an-oracle/plugins/tools` | `/build-an-oracle/build/plugin-recipes/add-a-tool` | Recipe-style task page | Code-first, code↔docs links |
+| changed | `/build-an-oracle/plugins/sub-agents` | `/build-an-oracle/build/plugin-recipes/add-a-sub-agent` | Recipe-style task page | Same |
+| changed | `/build-an-oracle/plugins/middlewares` | `/build-an-oracle/build/plugin-recipes/add-a-middleware` | Recipe-style task page | Same |
+| changed | `/build-an-oracle/plugins/http-endpoints` | `/build-an-oracle/build/plugin-recipes/add-http-endpoints` | Recipe-style task page | Same |
+| changed | `/build-an-oracle/plugins/shared-state` | `/build-an-oracle/build/plugin-recipes/share-state` | Recipe-style task page | Concept half lives at `/understand/shared-state` |
+| changed | `/build-an-oracle/plugins/config-and-env` | `/build-an-oracle/build/plugin-recipes/add-config-and-env` | Recipe-style task page | Same |
+| changed | `/build-an-oracle/plugins/dependencies` | `/build-an-oracle/build/plugin-recipes/declare-dependencies` | Recipe-style task page | Same |
+| changed | `/build-an-oracle/plugins/write-your-first` | `/build-an-oracle/build/write-a-plugin` | Centerpiece end-to-end recipe | Renamed for clarity |
+| changed | `/build-an-oracle/plugins/testing` | `/build-an-oracle/build/test-your-oracle` | Recipe-style task page | Scoped to whole-oracle testing, not plugin-only |
+| changed | `/build-an-oracle/plugins/catalog` | `/build-an-oracle/reference/bundled-plugins/overview` | Catalog accordion split into one reference page per plugin | Each bundled plugin is now individually addressable |
+| changed | `/build-an-oracle/building/create-oracle-app` | `/build-an-oracle/build/create-oracle-app` | Build-track consolidation under `build/` | Same content, shorter path |
+| changed | `/build-an-oracle/building/using-bundled-plugins` | `/build-an-oracle/build/enable-bundled-plugins` | Build-track consolidation; verb-led title | Developer-POV naming |
+| changed | `/build-an-oracle/building/identity-and-auth` | `/build-an-oracle/build/identity-and-auth` | Build-track consolidation | Same |
+| changed | `/build-an-oracle/building/observability` | `/build-an-oracle/build/observability` | Build-track consolidation | Same |
+| changed | `/build-an-oracle/building/deployment` | `/build-an-oracle/build/deploy` | Build-track consolidation; verb-led title | Same |
+| added | n/a | `/build-an-oracle/for-ai-agents` | Dense single-page entry for AI tools scaffolding oracles | Mirrors AGENTS.md / llms.txt convention |
+| added | n/a | `/build-an-oracle/build/overview` | Build-track index | Replaces conceptual plugin overview as developer entry |
+| added | n/a | `/build-an-oracle/understand/what-is-qiforge` | Extracted mental-model summary | Lets the landing stay lean |
+| added | n/a | `/build-an-oracle/reference/bundled-plugins/<plugin>` | One reference page per bundled plugin | 14 leaf pages + overview |
 
 Update this table whenever a decision is made.

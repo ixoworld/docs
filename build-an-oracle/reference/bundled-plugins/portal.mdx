@@ -1,0 +1,62 @@
+---
+title: "portal"
+description: "Browser-side actions on the user's Portal UI — open URLs, manipulate the DOM, run FE-declared browser tools."
+icon: "window-maximize"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/portal/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/portal/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `on-demand` |
+| Stability | `stable` |
+| Category | `ui` |
+| Default state | On |
+| Depends on | — |
+
+## Summary
+
+The Portal frontend declares its available browser tools on each request via `state.browserTools`. The plugin wraps each declared tool into a `PluginTool` and exposes a sub-agent (`call_portal_agent`) that the main agent can delegate to. If no browser tools are declared, the plugin contributes nothing.
+
+## Environment variables
+
+This plugin has no required env vars.
+
+## What it contributes
+
+- **Tools:** none directly — tools are owned by the per-request sub-agent.
+- **Sub-agents:** `call_portal_agent` — built only when `state.browserTools` is non-empty.
+- **Middlewares:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { portal: false }, // never load
+  // features: { portal: true }, // force load (default)
+});
+```
+
+## When to use it
+
+- The user asks for an action the Portal frontend exposes as a browser tool (declared in `state.browserTools`).
+- A task needs a browser-side capability the server cannot do alone — open a URL in the user's tab, click a Portal button, fill a form.
+
+## When NOT to use it
+
+- No browser tools are declared on this request — the sub-agent is not built.
+- The task can be completed purely server-side — use a server tool or a different sub-agent.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a sub-agent" icon="diagram-project" href="/build-an-oracle/build/plugin-recipes/add-a-sub-agent">
+    Build a per-request sub-agent like Portal's.
+  </Card>
+  <Card title="agui" icon="table" href="/build-an-oracle/reference/bundled-plugins/agui">
+    Sibling FE-declared-tools plugin for AG-UI components.
+  </Card>
+</CardGroup>

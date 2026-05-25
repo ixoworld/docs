@@ -1,0 +1,134 @@
+---
+title: "Bundled plugins"
+description: "The 14 plugins the runtime ships with. Toggle each one through the features map, set its env vars, ship."
+icon: "boxes-stacked"
+---
+
+The runtime bundles 14 plugins. They load by default; opt out per plugin via the `features` map on `createOracleApp`.
+
+## At a glance
+
+| Name | Visibility | Default state | Required env | Depends on |
+| --- | --- | --- | --- | --- |
+| [`memory`](/build-an-oracle/reference/bundled-plugins/memory) | `always` | Auto-detect | `MEMORY_MCP_URL`, `MEMORY_ENGINE_URL` | — |
+| [`portal`](/build-an-oracle/reference/bundled-plugins/portal) | `on-demand` | On | — | — |
+| [`firecrawl`](/build-an-oracle/reference/bundled-plugins/firecrawl) | `on-demand` | Auto-detect | `FIRECRAWL_MCP_URL` | — |
+| [`domain-indexer`](/build-an-oracle/reference/bundled-plugins/domain-indexer) | `always` | On | — | — |
+| [`composio`](/build-an-oracle/reference/bundled-plugins/composio) | `on-demand` | Auto-detect | `COMPOSIO_API_KEY` | — |
+| [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox) | `always` | Auto-detect | `SANDBOX_MCP_URL` | — |
+| [`skills`](/build-an-oracle/reference/bundled-plugins/skills) | `always` | On | — | `sandbox` |
+| [`editor`](/build-an-oracle/reference/bundled-plugins/editor) | `on-demand` | On (needs Matrix client) | — | — |
+| [`agui`](/build-an-oracle/reference/bundled-plugins/agui) | `on-demand` | On | — | — |
+| [`slack`](/build-an-oracle/reference/bundled-plugins/slack) | `silent` | Auto-detect | `SLACK_BOT_OAUTH_TOKEN` | — |
+| [`tasks`](/build-an-oracle/reference/bundled-plugins/tasks) | (stub) | Auto-detect (stub) | `REDIS_URL` | — |
+| [`credits`](/build-an-oracle/reference/bundled-plugins/credits) | `silent` | On unless `DISABLE_CREDITS=true` | — | — |
+| [`calls`](/build-an-oracle/reference/bundled-plugins/calls) | (stub) | On (stub) | — | — |
+| [`user-preferences`](/build-an-oracle/reference/bundled-plugins/user-preferences) | `always` | On | — | — |
+
+`Default state` legend:
+
+- **On** — loaded by default; opt out with `features: { name: false }`.
+- **Auto-detect** — loaded when its env var is set; opt in by setting it, force on with `features: { name: true }`, force off with `false`.
+- **(stub)** — placeholder entry in `BUNDLED_PLUGINS` so feature toggles work; full implementation deferred.
+
+## How to use `features`
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: {
+    composio: false,            // never load even if COMPOSIO_API_KEY is set
+    slack: true,                // force load even if SLACK_BOT_OAUTH_TOKEN is missing (will fail env validation)
+    'domain-indexer': 'auto',   // explicit auto (same as omitting)
+  },
+});
+```
+
+`true` forces on, `false` forces off, `'auto'` runs the plugin's `autoDetect` callback. Omitted keys default to `'auto'`.
+
+## Browse
+
+<CardGroup cols={2}>
+  <Card title="memory" icon="brain" href="/build-an-oracle/reference/bundled-plugins/memory">
+    Durable memory across conversations.
+  </Card>
+  <Card title="portal" icon="window-maximize" href="/build-an-oracle/reference/bundled-plugins/portal">
+    Browser-side actions on the user's Portal UI.
+  </Card>
+  <Card title="firecrawl" icon="globe" href="/build-an-oracle/reference/bundled-plugins/firecrawl">
+    Web search and human-readable page scraping.
+  </Card>
+  <Card title="domain-indexer" icon="database" href="/build-an-oracle/reference/bundled-plugins/domain-indexer">
+    IXO entity lookup — orgs, projects, DAOs, DIDs.
+  </Card>
+  <Card title="composio" icon="plug" href="/build-an-oracle/reference/bundled-plugins/composio">
+    SaaS tool catalog (Gmail, GitHub, Linear, …).
+  </Card>
+  <Card title="sandbox" icon="server" href="/build-an-oracle/reference/bundled-plugins/sandbox">
+    Per-user Linux box for code execution.
+  </Card>
+  <Card title="skills" icon="code" href="/build-an-oracle/reference/bundled-plugins/skills">
+    IXO skill capsule discovery.
+  </Card>
+  <Card title="editor" icon="pen-to-square" href="/build-an-oracle/reference/bundled-plugins/editor">
+    Read and edit BlockNote workspace pages.
+  </Card>
+  <Card title="agui" icon="table" href="/build-an-oracle/reference/bundled-plugins/agui">
+    Render interactive UI components in the browser.
+  </Card>
+  <Card title="slack" icon="slack" href="/build-an-oracle/reference/bundled-plugins/slack">
+    Slack bot transport.
+  </Card>
+  <Card title="tasks" icon="hourglass" href="/build-an-oracle/reference/bundled-plugins/tasks">
+    Background jobs (stub — deferred).
+  </Card>
+  <Card title="credits" icon="coins" href="/build-an-oracle/reference/bundled-plugins/credits">
+    Per-user credit enforcement and claim settlement.
+  </Card>
+  <Card title="calls" icon="phone" href="/build-an-oracle/reference/bundled-plugins/calls">
+    LiveKit call integration (stub — deferred).
+  </Card>
+  <Card title="user-preferences" icon="sliders" href="/build-an-oracle/reference/bundled-plugins/user-preferences">
+    Tone / format / language preferences.
+  </Card>
+</CardGroup>
+
+## Wiring custom-constructed plugins
+
+Two plugins need constructor args for production behaviour. Pass them via the `plugins` array (the loader dedupes by name, so your instance overrides the bundled default):
+
+```ts
+import { createOracleApp, EditorPlugin, CreditsPlugin } from '@ixo/oracle-runtime';
+import * as sdk from 'matrix-js-sdk';
+import Redis from 'ioredis';
+
+const matrixClient = sdk.createClient({ /* ... */ });
+const redis = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
+
+const app = await createOracleApp({
+  config,
+  plugins: [
+    new EditorPlugin({ matrixClient }),
+    ...(redis ? [new CreditsPlugin({ redis, network: 'devnet' })] : []),
+  ],
+});
+```
+
+The bundled `editorPlugin` and `creditsPlugin` singletons in `BUNDLED_PLUGINS` work in stub form for tests; for real behaviour, instantiate explicitly.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Plugin vs Skill" icon="scale-balanced" href="/build-an-oracle/understand/plugins-vs-skills">
+    Why `skills` + `sandbox` are paired in the catalog.
+  </Card>
+  <Card title="Using bundled plugins" icon="boxes-stacked" href="/build-an-oracle/build/enable-bundled-plugins">
+    `features` patterns in depth.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    All env vars in one table.
+  </Card>
+  <Card title="Manifest schema" icon="file-code" href="/build-an-oracle/reference/manifest-schema">
+    Every field a plugin manifest declares.
+  </Card>
+</CardGroup>
