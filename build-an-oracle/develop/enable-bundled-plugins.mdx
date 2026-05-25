@@ -1,6 +1,6 @@
 ---
 title: "Enable bundled plugins"
-description: "Toggle the 14 bundled plugins via the features map. Opt out, force on, or let auto-detect handle it."
+description: "Toggle the 15 bundled plugins via the features map. Opt out, force on, or let auto-detect handle it."
 icon: "boxes-stacked"
 ---
 
@@ -31,7 +31,7 @@ That's the whole surface. The runtime pre-loads every bundled plugin instance fr
 
 <Steps>
   <Step title="The runtime starts with the bundled list">
-    [`BUNDLED_PLUGINS`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) is a fixed 14-plugin tuple — memory, portal, firecrawl, domain-indexer, composio, sandbox, skills, editor, agui, slack, tasks, credits, calls, user-preferences.
+    [`BUNDLED_PLUGINS`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) is a fixed 15-plugin tuple — memory, portal, firecrawl, domain-indexer, composio, sandbox, skills, editor, agui, slack, tasks, credits, calls, user-preferences, matrix-group-chats.
 
     You do not import or instantiate the plugins you want at defaults — they are already there.
   </Step>
@@ -81,6 +81,7 @@ Each plugin's `autoDetect` predicate decides whether to opt in when you leave it
 | `credits` | always on | Visibility `silent`; pass `redis` for production |
 | `calls` | always on | Stub |
 | `user-preferences` | always on | Visibility `always` |
+| `matrix-group-chats` | always on | Visibility `on-demand`; gating middleware + tools fire only in Matrix group rooms (`memberCount > 2`) |
 
 Full per-plugin env vars: [plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) and [environment variables reference](/build-an-oracle/reference/environment-variables).
 

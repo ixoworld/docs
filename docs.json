@@ -221,7 +221,8 @@
                   "build-an-oracle/reference/bundled-plugins/tasks",
                   "build-an-oracle/reference/bundled-plugins/credits",
                   "build-an-oracle/reference/bundled-plugins/calls",
-                  "build-an-oracle/reference/bundled-plugins/user-preferences"
+                  "build-an-oracle/reference/bundled-plugins/user-preferences",
+                  "build-an-oracle/reference/bundled-plugins/matrix-group-chats"
                 ]
               }
             ]

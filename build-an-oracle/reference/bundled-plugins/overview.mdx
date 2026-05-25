@@ -1,10 +1,10 @@
 ---
 title: "Bundled plugins"
-description: "The 14 plugins the runtime ships with. Toggle each one through the features map, set its env vars, ship."
+description: "The 15 plugins the runtime ships with. Toggle each one through the features map, set its env vars, ship."
 icon: "boxes-stacked"
 ---
 
-The runtime bundles 14 plugins. They load by default; opt out per plugin via the `features` map on `createOracleApp`.
+The runtime bundles 15 plugins. They load by default; opt out per plugin via the `features` map on `createOracleApp`.
 
 ## At a glance
 
@@ -24,6 +24,7 @@ The runtime bundles 14 plugins. They load by default; opt out per plugin via the
 | [`credits`](/build-an-oracle/reference/bundled-plugins/credits) | `silent` | On unless `DISABLE_CREDITS=true` | — | — |
 | [`calls`](/build-an-oracle/reference/bundled-plugins/calls) | (stub) | On (stub) | — | — |
 | [`user-preferences`](/build-an-oracle/reference/bundled-plugins/user-preferences) | `always` | On | — | — |
+| [`matrix-group-chats`](/build-an-oracle/reference/bundled-plugins/matrix-group-chats) | `on-demand` | On | — | — |
 
 `Default state` legend:
 
@@ -90,6 +91,9 @@ const app = await createOracleApp({
   </Card>
   <Card title="user-preferences" icon="sliders" href="/build-an-oracle/reference/bundled-plugins/user-preferences">
     Tone / format / language preferences.
+  </Card>
+  <Card title="matrix-group-chats" icon="comments" href="/build-an-oracle/reference/bundled-plugins/matrix-group-chats">
+    Gate the bot + per-room compacted memory for Matrix group rooms.
   </Card>
 </CardGroup>
 
