@@ -1,0 +1,119 @@
+---
+title: "Share state across plugins"
+description: "Expose a read-only accessor from one plugin so other plugins can read it via ctx.shared."
+icon: "share-nodes"
+---
+
+`getSharedState()` returns a flat map of `key → (state, runCtx) => value`. Consumers read those values on `ctx.shared.<key>`.
+
+<Steps>
+  <Step title="Keep the value somewhere the plugin owns">
+    Shared state is read-only by design. The owner plugin writes; consumers only read. A per-session `Map` is the simplest store.
+
+    ```ts
+    import { OraclePlugin } from '@ixo/oracle-runtime';
+
+    export interface LastWeatherQuery {
+      city: string;
+      latitude: number;
+      longitude: number;
+      queriedAt: string;
+    }
+
+    export class WeatherPlugin extends OraclePlugin {
+      private readonly lastBySession = new Map<string, LastWeatherQuery>();
+      // tools write into lastBySession after a successful lookup
+    }
+    ```
+
+    Canonical source: [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Expose it via getSharedState()">
+    Each entry is a function `(state, runCtx) => unknown`. The key becomes the field on `ctx.shared`. Keep accessors cheap — they're called every time a consumer reads.
+
+    ```ts
+    import type { RuntimeContext } from '@ixo/oracle-runtime';
+
+    override getSharedState(): Record<
+      string,
+      (state: unknown, runCtx: RuntimeContext) => unknown
+    > {
+      return {
+        lastWeatherQuery: (_state, runCtx) =>
+          this.lastBySession.get(runCtx.session.id),
+      };
+    }
+    ```
+
+    See `getSharedState` in [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Consume it from another plugin via ctx.shared">
+    Any tool handler can read `rtCtx.shared.<key>`. Treat the value as possibly `undefined` because the producing plugin may not be loaded.
+
+    ```ts
+    import { OraclePlugin, tool, z, type RuntimeContext } from '@ixo/oracle-runtime';
+
+    export class TripAdvisorPlugin extends OraclePlugin {
+      readonly name = 'trip-advisor';
+      readonly softDependsOn = ['weather'];
+
+      override getTools() {
+        return [
+          tool(
+            async (args, rtCtx: RuntimeContext) => {
+              const lastQuery = rtCtx.shared.lastWeatherQuery;
+              if (lastQuery) {
+                rtCtx.logger.log(`prior lookup: ${JSON.stringify(lastQuery)}`);
+              }
+              // ...
+              return 'done';
+            },
+            {
+              name: 'suggest_trip',
+              description: 'Suggest a trip based on recent weather.',
+              schema: z.object({}),
+            },
+          ),
+        ];
+      }
+    }
+    ```
+
+    Pair shared state with [`softDependsOn`](/build-an-oracle/develop/plugin-recipes/declare-dependencies) so the dependency is explicit and discoverable.
+  </Step>
+
+  <Step title="Add declaration merging for typed reads (optional)">
+    `SharedAccessors` is an open interface. Extend it so consumers see the right type on `ctx.shared.<key>`.
+
+    ```ts
+    declare module '@ixo/oracle-runtime' {
+      interface SharedAccessors {
+        lastWeatherQuery?: LastWeatherQuery;
+      }
+    }
+    ```
+
+    Without this, the key types as `unknown`. Skip declaration merging for ad-hoc keys.
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- The key namespace is flat. Two plugins registering the same key fail boot. Rename one.
+- Accessors run on every read — memoise expensive computations inside the producer (e.g. by `session.id`).
+- Shared state cannot be mutated by the consumer. To update the value, mutate via the owner's tool or middleware.
+- A consumer that runs without the producer loaded gets `undefined`. Guard with `if (lastQuery)` or `ctx.availablePlugins.has('weather')`.
+- Don't expose large blobs. Either compute lazily in the accessor or split into smaller derived keys.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Declare dependencies" icon="link" href="/build-an-oracle/develop/plugin-recipes/declare-dependencies">
+    Pair shared state with `softDependsOn`.
+  </Card>
+  <Card title="RuntimeContext reference" icon="user-gear" href="/build-an-oracle/reference/runtime-context">
+    The `ctx.shared` field on every tool handler.
+  </Card>
+</CardGroup>

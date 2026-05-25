@@ -1,0 +1,86 @@
+---
+title: "Set visibility"
+description: "Control whether a plugin's tools are bound at boot, discoverable on demand, or invisible to the agent."
+icon: "eye"
+---
+
+`manifest.visibility` sets the default for every tool the plugin ships. Individual tools can override it. Three values: `'always'`, `'on-demand'` (default), `'silent'`.
+
+<Steps>
+  <Step title="Set plugin-wide visibility on the manifest">
+    The manifest's `visibility` flag is the default applied to every tool the plugin returns.
+
+    ```ts
+    import type { PluginManifest } from '@ixo/oracle-runtime';
+
+    const manifest: PluginManifest = {
+      title: 'Weather',
+      summary: 'Current weather + forecast lookups for cities.',
+      whenToUse: ['Current weather', 'Forecasts', 'Outfit recommendations'],
+      visibility: 'on-demand',
+    };
+    ```
+
+    Three tiers: `'always'` (bound to agent at boot, listed in Tier-1 prompt), `'on-demand'` (default — discoverable via `list_capabilities`, loaded via `load_capability`), `'silent'` (invisible to agent; runs middleware-only). Canonical source: [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Override visibility per tool">
+    Set `visibility` directly on the `PluginTool` when one tool needs a different tier from the rest of the plugin.
+
+    ```ts
+    import { tool, z, type PluginTool } from '@ixo/oracle-runtime';
+
+    const currentTool: PluginTool = tool(handler, {
+      name: 'get_current_weather',
+      description: 'Get the current weather for a city.',
+      schema: z.object({ city: z.string() }),
+    });
+    currentTool.visibility = 'always';
+
+    const forecastTool: PluginTool = tool(handler, {
+      name: 'get_weather_forecast',
+      description: 'Get a daily forecast for a city.',
+      schema: z.object({ city: z.string(), days: z.number().optional() }),
+    });
+    forecastTool.visibility = 'on-demand';
+
+    return [currentTool, forecastTool];
+    ```
+
+    `PluginTool` shape: see [types.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/types.ts).
+  </Step>
+
+  <Step title="Pick the right tier">
+    Use this decision tree.
+
+    ```mermaid
+    graph TD
+        A["Does the LLM need to<br/>see this plugin as tools?"]
+        A -->|No| Silent[silent]
+        A -->|Yes| B["Will the LLM use this<br/>plugin on most turns?"]
+        B -->|Yes| Always[always]
+        B -->|No| OnDemand[on-demand]
+    ```
+
+    Promoting to `'always'` costs ~80 tokens per plugin in the Tier-1 prompt plus the tool schemas on every turn. Demoting to `'silent'` removes the plugin from the agent's view entirely.
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- Default is `'on-demand'`. A plugin without an explicit `manifest.visibility` is treated as on-demand.
+- `'on-demand'` plugins live in a per-thread `loadedPlugins` set. The set is monotonic — loading is forever for that thread; a new thread resets it.
+- Per-tool overrides let you ship a mixed plugin (one `'always'` tool + several `'on-demand'` tools) without splitting it.
+- `'silent'` plugins still run their middlewares and Nest modules. Use this for instrumentation, rate limiting, billing.
+- A fork with 50 `'on-demand'` plugins can usually keep 3–5 loaded per thread — the budget stays bounded as the catalog grows.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Visibility tiers concept" icon="eye" href="/build-an-oracle/understand/visibility-tiers">
+    Costs and trade-offs for each tier.
+  </Card>
+  <Card title="Meta-tools" icon="magnifying-glass" href="/build-an-oracle/understand/meta-tools-and-loading">
+    How `list_capabilities` and `load_capability` work.
+  </Card>
+</CardGroup>

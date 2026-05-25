@@ -188,13 +188,13 @@ Watch the server logs at the same time — you'll see the weather middleware pri
 ## Where to go next
 
 <CardGroup cols={2}>
-  <Card title="Build track" icon="hammer" href="/build-an-oracle/build/overview">
+  <Card title="Build track" icon="hammer" href="/build-an-oracle/develop/overview">
     Task-by-task recipes — `createOracleApp`, plugin recipes, test, deploy.
   </Card>
-  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/build/write-a-plugin">
+  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/develop/write-a-plugin">
     Recreate the Weather plugin from scratch.
   </Card>
-  <Card title="createOracleApp options" icon="square-list" href="/build-an-oracle/build/create-oracle-app">
+  <Card title="createOracleApp options" icon="square-list" href="/build-an-oracle/develop/create-oracle-app">
     Every option you can pass — config, plugins, features, hooks.
   </Card>
   <Card title="Bundled plugins" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
@@ -214,7 +214,7 @@ Watch the server logs at the same time — you'll see the weather middleware pri
 | --- | --- |
 | `[boot-error] Plugin '<name>' env validation failed for '<X>'` | Either set the env var or disable the plugin with `features: { name: false }`. |
 | Boot hangs after `Nest application started` | Matrix init is still pending. Check `MATRIX_BASE_URL` and `MATRIX_ORACLE_ADMIN_*` env vars. |
-| All authenticated requests return 401 | UCAN signing mnemonic not loaded — see [Identity and auth](/build-an-oracle/build/identity-and-auth#signing-mnemonic). |
+| All authenticated requests return 401 | UCAN signing mnemonic not loaded — see [Identity and auth](/build-an-oracle/develop/identity-and-auth#signing-mnemonic). |
 | The agent doesn't call my plugin's tool | Check it's `loaded` in `app.plugins.status()`. If it's `on-demand`, prompt the agent more clearly so it calls `load_capability`. |
 
 Full coverage: [Troubleshooting](/build-an-oracle/troubleshooting).

@@ -1,0 +1,276 @@
+---
+title: "Test your oracle"
+description: "Two layers — unit tests against a stub runtime, and integration tests that boot the real Nest app against real Matrix and a real LLM."
+icon: "vial"
+---
+
+## Recipe — wire vitest in two modes
+
+The example oracle ships a single config that runs unit tests by default and switches to integration mode with `--mode int`. Copy it.
+
+File: [`vitest.config.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/vitest.config.ts)
+
+```ts
+import { defineConfig, mergeConfig } from 'vitest/config';
+import nestConfig from '@ixo/vitest-config/nest';
+
+export default defineConfig(({ mode }) => {
+  if (mode === 'int') {
+    const merged = mergeConfig(nestConfig, {});
+    merged.test = {
+      ...merged.test,
+      include: ['test/**/*.int.test.ts'],
+      exclude: ['node_modules', 'dist'],
+      testTimeout: 120_000,
+      hookTimeout: 120_000,
+      setupFiles: ['./test/integration/setup.ts'],
+      fileParallelism: false,
+    };
+    return merged;
+  }
+  return mergeConfig(nestConfig, {});
+});
+```
+
+Then in `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "vitest run",
+    "test:integration": "vitest run --mode int"
+  }
+}
+```
+
+## The two layers
+
+| Layer | What it boots | When to use it |
+| --- | --- | --- |
+| **Unit** | Nothing — `createTestRuntime` fakes a `RuntimeContext` | Tool input parsing, middleware hooks, sub-agent prompts in isolation |
+| **Integration (Tier A)** | A test runtime — invoke tools directly, no LLM, no HTTP | Verifying upstream-API integration deterministically and for $0 |
+| **Integration (Tier B)** | Full `createOracleApp` + real Matrix + real LLM | End-to-end: discovery, routing, multi-turn behaviour |
+
+All three live under `apps/qiforge-example/test/integration/` — read [`weather.int.test.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/weather.int.test.ts) for a complete example.
+
+## Setup file
+
+File: [`test/integration/setup.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/setup.ts)
+
+```ts
+import 'reflect-metadata';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+import { config as dotenvConfig } from 'dotenv';
+import { expect } from 'vitest';
+import { langchainMatchers } from '@langchain/core/testing';
+import { Logger } from '@nestjs/common';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const appRoot = resolve(__dirname, '../..');
+
+dotenvConfig({ path: resolve(appRoot, '.env') });
+dotenvConfig({ path: resolve(appRoot, '.env.integration'), override: true });
+
+expect.extend(langchainMatchers);
+process.env.LOG_LEVEL ??= 'warn';
+Logger.overrideLogger(['error', 'warn']);
+```
+
+The setup file loads `.env` first (runtime config), then layers `.env.integration` on top with `override: true` (test-only credentials). Then it registers LangChain matchers and quiets logs.
+
+<Note>
+Each `.int.test.ts` file declares its required env up front and throws on missing values — see the next step. No silent skips.
+</Note>
+
+## Per-file env gate — fail loud
+
+Every integration test file lists the env it needs and throws at module load if anything is missing.
+
+<Steps>
+  <Step title="Declare required env at the top of the test file">
+    ```ts
+    const REQUIRED_ENV = [
+      'MATRIX_BASE_URL',
+      'MATRIX_ORACLE_ADMIN_USER_ID',
+      'MATRIX_ORACLE_ADMIN_ACCESS_TOKEN',
+      'TEST_USER_MNEMONIC',
+      'TEST_USER_DID',
+      'ORACLE_DID',
+      'OPEN_ROUTER_API_KEY',
+    ] as const;
+
+    const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
+    if (missing.length > 0) {
+      throw new Error(
+        `weather.int.test.ts requires the following env vars: ${missing.join(', ')}`,
+      );
+    }
+    ```
+
+    Source: [`weather.int.test.ts` lines 80-94](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/weather.int.test.ts).
+  </Step>
+
+  <Step title="Do not use describe.skipIf for env gates">
+    Silent skips hide broken setups. A throw at file load surfaces immediately when `.env.integration` is missing or incomplete.
+  </Step>
+</Steps>
+
+## Unit test — createTestRuntime
+
+```ts
+import { describe, expect, it } from 'vitest';
+import { createTestRuntime } from '@ixo/oracle-runtime/testing';
+import { WeatherPlugin } from '../src/plugins/weather/index.js';
+
+describe('WeatherPlugin', () => {
+  it('registers get_current_weather at boot', async () => {
+    const { runtime } = await createTestRuntime({
+      plugins: [new WeatherPlugin()],
+      env: { WEATHER_DEFAULT_UNITS: 'celsius' },
+    });
+    expect(runtime.toolRegistry.toolNames()).toContain('get_current_weather');
+  });
+});
+```
+
+`createTestRuntime` resolves plugins, populates registries, and builds a `RuntimeContext` you can hand straight to tool handlers — but does not boot Nest, talk to Matrix, or call the LLM. Use for fast, focused tests.
+
+## Tier A integration — direct invoke
+
+```ts
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import {
+  createIntegrationRuntime,
+  type IntegrationRuntime,
+} from '@ixo/oracle-runtime/testing/integration';
+import { WeatherPlugin } from '../../src/plugins/weather/index.js';
+
+describe('Tier A — direct invoke', () => {
+  let runtime: IntegrationRuntime | undefined;
+
+  beforeAll(async () => {
+    runtime = await createIntegrationRuntime({
+      plugins: [new WeatherPlugin()],
+      user: { did: process.env.TEST_USER_DID! },
+    });
+  }, 60_000);
+
+  afterAll(async () => {
+    if (runtime) await runtime.close();
+  });
+
+  test('get_current_weather({ city: "Berlin" }) returns numeric temperature', async () => {
+    const raw = await runtime!.invokeTool('get_current_weather', { city: 'Berlin' });
+    const result = JSON.parse(raw as string) as { temp: number; city: string };
+    expect(result.city.toLowerCase()).toContain('berlin');
+    expect(Number.isFinite(result.temp)).toBe(true);
+  });
+});
+```
+
+Tier A boots the runtime registries against your plugin list but skips the agent loop entirely. Use it to verify env wiring, upstream-API contracts, and config threading.
+
+## Tier B integration — full agent loop
+
+```ts
+import {
+  ChatClient,
+  allCaps,
+  createIntegrationOracle,
+  mintUserDelegation,
+  waitForMatrixLoaded,
+  type IntegrationOracle,
+} from '@ixo/oracle-runtime/testing/integration';
+import * as sdk from 'matrix-js-sdk';
+
+describe('Tier B — agent loop', () => {
+  let oracle: IntegrationOracle | undefined;
+  let client: ChatClient | undefined;
+
+  beforeAll(async () => {
+    const matrixClient = sdk.createClient({
+      baseUrl: process.env.MATRIX_BASE_URL!,
+      userId: process.env.MATRIX_ORACLE_ADMIN_USER_ID!,
+      accessToken: process.env.MATRIX_ORACLE_ADMIN_ACCESS_TOKEN!,
+    });
+    oracle = await createIntegrationOracle({
+      config: oracleConfig,
+      plugins: [new EditorPlugin({ matrixClient }), new WeatherPlugin()],
+    });
+    await waitForMatrixLoaded(oracle, 90_000);
+
+    const delegation = await mintUserDelegation({
+      userMnemonic: process.env.TEST_USER_MNEMONIC!,
+      oracleDid: process.env.ORACLE_DID!,
+      userDid: process.env.TEST_USER_DID,
+      capabilities: allCaps,
+    });
+    client = new ChatClient(oracle.baseUrl, { delegation });
+  }, 180_000);
+
+  afterAll(async () => {
+    if (oracle) await oracle.close();
+  });
+
+  test('weather request triggers get_current_weather', async () => {
+    const sid = await client!.createSession();
+    const stream = client!.stream(sid, "What's the weather in Berlin?");
+    const calls = [];
+    for await (const evt of stream) {
+      if (evt.event === 'tool_call') calls.push(evt.data);
+    }
+    expect(calls.some((c) => c.toolName === 'get_current_weather')).toBe(true);
+  });
+});
+```
+
+Full reference, including multi-turn scenarios: [`weather.int.test.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/weather.int.test.ts). Cross-plugin chains: [`agent-scenarios.int.test.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/agent-scenarios.int.test.ts). Boot smoke: [`boot.int.test.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/boot.int.test.ts).
+
+## Why the vitest config looks like that
+
+<AccordionGroup>
+  <Accordion title="fileParallelism: false" icon="ban">
+    Integration tests share a single Matrix admin user. Two test files booting in parallel collide on Matrix's one-time key uploads at the homeserver. Run sequentially.
+  </Accordion>
+
+  <Accordion title="120s timeouts" icon="clock">
+    Real Nest boot, Matrix sync, and LLM round-trips run 5-30s each. 120s leaves headroom for retries; pushing higher means cutting scope, not raising the cap.
+  </Accordion>
+
+  <Accordion title="Share one session across tests in a describe" icon="share-nodes">
+    `client.createSession()` is a server-side round-trip. Create once in `beforeAll`, reuse for every test. Only mint per-test sessions when the test's whole point is session isolation (first-contact, cross-session recall).
+  </Accordion>
+
+  <Accordion title="Assert structurally on streamed events" icon="list-check">
+    Tier B uses a real model — response wording drifts. Collect `tool_call` events from the stream and assert which tools fired with which args, not on text output.
+  </Accordion>
+</AccordionGroup>
+
+## What not to do
+
+<Warning>
+**Don't loosen assertions to mask failures.** Broadening a regex, adding "or" clauses, or raising tolerances to make a flaky test pass discards the check that catches the bug. Investigate the real failure.
+</Warning>
+
+<Warning>
+**Don't edit plugin code to make tests pass.** Two test-side retry attempts max per failure, then stop and ask. Plugins are presumed-working production code; tests describe behaviour, not dictate it.
+</Warning>
+
+<Warning>
+**Don't add skip-real-services flags** (`skipMatrixInit`, `skipGracefulShutdown`) to integration tests as a speed-up. Integration tests must boot the same way production does — that's their point.
+</Warning>
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/develop/write-a-plugin">
+    The Weather plugin tests live next to its source.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    The `.env.integration` requirements per plugin.
+  </Card>
+  <Card title="Runtime context" icon="diagram-next" href="/build-an-oracle/reference/runtime-context">
+    The object handed to your tool handlers in both unit and integration tests.
+  </Card>
+</CardGroup>

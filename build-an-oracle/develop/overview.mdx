@@ -1,0 +1,72 @@
+---
+title: "Build track — start here"
+description: "The order to read the Build track. Recipes are code-first; concepts live in the Deep dive track and are always optional."
+icon: "hammer"
+---
+
+The Build track is task-oriented. Every page answers "how do I do X" with a copy-pasteable code sample and a link to the canonical file in the [repo](https://github.com/ixoworld/ixo-oracles-boilerplate). Concept material is moved out to the [Deep dive](/build-an-oracle/understand/what-is-qiforge) — read it when you want depth, skip it when you want to ship.
+
+## The path
+
+<Steps>
+  <Step title="Scaffold an oracle" icon="play">
+    Follow the [Quickstart](/build-an-oracle/quickstart) — `qiforge-cli init`, env, `pnpm dev`, first message. Ten minutes.
+  </Step>
+  <Step title="Wire createOracleApp" icon="gear">
+    [Create your oracle app](/build-an-oracle/develop/create-oracle-app) — what `main.ts` looks like, what every option does.
+  </Step>
+  <Step title="Turn bundled plugins on/off" icon="toggle-on">
+    [Enable bundled plugins](/build-an-oracle/develop/enable-bundled-plugins) — the `features` map, auto-detect, force-on, force-off.
+  </Step>
+  <Step title="Write your first plugin" icon="puzzle-piece">
+    [Write a plugin](/build-an-oracle/develop/write-a-plugin) — centerpiece end-to-end recipe using the Weather plugin as the worked example.
+  </Step>
+  <Step title="Pick up one recipe at a time" icon="screwdriver-wrench">
+    [Plugin recipes](/build-an-oracle/develop/plugin-recipes/add-a-tool) — atomic: add a tool, add a sub-agent, add a middleware, add HTTP endpoints, share state, declare dependencies, set visibility, add config + env.
+  </Step>
+  <Step title="Test it" icon="vial">
+    [Test your oracle](/build-an-oracle/develop/test-your-oracle) — vitest setup, integration tests against a real boot.
+  </Step>
+  <Step title="Identity + observability" icon="shield-halved">
+    [Identity and auth](/build-an-oracle/develop/identity-and-auth), then [observability](/build-an-oracle/develop/observability) — LangSmith env vars, plugin status events.
+  </Step>
+  <Step title="Ship it" icon="rocket">
+    [Deploy](/build-an-oracle/develop/deploy) — Dockerfile, env, persistent volumes, health probes.
+  </Step>
+</Steps>
+
+## All recipes at a glance
+
+<CardGroup cols={2}>
+  <Card title="Add a tool" icon="screwdriver-wrench" href="/build-an-oracle/develop/plugin-recipes/add-a-tool">
+    `PluginTool`, boot-time vs per-request.
+  </Card>
+  <Card title="Add a sub-agent" icon="users" href="/build-an-oracle/develop/plugin-recipes/add-a-sub-agent">
+    Nest agents with their own prompt + tools.
+  </Card>
+  <Card title="Add a middleware" icon="filter" href="/build-an-oracle/develop/plugin-recipes/add-a-middleware">
+    `beforeModel` / `afterModel` / `onError` hooks.
+  </Card>
+  <Card title="Add HTTP endpoints" icon="server" href="/build-an-oracle/develop/plugin-recipes/add-http-endpoints">
+    Plugin-owned Nest controllers + auth-excluded routes.
+  </Card>
+  <Card title="Add config + env" icon="sliders" href="/build-an-oracle/develop/plugin-recipes/add-config-and-env">
+    Zod `configSchema`, `PLUGINPREFIX_*` convention.
+  </Card>
+  <Card title="Share state" icon="share-nodes" href="/build-an-oracle/develop/plugin-recipes/share-state">
+    `getSharedState` — read-only producer/consumer pattern.
+  </Card>
+  <Card title="Declare dependencies" icon="link" href="/build-an-oracle/develop/plugin-recipes/declare-dependencies">
+    `dependsOn` (hard) vs `softDependsOn` (soft) + topological order.
+  </Card>
+  <Card title="Set visibility" icon="eye" href="/build-an-oracle/develop/plugin-recipes/set-visibility">
+    `always` / `on-demand` / `silent` + per-tool overrides.
+  </Card>
+</CardGroup>
+
+## What lives outside this track
+
+- **Concepts:** [Deep dive](/build-an-oracle/understand/what-is-qiforge) — mental model, runtime layers, plugins-vs-skills. Optional.
+- **Reference:** [Reference](/build-an-oracle/reference/createoracleapp) — every option, every env var, every bundled plugin in tables.
+- **For AI agents:** [Dense one-pager](/build-an-oracle/for-ai-agents) — every signature inlined, copy-pasteable.
+- **Troubleshooting:** [Common boot + runtime errors](/build-an-oracle/troubleshooting).

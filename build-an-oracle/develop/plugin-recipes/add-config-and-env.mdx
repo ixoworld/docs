@@ -1,0 +1,100 @@
+---
+title: "Add config and env vars"
+description: "Declare your plugin's env vars with a Zod configSchema; read typed values from ctx.config."
+icon: "key"
+---
+
+The runtime merges every loaded plugin's `configSchema` onto a base schema, validates `process.env` at boot, and exposes the result on `ctx.config`.
+
+<Steps>
+  <Step title="Declare the schema with Zod">
+    Prefix every variable with your plugin's name in `SHOUT_SNAKE_CASE` to avoid collisions across plugins.
+
+    ```ts
+    import { z } from '@ixo/oracle-runtime';
+
+    const configSchema = z.object({
+      WEATHER_DEFAULT_UNITS: z.enum(['celsius', 'fahrenheit']).default('celsius'),
+    });
+    ```
+
+    Bundled plugins follow the same rule (`MEMORY_MCP_URL`, `SLACK_BOT_OAUTH_TOKEN`, …). See [memory.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/memory/memory.plugin.ts) for a required-field example.
+  </Step>
+
+  <Step title="Attach it as configSchema on the plugin class">
+    The composer merges this schema with the base schema and every other loaded plugin's schema, then validates `process.env`.
+
+    ```ts
+    import { OraclePlugin } from '@ixo/oracle-runtime';
+
+    export class WeatherPlugin extends OraclePlugin {
+      override readonly configSchema = configSchema;
+    }
+    ```
+
+    Boot fails fast on missing or invalid values: `[boot-error] Plugin 'weather' env validation failed for 'WEATHER_DEFAULT_UNITS'`. See [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Read typed values from ctx.config">
+    `ctx.config` is typed as `MergedConfig` (`Record<string, unknown>`). Parse it through your schema to get a typed view — this can't fail at runtime because boot already validated.
+
+    ```ts
+    override getTools(ctx: PluginContext): PluginTool[] {
+      const units = configSchema.parse(ctx.config).WEATHER_DEFAULT_UNITS;
+      return [buildCurrentWeatherTool(units)];
+    }
+    ```
+
+    Same on `RuntimeContext.config` inside `getRequestTools` and tool handlers.
+  </Step>
+
+  <Step title="Gate the plugin on env with autoDetect (optional)">
+    Implement `autoDetect` to make the plugin opt-in. Pair it with `autoDetectHint` so boot logs explain why it was skipped.
+
+    ```ts
+    override autoDetect(env: NodeJS.ProcessEnv): boolean {
+      return Boolean(env.MEMORY_MCP_URL);
+    }
+
+    override readonly autoDetectHint = 'MEMORY_MCP_URL';
+    ```
+
+    Without `autoDetect`, a plugin is on by default. See [memory.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/memory/memory.plugin.ts).
+  </Step>
+
+  <Step title="Force-toggle from your oracle's main.ts">
+    Forks override `autoDetect` via the `features` map passed to `createOracleApp`.
+
+    ```ts
+    const app = await createOracleApp({
+      config,
+      features: {
+        weather: true,    // force on, skip autoDetect
+        slack: false,     // force off
+        composio: 'auto', // explicit auto (the default)
+      },
+    });
+    ```
+
+    `FeatureToggle` is `boolean | 'auto'`. See [plugin-loader.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/plugin-loader.ts).
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- Use `.default(value)` and `.coerce.number()` freely — env values are strings, so coerce explicitly.
+- Disabling a plugin (via `features` or `autoDetect`) automatically removes its env requirements.
+- Two plugins declaring the same env-var name fail boot. Follow the naming convention to avoid this.
+- To read a variable your plugin doesn't own, declare a separate optional sibling schema and `safeParse` it — don't require it through your own `configSchema`.
+- Required boot-time fields stay in `configSchema`; per-call settings belong elsewhere (e.g. request headers, manifest defaults).
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Enable bundled plugins" icon="boxes-stacked" href="/build-an-oracle/develop/enable-bundled-plugins">
+    Features map, autoDetect, and the bundled set's defaults.
+  </Card>
+  <Card title="Environment variables reference" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Every base var and per-plugin var.
+  </Card>
+</CardGroup>

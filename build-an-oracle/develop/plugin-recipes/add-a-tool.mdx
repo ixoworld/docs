@@ -1,0 +1,102 @@
+---
+title: "Add a tool"
+description: "Register a tool the agent can call by returning it from getTools or getRequestTools."
+icon: "screwdriver-wrench"
+---
+
+A tool is a function the agent calls with validated args. Return one from `getTools` (boot-time) or `getRequestTools` (per-request).
+
+<Steps>
+  <Step title="Build a PluginTool with the tool() helper">
+    Use the `tool()` builder from `@ixo/oracle-runtime`. The handler gets validated `args` and a per-request `RuntimeContext`.
+
+    ```ts
+    import { tool, z, type PluginTool, type RuntimeContext } from '@ixo/oracle-runtime';
+
+    export function buildCurrentWeatherTool(): PluginTool {
+      return tool(
+        async (args, ctx: RuntimeContext) => {
+          const { city } = z.object({ city: z.string().min(1) }).parse(args);
+          ctx.logger.log(`weather lookup by ${ctx.user.did} for ${city}`);
+          const result = await fetchWeather(city, ctx.abortSignal);
+          if (!result) return `Could not find weather for "${city}".`;
+          return JSON.stringify(result);
+        },
+        {
+          name: 'get_current_weather',
+          description: 'Get the current weather for a city.',
+          schema: z.object({
+            city: z.string().min(1).describe('City name, e.g. "Berlin".'),
+          }),
+        },
+      );
+    }
+    ```
+
+    Canonical source: [weather-tools.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather-tools.ts).
+  </Step>
+
+  <Step title="Return it from getTools(ctx) for the stable case">
+    Pick `getTools` when the tool list is the same for every user — it only depends on config and identity.
+
+    ```ts
+    import { OraclePlugin, type PluginContext, type PluginTool } from '@ixo/oracle-runtime';
+
+    export class WeatherPlugin extends OraclePlugin {
+      override getTools(ctx: PluginContext): PluginTool[] {
+        return [buildCurrentWeatherTool()];
+      }
+    }
+    ```
+
+    See `getTools` in [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Return it from getRequestTools(rtCtx) when it varies per request">
+    Use `getRequestTools` when the tool list depends on live state — the user, session, history, or `loadedPlugins`.
+
+    ```ts
+    override getRequestTools(rtCtx: RuntimeContext): PluginTool[] {
+      const tz = rtCtx.user.timezone ?? 'auto';
+      return [buildForecastTool(tz)];
+    }
+    ```
+
+    Both hooks merge — their outputs are concatenated on every build. See `getRequestTools` in [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Override visibility per tool (optional)">
+    A tool inherits its plugin's `manifest.visibility` by default. Add a `visibility` field to the `PluginTool` to override per-tool.
+
+    ```ts
+    const currentTool = buildCurrentWeatherTool();
+    currentTool.visibility = 'always';
+
+    const forecastTool = buildForecastTool();
+    forecastTool.visibility = 'on-demand';
+
+    return [currentTool, forecastTool];
+    ```
+
+    See [Set visibility](/build-an-oracle/develop/plugin-recipes/set-visibility) for the full recipe.
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- Tool `name` must be unique across all loaded plugins. Boot fails on collision.
+- Throw from the handler for unexpected errors (retry middleware catches them). Return a string for expected misses ("not found").
+- The agent expects a string; `JSON.stringify` structured output to keep the contract clean.
+- `ctx.abortSignal` propagates from the inbound request — forward it to every `fetch`.
+- Do not override descriptions of upstream MCP tools — pass them through verbatim and put guidance in the manifest instead.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a sub-agent" icon="sitemap" href="/build-an-oracle/develop/plugin-recipes/add-a-sub-agent">
+    For multi-step tool sequences with their own prompt.
+  </Card>
+  <Card title="RuntimeContext reference" icon="user-gear" href="/build-an-oracle/reference/runtime-context">
+    Every field a handler can read.
+  </Card>
+</CardGroup>

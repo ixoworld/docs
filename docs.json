@@ -71,7 +71,10 @@
         "groups": [
           {
             "group": "User Guides",
-            "pages": ["guides/users/intro-users", "guides/users/ussd"]
+            "pages": [
+              "guides/users/intro-users",
+              "guides/users/ussd"
+            ]
           },
           {
             "group": "Developer Guides",
@@ -149,27 +152,27 @@
           {
             "group": "Build",
             "pages": [
-              "build-an-oracle/build/overview",
-              "build-an-oracle/build/create-oracle-app",
-              "build-an-oracle/build/enable-bundled-plugins",
-              "build-an-oracle/build/write-a-plugin",
+              "build-an-oracle/develop/overview",
+              "build-an-oracle/develop/create-oracle-app",
+              "build-an-oracle/develop/enable-bundled-plugins",
+              "build-an-oracle/develop/write-a-plugin",
               {
                 "group": "Plugin recipes",
                 "pages": [
-                  "build-an-oracle/build/plugin-recipes/add-a-tool",
-                  "build-an-oracle/build/plugin-recipes/add-a-sub-agent",
-                  "build-an-oracle/build/plugin-recipes/add-a-middleware",
-                  "build-an-oracle/build/plugin-recipes/add-http-endpoints",
-                  "build-an-oracle/build/plugin-recipes/add-config-and-env",
-                  "build-an-oracle/build/plugin-recipes/share-state",
-                  "build-an-oracle/build/plugin-recipes/declare-dependencies",
-                  "build-an-oracle/build/plugin-recipes/set-visibility"
+                  "build-an-oracle/develop/plugin-recipes/add-a-tool",
+                  "build-an-oracle/develop/plugin-recipes/add-a-sub-agent",
+                  "build-an-oracle/develop/plugin-recipes/add-a-middleware",
+                  "build-an-oracle/develop/plugin-recipes/add-http-endpoints",
+                  "build-an-oracle/develop/plugin-recipes/add-config-and-env",
+                  "build-an-oracle/develop/plugin-recipes/share-state",
+                  "build-an-oracle/develop/plugin-recipes/declare-dependencies",
+                  "build-an-oracle/develop/plugin-recipes/set-visibility"
                 ]
               },
-              "build-an-oracle/build/test-your-oracle",
-              "build-an-oracle/build/identity-and-auth",
-              "build-an-oracle/build/observability",
-              "build-an-oracle/build/deploy"
+              "build-an-oracle/develop/test-your-oracle",
+              "build-an-oracle/develop/identity-and-auth",
+              "build-an-oracle/develop/observability",
+              "build-an-oracle/develop/deploy"
             ]
           },
           {
@@ -318,59 +321,59 @@
     },
     {
       "source": "/build-an-oracle/concepts/dependencies",
-      "destination": "/build-an-oracle/build/plugin-recipes/declare-dependencies"
+      "destination": "/build-an-oracle/develop/plugin-recipes/declare-dependencies"
     },
     {
       "source": "/build-an-oracle/guides/create-your-oracle",
-      "destination": "/build-an-oracle/build/create-oracle-app"
+      "destination": "/build-an-oracle/develop/create-oracle-app"
     },
     {
       "source": "/build-an-oracle/guides/write-your-first-plugin",
-      "destination": "/build-an-oracle/build/write-a-plugin"
+      "destination": "/build-an-oracle/develop/write-a-plugin"
     },
     {
       "source": "/build-an-oracle/guides/plugin-tools",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-a-tool"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-a-tool"
     },
     {
       "source": "/build-an-oracle/guides/plugin-sub-agents",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-a-sub-agent"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-a-sub-agent"
     },
     {
       "source": "/build-an-oracle/guides/plugin-middlewares",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-a-middleware"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-a-middleware"
     },
     {
       "source": "/build-an-oracle/guides/plugin-http-endpoints",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-http-endpoints"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-http-endpoints"
     },
     {
       "source": "/build-an-oracle/guides/plugin-config-env",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-config-and-env"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-config-and-env"
     },
     {
       "source": "/build-an-oracle/guides/plugin-shared-state",
-      "destination": "/build-an-oracle/build/plugin-recipes/share-state"
+      "destination": "/build-an-oracle/develop/plugin-recipes/share-state"
     },
     {
       "source": "/build-an-oracle/guides/testing-your-oracle",
-      "destination": "/build-an-oracle/build/test-your-oracle"
+      "destination": "/build-an-oracle/develop/test-your-oracle"
     },
     {
       "source": "/build-an-oracle/guides/using-bundled-plugins",
-      "destination": "/build-an-oracle/build/enable-bundled-plugins"
+      "destination": "/build-an-oracle/develop/enable-bundled-plugins"
     },
     {
       "source": "/build-an-oracle/guides/identity-and-auth",
-      "destination": "/build-an-oracle/build/identity-and-auth"
+      "destination": "/build-an-oracle/develop/identity-and-auth"
     },
     {
       "source": "/build-an-oracle/guides/deployment",
-      "destination": "/build-an-oracle/build/deploy"
+      "destination": "/build-an-oracle/develop/deploy"
     },
     {
       "source": "/build-an-oracle/guides/observability",
-      "destination": "/build-an-oracle/build/observability"
+      "destination": "/build-an-oracle/develop/observability"
     },
     {
       "source": "/build-an-oracle/reference/plugin-catalog",
@@ -398,7 +401,7 @@
     },
     {
       "source": "/build-an-oracle/plugins/overview",
-      "destination": "/build-an-oracle/build/overview"
+      "destination": "/build-an-oracle/develop/overview"
     },
     {
       "source": "/build-an-oracle/plugins/anatomy",
@@ -410,43 +413,43 @@
     },
     {
       "source": "/build-an-oracle/plugins/visibility",
-      "destination": "/build-an-oracle/build/plugin-recipes/set-visibility"
+      "destination": "/build-an-oracle/develop/plugin-recipes/set-visibility"
     },
     {
       "source": "/build-an-oracle/plugins/tools",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-a-tool"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-a-tool"
     },
     {
       "source": "/build-an-oracle/plugins/sub-agents",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-a-sub-agent"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-a-sub-agent"
     },
     {
       "source": "/build-an-oracle/plugins/middlewares",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-a-middleware"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-a-middleware"
     },
     {
       "source": "/build-an-oracle/plugins/http-endpoints",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-http-endpoints"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-http-endpoints"
     },
     {
       "source": "/build-an-oracle/plugins/shared-state",
-      "destination": "/build-an-oracle/build/plugin-recipes/share-state"
+      "destination": "/build-an-oracle/develop/plugin-recipes/share-state"
     },
     {
       "source": "/build-an-oracle/plugins/config-and-env",
-      "destination": "/build-an-oracle/build/plugin-recipes/add-config-and-env"
+      "destination": "/build-an-oracle/develop/plugin-recipes/add-config-and-env"
     },
     {
       "source": "/build-an-oracle/plugins/dependencies",
-      "destination": "/build-an-oracle/build/plugin-recipes/declare-dependencies"
+      "destination": "/build-an-oracle/develop/plugin-recipes/declare-dependencies"
     },
     {
       "source": "/build-an-oracle/plugins/write-your-first",
-      "destination": "/build-an-oracle/build/write-a-plugin"
+      "destination": "/build-an-oracle/develop/write-a-plugin"
     },
     {
       "source": "/build-an-oracle/plugins/testing",
-      "destination": "/build-an-oracle/build/test-your-oracle"
+      "destination": "/build-an-oracle/develop/test-your-oracle"
     },
     {
       "source": "/build-an-oracle/plugins/catalog",
@@ -454,23 +457,23 @@
     },
     {
       "source": "/build-an-oracle/building/create-oracle-app",
-      "destination": "/build-an-oracle/build/create-oracle-app"
+      "destination": "/build-an-oracle/develop/create-oracle-app"
     },
     {
       "source": "/build-an-oracle/building/using-bundled-plugins",
-      "destination": "/build-an-oracle/build/enable-bundled-plugins"
+      "destination": "/build-an-oracle/develop/enable-bundled-plugins"
     },
     {
       "source": "/build-an-oracle/building/identity-and-auth",
-      "destination": "/build-an-oracle/build/identity-and-auth"
+      "destination": "/build-an-oracle/develop/identity-and-auth"
     },
     {
       "source": "/build-an-oracle/building/observability",
-      "destination": "/build-an-oracle/build/observability"
+      "destination": "/build-an-oracle/develop/observability"
     },
     {
       "source": "/build-an-oracle/building/deployment",
-      "destination": "/build-an-oracle/build/deploy"
+      "destination": "/build-an-oracle/develop/deploy"
     },
     {
       "source": "/articles/ixo-oracles",
@@ -649,7 +652,12 @@
     "codeblocks": "system"
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude"]
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",

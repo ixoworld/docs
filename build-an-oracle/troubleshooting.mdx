@@ -135,7 +135,7 @@ Important: the runtime starts HTTP listening even when Matrix is still pending. 
 
 **Cause:** The Matrix store directory wasn't persisted across restarts.
 
-**Fix:** Mount a volume at `MATRIX_STORE_PATH` (and `SQLITE_DATABASE_PATH`). See [Deployment](/build-an-oracle/build/deploy).
+**Fix:** Mount a volume at `MATRIX_STORE_PATH` (and `SQLITE_DATABASE_PATH`). See [Deployment](/build-an-oracle/develop/deploy).
 
 ## Plugin loading
 
@@ -230,7 +230,7 @@ If you wrote a middleware with closure-scoped timing state, concurrent LLM calls
   <Card title="Plugin catalog" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
     Default state, dependencies, env vars per plugin.
   </Card>
-  <Card title="Deployment" icon="rocket-launch" href="/build-an-oracle/build/deploy">
+  <Card title="Deployment" icon="rocket-launch" href="/build-an-oracle/develop/deploy">
     Volume layout, probes, signal handling.
   </Card>
 </CardGroup>

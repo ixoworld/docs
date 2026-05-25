@@ -1,0 +1,99 @@
+---
+title: "Declare dependencies"
+description: "Use dependsOn for hard requirements (fails boot if missing) and softDependsOn for optional enrichment."
+icon: "link"
+---
+
+A plugin references other plugins by `name`. `dependsOn` is hard (boot fails on miss). `softDependsOn` is soft (plugin loads either way and branches on `ctx.availablePlugins`).
+
+<Steps>
+  <Step title="Declare hard dependencies via dependsOn">
+    Use this when the plugin literally cannot function without the other. The runtime topologically sorts plugins by `dependsOn` and aborts boot on missing deps or cycles.
+
+    ```ts
+    import { OraclePlugin } from '@ixo/oracle-runtime';
+
+    export class SkillsPlugin extends OraclePlugin {
+      readonly name = 'skills';
+      override readonly dependsOn = ['sandbox'];
+    }
+    ```
+
+    Missing dep: `[boot-error] Plugin 'skills' depends on 'sandbox', which is not loaded. Add 'sandbox' to features, or remove 'skills'.` Canonical source: [oracle-plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/oracle-plugin.ts).
+  </Step>
+
+  <Step title="Declare soft dependencies via softDependsOn">
+    Use this when the plugin enriches its behaviour when the other is present but stands alone without it. The runtime loads your plugin either way and logs one line per missing soft dep at boot.
+
+    ```ts
+    export class TasksPlugin extends OraclePlugin {
+      readonly name = 'tasks';
+      override readonly softDependsOn = ['memory'];
+    }
+    ```
+
+    See [plugin-loader.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/plugin-loader.ts) for the resolver.
+  </Step>
+
+  <Step title="Branch on availablePlugins at boot or request time">
+    `PluginContext.availablePlugins` and `RuntimeContext.availablePlugins` are `ReadonlySet<string>` of every plugin that survived boot resolution.
+
+    ```ts
+    override getTools(ctx: PluginContext): PluginTool[] {
+      const tools: PluginTool[] = [buildCreateTaskTool(), buildListTasksTool()];
+      if (ctx.availablePlugins.has('memory')) {
+        tools.push(buildRememberTaskContextTool());
+      }
+      return tools;
+    }
+    ```
+
+    Same check works inside a handler:
+
+    ```ts
+    handler: async (args, rtCtx: RuntimeContext) => {
+      if (rtCtx.availablePlugins.has('memory')) {
+        const profile = rtCtx.shared.userProfile;
+        return doWorkWithProfile(args, profile);
+      }
+      return doWorkWithoutProfile(args);
+    }
+    ```
+  </Step>
+
+  <Step title="Force-toggle dependencies from the host">
+    Forks override `autoDetect` and dependency resolution via the `features` map. `'auto'` (default) defers to the plugin's `autoDetect`.
+
+    ```ts
+    const app = await createOracleApp({
+      config,
+      features: {
+        sandbox: true,    // force on
+        skills: 'auto',   // load when its autoDetect (and deps) pass
+        slack: false,     // force off
+      },
+    });
+    ```
+
+    Disabling a plugin that another plugin hard-requires fails boot — that's the point of `dependsOn`. See [plugin-loader.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/plugin-loader.ts).
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- Names are kebab-case plugin identifiers, not titles. `'memory'`, not `'Memory'`.
+- The topo sort order drives middleware ordering and tool ordering in the prompt — encode ordering via `dependsOn` when it matters.
+- Cycles in `dependsOn` fail boot with a clear error. Soft deps don't participate in the cycle check.
+- Dependencies don't introspect what the other plugin contributes — only that it loaded. Check for specific tools at request time.
+- There's no version constraint and no late-arriving plugins. Plugin resolution is a single boot-time step.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Share state" icon="share-nodes" href="/build-an-oracle/develop/plugin-recipes/share-state">
+    Pair `softDependsOn` with `ctx.shared` to read another plugin's data.
+  </Card>
+  <Card title="Plugin catalog" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
+    See which bundled plugins use `dependsOn` / `softDependsOn`.
+  </Card>
+</CardGroup>
