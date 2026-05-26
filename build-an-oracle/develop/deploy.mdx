@@ -1,0 +1,245 @@
+---
+title: "Deploy your oracle"
+description: "Build a production bundle, persist the Matrix store, wire health probes. Platform-agnostic with a reference Dockerfile."
+icon: "rocket-launch"
+---
+
+## Reference Dockerfile
+
+QiForge has no runtime dependency on itself — anywhere Node 22+ runs, an oracle runs. This Dockerfile is the shortest path from `pnpm dev` to a container you can ship.
+
+```dockerfile
+FROM node:22-slim AS builder
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm build
+
+FROM node:22-slim
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package.json ./
+RUN mkdir -p /data
+ENV MATRIX_STORE_PATH=/data/matrix-storage
+ENV SQLITE_DATABASE_PATH=/data/sqlite
+EXPOSE 5678
+CMD ["node", "dist/main.js"]
+```
+
+Everything below explains the moving parts. The reference oracle (`apps/qiforge-example`) builds with `pnpm build` and runs with `node dist/main.js` — see [`apps/qiforge-example/src/main.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts).
+
+## Prerequisites
+
+- Node.js 22+
+- A reachable Matrix homeserver
+- A persistent volume for the Matrix store and SQLite checkpointer
+- Core env vars (per [`baseEnvSchema`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts))
+- Optional: Redis (only if `credits` or `tasks` plugins are loaded)
+
+## Build and ship
+
+<Steps>
+  <Step title="Build the production bundle">
+    ```sh
+    pnpm install --frozen-lockfile
+    pnpm build
+    ```
+
+    For the example app this runs `tsc -p tsconfig.build.json` and outputs `dist/`. Your `package.json`'s `start` script should be `node dist/main.js`.
+  </Step>
+
+  <Step title="Pin every required env var">
+    Production `.env` (or your platform's secret manager) needs every core var plus the vars for each plugin you've kept.
+
+    ```text
+    NODE_ENV=production
+    PORT=5678
+    ORACLE_NAME=My Oracle
+    CORS_ORIGIN=https://your-portal.example
+    NETWORK=mainnet
+
+    # Identity (validated by baseEnvSchema)
+    ORACLE_DID=did:ixo:ixo1...
+    ORACLE_ENTITY_DID=did:ixo:entity:...
+    SECP_MNEMONIC=...
+    RPC_URL=https://rpc.ixo.world
+    BLOCKSYNC_GRAPHQL_URL=https://blocksync.ixo.world/graphql
+
+    # Matrix
+    MATRIX_BASE_URL=https://matrix.ixo.world
+    MATRIX_ORACLE_ADMIN_USER_ID=@my-oracle-bot:ixo.world
+    MATRIX_ORACLE_ADMIN_PASSWORD=...
+    MATRIX_ORACLE_ADMIN_ACCESS_TOKEN=...
+    MATRIX_ACCOUNT_ROOM_ID=...
+    MATRIX_VALUE_PIN=...
+    MATRIX_RECOVERY_PHRASE=...
+    MATRIX_STORE_PATH=/data/matrix-storage   # MUST persist across restarts
+
+    # Storage
+    SQLITE_DATABASE_PATH=/data/sqlite
+
+    # LLM provider
+    LLM_PROVIDER=openrouter
+    OPEN_ROUTER_API_KEY=...
+    # or LLM_PROVIDER=nebius + NEBIUS_API_KEY
+
+    # Optional tracing
+    LANGSMITH_TRACING=true
+    LANGSMITH_API_KEY=...
+    LANGSMITH_PROJECT=my-oracle
+    ```
+
+    Per-plugin vars come on top — see [environment variables reference](/build-an-oracle/reference/environment-variables) for the full list. Boot validates every var declared by every loaded plugin's `configSchema`; missing required vars fail loudly.
+  </Step>
+
+  <Step title="Run the entity setup once per deployment">
+    Identity and Matrix keys are provisioned via the CLI — see [identity and auth](/build-an-oracle/develop/identity-and-auth) for the full flow.
+
+    ```sh
+    qiforge create-entity --no-interactive --network mainnet ...
+    qiforge setup-encryption-key
+    ```
+  </Step>
+</Steps>
+
+## Persistent volumes
+
+<Steps>
+  <Step title="Mount /data as a persistent volume">
+    Two things must survive restarts. Lose either and you lose state.
+
+    | Path | What it stores | What breaks if you lose it |
+    | --- | --- | --- |
+    | `MATRIX_STORE_PATH` (default `/data/matrix-storage`) | Matrix sync state, room keys, decrypted cache | Full re-sync on next boot; potential decrypt issues |
+    | `SQLITE_DATABASE_PATH` (e.g. `/data/sqlite`) | Per-user LangGraph checkpointer | Thread continuity across restarts |
+
+    In Docker Compose:
+
+    ```yaml
+    services:
+      oracle:
+        image: my-oracle:latest
+        environment:
+          - MATRIX_STORE_PATH=/data/matrix-storage
+          - SQLITE_DATABASE_PATH=/data/sqlite
+        volumes:
+          - oracle-data:/data
+    volumes:
+      oracle-data:
+    ```
+
+    On Railway / Fly.io: attach a persistent volume mounted at `/data`.
+  </Step>
+
+  <Step title="Add Redis only when needed">
+    Redis is required only if you load the `credits` plugin (or the `tasks` plugin once it ships). Without those, skip it entirely.
+
+    ```yaml
+    services:
+      redis:
+        image: redis:7
+        volumes:
+          - redis-data:/data
+      oracle:
+        environment:
+          - REDIS_URL=redis://redis:6379
+        depends_on:
+          - redis
+    volumes:
+      redis-data:
+    ```
+
+    Pass the Redis client to `CreditsPlugin` explicitly — see [enable bundled plugins](/build-an-oracle/develop/enable-bundled-plugins).
+  </Step>
+</Steps>
+
+## Health probes
+
+<Steps>
+  <Step title="Use /health as the liveness probe">
+    The framework exposes `GET /health`, always public, never goes through `AuthHeaderMiddleware`. Returns 200 once Nest is up.
+
+    Docker:
+
+    ```dockerfile
+    HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+      CMD curl -fsS http://localhost:5678/health || exit 1
+    ```
+
+    Kubernetes:
+
+    ```yaml
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 5678
+    ```
+  </Step>
+
+  <Step title="There is no separate readiness probe">
+    Matrix init runs in the background. The process accepts requests immediately after Nest boots. If you need to delay traffic until Matrix is up, subscribe via `app.onPluginStatusChange` and signal your platform when `matrix` transitions to `loaded` — see [observability](/build-an-oracle/develop/observability).
+  </Step>
+
+  <Step title="The /docs Swagger UI is also auth-excluded">
+    Useful for debugging in production behind a private network. To remove it in public deployments, host-supply your own Nest module that re-mounts `/docs` behind auth, or block it at your reverse proxy.
+  </Step>
+</Steps>
+
+## CORS
+
+`CORS_ORIGIN` controls who can call your oracle from a browser.
+
+| Value | Behaviour |
+| --- | --- |
+| `*` | Open. Credentials disabled (browsers require a specific origin to send credentials). |
+| `https://your-portal.example` | Specific origin; `credentials: true` enabled. |
+
+The framework allows these headers on every request:
+
+```text
+Content-Type, Authorization,
+x-ucan-delegation, x-matrix-access-token, x-matrix-homeserver,
+x-did, x-request-id, x-timezone
+```
+
+## Logging
+
+The runtime uses NestJS's default `Logger`. Pipe stdout/stderr to your aggregator. Override the bootstrap logger with `createOracleApp({ logger })` if you need a custom format — see [createOracleApp reference](/build-an-oracle/reference/createoracleapp).
+
+For structured tracing instead of free-form logs, set the LangSmith env vars — see [observability](/build-an-oracle/develop/observability).
+
+## Graceful shutdown
+
+The runtime registers a `SIGTERM` / `SIGINT` handler that closes the Nest app and disconnects Matrix.
+
+```ts
+// To disable (rare — only when your platform's process manager
+// owns signal handling and you've verified it calls app.close()):
+const app = await createOracleApp({
+  config,
+  skipGracefulShutdown: true,
+});
+```
+
+<Warning>
+Disable graceful shutdown only when your platform's process manager guarantees a clean `app.close()` on termination. Otherwise you'll get partial flushes and Matrix sync corruption.
+</Warning>
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Every var per plugin, exhaustively.
+  </Card>
+  <Card title="Observability" icon="chart-line" href="/build-an-oracle/develop/observability">
+    LangSmith, plugin lifecycle, logger.
+  </Card>
+  <Card title="Identity and auth" icon="shield-halved" href="/build-an-oracle/develop/identity-and-auth">
+    Entity setup and per-request UCAN auth.
+  </Card>
+  <Card title="Troubleshooting" icon="circle-question" href="/build-an-oracle/troubleshooting">
+    Boot errors, Matrix issues, common runtime errors.
+  </Card>
+</CardGroup>

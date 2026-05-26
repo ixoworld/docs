@@ -1,0 +1,129 @@
+---
+title: "Add a sub-agent"
+description: "Wrap a focused inner agent as a single tool the main agent can delegate to."
+icon: "sitemap"
+---
+
+A sub-agent is a `PluginSubAgent` the runtime auto-wraps as a tool (e.g. `weather_planner_agent`). Use one when a task needs more than one tool call in sequence or its own prompt.
+
+<Steps>
+  <Step title="Build the inner tools the sub-agent will call">
+    Sub-agents own a private tool list. Reuse plugin tools or define new ones in the same file.
+
+    ```ts
+    import { tool, z, type PluginTool } from '@ixo/oracle-runtime';
+
+    function buildRecommendOutfitTool(): PluginTool {
+      return tool(
+        async (args) => {
+          const { temp_c, conditions } = z
+            .object({ temp_c: z.number(), conditions: z.string() })
+            .parse(args);
+          const wet = ['rain', 'snow'].some((k) => conditions.toLowerCase().includes(k));
+          const layer = temp_c >= 18 ? 'a t-shirt' : 'a jacket';
+          return `Wear ${layer}${wet ? ' and bring an umbrella' : ''}.`;
+        },
+        {
+          name: 'recommend_outfit',
+          description: 'Return a one-line outfit suggestion.',
+          schema: z.object({ temp_c: z.number(), conditions: z.string() }),
+        },
+      );
+    }
+    ```
+
+    Canonical source: [weather-sub-agent.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather-sub-agent.ts).
+  </Step>
+
+  <Step title="Define the PluginSubAgent">
+    Give the sub-agent a `name` (the tool the main agent sees), a `description` that reads like a tool description, a `systemPrompt`, and its `tools`.
+
+    ```ts
+    import type { PluginSubAgent } from '@ixo/oracle-runtime';
+
+    export function buildWeatherPlannerSubAgent(): PluginSubAgent {
+      return {
+        name: 'weather_planner_agent',
+        description:
+          'Combines a forecast lookup with an outfit recommendation. Use for "should I bring a jacket to X tomorrow?".',
+        systemPrompt: [
+          'You are the Weather Planner Agent.',
+          '1. Call get_weather_forecast with the city.',
+          '2. Pick the most relevant day.',
+          '3. Call recommend_outfit with that day\'s max temp and conditions.',
+          '4. Reply with ONE sentence combining forecast and advice.',
+        ].join('\n'),
+        tools: [buildForecastTool(), buildRecommendOutfitTool()],
+        model: 'subagent',
+        forwardTools: true,
+      };
+    }
+    ```
+
+    `systemPrompt` and `tools` can both be functions of `PluginContext` for late binding. See `buildWeatherPlannerSubAgent` in [weather-sub-agent.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather-sub-agent.ts).
+  </Step>
+
+  <Step title="Return it from getSubAgents(ctx)">
+    The runtime wraps each sub-agent as a tool named `<name>` and exposes it to the main agent.
+
+    ```ts
+    import { OraclePlugin, type PluginContext, type PluginSubAgent } from '@ixo/oracle-runtime';
+
+    export class WeatherPlugin extends OraclePlugin {
+      override getSubAgents(ctx: PluginContext): PluginSubAgent[] {
+        return [buildWeatherPlannerSubAgent()];
+      }
+    }
+    ```
+
+    See `getSubAgents` in [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Set forwardTools to surface inner work">
+    By default, the main agent only sees the sub-agent's final string. Forward inner tool calls into the main chat so the UI renders them.
+
+    ```ts
+    {
+      // ...
+      forwardTools: true,                          // forward all
+      // forwardTools: ['get_weather_forecast'],   // or a specific list
+      // forwardTools: false,                      // or hide everything (default)
+    }
+    ```
+
+    Runtime-injected passthrough tools (e.g. memory CRUD) are never forwarded.
+  </Step>
+
+  <Step title="Use getRequestSubAgents when live state matters">
+    Use the request-time variant when whether or how to build the sub-agent depends on the user, session, or state.
+
+    ```ts
+    override getRequestSubAgents(rtCtx: RuntimeContext): PluginSubAgent[] {
+      const browserTools = rtCtx.history.state.browserTools;
+      if (!browserTools || browserTools.length === 0) return [];
+      return [buildPortalSubAgent(browserTools)];
+    }
+    ```
+
+    Boot-time `getSubAgents` and request-time `getRequestSubAgents` outputs merge.
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- The sub-agent's `name` must be unique across all loaded plugins — same namespace as regular tools. Prefix with the agent role (e.g. `weather_planner_agent`).
+- `model` defaults to `'subagent'`. Use `'main'` for a top-tier model, `'utility'` for a cheaper one.
+- Sub-agent middlewares (the `middlewares` field) only run inside the sub-agent's loop, not the main agent's chain.
+- `onComplete(result, ctx)` fires after the last turn — use it for follow-up events.
+- If sub-agent init throws, the runtime logs and skips that contribution for that request; the rest of the agent build continues.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a tool" icon="screwdriver-wrench" href="/build-an-oracle/develop/plugin-recipes/add-a-tool">
+    For single-call work that doesn't need a sub-agent.
+  </Card>
+  <Card title="Add a middleware" icon="filter" href="/build-an-oracle/develop/plugin-recipes/add-a-middleware">
+    Main-agent vs sub-agent middlewares.
+  </Card>
+</CardGroup>

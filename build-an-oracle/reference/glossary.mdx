@@ -1,0 +1,87 @@
+---
+title: "Glossary"
+description: "Short definitions of QiForge terms with links to the concept or reference page where each one is fully covered."
+icon: "book"
+---
+
+## Terms
+
+**Agent** — the main LLM loop. Built per request by `createMainAgent`, which composes tools, sub-agents, and middlewares from the plugin registries and invokes LangChain's `createAgent`.
+
+**`availablePlugins`** — `ReadonlySet<string>` of plugin names that survived boot resolution. Fixed at boot. Exposed on both `PluginContext` and `RuntimeContext`. Used for soft-dep branching. See [Dependencies](/build-an-oracle/develop/plugin-recipes/declare-dependencies).
+
+**`autoDetect`** — predicate `(env) => boolean` a plugin implements to opt itself in or out based on `process.env`. Runs when `features` doesn't explicitly set the toggle. See [Using bundled plugins](/build-an-oracle/develop/enable-bundled-plugins).
+
+**Bundled plugin** — a plugin shipped inside `@ixo/oracle-runtime` (one of 14). Loaded from `BUNDLED_PLUGINS` by default. See [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview).
+
+**Checkpointer** — per-user SQLite saver (`UserMatrixSqliteSyncService` + `SqliteSaver`) that persists graph state across turns. Synced to Matrix in the background. See [State schema](/build-an-oracle/reference/state-schema).
+
+**Composer** — the boot phase that merges every loaded plugin's `configSchema` with the Tier-0 base schema into a single Zod object, validates `process.env`, and warns on collisions. Lives in `packages/oracle-runtime/src/bootstrap/schema-composer.ts`.
+
+**`configSchema`** — Zod schema a plugin declares for its env vars. Merged into the runtime's schema at boot. See [Plugin config and env](/build-an-oracle/develop/plugin-recipes/add-config-and-env).
+
+**Context** — see *PluginContext* and *RuntimeContext*.
+
+**`createOracleApp`** — the single entry point of the runtime. Resolves plugins, validates env, populates registries, bootstraps NestJS, returns an `OracleApp`. See [reference](/build-an-oracle/reference/createoracleapp).
+
+**`defineOraclePlugin`** — POJO form of plugin authoring. Identity function with type-checking; produces the same internal shape as extending `OraclePlugin`. See [Plugin API](/build-an-oracle/reference/plugin-api).
+
+**`dependsOn`** — hard dependency declaration. Boot fails if a listed plugin is not loaded. Used for topological sort. See [Dependencies](/build-an-oracle/develop/plugin-recipes/declare-dependencies).
+
+**DID** — Decentralized Identifier. Two flavours in QiForge: `did:ixo:ixo1...` (a user or the oracle itself) and `did:ixo:entity:...` (an on-chain entity record). The oracle has both `ORACLE_DID` and `ORACLE_ENTITY_DID`.
+
+**Feature toggle (`features`)** — `Partial<Record<BundledFeatureName | string, boolean | 'auto'>>` map on `createOracleApp`. Overrides per-plugin opt-in. `true` forces on, `false` forces off, `'auto'` runs `autoDetect`.
+
+**Identity** — the oracle's own identity. Lives on `PluginContext.identity` and includes `name`, `org`, `description`, `entityDid`, `prompt`. Set from `OracleConfig` + `ORACLE_ENTITY_DID` env var.
+
+**`list_capabilities`** — meta-tool that lists every visible plugin's name, summary, visibility, loaded flag, category, tags. See [Meta-tools](/build-an-oracle/understand/meta-tools-and-loading).
+
+**`load_capability`** — meta-tool that marks a plugin as loaded for the current thread, returns its full manifest + tool list, and appends a `ToolMessage` so the agent sees the manifest on the same turn. See [Meta-tools](/build-an-oracle/understand/meta-tools-and-loading).
+
+**`loadedPlugins`** — graph state field tracking which `on-demand` plugins the agent has loaded for this thread. Monotonic union (a Set reducer). The only new field the plugin runtime added to the legacy state schema. See [State schema](/build-an-oracle/reference/state-schema).
+
+**Loader** — the boot phase that resolves the final plugin set from `BUNDLED_PLUGINS` + user `plugins`, applies `features` and `autoDetect`, topologically sorts by `dependsOn`. Lives in `packages/oracle-runtime/src/bootstrap/plugin-loader.ts`.
+
+**Main agent** — see *Agent*. The single LLM loop per request, with sub-agents wrapped as tools.
+
+**Manifest** — `PluginManifest`. Structured metadata the agent reads (`title`, `summary`, `whenToUse`, etc.). See [Manifest schema](/build-an-oracle/reference/manifest-schema).
+
+**Matrix** — the encrypted messaging system used as QiForge's data store (per-user encrypted rooms hold thread history and oracle secrets) and as a transport (when the `matrix` client is in use). The Matrix-backed SQLite checkpointer is not pluggable.
+
+**Meta-tool** — a built-in tool the runtime registers on every agent, not authored by any plugin. There are two: `list_capabilities` and `load_capability`. See [Meta-tools](/build-an-oracle/understand/meta-tools-and-loading).
+
+**Middleware** — LangChain `AgentMiddleware`. Hooks: `beforeModel`, `afterModel`, `onError`. Four are always-on (tool validation, retry, page context, safety guardrail); plugins add more via `getMiddlewares`. See [Plugin middlewares](/build-an-oracle/develop/plugin-recipes/add-a-middleware).
+
+**NestJS module** — a unit of Nest DI (controllers, providers, lifecycle). Plugins ship modules via `getNestModules`; the host ships them via `createOracleApp({ nestModules })`.
+
+**OracleApp** — the object returned by `createOracleApp`. Exposes `getNestApp`, `plugins.status`, `beforeListen`, `onError`, `onPluginStatusChange`, `listen`. See [createOracleApp reference](/build-an-oracle/reference/createoracleapp).
+
+**`OracleConfig`** — the inline oracle config passed to `createOracleApp({ config })`. Holds `name`, `org`, `description`, `prompt`. `entityDid` is sourced from `ORACLE_ENTITY_DID` env.
+
+**`OraclePlugin`** — the abstract class every plugin extends. See [Plugin API](/build-an-oracle/reference/plugin-api).
+
+**Plugin** — a unit of extension. Class or POJO. Contributes any combination of tools, sub-agents, middlewares, Nest modules, shared state, config, and auth exclusions.
+
+**`PluginContext`** — boot-time context passed to plugin builder hooks. Holds `config`, `identity`, `availablePlugins`, `logger`. No user. See [reference](/build-an-oracle/reference/plugin-context).
+
+**`PluginManifest`** — see *Manifest*.
+
+**Registry** — internal collection that holds plugin contributions of one kind. Six registries: tools, sub-agents, middlewares, manifests, configSchema, sharedState. Populated at boot.
+
+**`RuntimeContext`** — per-request context. Holds `user`, `session`, `history`, `secrets`, `matrix`, `ucan`, `llm`, `emit`, `logger`, `abortSignal`, `shared`. See [reference](/build-an-oracle/reference/runtime-context).
+
+**Shared state** — read-only values one plugin exposes for others via `getSharedState`, accessed by consumers through `rtCtx.shared.<key>`. See [concept](/build-an-oracle/develop/plugin-recipes/share-state).
+
+**`softDependsOn`** — soft dependency declaration. Plugin loads regardless; check `availablePlugins.has(...)` at runtime. See [Dependencies](/build-an-oracle/develop/plugin-recipes/declare-dependencies).
+
+**Sub-agent** — a focused inner agent with its own prompt and tool list. The runtime wraps each one as a tool (`call_memory_agent`, `call_weather_planner_agent`, …). See [Plugin sub-agents](/build-an-oracle/develop/plugin-recipes/add-a-sub-agent).
+
+**Tier-0** — the runtime's base env schema. Always required. Owned by `@ixo/oracle-runtime`. See [Environment variables](/build-an-oracle/reference/environment-variables).
+
+**Tier-1** — the prompt block listing `always` plugins (`- {name}: {summary}`). Composed at request build from the manifest registry. See [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility).
+
+**Topological sort** — the boot ordering pass over `dependsOn`. Plugins are loaded in dependency order; middlewares fire in this order; tools are emitted in this order (for deterministic prompts).
+
+**UCAN** — User-Controlled Authorisation Network. The delegation envelope on every authenticated request (`x-ucan-delegation` header). The oracle mints downstream invocations signed by its `SECP_MNEMONIC`. See [Identity and auth](/build-an-oracle/develop/identity-and-auth).
+
+**Visibility** — one of `always`, `on-demand`, `silent`. Controls whether a plugin's tools are bound at boot, loaded on demand, or invisible to the agent. See [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility).

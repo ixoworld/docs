@@ -1,0 +1,105 @@
+---
+title: "Add a middleware"
+description: "Hook into every LLM call via beforeModel, afterModel, and onError using createMiddleware."
+icon: "filter"
+---
+
+A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` and it runs on every model turn.
+
+<Steps>
+  <Step title="Build the middleware with createMiddleware">
+    Import `createMiddleware` from `langchain`. Set a `name` (appears in error messages) and any of the three hooks.
+
+    ```ts
+    import { type AgentMiddleware, type PluginContext } from '@ixo/oracle-runtime';
+    import { createMiddleware } from 'langchain';
+
+    export function buildWeatherMiddleware(ctx: PluginContext): AgentMiddleware {
+      let startedAt = 0;
+      return createMiddleware({
+        name: 'WeatherLoggingMiddleware',
+        beforeModel: async () => {
+          startedAt = Date.now();
+          ctx.logger.log('model call started');
+        },
+        afterModel: async () => {
+          const elapsed = startedAt > 0 ? Date.now() - startedAt : -1;
+          ctx.logger.log(`model call complete (${elapsed}ms)`);
+        },
+      });
+    }
+    ```
+
+    Canonical source: [weather-middleware.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather-middleware.ts).
+  </Step>
+
+  <Step title="Pick the right hook">
+    Each hook receives the LangGraph state. Use the one whose timing matches your work.
+
+    ```ts
+    createMiddleware({
+      name: 'MyMiddleware',
+      beforeModel: async (state) => {
+        // Loading context, mutating state, blocking unsafe inputs
+      },
+      afterModel: async (state) => {
+        // Logging, observation, emitting events
+      },
+      onError: async (error, state) => {
+        // Recovery, metrics, fallback content
+      },
+    });
+    ```
+
+    For state mutations, return a partial state object from the hook — same protocol as LangChain's `AgentMiddleware`.
+  </Step>
+
+  <Step title="Return it from getMiddlewares(ctx)">
+    The runtime appends your middlewares after the four always-on framework middlewares.
+
+    ```ts
+    import { OraclePlugin, type AgentMiddleware, type PluginContext } from '@ixo/oracle-runtime';
+
+    export class WeatherPlugin extends OraclePlugin {
+      override getMiddlewares(ctx: PluginContext): AgentMiddleware[] {
+        return [buildWeatherMiddleware(ctx)];
+      }
+    }
+    ```
+
+    See `getMiddlewares` in [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Attach a middleware to a sub-agent (optional)">
+    A sub-agent can carry its own middlewares — they only run inside that sub-agent's loop.
+
+    ```ts
+    import { createSummarizationMiddleware } from '@ixo/oracle-runtime';
+
+    const subAgent: PluginSubAgent = {
+      name: 'long_research_agent',
+      // ...
+      middlewares: [createSummarizationMiddleware()],
+    };
+    ```
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- The four always-on middlewares (`tool-validation`, `tool-retry`, `page-context`, `safety-guardrail`) always run first. They are not removable.
+- Plugin middlewares run in topological dependency order — encode ordering via `dependsOn` if it matters.
+- Middlewares fire per LLM turn, not per individual tool invocation. Wrap the tool handler directly for per-tool behaviour.
+- Closure-scoped timers interleave across concurrent model calls. For accurate timing, push start times onto a per-call ID.
+- Don't reimplement auth in a middleware — auth runs at the HTTP layer (`AuthHeaderMiddleware`), not in the agent loop.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a sub-agent" icon="sitemap" href="/build-an-oracle/develop/plugin-recipes/add-a-sub-agent">
+    Sub-agent-scoped middlewares.
+  </Card>
+  <Card title="State schema" icon="table" href="/build-an-oracle/reference/state-schema">
+    What's in `state` when your hooks fire.
+  </Card>
+</CardGroup>

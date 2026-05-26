@@ -1,0 +1,303 @@
+---
+title: "Create your oracle app"
+description: "createOracleApp is the entry point of every QiForge oracle. This recipe writes a complete main.ts and enumerates every option you can pass."
+icon: "rocket"
+---
+
+A QiForge oracle is one `main.ts` that calls `createOracleApp`. The runtime boots a NestJS app, loads bundled + your plugins, validates env, builds the agent graph, and starts HTTP when you call `listen()`.
+
+Reference implementation: [`apps/qiforge-example/src/main.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts). Source: [`packages/oracle-runtime/src/bootstrap/create-oracle-app.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/create-oracle-app.ts).
+
+## Minimal main.ts
+
+```ts
+import 'dotenv/config';
+import { createOracleApp } from '@ixo/oracle-runtime';
+
+const app = await createOracleApp({
+  config: { name: 'My Oracle', org: 'Acme' },
+});
+await app.listen();
+```
+
+That's a working oracle — every bundled plugin runs its `autoDetect(env)` and the ones whose env is present load.
+
+## The recipe
+
+<Steps>
+  <Step title="Write your config" icon="id-card">
+    Put `OracleConfig` in its own file so tests can import it without booting the runtime.
+
+    ```ts
+    // src/config.ts
+    import type { OracleConfig } from '@ixo/oracle-runtime';
+
+    export const config: OracleConfig = {
+      name: 'My Oracle',                      // required
+      org: 'My Org',                          // optional
+      description: 'What this oracle is for', // optional — appears in the system prompt
+      prompt: {                               // optional — every field optional
+        opening: 'You are My Oracle. …',
+        communicationStyle: '- Be terse …',
+        capabilities: 'I can …',
+      },
+    };
+    ```
+
+    `entityDid` is sourced from the `ORACLE_ENTITY_DID` env var — never put it in `config`. The `prompt` block is composed into the system prompt; absent fields fall back to runtime defaults. Source: [`plugin-api/types.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/types.ts) (search `OracleConfig`).
+  </Step>
+
+  <Step title="Add your plugins" icon="puzzle-piece">
+    Bundled plugins flow in automatically from `BUNDLED_PLUGINS` — each runs its own `autoDetect(env)`. Only list the ones you wrote yourself or bundled plugins that need constructor args:
+
+    ```ts
+    import { createOracleApp, EditorPlugin } from '@ixo/oracle-runtime';
+    import { WeatherPlugin } from './plugins/weather/weather.plugin.js';
+
+    const app = await createOracleApp({
+      config,
+      plugins: [
+        new EditorPlugin({ matrixClient }),   // bundled, needs Matrix client
+        new WeatherPlugin(),                  // yours
+      ],
+    });
+    ```
+
+    The loader dedupes by `name`, so an explicit instance overrides the bundled default of the same name. Source: [`bootstrap/plugin-loader.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/plugin-loader.ts).
+  </Step>
+
+  <Step title="Toggle bundled plugins with features" icon="toggle-on">
+    Override `autoDetect`:
+
+    ```ts
+    const app = await createOracleApp({
+      config,
+      features: {
+        composio: false,        // force off
+        firecrawl: true,        // force on, even if env is missing (will fail env validation if so)
+        domainIndexer: 'auto',  // default — runs autoDetect(env)
+      },
+    });
+    ```
+
+    | Value | Meaning |
+    | --- | --- |
+    | `true` | Force on. Skip `autoDetect`. |
+    | `false` | Force off. Skip even if `autoDetect` would say yes. |
+    | `'auto'` | Default. Run `autoDetect(env)`. |
+
+    Omitted keys are treated as `'auto'`. Recipe: [Enable bundled plugins](/build-an-oracle/develop/enable-bundled-plugins).
+  </Step>
+
+  <Step title="Mount your own Nest modules" icon="cube">
+    Custom HTTP endpoints, event consumers, admin dashboards — anything that doesn't fit the plugin model goes in `nestModules`. Each gets full DI access to runtime services (Sessions, Messages, Secrets, UCAN, Auth, …).
+
+    ```ts
+    import { Controller, Get, Module } from '@nestjs/common';
+
+    @Controller('version')
+    class VersionController {
+      @Get()
+      get() { return { name: 'My Oracle', version: '1.0.0' }; }
+    }
+
+    @Module({ controllers: [VersionController] })
+    class VersionModule {}
+
+    const app = await createOracleApp({
+      config,
+      nestModules: [VersionModule],
+    });
+    ```
+  </Step>
+
+  <Step title="Exclude routes from auth" icon="lock-open">
+    Every route defaults to going through `AuthHeaderMiddleware` (requires `x-ucan-delegation`). Opt routes out via `authExcludedRoutes`:
+
+    ```ts
+    import { RequestMethod } from '@nestjs/common';
+    import type { AuthExcludedRoute } from '@ixo/oracle-runtime';
+
+    const routes: AuthExcludedRoute[] = [
+      { path: 'version', method: RequestMethod.GET },
+    ];
+
+    const app = await createOracleApp({
+      config,
+      nestModules: [VersionModule],
+      authExcludedRoutes: routes,
+    });
+    ```
+
+    Symmetric with each plugin's `getAuthExcludedRoutes()`. Both merge onto the runtime's built-ins (`/health`, `/docs`). Recipe for the plugin side: [Add HTTP endpoints](/build-an-oracle/develop/plugin-recipes/add-http-endpoints).
+  </Step>
+
+  <Step title="Customise the agent graph (optional)" icon="diagram-project">
+    `hooks` overrides the agent-build defaults. Every field is optional:
+
+    ```ts
+    import type { MainAgentHooks } from '@ixo/oracle-runtime';
+
+    const hooks: MainAgentHooks = {
+      checkpointerForUser:    async (did) => myCheckpointer.for(did),
+      resolveModel:           (role, params) => myModelFactory.get(role, params),
+      getRoomTitle:           async (roomId) => myRoomTitles.get(roomId),
+      safetyModel:            mySafetyModel,
+      validationSkipToolNames: ['some_streaming_tool'],
+      operationalMode:        'You operate in production mode …',
+      editorSection:          '## Editor\n\n…',
+      composioContext:        '## Composio\n\n…',
+      userSecretsContext:     '## User secrets\n\n…',
+      degradedServicesBlock:  '## Degraded services\n\n…',
+    };
+
+    const app = await createOracleApp({ config, hooks });
+    ```
+
+    | Hook | Default | What it overrides |
+    | --- | --- | --- |
+    | `checkpointerForUser(did)` | per-user SQLite synced to Matrix | Swap in your own `BaseCheckpointSaver` |
+    | `resolveModel(role, params)` | `ambient.llm.get(role)` | LLM resolver |
+    | `getRoomTitle(roomId)` | undefined | Page-context middleware lookup |
+    | `safetyModel` | safety-guardrail default | Cheap classifier for the safety middleware |
+    | `validationSkipToolNames` | `[]` | Tool names whose `ToolMessage` is stripped between turns |
+    | `operationalMode` | runtime default | Operating-mode prompt block |
+    | `editorSection` | populated by editor plugin | Editor prompt block |
+    | `composioContext` | populated by composio plugin | Composio guidance block |
+    | `userSecretsContext` | empty | Per-key secret bullet list |
+    | `degradedServicesBlock` | empty | Degraded-services notice appended to system prompt |
+
+    Source: [`graph/main-agent-types.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/graph/main-agent-types.ts) (search `MainAgentHooks`).
+  </Step>
+
+  <Step title="Run a beforeListen hook" icon="play">
+    Run setup that must complete before HTTP starts accepting:
+
+    ```ts
+    const app = await createOracleApp({ config });
+
+    app.beforeListen(async (nestApp) => {
+      await myWarmupCache(nestApp);
+    });
+
+    await app.listen();
+    ```
+
+    Hooks run sequentially in registration order.
+  </Step>
+
+  <Step title="Observe plugin lifecycle" icon="signal">
+    ```ts
+    app.onPluginStatusChange((event) => {
+      // { plugin, from: 'pending'|'loaded'|'failed', to: ..., reason? }
+      logger.log(`[plugin] ${event.plugin} ${event.from} → ${event.to}`);
+    });
+
+    app.onError((err, source) => {
+      logger.error(`[runtime] ${source}: ${err.message}`);
+    });
+
+    const status = app.plugins.status();
+    logger.log(`[boot] loaded: ${status.loaded.join(', ')}`);
+    ```
+
+    `onPluginStatusChange` fires when Matrix transitions `pending → loaded` (or `failed`). `onError` catches Matrix init + lifecycle errors. `plugins.status()` returns the same shape `qiforge inspect` prints.
+  </Step>
+
+  <Step title="Listen" icon="rocket">
+    ```ts
+    await app.listen();        // honours config.PORT, env.PORT, then 5678
+    await app.listen(3000);    // explicit port
+    ```
+
+    Calling `listen()` twice throws. Default port is **5678** — set `PORT` env or pass a number to override.
+  </Step>
+</Steps>
+
+## All options at a glance
+
+```ts
+interface CreateOracleAppOptions {
+  config: OracleConfig;                                            // required
+  features?: Partial<Record<BundledFeatureName | string, FeatureToggle>>;
+  plugins?: OraclePlugin[];
+  nestModules?: Array<Type | DynamicModule>;
+  authExcludedRoutes?: AuthExcludedRoute[];
+  logger?: PluginLogger;
+  hooks?: MainAgentHooks;
+
+  // Test-only — do not use in production
+  bundledPlugins?: OraclePlugin[];
+  env?: NodeJS.ProcessEnv;
+  skipMatrixInit?: boolean;
+  skipGracefulShutdown?: boolean;
+}
+```
+
+<Warning>
+  `bundledPlugins`, `env`, `skipMatrixInit`, and `skipGracefulShutdown` exist for the test harness. Don't use them in production code — integration tests must boot the same way prod does.
+</Warning>
+
+## Full example
+
+```ts
+import 'dotenv/config';
+import { createOracleApp, EditorPlugin } from '@ixo/oracle-runtime';
+import { Controller, Get, Logger, Module, RequestMethod } from '@nestjs/common';
+import * as sdk from 'matrix-js-sdk';
+import { config } from './config.js';
+import { WeatherPlugin } from './plugins/weather/weather.plugin.js';
+
+@Controller('version')
+class VersionController {
+  @Get() get() { return { name: 'My Oracle' }; }
+}
+
+@Module({ controllers: [VersionController] })
+class VersionModule {}
+
+async function bootstrap(): Promise<void> {
+  const matrixClient = sdk.createClient({
+    baseUrl: process.env.MATRIX_BASE_URL!,
+    userId: process.env.MATRIX_ORACLE_ADMIN_USER_ID!,
+    accessToken: process.env.MATRIX_ORACLE_ADMIN_ACCESS_TOKEN!,
+  });
+
+  const app = await createOracleApp({
+    config,
+    logger: Logger,
+    plugins: [new EditorPlugin({ matrixClient }), new WeatherPlugin()],
+    nestModules: [VersionModule],
+    authExcludedRoutes: [{ path: 'version', method: RequestMethod.GET }],
+  });
+
+  app.onPluginStatusChange((event) => {
+    Logger.log(`[plugin] ${event.plugin} ${event.from} → ${event.to}`);
+  });
+
+  Logger.log(`[boot] loaded: ${app.plugins.status().loaded.join(', ')}`);
+  await app.listen();
+}
+
+bootstrap().catch((err) => {
+  Logger.error('Oracle failed to start:', err);
+  process.exit(1);
+});
+```
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/develop/write-a-plugin">
+    End-to-end Weather plugin walkthrough.
+  </Card>
+  <Card title="Enable bundled plugins" icon="boxes-stacked" href="/build-an-oracle/develop/enable-bundled-plugins">
+    The `features` map in detail.
+  </Card>
+  <Card title="createOracleApp reference" icon="square-list" href="/build-an-oracle/reference/createoracleapp">
+    Flat reference table for every field.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Core + per-plugin env vars.
+  </Card>
+</CardGroup>

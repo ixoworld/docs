@@ -1,0 +1,92 @@
+---
+title: "PluginContext"
+description: "The boot-time context passed to plugin builder hooks. Carries config, identity, availablePlugins, and a scoped logger. No user, no session, no request data."
+icon: "layer-group"
+---
+
+## Overview
+
+`PluginContext` is what plugin code sees during request build. It's the input to `getTools`, `getSubAgents`, `getMiddlewares`, `getRequestTools`'s sibling `getTools`, and `getNestModules`.
+
+```ts
+export interface PluginContext<TConfig = MergedConfig> {
+  config: TConfig;
+  identity: OracleIdentity;
+  availablePlugins: ReadonlySet<string>;
+  logger: Logger;
+}
+```
+
+No authenticated user, no session, no live socket, no request data. If your code needs those, use `RuntimeContext` instead — available in request-time hooks (`getRequestTools`, `getRequestSubAgents`) and in every tool handler / sub-agent handler / middleware hook.
+
+## Fields
+
+<AccordionGroup>
+  <Accordion title="config" icon="key">
+    - **Type:** `TConfig` (defaults to `MergedConfig = Record<string, unknown>`)
+
+    Merged Zod-validated env vars: the base Tier-0 schema combined with every loaded plugin's `configSchema`. Already validated by the time you receive it — `parse` it through your plugin's own schema for typed access.
+
+    ```ts
+    const units = configSchema.parse(ctx.config).WEATHER_DEFAULT_UNITS;
+    ```
+  </Accordion>
+
+  <Accordion title="identity" icon="id-card">
+    - **Type:** `OracleIdentity`
+
+    ```ts
+    interface OracleIdentity {
+      name: string;
+      org: string;
+      description: string;
+      entityDid: string;
+      prompt?: OraclePromptConfig;
+    }
+    ```
+
+    The oracle's own identity. `name`, `org`, `description`, and `prompt` come from the `config` argument to `createOracleApp`. `entityDid` is sourced from the `ORACLE_ENTITY_DID` env var. Read-only.
+  </Accordion>
+
+  <Accordion title="availablePlugins" icon="boxes-stacked">
+    - **Type:** `ReadonlySet<string>`
+
+    The names of every plugin that survived boot resolution. Use it for soft-dep branching:
+
+    ```ts
+    if (ctx.availablePlugins.has('memory')) {
+      tools.push(rememberSomethingTool);
+    }
+    ```
+
+    Fixed at boot, identical across all `PluginContext` and `RuntimeContext` instances during the lifetime of the app.
+  </Accordion>
+
+  <Accordion title="logger" icon="scroll">
+    - **Type:** `Logger`
+
+    Plugin-scoped logger, auto-prefixed with the plugin's name in output. The `Logger` interface:
+
+    ```ts
+    interface Logger {
+      log(message: unknown, ...optional: unknown[]): void;
+      error(message: unknown, ...optional: unknown[]): void;
+      warn(message: unknown, ...optional: unknown[]): void;
+      debug?(message: unknown, ...optional: unknown[]): void;
+      verbose?(message: unknown, ...optional: unknown[]): void;
+      child?(bindings: Record<string, unknown>): Logger;
+    }
+    ```
+
+    `debug`, `verbose`, and `child` are optional. The runtime ships NestJS's `Logger` as the default; you can override via `createOracleApp({ logger })`.
+  </Accordion>
+</AccordionGroup>
+
+## Lifetime
+
+A new `PluginContext` is built per request build. The runtime caches boot-time hook outputs (`getTools`, `getSubAgents`, `getMiddlewares`) — they fire once at boot for warming and once per request build for retrieval. Per-request-only data lives in `RuntimeContext`.
+
+## Related references
+
+- [RuntimeContext](/build-an-oracle/reference/runtime-context)
+- [Plugin API](/build-an-oracle/reference/plugin-api)

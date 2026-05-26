@@ -157,3 +157,7 @@ At the end of each task, provide:
 Before broader rewrites, complete the items in `.codex/UPGRADE_BACKLOG.md` under:
 - Phase 0 — Governance foundation
 - Phase 1 — Canonical naming rollout
+
+## Related surfaces
+
+- `/build-an-oracle/for-ai-agents` — Dense single-page reference for AI tools (Cursor, Claude Code) scaffolding a QiForge oracle. Mirrors the AGENTS.md / `llms.txt` pattern but for end-user agents *consuming* the docs, not maintainers editing them.

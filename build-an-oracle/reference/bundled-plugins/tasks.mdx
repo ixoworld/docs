@@ -1,0 +1,36 @@
+---
+title: "tasks"
+description: "Background jobs plugin — stub. Full implementation deferred."
+icon: "hourglass"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) (stub manifest)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `silent` |
+| Stability | `experimental` |
+| Default state | Stub (auto-detects on `REDIS_URL`) |
+
+## Status: deferred
+
+`tasks` is a **stub** entry in `BUNDLED_PLUGINS` so feature toggles and the `REDIS_URL` auto-detect hint work, but no functionality is wired. The original port revealed contract violations that need rework before a full implementation lands.
+
+See the framework's [follow-ups](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/docs/spec-and-roadmap/follow-ups.md) and the task spec at `specs/tasks/` for the rebuild plan.
+
+## Environment variables (when implemented)
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `REDIS_URL` | yes | Will trigger auto-detect when the real plugin lands. |
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Bundled plugins" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
+    The full bundled set.
+  </Card>
+  <Card title="Plugin anatomy" icon="diagram-subtask" href="/build-an-oracle/understand/plugin-anatomy">
+    What a real plugin looks like.
+  </Card>
+</CardGroup>

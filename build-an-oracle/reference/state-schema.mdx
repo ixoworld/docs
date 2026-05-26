@@ -1,0 +1,163 @@
+---
+title: "Graph state schema"
+description: "MainAgentGraphState is the LangGraph state that flows through every node. Fields, reducers, the loadedPlugins addition, and what plugins may read."
+icon: "table"
+---
+
+## Overview
+
+`MainAgentGraphState` is a LangGraph annotation-based state. Every node in the graph reads it and may return a partial update; the runtime merges updates via per-field reducers and checkpoints the result to per-user SQLite (backed by Matrix).
+
+```ts
+import { Annotation, MessagesAnnotation } from '@langchain/langgraph';
+
+export const MainAgentGraphState = Annotation.Root({
+  messages: MessagesAnnotation.spec.messages,
+  config: Annotation<{ wsId?: string; did: string }>({ /* ... */ }),
+  client: Annotation<'portal' | 'matrix' | 'slack'>({ /* ... */ }),
+  editorRoomId: Annotation<string | undefined>({ /* ... */ }),
+  spaceId: Annotation<string | undefined>({ /* ... */ }),
+  currentEntityDid: Annotation<string | undefined>({ /* ... */ }),
+  browserTools: Annotation<BrowserToolCallDto[] | undefined>({ /* ... */ }),
+  agActions: Annotation<AgActionDto[] | undefined>({ /* ... */ }),
+  userContext: Annotation<UserContextData>({ /* ... */ }),
+  mcpUcanContext: Annotation<{ invocations: Record<string, string> } | undefined>({ /* ... */ }),
+  userPreferences: Annotation<UserPreferences | undefined>({ /* ... */ }),
+  loadedPlugins: Annotation<string[]>({
+    reducer: (current, update) =>
+      Array.from(new Set([...(current ?? []), ...(update ?? [])])),
+    default: () => [],
+  }),
+});
+```
+
+Plugins read state via `rtCtx.history.state` (typed as `ReadonlyState`) or via specific helpers like `rtCtx.history.messages` / `rtCtx.history.userContext`.
+
+## Fields
+
+<AccordionGroup>
+  <Accordion title="messages" icon="comments">
+    - **Type:** LangChain `BaseMessage[]`
+    - **Reducer:** `MessagesAnnotation` default (append, dedupe by id).
+    - **Owner:** runtime + agent loop.
+
+    The thread's full message history. Plugins read it via `rtCtx.history.messages` (readonly) or `rtCtx.history.recent(n)`.
+  </Accordion>
+
+  <Accordion title="config" icon="cog">
+    - **Type:** `{ wsId?: string; did: string }`
+    - **Owner:** runtime.
+
+    Per-request runtime config — primarily the user's DID and the WebSocket connection ID.
+  </Accordion>
+
+  <Accordion title="client" icon="display">
+    - **Type:** `'portal' | 'matrix' | 'slack'`
+    - **Owner:** runtime.
+
+    Which client surface this turn arrived through. Same value plugins read via `rtCtx.session.client`.
+  </Accordion>
+
+  <Accordion title="editorRoomId" icon="pen-to-square">
+    - **Type:** `string | undefined`
+    - **Owner:** Editor plugin.
+
+    The active BlockNote room for editor sub-agent work.
+  </Accordion>
+
+  <Accordion title="spaceId" icon="layer-group">
+    - **Type:** `string | undefined`
+    - **Owner:** runtime / plugins.
+
+    The active workspace/space ID, when relevant.
+  </Accordion>
+
+  <Accordion title="currentEntityDid" icon="id-badge">
+    - **Type:** `string | undefined`
+    - **Owner:** Domain Indexer plugin.
+
+    The IXO entity DID currently in focus, when set by a domain lookup.
+  </Accordion>
+
+  <Accordion title="browserTools" icon="browser">
+    - **Type:** `BrowserToolCallDto[] | undefined`
+    - **Owner:** Portal client.
+
+    Browser tools declared by the Portal frontend for this turn. The Portal plugin's sub-agent only builds when this array is non-empty.
+  </Accordion>
+
+  <Accordion title="agActions" icon="table-cells">
+    - **Type:** `AgActionDto[] | undefined`
+    - **Owner:** Portal client (AG-UI).
+
+    AG-UI actions declared by the frontend. The AG-UI plugin's sub-agent only builds when this is non-empty.
+  </Accordion>
+
+  <Accordion title="userContext" icon="user">
+    - **Type:** `UserContextData` (`Record<string, unknown>`)
+    - **Owner:** Memory plugin (writes via enrichment middleware).
+
+    Memory-enriched user profile. Other plugins read via `rtCtx.shared.userProfile` (registered by Memory's `getSharedState`).
+  </Accordion>
+
+  <Accordion title="mcpUcanContext" icon="shield">
+    - **Type:** `{ invocations: Record<string, string> } | undefined`
+    - **Owner:** runtime / UCAN service.
+
+    Pre-minted MCP UCAN invocations indexed by service name.
+  </Accordion>
+
+  <Accordion title="userPreferences" icon="sliders">
+    - **Type:** `UserPreferences | undefined`
+    - **Owner:** user-preferences plugin.
+
+    Behavioural preferences (tone, format, length) injected into the prompt.
+  </Accordion>
+
+  <Accordion title="loadedPlugins" icon="boxes-stacked">
+    - **Type:** `string[]`
+    - **Reducer:** union via Set (deduplicating).
+    - **Default:** `[]`.
+    - **Owner:** runtime — written by the `load_capability` meta-tool.
+
+    The names of `on-demand` plugins the agent has loaded for this thread. Monotonically growing across turns. Cleared on new thread.
+
+    This is the **single new field** the plugin runtime added to the state — every other field above pre-dates the plugin rewrite.
+  </Accordion>
+</AccordionGroup>
+
+## ReadonlyState
+
+Plugins access the state via `rtCtx.history.state`, which is typed as `ReadonlyState`:
+
+```ts
+export interface ReadonlyState {
+  readonly messages: readonly BaseMessage[];
+  readonly userContext?: UserContextData;
+  readonly loadedPlugins?: ReadonlySet<string>;
+  readonly [key: string]: unknown;
+}
+```
+
+The full annotation state is open-ended (`[key: string]: unknown`), so plugins can read field names they know exist but the type doesn't enforce it. For fully-typed reads, declare the field on `SharedAccessors` via shared state, or check existence at runtime.
+
+## Reducers
+
+Each field has a reducer that merges partial updates from agent nodes:
+
+- **`messages`** — append + dedupe by ID (LangGraph default for the messages channel).
+- **`loadedPlugins`** — union via Set; never removes.
+- Most other fields use last-write-wins or "merge if present" semantics; consult the source for the exact reducer when authoring middlewares that mutate state.
+
+Plugin middlewares that need to update state should return a partial state object from the hook. The runtime applies it through the reducer pipeline.
+
+## Checkpointing
+
+State is checkpointed per thread to per-user SQLite via `UserMatrixSqliteSyncService` + `SqliteSaver`. The DB lives under `SQLITE_DATABASE_PATH`, synced to Matrix in the background.
+
+The runtime exposes `hooks.checkpointerForUser(userDid)` so hosts can override the default per-user checkpointer with an alternate implementation — pass via `createOracleApp({ hooks })`.
+
+## Related references
+
+- [RuntimeContext](/build-an-oracle/reference/runtime-context) — `rtCtx.history` field.
+- [Meta-tools concept](/build-an-oracle/understand/meta-tools-and-loading) — how `loadedPlugins` is populated.

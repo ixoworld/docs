@@ -1,0 +1,68 @@
+---
+title: "domain-indexer"
+description: "Domain analysis and entity lookup across the IXO ecosystem — organisations, projects, DAOs, DIDs."
+icon: "database"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/domain-indexer/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/domain-indexer/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `always` |
+| Stability | `stable` |
+| Category | `data` |
+| Default state | On |
+| Depends on | — |
+
+## Summary
+
+Domain analysis and entity lookup across the IXO ecosystem — organisations, projects, DAOs, DIDs. Exposes a sub-agent (`call_domain_indexer_agent`) that searches the IXO Domain Indexer and resolves entity domain cards by DID. Base URL defaults to per-network endpoints (`https://domain-indexer{.testnet|.devnet}.ixo.earth`) resolved from `NETWORK`; override with `DOMAIN_INDEXER_URL`.
+
+## Environment variables
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `DOMAIN_INDEXER_URL` | no | Optional URL override. Without it the plugin resolves per-network from `NETWORK` (`mainnet | testnet | devnet`). |
+| `NETWORK` | no | Read but not owned (declared by the core base env schema). |
+
+## What it contributes
+
+- **Tools (inside the sub-agent):** `domain_indexer_search`, `get_domain_card`.
+- **Sub-agents:** `call_domain_indexer_agent`.
+- **Middlewares:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { 'domain-indexer': false }, // never load
+  // features: { 'domain-indexer': true }, // force load (default)
+});
+```
+
+## When to use it
+
+- User asks "what is X?" or "tell me about X" for an organisation, project, DAO, or DID.
+- User needs the summary, overview, or FAQ of an IXO entity.
+- Looking up a domain card by its DID.
+- Discovering entities by topic, category, or keyword.
+
+## When NOT to use it
+
+- General web search unrelated to IXO entities — use [`firecrawl`](/build-an-oracle/reference/bundled-plugins/firecrawl).
+- Personal memory or past-conversation recall — use [`memory`](/build-an-oracle/reference/bundled-plugins/memory).
+- Page editing or workspace pages — use [`editor`](/build-an-oracle/reference/bundled-plugins/editor). Pages are not entities.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a sub-agent" icon="diagram-project" href="/build-an-oracle/develop/plugin-recipes/add-a-sub-agent">
+    Sub-agent contribution pattern.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    All env vars including `NETWORK`.
+  </Card>
+</CardGroup>

@@ -1,0 +1,218 @@
+---
+title: "Manifest schema"
+description: "Field-by-field reference for PluginManifest — every field, type, constraint, and validation rule the runtime enforces at boot."
+icon: "scroll"
+---
+
+## Overview
+
+`PluginManifest` is the structured metadata every plugin must declare. The runtime composes it into the Tier-1 prompt block, feeds it to the meta-tools, and validates it at boot.
+
+```ts
+import type { PluginManifest, ManifestExample } from '@ixo/oracle-runtime';
+```
+
+## Type
+
+```ts
+export interface PluginManifest {
+  title: string;
+  summary: string;
+  whenToUse: string[];
+  whenNotToUse?: string[];
+  examples?: ManifestExample[];
+  tags?: string[];
+  category?:
+    | 'data' | 'communication' | 'automation' | 'memory'
+    | 'integration' | 'ui' | 'auth' | 'observability' | 'core';
+  visibility?: 'always' | 'on-demand' | 'silent';
+  stability?: 'stable' | 'beta' | 'experimental';
+}
+
+export interface ManifestExample {
+  user: string;
+  thought?: string;
+  tool: string;
+  args?: Record<string, unknown>;
+}
+```
+
+## Fields
+
+<AccordionGroup>
+  <Accordion title="title" icon="tag">
+    - **Type:** `string`
+    - **Required:** yes
+
+    Human-readable name. Used to prefix every tool description (`[Climate Data] Fetch emissions…`) and appears in `qiforge inspect`. Distinct from `name` — `name` is kebab-case unique identifier, `title` is prose.
+  </Accordion>
+
+  <Accordion title="summary" icon="quote-right">
+    - **Type:** `string`
+    - **Required:** yes
+
+    One-line description. Rendered in the Tier-1 prompt block for `always` plugins as `- {name}: {summary}`. Keep it short — every Tier-1 plugin costs ~80 tokens on every turn.
+
+    **Validation:**
+    - Hard: must be non-empty.
+    - Soft warn: > 120 chars.
+  </Accordion>
+
+  <Accordion title="whenToUse" icon="bullseye">
+    - **Type:** `string[]`
+    - **Required:** when `visibility !== 'silent'`
+
+    Trigger phrases — each entry teaches the agent a situation in which this plugin is the right call.
+
+    **Validation:**
+    - Hard: at least 1 entry when `visibility !== 'silent'`.
+    - Soft warn: > 8 entries, or any entry > 100 chars.
+  </Accordion>
+
+  <Accordion title="whenNotToUse" icon="circle-xmark">
+    - **Type:** `string[]`
+    - **Required:** no
+
+    Anti-patterns. Use to disambiguate from other plugins.
+  </Accordion>
+
+  <Accordion title="examples" icon="lightbulb">
+    - **Type:** `ManifestExample[]`
+    - **Required:** no
+
+    Few-shot examples. Each example binds a user message to a tool call.
+
+    **Validation:**
+    - Hard: every `example.tool` must reference a tool actually registered by this plugin.
+
+    ```ts
+    examples: [
+      {
+        user: "What's the weather in Berlin?",
+        thought: 'Direct lookup — call get_current_weather.',
+        tool: 'get_current_weather',
+        args: { city: 'Berlin' },
+      },
+    ]
+    ```
+  </Accordion>
+
+  <Accordion title="tags" icon="hashtag">
+    - **Type:** `string[]`
+    - **Required:** no
+
+    Labels for search and filter. Surfaced in `list_capabilities` output.
+
+    **Validation:**
+    - Soft warn: any tag containing uppercase.
+  </Accordion>
+
+  <Accordion title="category" icon="folder-tree">
+    - **Type:** `'data' | 'communication' | 'automation' | 'memory' | 'integration' | 'ui' | 'auth' | 'observability' | 'core'`
+    - **Required:** no
+
+    Grouping label. Surfaced in `list_capabilities` output.
+  </Accordion>
+
+  <Accordion title="visibility" icon="eye">
+    - **Type:** `'always' | 'on-demand' | 'silent'`
+    - **Required:** no
+    - **Default:** `'on-demand'`
+
+    Discovery and loading mode.
+
+    - `always` — tools bound at boot; listed in Tier-1 prompt.
+    - `on-demand` — tools NOT bound; manifest discoverable via `list_capabilities`; agent calls `load_capability` to make tools available.
+    - `silent` — invisible to agent; runs as middleware-only.
+
+    See [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility).
+  </Accordion>
+
+  <Accordion title="stability" icon="flask">
+    - **Type:** `'stable' | 'beta' | 'experimental'`
+    - **Required:** no
+
+    Stability hint surfaced to the agent. `experimental` plugins get a warning footnote in `list_capabilities` output.
+  </Accordion>
+</AccordionGroup>
+
+## ManifestExample
+
+```ts
+interface ManifestExample {
+  user: string;                       // representative user message
+  thought?: string;                   // optional reasoning
+  tool: string;                       // tool the agent should call (must exist)
+  args?: Record<string, unknown>;     // tool args
+}
+```
+
+`thought` is optional but useful — agents pick up the reasoning pattern alongside the example.
+
+## Validation behaviour
+
+At boot the runtime calls `validateManifest(manifest, pluginName)` from `@ixo/oracle-runtime/manifest`. The result:
+
+```ts
+interface ManifestValidationResult {
+  valid: boolean;
+  errors: string[];        // hard violations — boot fails
+  warnings: string[];      // soft violations — logged, boot continues
+}
+```
+
+Hard violations abort boot with the full error list printed.
+
+Soft violations log warnings. The plugin still loads.
+
+Manifest validation runs before env validation, so manifest errors surface even when env vars are missing.
+
+## Cross-checking examples against tools
+
+Every `example.tool` is checked against the plugin's registered tool names. If a manifest references `tool: 'foo'` but the plugin doesn't register a tool named `foo`, boot fails:
+
+```text
+[boot-error] Plugin 'weather' manifest example references unknown tool 'foo'.
+```
+
+This catches typos and stale manifests during refactors.
+
+## Worked example
+
+```ts
+const manifest: PluginManifest = {
+  title: 'Weather',
+  summary: 'Weather lookups via Open-Meteo (no API key required).',
+  whenToUse: [
+    'Whenever asked about current weather, temperature, precipitation, or wind in any city.',
+    'Any question related to forecasts (today, tomorrow, next week) for any location.',
+    'When the user asks "what should I wear", "do I need an umbrella", or similar outfit guidance.',
+  ],
+  whenNotToUse: [
+    'Questions about historical or long-term climate data.',
+    'Locations smaller than city-level precision.',
+  ],
+  examples: [
+    {
+      user: "What's the weather in Berlin?",
+      tool: 'get_current_weather',
+      args: { city: 'Berlin' },
+    },
+    {
+      user: 'Forecast for Tokyo this week.',
+      tool: 'get_weather_forecast',
+      args: { city: 'Tokyo', days: 7 },
+    },
+  ],
+  tags: ['weather', 'forecast', 'outfit'],
+  category: 'data',
+  visibility: 'on-demand',
+  stability: 'experimental',
+};
+```
+
+## Related references
+
+- [Manifest concept](/build-an-oracle/understand/manifest)
+- [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility)
+- [Plugin API](/build-an-oracle/reference/plugin-api)

@@ -232,3 +232,28 @@
 - Additional developer guides not in nav: `/guides/dev/**` hidden subset
 - Thin but high-value hidden user page: `/guides/users/ai-companion`
 - Hidden platform pages: `/platforms/Emerging/emerging-dmrv`, `/platforms/Emerging/energy-systems`, `/platforms/Emerging/household-reporting`, `/platforms/Emerging/itmo-credentials`, `/platforms/Emerging/sample-size`, `/platforms/Emerging/distributor-onboarding`
+
+## Build an Oracle (QiForge) — audience-split IA
+
+Audience-split tab introduced in the QiForge docs redesign. Three tracks plus a single-page AI-agent surface, all under `/build-an-oracle/`. Page-type classification per `CONTENT_MODEL_AND_IA.md`.
+
+| Route | Page type | Notes |
+|---|---|---|
+| `/build-an-oracle` | Overview | 3-card landing: Build / Understand / AI agent |
+| `/build-an-oracle/quickstart` | Task guide | 10-minute path |
+| `/build-an-oracle/for-ai-agents` | Reference (dense) | Single-page for AI tools; mirrors AGENTS.md / llms.txt |
+| `/build-an-oracle/build/overview` | Overview | Build-track index |
+| `/build-an-oracle/build/create-oracle-app` | Task guide | Enumerates every `CreateOracleAppOptions` field |
+| `/build-an-oracle/build/enable-bundled-plugins` | Task guide | `features` map |
+| `/build-an-oracle/build/write-a-plugin` | Task guide | Centerpiece — Weather plugin walkthrough |
+| `/build-an-oracle/build/plugin-recipes/<8 recipes>` | Task guide (short how-to) | Atomic recipes — tool, sub-agent, middleware, HTTP, config, share-state, dependencies, visibility |
+| `/build-an-oracle/build/test-your-oracle` | Task guide | vitest + integration patterns |
+| `/build-an-oracle/build/identity-and-auth` | Task guide | UCAN + headers |
+| `/build-an-oracle/build/observability` | Task guide | LangSmith env + events |
+| `/build-an-oracle/build/deploy` | Task guide | Dockerfile, env, volumes, health |
+| `/build-an-oracle/understand/<10 concepts>` | Concept | Mental model, runtime layers, plugins-vs-skills, manifest, visibility, shared-state, contexts, meta-tools, request-lifecycle, architecture |
+| `/build-an-oracle/reference/<10 flat references>` | Reference | `createoracleapp`, `plugin-api`, contexts, manifest-schema, state-schema, env, api-endpoints, cli, client-sdk, glossary |
+| `/build-an-oracle/reference/bundled-plugins/<overview + 14>` | Reference | One page per bundled plugin |
+| `/build-an-oracle/troubleshooting` | Reference (FAQ) | Boot + runtime error catalog |
+
+**Total:** 56 MDX files. Sidebar order in `docs.json` follows the developer journey (Start here → Build → Understand → Reference → Help). All slug migrations from prior IAs (`how-it-works/`, `plugins/`, `building/`, `concepts/`, `guides/`) have redirect entries in `docs.json` and ledger rows in `REDIRECTS_AND_DEPRECATIONS.md`.

@@ -1,0 +1,95 @@
+---
+title: "API endpoints"
+description: "The HTTP and WebSocket surface a QiForge oracle exposes — sessions, messages, streaming chat, health, and the typed events emitted on every turn."
+icon: "server"
+---
+
+## Overview
+
+A running QiForge oracle exposes a REST + WebSocket surface. Most routes require a UCAN delegation header; some (`/health`, `/docs`, plus anything declared in `getAuthExcludedRoutes()` or `authExcludedRoutes`) are public.
+
+The Swagger UI at `/docs` is generated from the running app's controllers — open it in a browser for the live, deployment-specific reference.
+
+## Authentication
+
+Every protected route requires these headers:
+
+| Header | Required | Notes |
+| --- | --- | --- |
+| `x-ucan-delegation` | Yes | UCAN envelope authorising the request. |
+| `x-did` | Yes | The user's IXO DID. |
+| `x-matrix-access-token` | Optional | Matrix session token (used by Portal/Slack). |
+| `x-matrix-homeserver` | Optional | Matrix homeserver URL. |
+| `x-timezone` | Optional | Propagates to `rtCtx.user.timezone`. |
+| `x-request-id` | Optional | Correlation ID; echoed back as `X-Request-Id`. |
+
+Public routes ignore auth headers and don't validate them.
+
+## CORS
+
+`CORS_ORIGIN` controls allowed origins (wildcard `*` is the default; specific origins enable credentials).
+
+Allowed request headers:
+
+```text
+Content-Type, Authorization,
+x-ucan-delegation, x-matrix-access-token, x-matrix-homeserver,
+x-did, x-request-id, x-timezone
+```
+
+Allowed methods: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`.
+
+Exposed response headers: `X-Request-Id`.
+
+## Public routes
+
+| Route | Method | Auth | Purpose |
+| --- | --- | --- | --- |
+| `/health` | GET | Public | Liveness probe. |
+| `/docs` | GET | Public | Swagger UI. |
+| `/docs/(.*)` | GET | Public | Swagger static assets. |
+
+Plus any route returned by a plugin's `getAuthExcludedRoutes()` or by `createOracleApp({ authExcludedRoutes })`.
+
+## Protected routes (overview)
+
+The runtime ships these modules:
+
+- **`SessionsModule`** — manage chat sessions (`/sessions`).
+- **`MessagesModule`** — send and stream messages (`/messages`).
+- **`WsModule`** — WebSocket gateway for event streaming.
+- **`SubscriptionModule`** — credit/subscription gating middleware (active when `credits` plugin is loaded).
+
+Plugins can contribute additional routes via `getNestModules()`. Bundled examples:
+
+- **`SlackModule`** — Slack webhook endpoints (when `slack` plugin is loaded).
+- **`UserPreferencesController`** — `/user-preferences` CRUD (when `user-preferences` plugin is loaded).
+- **`ClaimProcessingModule`** — claim cron endpoints (when `credits` plugin is fully configured).
+
+For the authoritative route list and request/response schemas of your deployment, hit `GET /docs`. The shape is generated from your app's controllers — including plugin and host routes — so it's always in sync.
+
+## WebSocket events
+
+Plugins emit typed events via `rtCtx.emit`. The framework forwards them over the active WebSocket connection to the client.
+
+| Event | When it fires |
+| --- | --- |
+| `toolCall` | A tool is being invoked (or has returned). |
+| `actionCall` | An action (e.g. AG-UI action) is being invoked. |
+| `renderComponent` | A render component result is ready for the client. |
+| `reasoning` | The agent emits intermediate reasoning. |
+| `browserToolCall` | A browser-side tool is being invoked on the user's Portal. |
+| `router` | Routing decision between agents/sub-agents. |
+| `messageCacheInvalidation` | A message cache entry should be invalidated. |
+
+Payload types are currently `Record<string, unknown>` and may be tightened in future runtime versions. The `@ixo/oracles-client-sdk` React SDK parses these and renders them.
+
+## Client SDK
+
+For frontend integration, use `@ixo/oracles-client-sdk` — it handles the SSE / WebSocket protocol, UCAN delegation, and event parsing. See [Client SDK](/build-an-oracle/reference/client-sdk).
+
+## Related references
+
+- [Identity and auth](/build-an-oracle/develop/identity-and-auth) — the UCAN flow.
+- [Plugin HTTP endpoints](/build-an-oracle/develop/plugin-recipes/add-http-endpoints) — adding your own routes.
+- [Client SDK](/build-an-oracle/reference/client-sdk) — React integration.

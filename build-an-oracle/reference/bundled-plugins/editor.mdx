@@ -1,0 +1,94 @@
+---
+title: "editor"
+description: "Reads and edits BlockNote pages — collaborative documents in the user's workspace."
+icon: "pen-to-square"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/editor/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/editor/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `on-demand` |
+| Stability | `stable` |
+| Category | `data` |
+| Default state | On (needs an explicit Matrix client for production behaviour) |
+| Depends on | — |
+
+## Summary
+
+Reads and edits BlockNote pages — collaborative documents in the user's workspace via Matrix CRDT. Behaviour depends on per-request state:
+
+- `state.editorRoomId` set → editor sub-agent (`call_editor_agent`) bound to that room; plus `apply_sandbox_output_to_block` when [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox) is also loaded.
+- `state.spaceId` set without `editorRoomId` → standalone `call_editor_agent` tool that accepts a `room_id` argument per call.
+- Neither set → no contributions.
+
+## Environment variables
+
+The plugin owns no env vars. It reads the following from the core base env schema:
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `MATRIX_BASE_URL` | yes (base schema) | Matrix homeserver base URL. |
+| `MATRIX_ORACLE_ADMIN_USER_ID` | yes (base schema) | Admin Matrix user ID. |
+| `MATRIX_ORACLE_ADMIN_ACCESS_TOKEN` | yes (base schema) | Admin Matrix access token. |
+| `SANDBOX_MCP_URL` | no | Read when `apply_sandbox_output_to_block` is constructed. |
+| `SKILLS_CAPSULES_BASE_URL` | no | Read when `apply_sandbox_output_to_block` is constructed. |
+| `ORACLE_SECRETS` | no | Read when `apply_sandbox_output_to_block` is constructed. |
+
+## What it contributes
+
+- **Tools:** `apply_sandbox_output_to_block` (when an editor room + sandbox plugin are both available); standalone `call_editor_agent` (when only a `spaceId` is in scope).
+- **Sub-agents:** `call_editor_agent` — built only when `state.editorRoomId` is set.
+- **Middlewares:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+## Production constructor
+
+The bundled singleton works for inspect / test; production behaviour needs an explicit Matrix client:
+
+```ts
+import { createOracleApp, EditorPlugin } from '@ixo/oracle-runtime';
+import * as sdk from 'matrix-js-sdk';
+
+const matrixClient = sdk.createClient({ /* … */ });
+
+const app = await createOracleApp({
+  config,
+  plugins: [new EditorPlugin({ matrixClient })],
+});
+```
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { editor: false }, // never load
+  // features: { editor: true }, // force load (default)
+});
+```
+
+## When to use it
+
+- User asks to read, summarise, or edit a page in their workspace.
+- User wants to update specific blocks (status, properties, content) on a page.
+- User wants to create a new page or update an existing one.
+- A skill produced output (URLs, credentials, status values) that should land on specific blocks.
+
+## When NOT to use it
+
+- IXO entity lookups — use [`domain-indexer`](/build-an-oracle/reference/bundled-plugins/domain-indexer). Pages are documents, not entities.
+- Web search or scraping — use [`firecrawl`](/build-an-oracle/reference/bundled-plugins/firecrawl).
+- Long-term user memory — use [`memory`](/build-an-oracle/reference/bundled-plugins/memory).
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add a sub-agent" icon="diagram-project" href="/build-an-oracle/develop/plugin-recipes/add-a-sub-agent">
+    How `call_editor_agent` is built per-request.
+  </Card>
+  <Card title="Shared state" icon="share-nodes" href="/build-an-oracle/understand/shared-state">
+    `editorRoomId` and `spaceId` are state fields the client sets.
+  </Card>
+</CardGroup>

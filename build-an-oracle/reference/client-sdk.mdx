@@ -1,0 +1,114 @@
+---
+title: "@ixo/oracles-client-sdk"
+description: "The React client SDK for QiForge oracles. useChat() hook, browser tools, and event rendering."
+icon: "react"
+---
+
+## Overview
+
+`@ixo/oracles-client-sdk` is the official React client for a QiForge oracle. It wraps:
+
+- The streaming chat endpoint over SSE.
+- The WebSocket event channel (tool calls, render components, browser tools, reasoning, AG-UI actions).
+- UCAN delegation handling (refreshing Matrix access tokens, signing).
+- Browser-side tool registration (so the agent can call DOM/UI actions on the user's tab).
+
+If you're building a Portal-like web UI for your oracle, use this. If you're building a non-React client (CLI, mobile app), implement the HTTP/WS protocol directly — the API reference is [API endpoints](/build-an-oracle/reference/api-endpoints).
+
+## Install
+
+```sh
+pnpm add @ixo/oracles-client-sdk
+```
+
+## useChat
+
+The primary hook. Provides the message thread, the send function, and the SSE/WS event stream.
+
+```tsx
+import { useChat } from '@ixo/oracles-client-sdk';
+
+function Chat({ oracleUrl, sessionId, ucanDelegation, userDid }) {
+  const { messages, sendMessage, isStreaming, events } = useChat({
+    oracleUrl,
+    sessionId,
+    headers: {
+      'x-ucan-delegation': ucanDelegation,
+      'x-did': userDid,
+    },
+  });
+
+  return (
+    <div>
+      {messages.map((m) => <Message key={m.id} message={m} />)}
+      <Input onSubmit={sendMessage} disabled={isStreaming} />
+    </div>
+  );
+}
+```
+
+The returned values:
+
+- **`messages`** — current thread history, including pending streamed tokens.
+- **`sendMessage(text)`** — submit a user message. Triggers a streaming response.
+- **`isStreaming`** — `true` while the agent is generating.
+- **`events`** — typed event stream (tool calls, render components, browser tool calls, reasoning, …).
+
+## Browser tools
+
+Browser tools let the agent call DOM/UI actions on the user's tab. Register them once on mount:
+
+```tsx
+import { registerBrowserTools } from '@ixo/oracles-client-sdk';
+
+useEffect(() => {
+  registerBrowserTools([
+    {
+      name: 'open_portal_route',
+      description: 'Navigate to a route inside the Portal.',
+      schema: z.object({ route: z.string() }),
+      handler: async ({ route }) => {
+        router.push(route);
+        return { ok: true };
+      },
+    },
+  ]);
+}, []);
+```
+
+The SDK forwards browser tool calls from the agent to your registered handlers and returns the results back through the WebSocket. The Portal plugin's sub-agent only constructs when `state.browserTools` is non-empty (declared via registration).
+
+## Events you can render
+
+| Event | What you render |
+| --- | --- |
+| `toolCall` | "Agent called `<tool>`" with args/result. |
+| `actionCall` | An AG-UI action invocation. |
+| `renderComponent` | A structured UI component the agent wants displayed (table, chart, form). |
+| `reasoning` | Intermediate reasoning text the agent emitted. |
+| `browserToolCall` | A tool call to a browser-side tool you registered. |
+| `router` | Routing decision between agents/sub-agents. |
+| `messageCacheInvalidation` | Hint to drop a cached message. |
+
+The SDK exposes typed event objects; you decide how to render them.
+
+## Auth lifecycle
+
+The SDK handles:
+
+- Refreshing the Matrix access token before it expires.
+- Signing UCAN delegations from the user's session key.
+- Re-establishing the WebSocket on reconnect.
+
+Provide a `getDelegation()` function that returns a fresh UCAN delegation when called — the SDK calls it on connect and on reconnect.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="API endpoints" icon="server" href="/build-an-oracle/reference/api-endpoints">
+    The HTTP / WebSocket protocol the SDK speaks.
+  </Card>
+  <Card title="Identity and auth" icon="shield-halved" href="/build-an-oracle/develop/identity-and-auth">
+    UCAN delegation and the per-request auth headers.
+  </Card>
+</CardGroup>

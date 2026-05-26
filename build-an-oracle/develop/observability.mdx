@@ -1,0 +1,176 @@
+---
+title: "Observability"
+description: "LangSmith tracing auto-wires from env vars. Listen to plugin lifecycle via onPluginStatusChange. Log through ctx.logger for plugin-scoped output."
+icon: "chart-line"
+---
+
+## Turn on LangSmith in one block
+
+LangChain auto-wires tracing when these env vars are present in `process.env` — the runtime never reads them, only declares them in the [base env schema](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts) so they show up in `qiforge env` output.
+
+```text
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=ls-...
+LANGSMITH_PROJECT=my-oracle
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com   # optional, defaults to LangSmith cloud
+```
+
+| Env var | Required | Purpose |
+| --- | --- | --- |
+| `LANGSMITH_TRACING` | yes | Set to `true` to enable tracing. Anything else (or unset) disables it. |
+| `LANGSMITH_API_KEY` | yes | API key from your LangSmith workspace. |
+| `LANGSMITH_PROJECT` | yes | Project name traces land under. |
+| `LANGSMITH_ENDPOINT` | no | Override for self-hosted LangSmith. Defaults to LangSmith cloud. |
+
+No code changes needed. Set the vars and every LLM call, tool invocation, and middleware hook produces a span in the LangSmith UI. Unset them to turn it off.
+
+## What QiForge gives you out of the box
+
+Three signals — that's the whole surface. Bring your own log aggregator and metrics.
+
+1. **LangSmith traces** — env-driven, covered above.
+2. **Plugin status events** — `app.onPluginStatusChange(handler)`.
+3. **Plugin-scoped logger** — `ctx.logger` (boot) and `rtCtx.logger` (per-request).
+
+## Subscribe to plugin status events
+
+<Steps>
+  <Step title="Register a handler after createOracleApp returns">
+    ```ts
+    app.onPluginStatusChange((event) => {
+      Logger.log(
+        `[plugin] ${event.plugin} ${event.from} → ${event.to}` +
+          (event.reason ? ` (${event.reason})` : ''),
+      );
+    });
+    ```
+
+    Live example: [apps/qiforge-example/src/main.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts).
+  </Step>
+
+  <Step title="Listen for the matrix plugin transitions specifically">
+    The plugin that reliably emits transitions is `matrix` — it starts `pending` at boot and flips to either `loaded` or `failed` once Matrix init completes in the background.
+
+    ```ts
+    app.onPluginStatusChange((event) => {
+      if (event.plugin === 'matrix' && event.to === 'loaded') {
+        // safe to send messages, mint UCANs, etc.
+      }
+    });
+    ```
+
+    Use this to gate operations on Matrix being up, or to alert when it fails.
+  </Step>
+</Steps>
+
+The event shape:
+
+```ts
+{
+  plugin: string;
+  from: 'pending' | 'loaded' | 'failed';
+  to:   'pending' | 'loaded' | 'failed';
+  reason?: string;
+}
+```
+
+## Capture background errors with onError
+
+```ts
+app.onError((err, source) => {
+  Logger.error(`[runtime] ${source}: ${err.message}`);
+});
+```
+
+`source` is a short label like `'matrix-init'`. Use this for background failures (Matrix sync errors, key setup failures). Boot-time errors (env validation, manifest validation, dependency cycles) throw from `createOracleApp` itself — your `try/catch` around the call sees them.
+
+## Log the boot resolution snapshot
+
+`app.plugins.status()` returns the loader's resolution snapshot — log it once at boot so operators see what came up.
+
+```ts
+const status = app.plugins.status();
+Logger.log(`[boot] loaded plugins: ${status.loaded.join(', ') || '(none)'}`);
+if (status.excluded.length > 0) {
+  Logger.log(
+    '[boot] excluded plugins:',
+    status.excluded.map((e) => `${e.plugin} (${e.reason})`).join(', '),
+  );
+}
+```
+
+Shape of the snapshot — defined in [`packages/oracle-runtime/src/bootstrap/plugin-loader.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/plugin-loader.ts):
+
+```ts
+{
+  loaded: string[];                                  // plugin names that came up
+  excluded: Array<{
+    plugin: string;
+    reason: string;                                  // e.g. "auto-detect precondition not met (COMPOSIO_API_KEY)"
+    cause: 'feature_false' | 'auto_detect_missing' | 'cascaded';
+  }>;
+  softDepGaps: Array<{ plugin: string; missing: string }>;
+}
+```
+
+## Use the plugin-scoped logger
+
+Every `PluginContext` and `RuntimeContext` carries a `logger` field auto-prefixed with the plugin's name — see [`Logger` in types.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/types.ts).
+
+```ts
+override getTools(ctx: PluginContext): PluginTool[] {
+  ctx.logger.log('Building weather tools');
+  // ...
+}
+
+handler: async (args, rtCtx: RuntimeContext) => {
+  rtCtx.logger.log(`Looking up ${args.city}`);
+  // ...
+}
+```
+
+The `Logger` interface:
+
+| Method | Required | Purpose |
+| --- | --- | --- |
+| `log(message, ...optional)` | yes | Info-level output. |
+| `error(message, ...optional)` | yes | Error-level output. |
+| `warn(message, ...optional)` | yes | Warn-level output. |
+| `debug(message, ...optional)` | no | Debug-level — implementation-defined. |
+| `verbose(message, ...optional)` | no | Verbose-level — implementation-defined. |
+| `child(bindings)` | no | Returns a logger with additional context fields. Falls back to the same logger if not implemented. |
+
+Use NestJS's default `Logger` format in development (`pnpm dev` shows it nicely); pipe to your aggregator in production. Override the global logger with `createOracleApp({ logger })` if you want a custom format — see [createOracleApp reference](/build-an-oracle/reference/createoracleapp).
+
+## UI-facing tool-call events
+
+For showing the user what the agent did, the runtime emits typed events via `rtCtx.emit`. The bundled clients (Portal, Slack, Matrix) consume these and render the right UI — you only emit them yourself when writing a custom client.
+
+```ts
+rtCtx.emit.toolCall({ /* ... */ });
+rtCtx.emit.actionCall({ /* ... */ });
+rtCtx.emit.renderComponent({ /* ... */ });
+rtCtx.emit.reasoning({ /* ... */ });
+rtCtx.emit.browserToolCall({ /* ... */ });
+rtCtx.emit.router({ /* ... */ });
+rtCtx.emit.messageCacheInvalidation({ /* ... */ });
+```
+
+The seven event types are defined on `RuntimeContext.emit` in [`types.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/types.ts).
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Deployment" icon="rocket-launch" href="/build-an-oracle/develop/deploy">
+    Logs and probes in production.
+  </Card>
+  <Card title="Add a middleware" icon="filter" href="/build-an-oracle/develop/plugin-recipes/add-a-middleware">
+    Custom observability via plugin middleware hooks.
+  </Card>
+  <Card title="Runtime context" icon="diagram-next" href="/build-an-oracle/reference/runtime-context">
+    Full `rtCtx.emit` and `rtCtx.logger` surface.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Every env var the runtime declares.
+  </Card>
+</CardGroup>

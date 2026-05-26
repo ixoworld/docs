@@ -1,0 +1,208 @@
+---
+title: "Identity and auth"
+description: "An oracle has a persistent blockchain identity (entity DID + Matrix bot) and per-user auth via UCAN delegation. This guide covers both."
+icon: "shield-halved"
+---
+
+## What identity looks like in code
+
+Two layers — the oracle's persistent identity, set once at boot via env vars; and per-user identity, validated on every request via UCAN headers.
+
+```ts
+import { createOracleApp, type OracleConfig } from '@ixo/oracle-runtime';
+
+const config: OracleConfig = {
+  name: 'My Oracle',
+  org: 'My Org',
+  description: 'What this oracle does.',
+};
+
+const app = await createOracleApp({ config });
+// Runtime fills in `entityDid` from process.env.ORACLE_ENTITY_DID
+// and builds the internal OracleIdentity used by every plugin.
+```
+
+The `OracleConfig` type lives in [`packages/oracle-runtime/src/plugin-api/types.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/types.ts) — plugins read the resolved identity off `ctx.identity` (a [`OracleIdentity`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/types.ts)).
+
+| Layer | What it is | Where it comes from |
+| --- | --- | --- |
+| **Oracle identity** | DID + Matrix bot user + on-chain entity | `OracleConfig` (inline) + `ORACLE_DID` / `ORACLE_ENTITY_DID` / `MATRIX_ORACLE_ADMIN_*` env vars |
+| **User identity** | Per-request DID + UCAN capabilities | Headers on every incoming request (`x-ucan-delegation`, `x-did`, ...) |
+
+## One-time oracle setup
+
+<Steps>
+  <Step title="Run the CLI to create the oracle's on-chain entity and Matrix account">
+    ```sh
+    qiforge create-entity --no-interactive \
+      --network devnet \
+      --oracle-name "My Oracle" \
+      --org-name "My Org" \
+      --api-url http://localhost:5678 \
+      --model "anthropic/claude-sonnet-4"
+    ```
+
+    This creates a blockchain entity (`did:ixo:entity:...`), registers linked resources, provisions a Matrix bot account, and writes both `oracle.config.json` and `.env`. Run once per deployment — subsequent deploys reuse the identity.
+
+    See the [CLI reference](/build-an-oracle/reference/cli) for every flag.
+  </Step>
+
+  <Step title="Provision the encryption key for per-room secrets">
+    ```sh
+    qiforge setup-encryption-key
+    ```
+
+    Sets up the P-256 keyAgreement on the oracle's Matrix account room. Without this, the secrets read path returns nothing (acceptable degraded mode for routes that don't need it).
+  </Step>
+
+  <Step title="Verify .env has every identity var">
+    After CLI setup, `.env` contains the core identity vars validated by [`baseEnvSchema`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts):
+
+    ```text
+    ORACLE_DID=did:ixo:ixo1...
+    ORACLE_ENTITY_DID=did:ixo:entity:...
+    ORACLE_NAME=My Oracle
+    NETWORK=devnet
+
+    MATRIX_BASE_URL=https://matrix.ixo.world
+    MATRIX_ORACLE_ADMIN_USER_ID=@oracle-bot:ixo.world
+    MATRIX_ORACLE_ADMIN_PASSWORD=...
+    MATRIX_ORACLE_ADMIN_ACCESS_TOKEN=...
+    MATRIX_ACCOUNT_ROOM_ID=...
+    MATRIX_VALUE_PIN=...
+    MATRIX_RECOVERY_PHRASE=...
+
+    SECP_MNEMONIC=...   # signs UCAN invocations to downstream services
+    ```
+
+    The runtime validates all of these at boot via [`baseEnvSchema`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts); missing vars fail with a clear message.
+  </Step>
+</Steps>
+
+## What the runtime loads on boot
+
+After Matrix init completes in the background, the runtime reads two further pieces of secret material from the oracle's Matrix account room:
+
+1. **UCAN signing mnemonic** — used by `UcanService` to mint downstream-service invocations.
+2. **P-256 encryption key** — used by `SecretsService` to decrypt per-room secrets.
+
+If a key is missing, boot logs a warning naming the CLI command to fix it. Auth-requiring routes return 401 until provisioned; non-authenticated routes (`/health`, `/docs`, any host or plugin `authExcludedRoutes`) stay reachable.
+
+## Per-request user auth
+
+Every chat request carries headers [`AuthHeaderMiddleware`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/modules/auth/auth-header.middleware.ts) verifies on protected routes.
+
+| Header | Required | Purpose |
+| --- | --- | --- |
+| `x-ucan-delegation` | yes | UCAN envelope authorising this user. Missing → 401 `Missing x-ucan-delegation header`. |
+| `x-did` | no | The user's IXO DID (set by SDK; runtime also derives it from the UCAN). |
+| `x-matrix-access-token` | no | For clients that already have a Matrix session. |
+| `x-matrix-homeserver` | no | Matrix homeserver for the user. |
+| `x-timezone` | no | Propagates to `rtCtx.user.timezone`. |
+| `x-request-id` | no | Correlation ID for logs and traces. |
+
+`AuthHeaderMiddleware`:
+
+<Steps>
+  <Step title="Validates the UCAN delegation">
+    Calls [`createUCANValidator`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/modules/auth/auth-header.middleware.ts) with the oracle's DID as audience. Verifies signature, expiry, and capabilities. Caches the result for 3 minutes (or until the delegation expires, whichever is sooner).
+  </Step>
+
+  <Step title="Resolves the user's DID">
+    The delegation's invoker becomes `req.authData.did`. Plugin tool handlers read it as `rtCtx.user.did`.
+  </Step>
+
+  <Step title="Attaches RuntimeUserContext to the request">
+    The next middleware (`RuntimeContextBuilder`) reads `req.authData` to build the `rtCtx.user` field handed to every tool handler — see the [Runtime context reference](/build-an-oracle/reference/runtime-context).
+  </Step>
+</Steps>
+
+## Opt routes out of auth
+
+Two mechanisms to expose public routes — host-level and plugin-level. Both merge onto the runtime's built-in exclusion list (`/health`, `/docs`, ...).
+
+<Steps>
+  <Step title="From the host — pass authExcludedRoutes to createOracleApp">
+    ```ts
+    import { RequestMethod } from '@nestjs/common';
+    import { createOracleApp, type AuthExcludedRoute } from '@ixo/oracle-runtime';
+
+    const HOST_AUTH_EXCLUDED_ROUTES: AuthExcludedRoute[] = [
+      { path: 'version', method: RequestMethod.GET },
+    ];
+
+    const app = await createOracleApp({
+      config,
+      nestModules: [VersionModule],
+      authExcludedRoutes: HOST_AUTH_EXCLUDED_ROUTES,
+    });
+    ```
+
+    Reference: [apps/qiforge-example/src/main.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts).
+  </Step>
+
+  <Step title="From a plugin — implement getAuthExcludedRoutes">
+    ```ts
+    override getAuthExcludedRoutes(): AuthExcludedRoute[] {
+      return [{ path: 'weather/now', method: RequestMethod.GET }];
+    }
+    ```
+
+    Reference: [`weather.plugin.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+</Steps>
+
+Any other plugin or host route returns 401 without a UCAN header — exclusion is path-and-method specific.
+
+## Mint downstream UCAN invocations
+
+When a plugin calls a downstream service on the user's behalf, it does not reuse the user's UCAN — it mints a fresh invocation signed by the oracle's `SECP_MNEMONIC`, delegating from the user's delegation.
+
+```ts
+handler: async (args, rtCtx: RuntimeContext) => {
+  const invocation = await rtCtx.ucan.mintInvocation({
+    did: 'did:web:downstream-service',
+    capability: 'fetch/read',
+  });
+  const resp = await fetch('https://downstream-service.example/data', {
+    headers: { 'x-ucan-delegation': invocation },
+  });
+  // ...
+}
+```
+
+The full UCAN helper surface on `rtCtx.ucan`:
+
+| Method | Purpose |
+| --- | --- |
+| `mintInvocation(target, opts?)` | Mint a service-targeted invocation. `opts.skipCache` forces a fresh signature. |
+| `requireCapability(resource, action)` | Throws if the user's delegation doesn't include the capability. |
+| `hasCapability(resource, action)` | Returns a boolean — non-throwing variant. |
+| `resolveServiceDid(serviceUrl)` | Resolves a service URL to its `did:web:...` identifier. Returns `null` when the DID document is missing or has no `id`. |
+
+See [`packages/oracle-runtime/src/modules/ucan/`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime/src/modules/ucan) for the service implementation.
+
+## What plugins can and cannot do
+
+- **Can:** read `rtCtx.user.did`, `rtCtx.user.matrixUserId`, `rtCtx.user.ucanDelegation`, `rtCtx.user.timezone`.
+- **Can:** call `rtCtx.secrets.getIndex()` / `getValues()` to read per-room secrets.
+- **Can:** mint downstream invocations via `rtCtx.ucan.mintInvocation`.
+- **Cannot:** override the oracle's identity per request.
+- **Cannot:** issue UCANs as anyone other than the oracle itself.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="API endpoints" icon="server" href="/build-an-oracle/reference/api-endpoints">
+    Which routes are auth-protected and which are public.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/build-an-oracle/reference/cli">
+    `create-entity`, `setup-encryption-key`, and the rest of identity setup.
+  </Card>
+  <Card title="Runtime context" icon="diagram-next" href="/build-an-oracle/reference/runtime-context">
+    The full `rtCtx.user`, `rtCtx.ucan`, `rtCtx.secrets` surface.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Every identity-related env var, declared and validated.
+  </Card>
+</CardGroup>

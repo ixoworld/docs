@@ -1,0 +1,193 @@
+---
+title: "RuntimeContext"
+description: "The per-request context. Every tool handler, sub-agent handler, middleware hook, and request-time builder receives one. Carries user, session, history, secrets, Matrix, UCAN, LLM, events."
+icon: "user-gear"
+---
+
+## Overview
+
+`RuntimeContext` is the runtime-side bag a plugin's code sees on every request. Built fresh per LangGraph invocation by `buildRuntimeContext(runConfig, ambient, state)`.
+
+```ts
+import type { RuntimeContext } from '@ixo/oracle-runtime';
+```
+
+## Full shape
+
+```ts
+export interface RuntimeContext<TConfig = MergedConfig> {
+  user: {
+    did: string;
+    matrixUserId: string;
+    ucanDelegation: UcanDelegation;
+    timezone?: string;
+    currentTime?: string;
+  };
+  session: {
+    id: string;
+    client: 'portal' | 'matrix' | 'slack';
+    wsId?: string;
+    requestId: string;
+    roomId?: string;
+  };
+  history: {
+    messages: readonly BaseMessage[];
+    recent: (n: number) => BaseMessage[];
+    userContext: UserContextData;
+    state: ReadonlyState;
+  };
+  config: TConfig;
+  availablePlugins: ReadonlySet<string>;
+  loadedPlugins: ReadonlySet<string>;
+  secrets: {
+    getIndex: () => Promise<SecretIndex>;
+    getValues: (keys: string[]) => Promise<Record<string, string>>;
+  };
+  matrix: {
+    postToRoom: (roomId: string, content: unknown) => Promise<string>;
+    getRoomState: (roomId: string) => Promise<RoomStateSnapshot>;
+    getEventById: (roomId: string, eventId: string) => Promise<MatrixEvent>;
+  };
+  ucan: {
+    requireCapability: (resource: string, action: string) => void;
+    hasCapability: (resource: string, action: string) => boolean;
+    mintInvocation: (target: { did: string; capability: string }, opts?: { skipCache?: boolean }) => Promise<string>;
+    resolveServiceDid: (serviceUrl: string) => Promise<string | null>;
+  };
+  llm: {
+    get: (role: ModelRole, params?: ChatOpenAIFields) => BaseChatModel;
+  };
+  emit: {
+    toolCall: (payload: ToolCallEventPayload) => void;
+    actionCall: (payload: ActionCallEventPayload) => void;
+    renderComponent: (payload: RenderComponentEventPayload) => void;
+    reasoning: (payload: ReasoningEventPayload) => void;
+    browserToolCall: (payload: BrowserToolCallEventPayload) => void;
+    router: (payload: RouterEventPayload) => void;
+    messageCacheInvalidation: (payload: MessageCacheInvalidationPayload) => void;
+  };
+  logger: Logger;
+  abortSignal: AbortSignal;
+  shared: SharedAccessors;
+  toolCallId?: string;
+}
+```
+
+## Fields
+
+<AccordionGroup>
+  <Accordion title="user" icon="user">
+    The authenticated user. Validated by `AuthHeaderMiddleware` before the request reaches any plugin code.
+
+    - `did` — IXO DID (`did:ixo:ixo1...`).
+    - `matrixUserId` — e.g. `@did-ixo-ixo1abc:ixo.world`.
+    - `ucanDelegation` — UCAN envelope from `x-ucan-delegation` header.
+    - `timezone` — optional, from `x-timezone` header.
+    - `currentTime` — optional, ISO timestamp.
+  </Accordion>
+
+  <Accordion title="session" icon="comments">
+    - `id` — the thread ID (Matrix root `eventId`).
+    - `client` — `'portal' | 'matrix' | 'slack'`.
+    - `wsId` — optional WebSocket connection ID.
+    - `requestId` — correlation ID.
+    - `roomId` — optional Matrix room ID for the active conversation.
+  </Accordion>
+
+  <Accordion title="history" icon="clock">
+    - `messages` — readonly array of `BaseMessage` (LangChain). The full thread history loaded by the checkpointer.
+    - `recent(n)` — convenience method returning the most recent `n` messages.
+    - `userContext` — enrichment object from `state.userContext` (typically populated by the Memory plugin).
+    - `state` — `ReadonlyState`, a typed view over the LangGraph annotation state. See [State schema](/build-an-oracle/reference/state-schema).
+  </Accordion>
+
+  <Accordion title="config" icon="key">
+    Same merged + validated env as `PluginContext.config`. Typed by your plugin's own schema:
+
+    ```ts
+    const units = configSchema.parse(rtCtx.config).WEATHER_DEFAULT_UNITS;
+    ```
+  </Accordion>
+
+  <Accordion title="availablePlugins" icon="boxes-stacked">
+    The names of every plugin that survived boot resolution. Fixed.
+  </Accordion>
+
+  <Accordion title="loadedPlugins" icon="layer-group">
+    The names of `on-demand` plugins the agent has loaded for **this thread** via `load_capability`. Plus implicitly all `always` plugins. Per-thread, monotonically growing across turns.
+  </Accordion>
+
+  <Accordion title="secrets" icon="lock">
+    Per-room secrets, JWE-encrypted, 24h cache.
+
+    - `getIndex()` — returns the `SecretIndex` (metadata only, no values).
+    - `getValues(keys)` — returns plaintext for the requested keys.
+
+    Backed by today's `SecretsService`. Returns nothing if the encryption key isn't provisioned.
+  </Accordion>
+
+  <Accordion title="matrix" icon="cube">
+    Scoped Matrix operations.
+
+    - `postToRoom(roomId, content)` — post a message; returns the event ID.
+    - `getRoomState(roomId)` — snapshot of state events.
+    - `getEventById(roomId, eventId)` — fetch a specific event.
+
+    The runtime does not expose the raw Matrix client — only these three scoped methods.
+  </Accordion>
+
+  <Accordion title="ucan" icon="shield-halved">
+    UCAN authorisation helpers.
+
+    - `requireCapability(resource, action)` — throws if the user's delegation doesn't include this capability.
+    - `hasCapability(resource, action)` — boolean check.
+    - `mintInvocation({ did, capability }, opts?)` — mint a downstream invocation signed by the oracle's signing mnemonic.
+    - `resolveServiceDid(serviceUrl)` — look up a downstream service's DID document; returns `id` or `null`.
+  </Accordion>
+
+  <Accordion title="llm" icon="brain">
+    - `get(role, params?)` — returns a `BaseChatModel` for the given role.
+
+    `role` is one of `'main' | 'subagent' | 'utility'` or any custom string mapped in your provider config. The framework's provider config maps roles to specific OpenRouter / Nebius / OpenAI models.
+
+    Plugins should use this rather than instantiating LangChain models directly — the provider config handles auth headers, base URLs, and per-role model selection.
+  </Accordion>
+
+  <Accordion title="emit" icon="paper-plane">
+    Typed event emitter. Bundled clients (Portal, Slack) consume these events; render them into UI. See the [API endpoints reference](/build-an-oracle/reference/api-endpoints) for the WebSocket event protocol.
+
+    Available events: `toolCall`, `actionCall`, `renderComponent`, `reasoning`, `browserToolCall`, `router`, `messageCacheInvalidation`. Payload types are currently `Record<string, unknown>` and may be tightened in future versions.
+  </Accordion>
+
+  <Accordion title="logger" icon="scroll">
+    Same as `PluginContext.logger`. Plugin-scoped, auto-prefixed with the plugin name.
+  </Accordion>
+
+  <Accordion title="abortSignal" icon="circle-stop">
+    Propagates from the incoming HTTP request / graph invocation. Pass it to `fetch` calls so client disconnects abort upstream work.
+
+    ```ts
+    const response = await fetch(url, { signal: rtCtx.abortSignal });
+    ```
+  </Accordion>
+
+  <Accordion title="shared" icon="share-nodes">
+    Read accessors for state owned by other plugins (registered via `getSharedState()`). Typed via declaration merging on the `SharedAccessors` interface — see [Plugin shared state guide](/build-an-oracle/develop/plugin-recipes/share-state).
+  </Accordion>
+
+  <Accordion title="toolCallId" icon="hashtag">
+    The identifier of the inbound tool call that triggered this handler, when available. `undefined` for direct / test invocations.
+
+    Used by tools that return a LangGraph `Command` and need to append a matching `ToolMessage` to the state update.
+  </Accordion>
+</AccordionGroup>
+
+## Lifetime
+
+Built fresh per graph invocation by `buildRuntimeContext(runConfig, ambient, state)`. Lives for the duration of that single turn. Don't store references to `rtCtx` for use across turns — its inner services (Matrix client, secrets cache) may be invalid by the next call.
+
+## Related references
+
+- [PluginContext](/build-an-oracle/reference/plugin-context)
+- [State schema](/build-an-oracle/reference/state-schema)
+- [Plugin API](/build-an-oracle/reference/plugin-api)

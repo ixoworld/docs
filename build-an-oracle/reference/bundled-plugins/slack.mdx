@@ -1,0 +1,64 @@
+---
+title: "slack"
+description: "Slack bot transport — runs as a NestJS module with socket-mode lifecycle. No agent-visible tools."
+icon: "slack"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/slack/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/slack/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `silent` |
+| Stability | `stable` |
+| Category | `core` |
+| Default state | Auto-detect (env: `SLACK_BOT_OAUTH_TOKEN`) |
+| Depends on | — |
+
+## Summary
+
+Connects a Slack bot to the oracle. The plugin contributes **no agent-visible tools** — it is purely a transport. The agent does not know Slack exists; it just sees inbound messages on the Slack client. Ships its own NestJS module so the bot client can use `OnModuleInit` / `OnModuleDestroy` for socket-mode lifecycle and inject the Tier-0 services it needs (messages, sessions, cache).
+
+## Environment variables
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `SLACK_BOT_OAUTH_TOKEN` | yes | Slack bot OAuth token. Triggers auto-detect. |
+| `SLACK_APP_TOKEN` | no | App-level token (required for socket mode in production). |
+| `SLACK_USE_SOCKET_MODE` | no | Defaults to `'true'`. |
+| `SLACK_MAX_RECONNECT_ATTEMPTS` | no | Coerced number; defaults to `10`. |
+| `SLACK_RECONNECT_DELAY_MS` | no | Coerced number; defaults to `1000`. |
+
+## What it contributes
+
+- **Tools:** none.
+- **Sub-agents:** none.
+- **Middlewares:** none.
+- **HTTP routes:** none directly.
+- **Nest module:** `SlackModule` (registered via `getNestModules`) — owns the Slack socket-mode client lifecycle.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { slack: false }, // never load
+  // features: { slack: true }, // force load (will fail env validation if SLACK_BOT_OAUTH_TOKEN missing)
+  // features: { slack: 'auto' }, // run autoDetect (default)
+});
+```
+
+## When to use it
+
+- You want the same oracle reachable from Slack as well as the web client.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add HTTP endpoints" icon="route" href="/build-an-oracle/develop/plugin-recipes/add-http-endpoints">
+    Nest-module contribution pattern.
+  </Card>
+  <Card title="Visibility tiers" icon="layer-group" href="/build-an-oracle/understand/visibility-tiers">
+    Why `silent` plugins are invisible to the agent.
+  </Card>
+</CardGroup>

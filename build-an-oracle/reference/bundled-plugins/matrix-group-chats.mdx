@@ -1,0 +1,117 @@
+---
+title: "matrix-group-chats"
+description: "Lets the oracle participate cleanly in Matrix group rooms — only replies when relevant, and keeps a searchable per-room memory."
+icon: "comments"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/matrix-group-chats/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/matrix-group-chats/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `on-demand` (per-tool `always`) |
+| Stability | `beta` |
+| Category | `communication` |
+| Default state | On (no autoDetect) |
+| Depends on | — |
+
+## Summary
+
+Two responsibilities, one plugin:
+
+1. **Per-turn gating middleware.** In Matrix group rooms (`!isDirect && memberCount > 2`), the oracle only replies when mentioned, replied to, or already in an active thread. Otherwise the turn short-circuits and nothing is posted. DMs and non-Matrix transports pass through untouched.
+2. **Per-room compacted memory.** Every message in the room is captured into an FTS5-searchable SQLite store, compacted into ~200–400 token summary chunks, and synced back to the same Matrix room as encrypted media. The agent can recall, search, and pin durable facts via four tools.
+
+## Activation
+
+The plugin loads at boot by default. Opt out:
+
+```ts
+await createOracleApp({
+  config,
+  features: { 'matrix-group-chats': false },
+});
+```
+
+At request time, the middleware and tools only act when **all** of:
+
+- `rtCtx.session.client === 'matrix'`
+- `rtCtx.session.roomId` is set
+- The room is not a DM and has more than 2 members
+
+DM-only oracles never see the four tools — `getRequestTools` returns `[]` outside group rooms.
+
+## Environment variables
+
+All optional; defaults are production-sane.
+
+| Var | Default | Purpose |
+| --- | --- | --- |
+| `CHANNEL_MEMORY_SYNC_INTERVAL_MS` | `60000` | Debounce window before uploading a dirty room DB to Matrix. |
+| `GROUP_CHAT_ACTIVE_THREAD_TTL_MS` | `1800000` (30 min) | How long a thread stays "active with the bot" after a reply. |
+| `GROUP_CHAT_REQUIRE_POWER_LEVEL` | `0` | Extra minimum power level the bot needs before posting (0 = use room default). |
+| `GROUP_CHAT_ROOM_INFO_TTL_MS` | `1800000` (30 min) | How long room info (membership, DM flag) stays cached. |
+
+## What it contributes
+
+- **Tools** (all per-tool `visibility: 'always'`, so they bypass the capability gate when returned for group rooms):
+  - `recall_channel_memory` — recent compacted summary chunks + pinned facts + member roster.
+  - `search_channel_memory` — FTS5 keyword search over compacted chunks.
+  - `pin_room_fact` — persist a durable fact to this room (decisions, deadlines, roles).
+  - `unpin_room_fact` — remove a pinned fact by id.
+- **Sub-agents:** none.
+- **Middlewares:** one — the per-turn group-chat gate (see below).
+- **HTTP routes:** none.
+- **Nest modules:** `ChannelMemoryModule` (the per-room SQLite store + Matrix sync).
+- **Shared state:** `channelMemory` — other plugins read the `ChannelMemoryService` singleton via `rtCtx.shared.channelMemory`.
+
+## What the middleware does per turn
+
+For Matrix group rooms only (passes through everywhere else):
+
+1. Captures the latest `HumanMessage` into channel memory — even when the bot stays silent.
+2. Runs `shouldAgentRespond`. Precedence: DM (auto-respond) → mention → reply-to-bot → active-thread cache → Matrix-history fallback → ignore.
+3. If the bot shouldn't respond → short-circuits the turn (`jumpTo: 'end'`); the Matrix transport detects "no AI message produced" and posts nothing.
+4. If it should → checks `m.room.power_levels`; short-circuits silently when the bot lacks permission to send `m.room.message`.
+5. Refreshes the room's member roster (fire-and-forget) so the next turn has fresh names.
+6. Runs just-in-time compaction with a 3-second cap so the agent gets up-to-date summary context.
+
+## Speaker identity in group rooms
+
+For every Matrix-originated turn, `MessagesService.assembleInput()` resolves the sender's display name via `MatrixManager.getCachedDisplayName(mxid, roomId)` (30-min cache, falls back to mxid local-part).
+
+- **Group rooms (`memberCount > 2`)** — content is prefixed `[DisplayName]: ` so the agent reads who's speaking inline.
+- **DMs** — same `additional_kwargs` metadata (`senderDid`, `senderMatrixUserId`, `senderDisplayName`, `threadId`, `eventId`, raw `m.mentions` / `m.relates_to`), no content prefix.
+
+## When to use it
+
+- A user asks what was said or decided earlier in this Matrix group room.
+- A user asks who is in the room or what their role is.
+- A durable fact should survive across threads (deadline, decision, project context) — pin it.
+- You need to recall the gist of prior conversation before answering a multi-step group request.
+
+## When NOT to use it
+
+- Single-user DMs — the plugin only acts in rooms with more than 2 members.
+- Long-term personal memory about a specific user — use [`memory`](/build-an-oracle/reference/bundled-plugins/memory).
+- Verbatim text of a specific Matrix event — query Matrix history directly.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { 'matrix-group-chats': false }, // never load
+  // features: { 'matrix-group-chats': true }, // force load (default)
+});
+```
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="memory" icon="brain" href="/build-an-oracle/reference/bundled-plugins/memory">
+    Per-user durable memory — complementary to per-room channel memory.
+  </Card>
+  <Card title="Shared state" icon="share-nodes" href="/build-an-oracle/understand/shared-state">
+    How other plugins read `channelMemory` via `rtCtx.shared`.
+  </Card>
+</CardGroup>

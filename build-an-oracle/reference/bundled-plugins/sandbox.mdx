@@ -1,0 +1,75 @@
+---
+title: "sandbox"
+description: "Per-user Linux box for code execution. Runs shell/python; writes raw bytes under /workspace/data/."
+icon: "server"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/sandbox/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/sandbox/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `always` |
+| Stability | `stable` |
+| Category | `core` |
+| Default state | Auto-detect (env: `SANDBOX_MCP_URL`) |
+| Depends on | — |
+
+## Summary
+
+Per-user Linux sandbox. `sandbox_run` runs shell/python (writes anywhere via shell, including `/tmp` for scratch). `sandbox_write_file` writes raw bytes BUT only under `/workspace/data/` — other paths are rejected; use `sandbox_run` with a here-doc for `/tmp`. The plugin surfaces every upstream MCP tool verbatim and authenticates the connection with a UCAN invocation plus operator and per-user secrets as request headers. Used internally by [`skills`](/build-an-oracle/reference/bundled-plugins/skills) for skill execution.
+
+## Environment variables
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `SANDBOX_MCP_URL` | yes | Sandbox MCP URL. Triggers auto-detect. |
+| `ORACLE_SECRETS` | no | Read but not owned (declared by the core base env schema). Each entry is forwarded as an `x-os-<name>` header. |
+| `SKILLS_CAPSULES_BASE_URL` | no | Read but not owned (declared by [`skills`](/build-an-oracle/reference/bundled-plugins/skills)). When set, the plugin mints a parallel `ixo:skills` UCAN invocation and forwards it as `X-Skills-Invocation`. |
+
+## What it contributes
+
+- **Tools:** every upstream MCP tool — `sandbox_run`, `sandbox_write_file`, the `artifact_*` family, `load_skill`. By default the `oracle_*` management tools (`oracle_list`, `oracle_get`, `oracle_health`, `oracle_stop`, `oracle_restart`, `oracle_get_logs`) are filtered out; opt in with `new SandboxPlugin({ includeOracleManagementTools: true })`.
+- **Sub-agents:** none.
+- **Middlewares:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { sandbox: false }, // never load
+  // features: { sandbox: true }, // force load (will fail env validation if SANDBOX_MCP_URL missing)
+  // features: { sandbox: 'auto' }, // run autoDetect (default)
+});
+```
+
+## When to use it
+
+- Execute a skill — call `sandbox_run` with `cid` so user + oracle secrets are injected; the skill folder mounts read-only at `/workspace/skills/<skill-name>/`.
+- Read a skill file (`SKILL.md`, scripts, configs) — `sandbox_run` with a `cat`/`ls`/`grep`/`sed -n` command and the skill's `cid`.
+- Hit a JSON/REST API — write curl or python in `sandbox_run`. Never use a web scraper for `/api/`, `/v1/`, `/v2/`, `/v3/` endpoints.
+- Generate or transform a file the user (or a later turn) will re-read — write to `/workspace/data/output/<name>`.
+- Re-read an attachment the user sent earlier — auto-archived to `/workspace/output/<filename>`.
+- Save a large or escape-sensitive blob byte-perfect to `/workspace/data/...` — use `sandbox_write_file`.
+- Write a scratch / throwaway file — use `sandbox_run` with a here-doc into `/tmp`.
+
+## When NOT to use it
+
+- The value is already inline in chat — just use it.
+- Fetching a URL the user just mentioned — prefer `process_file` so it auto-archives.
+- A long human-readable page — use [`firecrawl`](/build-an-oracle/reference/bundled-plugins/firecrawl).
+- Installing native deps in cwd (`pip install -e .`, `bun install`) — install under `/tmp` instead.
+- `sandbox_write_file` with a path outside `/workspace/data/` — the validator hard-rejects this.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Plugin vs Skill" icon="scale-balanced" href="/build-an-oracle/understand/plugins-vs-skills">
+    How `sandbox` + `skills` work together.
+  </Card>
+  <Card title="Identity and auth" icon="id-card" href="/build-an-oracle/develop/identity-and-auth">
+    UCAN invocations and per-user secret forwarding.
+  </Card>
+</CardGroup>

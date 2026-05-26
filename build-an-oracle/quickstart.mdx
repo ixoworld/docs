@@ -1,0 +1,220 @@
+---
+title: "Quickstart"
+description: "Scaffold a working oracle, boot it, and watch the agent call a plugin tool — in about ten minutes."
+icon: "play"
+---
+
+## What you'll have at the end
+
+```text
+You: what's the weather in Berlin?
+Oracle: (calls list_capabilities → load_capability(weather) → get_current_weather)
+        Berlin is currently 14°C with light rain.
+```
+
+A live oracle on `localhost:5678` with:
+
+- The 15 bundled plugins resolved at boot.
+- A custom Weather plugin loading on demand.
+- A `GET /weather/now?city=X` public HTTP route.
+- A streaming chat endpoint over SSE.
+
+## Step 0 — prerequisites
+
+- **Node.js 22+**
+- **pnpm** — `npm install -g pnpm`
+- **The IXO Mobile App** *or* a 12/24-word mnemonic (for offline auth)
+- **An OpenRouter API key** — get one at openrouter.ai
+
+## Step 1 — install the CLI
+
+```sh
+pnpm add -g qiforge-cli
+pnpm approve-builds -g           # approve protobufjs when prompted
+qiforge-cli --help
+```
+
+If it prints the help text, the CLI is ready.
+
+## Step 2 — scaffold a project
+
+```sh
+qiforge-cli new my-oracle
+```
+
+The CLI walks through:
+
+1. **Auth** — pick SignX (QR code) or offline (mnemonic). Offline is faster for local dev.
+2. **Network** — pick `devnet` for development.
+3. **Oracle profile** — name, description, price, model. Defaults are fine.
+4. **Entity creation** — the CLI writes a transaction to register your oracle's entity DID on chain. Confirm when prompted (SignX needs the mobile app; offline signs locally).
+5. **Matrix bot** — provisioned automatically.
+
+The result is a plugin-runtime-shaped project:
+
+```text
+my-oracle/
+├── src/
+│   ├── main.ts                 # calls createOracleApp({ config, plugins })
+│   ├── config.ts               # OracleConfig
+│   └── plugins/                # your plugins go here
+├── .claude/
+│   └── skills/qiforge-oracle/  # Claude Code skill (project-local)
+├── .env                        # Matrix creds, ORACLE_*, mnemonic
+├── oracle.config.json          # name, model, prompt, DID
+├── package.json
+├── tsconfig.json
+├── vitest.config.ts
+└── CLAUDE.md                   # bootstrapping for Claude Code
+```
+
+<Tip>
+The scaffold drops a **Claude Code skill** at `.claude/skills/qiforge-oracle/`. Open the project in Claude Code (or any agent that reads `.claude/skills/`) and the skill auto-loads — your AI helper now has dense, project-local references for adding plugins, adding tools, wiring env, and writing tests with `createTestRuntime`. Nothing to install separately.
+</Tip>
+
+<Note>
+**Cloning instead of scaffolding** — to study a finished plugin-based oracle, clone the boilerplate and run the example:
+
+```sh
+git clone https://github.com/ixoworld/qiforge
+cd qiforge/apps/qiforge-example
+cp .env.example .env
+```
+
+Then follow Step 3 onward against `apps/qiforge-example/`.
+</Note>
+
+## Step 3 — fill in `.env`
+
+Open `apps/qiforge-example/.env` (or `apps/app/.env` if you used `--init`). The CLI populated identity vars; you need to add the LLM key and any plugin vars:
+
+```diff
+- OPEN_ROUTER_API_KEY=
++ OPEN_ROUTER_API_KEY=sk-or-v1-...
+
+  # Optional — enables specific plugins:
++ MEMORY_MCP_URL=https://memory-mcp.your-deployment.example/sse
++ MEMORY_ENGINE_URL=https://memory-engine.your-deployment.example
++ FIRECRAWL_MCP_URL=https://firecrawl-mcp.your-deployment.example/sse
++ SANDBOX_MCP_URL=https://sandbox-mcp.your-deployment.example/sse
++ WEATHER_DEFAULT_UNITS=celsius
+```
+
+Plugins whose env vars you leave blank simply don't load — they're skipped with a `[boot] excluded: <plugin> (<env-var>)` line.
+
+See [Environment variables reference](/build-an-oracle/reference/environment-variables) for the complete list.
+
+## Step 4 — install + boot
+
+```sh
+cd my-oracle    # or qiforge/apps/qiforge-example
+pnpm install
+pnpm dev
+```
+
+You should see something like:
+
+```text
+[Nest] Starting Nest application...
+[Nest] OraclePlugin {memory} loaded (always)
+[Nest] OraclePlugin {domain-indexer} loaded (always)
+[Nest] OraclePlugin {editor} loaded (on-demand)
+[Nest] OraclePlugin {user-preferences} loaded (always)
+[Nest] OraclePlugin {weather} loaded (on-demand)
+[boot] excluded plugins: composio (COMPOSIO_API_KEY), slack (SLACK_BOT_OAUTH_TOKEN), tasks (REDIS_URL)
+Oracle 'QiForge Example Oracle' (runtime v0.X.Y) listening on :5678
+[plugin] matrix pending → loaded
+```
+
+The excluded plugins are normal — they need env vars you didn't set. To enable one, fill its env vars and restart.
+
+## Step 5 — hit a public plugin endpoint
+
+The Weather plugin exposes `GET /weather/now`. It's marked auth-excluded via `getAuthExcludedRoutes()`, so no UCAN header needed:
+
+```sh
+curl 'http://localhost:5678/weather/now?city=Berlin'
+```
+
+You should get back JSON:
+
+```json
+{
+  "ok": true,
+  "city": "Berlin",
+  "temp_c": 14.2,
+  "units": "celsius",
+  "conditions": "Slight rain",
+  "latitude": 52.52,
+  "longitude": 13.405
+}
+```
+
+This proves: the plugin loaded, its Nest module mounted, the auth exclusion worked, and the upstream call to Open-Meteo succeeded.
+
+## Step 6 — send a chat message
+
+For interactive chat, use the CLI's streaming TUI:
+
+```sh
+qiforge-cli chat
+```
+
+Then type:
+
+```text
+what's the weather in Berlin?
+```
+
+The agent walks this path:
+
+1. **`list_capabilities`** — sees `weather` is `on-demand`, not loaded yet.
+2. **`load_capability({ name: 'weather' })`** — gets the manifest back with `whenToUse` and the tool list. `loadedPlugins` state field now contains `'weather'`.
+3. **`get_current_weather({ city: 'Berlin' })`** — the actual tool fires.
+4. **Final response** — natural-language summary of the result.
+
+Watch the server logs at the same time — you'll see the weather middleware print `model call started` / `model call complete (Xms)` for each LLM step.
+
+## What you just verified
+
+| You saw | What it proves |
+| --- | --- |
+| Boot log listing plugins | Loader + topo sort + manifest validation worked. |
+| `excluded plugins:` line with reasons | Env-driven opt-in (`autoDetect`) is wired correctly. |
+| `GET /weather/now` returning JSON | Plugin Nest modules mount + auth exclusions apply. |
+| Agent calling `load_capability` then `get_current_weather` | Dynamic discovery and `loadedPlugins` state work end-to-end. |
+| Middleware logs around each model call | `getMiddlewares` hooks are firing. |
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Build track" icon="hammer" href="/build-an-oracle/develop/overview">
+    Task-by-task recipes — `createOracleApp`, plugin recipes, test, deploy.
+  </Card>
+  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/develop/write-a-plugin">
+    Recreate the Weather plugin from scratch.
+  </Card>
+  <Card title="createOracleApp options" icon="square-list" href="/build-an-oracle/develop/create-oracle-app">
+    Every option you can pass — config, plugins, features, hooks.
+  </Card>
+  <Card title="Bundled plugins" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
+    The 15 plugins shipped with the runtime.
+  </Card>
+  <Card title="For AI agents" icon="robot" href="/build-an-oracle/for-ai-agents">
+    Dense one-pager with every signature inlined.
+  </Card>
+  <Card title="Understand the model" icon="lightbulb" href="/build-an-oracle/understand/what-is-qiforge">
+    Optional. The mental model, runtime layers, plugins vs skills.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+| Symptom | Likely fix |
+| --- | --- |
+| `[boot-error] Plugin '<name>' env validation failed for '<X>'` | Either set the env var or disable the plugin with `features: { name: false }`. |
+| Boot hangs after `Nest application started` | Matrix init is still pending. Check `MATRIX_BASE_URL` and `MATRIX_ORACLE_ADMIN_*` env vars. |
+| All authenticated requests return 401 | UCAN signing mnemonic not loaded — see [Identity and auth](/build-an-oracle/develop/identity-and-auth#signing-mnemonic). |
+| The agent doesn't call my plugin's tool | Check it's `loaded` in `app.plugins.status()`. If it's `on-demand`, prompt the agent more clearly so it calls `load_capability`. |
+
+Full coverage: [Troubleshooting](/build-an-oracle/troubleshooting).

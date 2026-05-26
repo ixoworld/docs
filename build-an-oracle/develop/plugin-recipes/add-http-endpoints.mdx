@@ -1,0 +1,115 @@
+---
+title: "Add HTTP endpoints"
+description: "Contribute NestJS controllers and modules from a plugin via getNestModules, and opt routes out of UCAN auth via getAuthExcludedRoutes."
+icon: "globe"
+---
+
+Use `getNestModules` for webhooks, public probes, OAuth callbacks, or long-lived services. Use `getAuthExcludedRoutes` to skip UCAN auth on specific paths.
+
+<Steps>
+  <Step title="Write a NestJS controller and module">
+    A plugin's module is a regular Nest module. Use a static `register(opts)` returning a `DynamicModule` if you want to pass config into DI.
+
+    ```ts
+    import {
+      Controller,
+      type DynamicModule,
+      Get,
+      Inject,
+      Module,
+      Query,
+    } from '@nestjs/common';
+    import { getCurrentWeather, type Units } from './weather-client.js';
+
+    export const WEATHER_DEFAULT_UNITS = 'WEATHER_DEFAULT_UNITS';
+
+    @Controller('weather')
+    export class WeatherController {
+      constructor(@Inject(WEATHER_DEFAULT_UNITS) private readonly units: Units) {}
+
+      @Get('now')
+      async now(@Query('city') city?: string) {
+        if (!city) return { ok: false, error: 'Missing required query param: city' };
+        const result = await getCurrentWeather(city, this.units);
+        if (!result) return { ok: false, error: `Could not find weather for "${city}".` };
+        return { ok: true, ...result };
+      }
+    }
+
+    @Module({})
+    export class WeatherHttpModule {
+      static register(units: Units): DynamicModule {
+        return {
+          module: WeatherHttpModule,
+          controllers: [WeatherController],
+          providers: [{ provide: WEATHER_DEFAULT_UNITS, useValue: units }],
+        };
+      }
+    }
+    ```
+
+    Canonical source: [weather.module.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.module.ts).
+  </Step>
+
+  <Step title="Return the module from getNestModules(ctx)">
+    `ctx` is optional but useful for reading typed config when registering the module.
+
+    ```ts
+    import { OraclePlugin, type PluginContext } from '@ixo/oracle-runtime';
+    import type { DynamicModule } from '@nestjs/common';
+
+    export class WeatherPlugin extends OraclePlugin {
+      override getNestModules(ctx: PluginContext): DynamicModule[] {
+        const units = configSchema.parse(ctx.config).WEATHER_DEFAULT_UNITS;
+        return [WeatherHttpModule.register(units)];
+      }
+    }
+    ```
+
+    Plain module classes also work: `return [SlackModule]`. The runtime spreads the returned modules into `RuntimeAppModule.imports`. See `getNestModules` in [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Opt routes out of UCAN auth (optional)">
+    By default every plugin route goes through `AuthHeaderMiddleware`. For webhooks, OAuth callbacks, or public probes, return them from `getAuthExcludedRoutes`.
+
+    ```ts
+    import { RequestMethod } from '@nestjs/common';
+    import type { AuthExcludedRoute } from '@ixo/oracle-runtime';
+
+    override getAuthExcludedRoutes(): AuthExcludedRoute[] {
+      return [{ path: 'weather/now', method: RequestMethod.GET }];
+    }
+    ```
+
+    Match by the full path the controller mounts at (`weather/now`, not `now`). `method` defaults to `RequestMethod.ALL`. See `getAuthExcludedRoutes` in [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+  </Step>
+
+  <Step title="Verify the endpoint">
+    Boot the oracle with `pnpm dev`, then curl the route without an auth header.
+
+    ```sh
+    curl 'http://localhost:5678/weather/now?city=Berlin'
+    ```
+
+    Other routes still 401 — the exclusion list only opts these specific paths out.
+  </Step>
+</Steps>
+
+## What to know before shipping
+
+- The same hook handles long-lived services. Slack, BullMQ workers, polling clients all ship as Nest modules with `OnModuleInit` lifecycle.
+- Plugin modules have full DI access to the runtime's services (Sessions, Messages, Secrets, UCAN, …).
+- Host code can also opt routes out of auth via `createOracleApp({ authExcludedRoutes })`. Plugin and host lists merge with built-in exclusions (`/health`, `/docs`).
+- Leading slash on `path` is optional. The matcher mirrors NestJS's `MiddlewareConsumer.exclude(...)`.
+- Plugin route paths are namespaced by the controller's `@Controller('weather')` decorator — keep them under your plugin's name to avoid collisions.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Create your oracle" icon="rocket" href="/build-an-oracle/develop/create-oracle-app">
+    Host-level Nest modules and `authExcludedRoutes`.
+  </Card>
+  <Card title="API endpoints" icon="server" href="/build-an-oracle/reference/api-endpoints">
+    The framework's always-on HTTP/WS surface.
+  </Card>
+</CardGroup>

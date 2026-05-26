@@ -1,0 +1,159 @@
+---
+title: "memory"
+description: "Durable memory across conversations: who the user is, what you made for them, and what worked."
+icon: "brain"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/memory/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/memory/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `always` |
+| Stability | `stable` |
+| Category | `memory` |
+| Default state | Auto-detect (env: `MEMORY_MCP_URL`) |
+| Depends on | — |
+
+## Summary
+
+Durable memory across conversations — who the user is, what you have made for them, and what worked. Surfaces the upstream Memory Engine MCP tools verbatim (`memory-engine__search_memory_engine`, `memory-engine__add_memory`, …). Tool list is resolved per-request because MCP headers depend on the in-flight user's UCAN delegation.
+
+## Environment variables
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `MEMORY_MCP_URL` | yes | Memory MCP HTTP(S) URL. Also triggers auto-detect. |
+| `MEMORY_ENGINE_URL` | yes | Memory Engine HTTP(S) URL. |
+
+## What it contributes
+
+- **Tools (default selection):**
+  - `memory-engine__search_memory_engine` — recall stored facts.
+  - `memory-engine__add_memory` — write a new memory.
+  - `memory-engine__delete_episode` — delete a memory.
+  - `memory-engine__clear` — clear (destructive; main-agent only).
+- **Sub-agents:** none.
+- **Middlewares:** none directly contributed by the plugin (enrichment of `state.userContext` is handled upstream of the agent).
+- **HTTP routes:** none.
+- **Shared state:** `userProfile` — other plugins read it via `rtCtx.shared.userProfile`.
+
+Tools available beyond the default selection (e.g. `memory-engine__add_oracle_knowledge`, `memory-engine__delete_edge`) can be enabled by passing `selectedTools` to `new MemoryPlugin({ selectedTools: [...] })`.
+
+## Adding global oracle knowledge
+
+Global knowledge is content the oracle should know on every turn, for every user — product docs, brand voice, FAQs, reference material. It's stored on the Memory Engine and indexed under the **oracle's entity DID**, not the user's DID.
+
+<Steps>
+  <Step title="Confirm you are an owner or controller of the oracle entity">
+    Only an account that is `owner` or `controller` on the oracle's IXO entity (the entity created via `qiforge-cli create-entity`) can write global knowledge. The Memory Engine rejects writes from any other DID.
+
+    Check with `qiforge-cli update-entity` or by inspecting the entity on chain. If you are not a controller, ask the entity owner to add your DID first.
+  </Step>
+
+  <Step title="Enable the add_oracle_knowledge tool on the memory plugin">
+    The bundled `memory` plugin's default tool selection does **not** include `memory-engine__add_oracle_knowledge`. Instantiate `MemoryPlugin` explicitly and extend the default selection:
+
+    ```ts
+    // src/main.ts
+    import {
+      createOracleApp,
+      MemoryPlugin,
+      DEFAULT_MEMORY_TOOLS,
+      MEMORY_ADD_ORACLE_KNOWLEDGE_MCP_NAME,
+    } from '@ixo/oracle-runtime';
+
+    const app = await createOracleApp({
+      config,
+      plugins: [
+        new MemoryPlugin({
+          selectedTools: [
+            ...DEFAULT_MEMORY_TOOLS,
+            MEMORY_ADD_ORACLE_KNOWLEDGE_MCP_NAME,
+          ],
+        }),
+      ],
+    });
+    ```
+
+    The loader dedupes by name, so this explicit instance overrides the bundled default with the same name.
+  </Step>
+
+  <Step title="Boot the oracle">
+    ```sh
+    pnpm dev
+    ```
+
+    The boot log should list `memory` as loaded. The agent now has `memory-engine__add_oracle_knowledge` available.
+  </Step>
+
+  <Step title="Open the Portal and connect to your oracle">
+    Pick the environment matching the network your oracle is registered on:
+
+    | Network | Portal URL |
+    | --- | --- |
+    | devnet | `https://dev.portal.qi.space` |
+    | testnet | `https://test.portal.qi.space` |
+    | mainnet | `https://portal.qi.space` |
+
+    Navigate directly to your oracle's connect page (replace `<ENTITY_DID>` with the value of `ORACLE_ENTITY_DID` from your `.env`):
+
+    ```text
+    https://dev.portal.qi.space/domain/<ENTITY_DID>/connect
+    ```
+
+    Sign in as the entity owner/controller. On the connect page, click the highlighted "Connect" action — the Portal then opens a chat session bound to the oracle.
+  </Step>
+
+  <Step title="Drop in content and ask the oracle to save it as global knowledge">
+    In the chat, drag and drop files (PDFs, markdown, text), paste links, or paste raw text — anything you want the oracle to know going forward. Then tell the oracle in plain language:
+
+    > Save this into the global oracle knowledge.
+
+    The agent calls `memory-engine__add_oracle_knowledge` with the dropped content. The Memory Engine accepts the write because your delegation chain proves you are owner/controller of the oracle entity.
+  </Step>
+
+  <Step title="Wait ~5 minutes for indexing">
+    Newly written knowledge takes about five minutes to index before it appears in `memory-engine__search_memory_engine` results. After indexing, every user's session will be able to recall it through the normal memory search path.
+  </Step>
+</Steps>
+
+<Warning>
+`memory-engine__add_oracle_knowledge` writes are scoped to the oracle entity, not to the calling user. Anything you add is visible to **every** user who talks to this oracle. Treat it like a public knowledge base.
+</Warning>
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { memory: false },   // never load
+  // features: { memory: true },  // force load (will fail env validation if vars missing)
+  // features: { memory: 'auto' }, // run autoDetect (default)
+});
+```
+
+## When to use it
+
+- First contact (no prior context loaded): greet, ask the user's name and what they need help with, save the answer.
+- You learn something durable about the user — name, role, ongoing project, a constraint, a relationship.
+- You produce an artifact (file, document, edit, generated content) — record what it is, what it is for, the structural choices.
+- The user expresses satisfaction or dissatisfaction with something you produced — capture what worked or did not.
+- The user references something they told you before, or something you made before.
+
+## When NOT to use it
+
+- Ephemeral conversation-only state — use the current message thread.
+- Behavioural preferences about how to respond — use [`user-preferences`](/build-an-oracle/reference/bundled-plugins/user-preferences).
+- Public web facts not specific to this user — use [`firecrawl`](/build-an-oracle/reference/bundled-plugins/firecrawl).
+- Anything the user asked you to forget or framed as temporary.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Shared state" icon="share-nodes" href="/build-an-oracle/understand/shared-state">
+    How `userProfile` flows to other plugins.
+  </Card>
+  <Card title="Add a tool" icon="screwdriver-wrench" href="/build-an-oracle/develop/plugin-recipes/add-a-tool">
+    Pattern for exposing upstream MCP tools.
+  </Card>
+</CardGroup>

@@ -1,0 +1,81 @@
+---
+title: "Plugin vs Skill"
+description: "Both extend what your oracle can do — but they're fundamentally different. Plugins ship with your oracle. Skills are discovered and executed at runtime."
+icon: "scale-balanced"
+---
+
+## The one-sentence difference
+
+> **A plugin is code your oracle ships with. A skill is a capsule your oracle fetches and runs in a sandbox.**
+
+Both let an agent do things it otherwise couldn't. But the *mechanism*, *lifecycle*, and *author* are usually different.
+
+## Side by side
+
+| | **Plugin** | **Skill** |
+| --- | --- | --- |
+| **Format** | TypeScript class extending `OraclePlugin` | Folder with `SKILL.md` + scripts (Python, shell, etc.) |
+| **Lives where** | Inside your oracle's npm bundle | IXO skills registry (`ai-skills` repo) |
+| **Lifecycle** | Loaded at boot | Discovered + executed per request |
+| **Who authors** | Oracle developer | Anyone — community-contributable |
+| **How agent uses** | Tools bound directly to the LLM | Agent calls `search_skills` → `sandbox_run` |
+| **Execution** | In-process Node.js | Per-user Linux sandbox |
+| **Side effects** | Full host access (DB, FS, network, Nest DI) | Sandbox-scoped |
+| **Update** | Redeploy the oracle | Publish a new version — no oracle restart |
+
+## Both in the same turn
+
+The cleanest way to see the distinction is to watch them work together:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Agent as Main agent
+    participant SkillsP as skills plugin
+    participant SandboxP as sandbox plugin
+    participant Registry as ai-skills registry
+    participant Box as Per-user sandbox
+
+    Note over Agent: 1. Use a PLUGIN to find a SKILL
+    Agent->>SkillsP: search_skills({ query: "invoice" })
+    SkillsP->>Registry: HTTP search
+    Registry-->>Agent: [{ name: "invoice-generator", ... }]
+
+    Note over Agent: 2. Use a PLUGIN to run the SKILL
+    Agent->>SandboxP: sandbox_run({ cid, shell: "python run.py ..." })
+    SandboxP->>Box: provision + execute
+    Box-->>Agent: { stdout, files: ["invoice-Q3.pdf"] }
+```
+
+`skills` and `sandbox` are **plugins** — compiled into the oracle, exposing tools the LLM calls. `invoice-generator` is a **skill** — a folder in the registry the oracle never imported, fetched and executed at request time.
+
+## When to write which
+
+| Write a plugin when… | Write a skill when… |
+| --- | --- |
+| You need type safety + full DI (DB, Nest services, Matrix client) | The capability is a self-contained scripted workflow |
+| The capability needs an HTTP route (webhook, OAuth callback) | It should be community-discoverable |
+| You need to inject behaviour into every turn (middleware) | You want to update it without redeploying |
+| The capability is proprietary or oracle-specific | Sandbox isolation is acceptable |
+| You need tight integration with the agent (a sub-agent) | The implementation is Python / shell / a binary |
+
+## Can a plugin call a skill?
+
+Yes. The `skills` and `sandbox` plugins expose normal tools (`search_skills`, `sandbox_run`, ...). Your custom plugin can call them directly if you have a deterministic flow. Usually the agent orchestrates instead.
+
+## Can a skill use plugin features?
+
+Not directly. Skills run in a sandbox; they don't see plugins or Nest DI. They get user secrets as `x-os-*` env vars, an optional `skills_invocation` UCAN, network (per sandbox policy), and a read-only mount of their own folder. If a skill needs plugin data, the agent passes it in as an argument to `sandbox_run`.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/develop/write-a-plugin">
+    The recipe.
+  </Card>
+  <Card title="Plugin catalog" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
+    The 15 bundled plugins — including `skills` and `sandbox`.
+  </Card>
+</CardGroup>
+
+Source: [`packages/oracle-runtime/src/plugins/skills/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/skills/) and [`packages/oracle-runtime/src/plugins/sandbox/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/sandbox/).

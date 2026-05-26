@@ -1,0 +1,213 @@
+---
+title: "Enable bundled plugins"
+description: "Toggle the 15 bundled plugins via the features map. Opt out, force on, or let auto-detect handle it."
+icon: "boxes-stacked"
+---
+
+## Copy-paste recipe
+
+The whole API is a `features` map handed to `createOracleApp`. Each key is a bundled plugin name, each value is `true` / `false` / `'auto'`.
+
+```ts
+import { createOracleApp } from '@ixo/oracle-runtime';
+import { config } from './config.js';
+
+const app = await createOracleApp({
+  config,
+  features: {
+    composio: true,       // force on (set COMPOSIO_API_KEY)
+    slack: false,         // force off
+    firecrawl: 'auto',    // same as omitting — runs autoDetect
+  },
+  plugins: [],            // your own plugins go here
+});
+
+await app.listen();
+```
+
+That's the whole surface. The runtime pre-loads every bundled plugin instance from [`BUNDLED_PLUGINS`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts); `features` only controls which ones survive resolution. Reference oracle: [apps/qiforge-example/src/main.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts).
+
+## How resolution works
+
+<Steps>
+  <Step title="The runtime starts with the bundled list">
+    [`BUNDLED_PLUGINS`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) is a fixed 15-plugin tuple — memory, portal, firecrawl, domain-indexer, composio, sandbox, skills, editor, agui, slack, tasks, credits, calls, user-preferences, matrix-group-chats.
+
+    You do not import or instantiate the plugins you want at defaults — they are already there.
+  </Step>
+
+  <Step title="Each plugin gets a feature decision">
+    For every bundled plugin, [`resolvePlugins`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/plugin-loader.ts) reads `features[plugin.name]`:
+
+    ```ts
+    type FeatureToggle = boolean | 'auto';
+
+    features?: Partial<Record<string, FeatureToggle>>;
+    ```
+
+    | Value | Behaviour |
+    | --- | --- |
+    | `true` | Force the plugin on. If its `autoDetect(env)` returns false, boot fails with `boot.plugin.env_missing`. |
+    | `false` | Force the plugin off. Skip `autoDetect` entirely. |
+    | `'auto'` (or omitted) | Run `plugin.autoDetect(env)`. Include if true, exclude otherwise. |
+  </Step>
+
+  <Step title="Your own plugins are added next">
+    Plugins from the `plugins: []` array are always loaded — they're not gated by `features`. If a name collides with a bundled plugin, your instance wins (the loader dedupes by `name`).
+  </Step>
+
+  <Step title="Hard-dep cascades resolve transitively">
+    If a loaded plugin has `dependsOn: ['removed-plugin']` and that dep ended up excluded, the dependent cascades off too. Soft deps (`softDependsOn`) only log a warning.
+  </Step>
+</Steps>
+
+## What every bundled plugin does by default
+
+Each plugin's `autoDetect` predicate decides whether to opt in when you leave it on `'auto'`.
+
+| Plugin | Auto-detects when | Notes |
+| --- | --- | --- |
+| `memory` | `MEMORY_MCP_URL` and `MEMORY_ENGINE_URL` set | Visibility `always` |
+| `portal` | always on | Visibility `on-demand` |
+| `firecrawl` | `FIRECRAWL_MCP_URL` set | Visibility `on-demand` |
+| `domain-indexer` | always on | Visibility `always` |
+| `composio` | `COMPOSIO_API_KEY` set | Visibility `on-demand` |
+| `sandbox` | `SANDBOX_MCP_URL` set | Visibility `always` |
+| `skills` | always on | Visibility `always`; depends on `sandbox` |
+| `editor` | always on | Needs `matrixClient` — instantiate explicitly |
+| `agui` | always on | Visibility `on-demand` |
+| `slack` | `SLACK_BOT_OAUTH_TOKEN` set | Visibility `silent` (transport) |
+| `tasks` | `REDIS_URL` set | Stub |
+| `credits` | always on | Visibility `silent`; pass `redis` for production |
+| `calls` | always on | Stub |
+| `user-preferences` | always on | Visibility `always` |
+| `matrix-group-chats` | always on | Visibility `on-demand`; gating middleware + tools fire only in Matrix group rooms (`memberCount > 2`) |
+
+Full per-plugin env vars: [plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) and [environment variables reference](/build-an-oracle/reference/environment-variables).
+
+## Opt out of a plugin
+
+<Steps>
+  <Step title="Set the feature flag to false">
+    ```ts
+    const app = await createOracleApp({
+      config,
+      features: {
+        composio: false,
+        'domain-indexer': false,
+      },
+    });
+    ```
+
+    The plugin is dropped before `autoDetect` runs. Its `configSchema` is also removed from the merged env schema, so its env vars become optional.
+  </Step>
+
+  <Step title="Check for dependents">
+    If another loaded plugin lists the disabled plugin in its `dependsOn`, boot fails with a `boot.plugin.dep_missing` error naming both. Disable the dependent too, or keep the dependency loaded.
+  </Step>
+</Steps>
+
+## Force a plugin on
+
+<Steps>
+  <Step title="Set the feature flag to true">
+    ```ts
+    const app = await createOracleApp({
+      config,
+      features: {
+        composio: true,
+      },
+    });
+    ```
+
+    The plugin loads even if `autoDetect` would skip it.
+  </Step>
+
+  <Step title="Set every env var the plugin needs">
+    With `features: { composio: true }` and no `COMPOSIO_API_KEY`, the runtime throws at boot:
+
+    ```text
+    boot.plugin.env_missing: plugin 'composio' enabled via features but precondition failed (COMPOSIO_API_KEY).
+    Set the required env or disable: features: { composio: false }
+    ```
+
+    See the plugin's page in the [plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) for its full env requirements.
+  </Step>
+</Steps>
+
+## Plugins that need constructor args
+
+Two bundled plugins take a live runtime object you provide — instantiate explicitly and pass them via `plugins`:
+
+```ts
+import { createOracleApp, EditorPlugin, CreditsPlugin } from '@ixo/oracle-runtime';
+import * as sdk from 'matrix-js-sdk';
+import Redis from 'ioredis';
+
+const matrixClient = sdk.createClient({
+  baseUrl: process.env.MATRIX_BASE_URL!,
+  userId: process.env.MATRIX_ORACLE_ADMIN_USER_ID!,
+  accessToken: process.env.MATRIX_ORACLE_ADMIN_ACCESS_TOKEN!,
+});
+
+const redis = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
+
+const app = await createOracleApp({
+  config,
+  plugins: [
+    new EditorPlugin({ matrixClient }),
+    ...(redis ? [new CreditsPlugin({ redis, network: 'devnet' })] : []),
+  ],
+});
+```
+
+Live example: [apps/qiforge-example/src/main.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts).
+
+<Note>
+The bundled `editorPlugin` and `creditsPlugin` instances boot in stub form (for testing). For production behaviour, instantiate them yourself and pass the live objects in.
+</Note>
+
+## Inspect what loaded
+
+<Steps>
+  <Step title="Read app.plugins.status() after boot">
+    ```ts
+    const status = app.plugins.status();
+    // {
+    //   loaded: ['memory', 'domain-indexer', 'editor', 'user-preferences', 'weather'],
+    //   excluded: [
+    //     { plugin: 'composio', reason: 'auto-detect precondition not met (COMPOSIO_API_KEY)', cause: 'auto_detect_missing' },
+    //     { plugin: 'slack',    reason: 'feature flag set to false',                              cause: 'feature_false' },
+    //   ],
+    //   softDepGaps: [],
+    // }
+    ```
+
+    `cause` is one of `'feature_false'`, `'auto_detect_missing'`, `'cascaded'`. Surface this in your boot logs so operators see what came up.
+  </Step>
+
+  <Step title="Or use the CLI">
+    ```sh
+    qiforge inspect
+    ```
+
+    Same data, formatted for the terminal. See the [CLI reference](/build-an-oracle/reference/cli).
+  </Step>
+</Steps>
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Plugin catalog" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
+    Every bundled plugin in detail.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Core vars plus per-plugin vars.
+  </Card>
+  <Card title="createOracleApp reference" icon="gear" href="/build-an-oracle/reference/createoracleapp">
+    Every option, exhaustively.
+  </Card>
+  <Card title="Write a plugin" icon="puzzle-piece" href="/build-an-oracle/develop/write-a-plugin">
+    Build your own next to the bundled set.
+  </Card>
+</CardGroup>

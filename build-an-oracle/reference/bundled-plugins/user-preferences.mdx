@@ -1,0 +1,64 @@
+---
+title: "user-preferences"
+description: "Behavioural preferences — how the user wants you to respond (tone, language, formality, what to call you)."
+icon: "sliders"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/user-preferences/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/user-preferences/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `always` |
+| Stability | `stable` |
+| Category | `core` |
+| Default state | On |
+| Depends on | — |
+
+## Summary
+
+Per-room user behavioural preferences (tone, length, format, language, what to call the agent). `state.userPreferences` is hydrated by the agent builder before the agent is compiled, so the system prompt sees the value on turn 1. The agent calls `set_user_preferences` when the user asks to change behaviour, and the change persists across sessions.
+
+## Environment variables
+
+This plugin has no required env vars.
+
+## What it contributes
+
+- **Tools:** `set_user_preferences`.
+- **Sub-agents:** none.
+- **Middlewares:** none directly (preferences are hydrated by the runtime's agent builder, not a plugin middleware).
+- **Nest modules:** `UserPreferencesHttpModule` — registers the `GET /user-preferences` controller for client-side reads.
+- **HTTP routes:** `GET /user-preferences`.
+- **Shared state:** none.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { 'user-preferences': false }, // never load
+  // features: { 'user-preferences': true }, // force load (default)
+});
+```
+
+## When to use it
+
+- User states how they want you to behave: "be more terse", "respond in Spanish", "call me Alex", "stop using emojis".
+- User asks to change the voice, formality, or language of your replies — save it so it persists across sessions, not just this turn.
+
+## When NOT to use it
+
+- Facts about who the user is (name, role, project) — those go to [`memory`](/build-an-oracle/reference/bundled-plugins/memory), not preferences.
+- Artifacts you have produced or how the user reacted to them — also [`memory`](/build-an-oracle/reference/bundled-plugins/memory), not preferences.
+- One-turn formatting requests ("just for this answer, use bullets") — adapt locally without saving.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Add HTTP endpoints" icon="route" href="/build-an-oracle/develop/plugin-recipes/add-http-endpoints">
+    Pattern this plugin uses for `GET /user-preferences`.
+  </Card>
+  <Card title="memory" icon="brain" href="/build-an-oracle/reference/bundled-plugins/memory">
+    Where to put facts (vs preferences).
+  </Card>
+</CardGroup>

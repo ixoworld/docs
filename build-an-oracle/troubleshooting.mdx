@@ -1,0 +1,236 @@
+---
+title: "Troubleshooting"
+description: "Common QiForge boot errors, Matrix issues, plugin loading problems, and the fix for each."
+icon: "circle-question"
+---
+
+## Boot errors
+
+Every boot error names the offending plugin and a remediation hint. They print to stderr via the configured logger, prefixed with `[boot-error]`.
+
+### Missing required env var
+
+```text
+[boot-error] Plugin 'memory' env validation failed for 'MEMORY_MCP_URL': Required.
+            Set 'MEMORY_MCP_URL' or disable: features: { memory: false }
+```
+
+**Cause:** A loaded plugin's `configSchema` requires a variable that isn't in `process.env`.
+
+**Fix:**
+- Set the variable in `.env`.
+- Or opt the plugin out: `features: { memory: false }` (only if you don't need its functionality).
+- Or if the plugin has an `autoDetect`, make sure the detection var is set so the plugin opts in only when ready.
+
+### LLM provider key missing
+
+```text
+[boot-error] LLM provider env validation failed for 'OPEN_ROUTER_API_KEY':
+            LLM provider 'openrouter' selected via LLM_PROVIDER but OPEN_ROUTER_API_KEY is not set.
+            Set OPEN_ROUTER_API_KEY, or switch LLM_PROVIDER to nebius and set NEBIUS_API_KEY.
+```
+
+**Fix:** Set the key for the selected provider, or switch providers.
+
+### `ORACLE_ENTITY_DID` empty
+
+```text
+createOracleApp: ORACLE_ENTITY_DID env is required and was empty after validation.
+```
+
+**Cause:** The env var passed Zod validation as a string but resolved to an empty value.
+
+**Fix:** Set `ORACLE_ENTITY_DID=did:ixo:entity:...` in `.env`. Run `qiforge-cli create-entity` if you don't have one.
+
+### Hard dependency missing
+
+```text
+[boot-error] Plugin 'skills' depends on 'sandbox', which is not loaded.
+            Add sandbox to features, or remove skills.
+```
+
+**Cause:** A loaded plugin's `dependsOn` lists another plugin that isn't loaded.
+
+**Fix:** Set the required env var for the dependency, or disable the dependent plugin via `features`.
+
+### Dependency cycle
+
+```text
+[boot-error] Cyclic plugin dependency: A → B → C → A
+```
+
+**Fix:** Restructure plugin dependencies. Cycles in `dependsOn` are not allowed.
+
+### Tool name collision
+
+```text
+[boot-error] Tool name collision: 'send_message' is registered by both 'slack' and 'matrix'.
+            Rename one of them.
+```
+
+**Cause:** Two plugins register tools with the same `name`. Flat namespace.
+
+**Fix:** Rename one. Convention is to prefix tool names with a domain hint (`slack_send_message`).
+
+### Shared-state key collision
+
+```text
+[boot-error] Shared state key collision: 'userProfile' registered by 'memory' and 'profile-overrides'.
+```
+
+**Fix:** Rename one of the keys in the plugin's `getSharedState()` return.
+
+### Manifest validation failed
+
+```text
+[boot-error] Plugin 'weather' manifest example references unknown tool 'foo'.
+[boot-error] Plugin 'weather' manifest: whenToUse must have at least 1 entry when visibility != 'silent'.
+```
+
+**Cause:** Hard manifest violations (see [Manifest schema](/build-an-oracle/reference/manifest-schema)).
+
+**Fix:** Ensure `summary` is non-empty, `whenToUse` has entries when visibility isn't `silent`, and every `examples[].tool` matches a registered tool.
+
+## Matrix issues
+
+### Matrix init fails
+
+```text
+[plugin] matrix pending → failed (reason: ...)
+[runtime] matrix-init: ...
+```
+
+**Cause:** Wrong Matrix homeserver URL, wrong admin credentials, network unreachable, or the access token has expired.
+
+**Fix:**
+- Check `MATRIX_BASE_URL`, `MATRIX_ORACLE_ADMIN_USER_ID`, `MATRIX_ORACLE_ADMIN_PASSWORD`, `MATRIX_ORACLE_ADMIN_ACCESS_TOKEN`.
+- Run `qiforge-cli create-entity` to re-provision if the credentials are stale.
+
+Important: the runtime starts HTTP listening even when Matrix is still pending. Auth-requiring routes will 401 until Matrix is up, but public routes (`/health`, `/docs`, plugin and host exclusions) stay reachable.
+
+### Boot warns: UCAN signing key not loaded
+
+```text
+[boot] setupClaimSigningMnemonics returned null.
+       UCAN minting will be unavailable until the mnemonic is provisioned
+       (run `oracles-cli setup-claim-signing-mnemonics`).
+```
+
+**Cause:** The oracle's Matrix account room doesn't contain the encrypted signing mnemonic state event.
+
+**Fix:** Run the CLI command to provision it. Until then, authenticated routes will 401.
+
+### Boot warns: No P-256 encryption key found
+
+```text
+[boot] No P-256 encryption key found. User secrets will be
+       unavailable. Provision one via `oracles-cli setup-encryption-key`.
+```
+
+**Fix:** Run `qiforge-cli setup-encryption-key`. Until then, `rtCtx.secrets.getValues()` returns nothing — acceptable degraded mode, but plugins that depend on user secrets won't work.
+
+### Lost Matrix store after restart
+
+**Symptoms:** Boot is slow; old threads aren't visible; encrypted messages can't be decrypted.
+
+**Cause:** The Matrix store directory wasn't persisted across restarts.
+
+**Fix:** Mount a volume at `MATRIX_STORE_PATH` (and `SQLITE_DATABASE_PATH`). See [Deployment](/build-an-oracle/develop/deploy).
+
+## Plugin loading
+
+### A plugin I expected isn't loaded
+
+Check the boot log:
+
+```text
+[boot] excluded plugins: composio (COMPOSIO_API_KEY), slack (SLACK_BOT_OAUTH_TOKEN)
+```
+
+The reason is the plugin's `autoDetectHint` — the env var that, when set, would opt the plugin in.
+
+**Fix:**
+- Set the var.
+- Or force the plugin on via `features: { composio: true }` (you'll then need to provide whatever vars its `configSchema` requires).
+
+### A plugin loaded that I didn't want
+
+Two reasons it might load:
+
+1. It has no `autoDetect` and is on by default. Disable via `features: { name: false }`.
+2. Its `autoDetect` returned `true` because the relevant env var is set. Either unset the var or force off via `features`.
+
+### The agent doesn't call my tool
+
+Most common causes:
+
+- **Plugin is `on-demand` but hasn't been loaded** by the agent in this thread. The agent has to call `list_capabilities` and `load_capability` first. Either:
+  - Promote to `visibility: 'always'` (costs Tier-1 tokens — only if the agent needs it most turns).
+  - Improve the manifest's `whenToUse` so the agent picks it up faster.
+- **Manifest `whenToUse` is too vague.** Add specific trigger phrases.
+- **Tool description doesn't match the user's intent.** The agent reads the description verbatim — write it like a docstring for the LLM.
+- **Tool isn't in the bound list.** Check `app.plugins.status().loaded` to confirm the plugin is loaded. If `on-demand`, check `state.loadedPlugins`.
+
+### Soft-dep gap warning at boot
+
+```text
+[boot] excluded plugins: ...
+[boot] soft-dep gaps: claim-processing → memory
+```
+
+The plugin loaded but its `softDependsOn` is missing. This is informational — the plugin will branch on `availablePlugins.has('memory')` and degrade gracefully. If you want the full behaviour, also load the missing plugin.
+
+## Auth
+
+### Every protected request returns 401
+
+Likely causes:
+
+- **Matrix init still pending.** The runtime needs Matrix up to validate UCANs. Watch for `[plugin] matrix pending → loaded` before retrying.
+- **Signing mnemonic not loaded** (see Matrix issues above). Auth middleware can't mint downstream invocations.
+- **UCAN delegation expired or malformed.** Check the `x-ucan-delegation` header.
+- **`x-did` doesn't match the delegation.** The middleware verifies the audience.
+
+### My webhook hits 401
+
+Plugin and host webhooks need to be opted out of `AuthHeaderMiddleware`:
+
+- Plugin-side: `getAuthExcludedRoutes()` returns `[{ path: 'my-route', method: RequestMethod.POST }]`.
+- Host-side: pass `authExcludedRoutes: [{ path: '...', method: ... }]` to `createOracleApp`.
+
+The `path` is the full path the controller mounts at (`webhooks/incoming`, not `incoming`). Leading slash optional.
+
+## Runtime errors
+
+### `OracleApp.listen called twice.`
+
+You called `app.listen()` more than once. The framework allows it only once — after that, the app's listening state is fixed.
+
+### `setFileProcessingProvider` not configured
+
+This is wired by `createOracleApp` itself before NestJS boots — you shouldn't see it. If you do, you're using internal modules in an unusual order. Stick to `createOracleApp`.
+
+### Concurrent model-timing middleware logs are interleaved
+
+If you wrote a middleware with closure-scoped timing state, concurrent LLM calls share the same closure. For accurate per-call timing, push start times onto a stack keyed by `runId` (from the runtime), or use the standard tracing path.
+
+## When in doubt
+
+- Check `app.plugins.status()` — `loaded`, `excluded` (with reason), `softDepGaps`.
+- Check the Swagger UI at `/docs` — the live route list.
+- Run `qiforge inspect` (once TASK-33 ships) for a structured registry dump.
+- Open the LangSmith trace for the failing turn.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    What needs to be set for each plugin.
+  </Card>
+  <Card title="Plugin catalog" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
+    Default state, dependencies, env vars per plugin.
+  </Card>
+  <Card title="Deployment" icon="rocket-launch" href="/build-an-oracle/develop/deploy">
+    Volume layout, probes, signal handling.
+  </Card>
+</CardGroup>
