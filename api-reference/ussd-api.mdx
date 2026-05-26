@@ -73,10 +73,11 @@ Processes a USSD interaction. Called by the telecom gateway once per user input 
 
 Plain text. The first word indicates whether the session continues or ends.
 
-```
+```text
 CON <menu text>
 ```
-```
+
+```text
 END <closing message>
 ```
 
@@ -104,7 +105,7 @@ curl -X POST http://localhost:3000/api/ussd \
 
 Response:
 
-```
+```text
 CON Welcome to IXO USSD
 1. Know More
 2. Account Menu
@@ -126,7 +127,7 @@ curl -X POST http://localhost:3000/api/ussd \
 
 Response:
 
-```
+```text
 CON Information Center
 1. About this service
 2. Pricing
