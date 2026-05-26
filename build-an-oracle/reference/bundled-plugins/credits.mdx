@@ -36,7 +36,7 @@ Silent (no agent-visible tools). When loaded, this plugin also activates the run
 
 - **Tools:** none.
 - **Sub-agents:** none.
-- **Middlewares:** `createCreditsMiddleware` (aborts the agent run when the user is out of credits).
+- **Middleware:** `createCreditsMiddleware` (aborts the agent run when the user is out of credits).
 - **Nest modules** (when Redis is configured at construct time):
   - `ClaimProcessingModule` — cron that settles held credits on chain.
   - `FileProcessingSinkModule` — `FILE_PROCESSING_CREDIT_SINK` so pre-flight file-processing LLM usage bills the per-user budget.

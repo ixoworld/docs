@@ -98,5 +98,6 @@ Example:
 | added | n/a | `/build-an-oracle/build/overview` | Build-track index | Replaces conceptual plugin overview as developer entry |
 | added | n/a | `/build-an-oracle/understand/what-is-qiforge` | Extracted mental-model summary | Lets the landing stay lean |
 | added | n/a | `/build-an-oracle/reference/bundled-plugins/<plugin>` | One reference page per bundled plugin | 14 leaf pages + overview |
+| changed | `/articles/ixo-oracles` | `/articles/agentic-oracles` | Canonical concept article for Agentic Oracles | Previously redirected to `/build-an-oracle`; implementation docs remain on Build track |
 
 Update this table whenever a decision is made.

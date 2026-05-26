@@ -55,7 +55,7 @@ A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` a
   </Step>
 
   <Step title="Return it from getMiddlewares(ctx)">
-    The runtime appends your middlewares after the four always-on framework middlewares.
+    The runtime appends your middleware after the four always-on framework middleware.
 
     ```ts
     import { OraclePlugin, type AgentMiddleware, type PluginContext } from '@ixo/oracle-runtime';
@@ -71,7 +71,7 @@ A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` a
   </Step>
 
   <Step title="Attach a middleware to a sub-agent (optional)">
-    A sub-agent can carry its own middlewares — they only run inside that sub-agent's loop.
+    A sub-agent can carry its own middleware — it only runs inside that sub-agent's loop.
 
     ```ts
     import { createSummarizationMiddleware } from '@ixo/oracle-runtime';
@@ -87,9 +87,9 @@ A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` a
 
 ## What to know before shipping
 
-- The four always-on middlewares (`tool-validation`, `tool-retry`, `page-context`, `safety-guardrail`) always run first. They are not removable.
-- Plugin middlewares run in topological dependency order — encode ordering via `dependsOn` if it matters.
-- Middlewares fire per LLM turn, not per individual tool invocation. Wrap the tool handler directly for per-tool behaviour.
+- The four always-on middleware (`tool-validation`, `tool-retry`, `page-context`, `safety-guardrail`) always run first. They are not removable.
+- Plugin middleware runs in topological dependency order — encode ordering via `dependsOn` if it matters.
+- Middleware fires per LLM turn, not per individual tool invocation. Wrap the tool handler directly for per-tool behaviour.
 - Closure-scoped timers interleave across concurrent model calls. For accurate timing, push start times onto a per-call ID.
 - Don't reimplement auth in a middleware — auth runs at the HTTP layer (`AuthHeaderMiddleware`), not in the agent loop.
 
@@ -97,7 +97,7 @@ A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` a
 
 <CardGroup cols={2}>
   <Card title="Add a sub-agent" icon="sitemap" href="/build-an-oracle/develop/plugin-recipes/add-a-sub-agent">
-    Sub-agent-scoped middlewares.
+    Sub-agent-scoped middleware.
   </Card>
   <Card title="State schema" icon="table" href="/build-an-oracle/reference/state-schema">
     What's in `state` when your hooks fire.

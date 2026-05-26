@@ -113,7 +113,7 @@ A sub-agent is a `PluginSubAgent` the runtime auto-wraps as a tool (e.g. `weathe
 
 - The sub-agent's `name` must be unique across all loaded plugins — same namespace as regular tools. Prefix with the agent role (e.g. `weather_planner_agent`).
 - `model` defaults to `'subagent'`. Use `'main'` for a top-tier model, `'utility'` for a cheaper one.
-- Sub-agent middlewares (the `middlewares` field) only run inside the sub-agent's loop, not the main agent's chain.
+- Sub-agent middleware (the `middlewares` field) only runs inside the sub-agent's loop, not the main agent's chain.
 - `onComplete(result, ctx)` fires after the last turn — use it for follow-up events.
 - If sub-agent init throws, the runtime logs and skips that contribution for that request; the rest of the agent build continues.
 
@@ -124,6 +124,6 @@ A sub-agent is a `PluginSubAgent` the runtime auto-wraps as a tool (e.g. `weathe
     For single-call work that doesn't need a sub-agent.
   </Card>
   <Card title="Add a middleware" icon="filter" href="/build-an-oracle/develop/plugin-recipes/add-a-middleware">
-    Main-agent vs sub-agent middlewares.
+    Main-agent vs sub-agent middleware.
   </Card>
 </CardGroup>

@@ -6,7 +6,7 @@ icon: "book"
 
 ## Terms
 
-**Agent** — the main LLM loop. Built per request by `createMainAgent`, which composes tools, sub-agents, and middlewares from the plugin registries and invokes LangChain's `createAgent`.
+**Agent** — the main LLM loop. Built per request by `createMainAgent`, which composes tools, sub-agents, and middleware from the plugin registries and invokes LangChain's `createAgent`.
 
 **`availablePlugins`** — `ReadonlySet<string>` of plugin names that survived boot resolution. Fixed at boot. Exposed on both `PluginContext` and `RuntimeContext`. Used for soft-dep branching. See [Dependencies](/build-an-oracle/develop/plugin-recipes/declare-dependencies).
 
@@ -50,7 +50,7 @@ icon: "book"
 
 **Meta-tool** — a built-in tool the runtime registers on every agent, not authored by any plugin. There are two: `list_capabilities` and `load_capability`. See [Meta-tools](/build-an-oracle/understand/meta-tools-and-loading).
 
-**Middleware** — LangChain `AgentMiddleware`. Hooks: `beforeModel`, `afterModel`, `onError`. Four are always-on (tool validation, retry, page context, safety guardrail); plugins add more via `getMiddlewares`. See [Plugin middlewares](/build-an-oracle/develop/plugin-recipes/add-a-middleware).
+**Middleware** — LangChain `AgentMiddleware`. Hooks: `beforeModel`, `afterModel`, `onError`. Four are always-on (tool validation, retry, page context, safety guardrail); plugins add more via `getMiddlewares`. See [Plugin middleware](/build-an-oracle/develop/plugin-recipes/add-a-middleware).
 
 **NestJS module** — a unit of Nest DI (controllers, providers, lifecycle). Plugins ship modules via `getNestModules`; the host ships them via `createOracleApp({ nestModules })`.
 
@@ -60,13 +60,13 @@ icon: "book"
 
 **`OraclePlugin`** — the abstract class every plugin extends. See [Plugin API](/build-an-oracle/reference/plugin-api).
 
-**Plugin** — a unit of extension. Class or POJO. Contributes any combination of tools, sub-agents, middlewares, Nest modules, shared state, config, and auth exclusions.
+**Plugin** — a unit of extension. Class or POJO. Contributes any combination of tools, sub-agents, middleware, Nest modules, shared state, config, and auth exclusions.
 
 **`PluginContext`** — boot-time context passed to plugin builder hooks. Holds `config`, `identity`, `availablePlugins`, `logger`. No user. See [reference](/build-an-oracle/reference/plugin-context).
 
 **`PluginManifest`** — see *Manifest*.
 
-**Registry** — internal collection that holds plugin contributions of one kind. Six registries: tools, sub-agents, middlewares, manifests, configSchema, sharedState. Populated at boot.
+**Registry** — internal collection that holds plugin contributions of one kind. Six registries: tools, sub-agents, middleware, manifests, configSchema, sharedState. Populated at boot.
 
 **`RuntimeContext`** — per-request context. Holds `user`, `session`, `history`, `secrets`, `matrix`, `ucan`, `llm`, `emit`, `logger`, `abortSignal`, `shared`. See [reference](/build-an-oracle/reference/runtime-context).
 
@@ -80,7 +80,7 @@ icon: "book"
 
 **Tier-1** — the prompt block listing `always` plugins (`- {name}: {summary}`). Composed at request build from the manifest registry. See [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility).
 
-**Topological sort** — the boot ordering pass over `dependsOn`. Plugins are loaded in dependency order; middlewares fire in this order; tools are emitted in this order (for deterministic prompts).
+**Topological sort** — the boot ordering pass over `dependsOn`. Plugins are loaded in dependency order; middleware fires in this order; tools are emitted in this order (for deterministic prompts).
 
 **UCAN** — User-Controlled Authorisation Network. The delegation envelope on every authenticated request (`x-ucan-delegation` header). The oracle mints downstream invocations signed by its `SECP_MNEMONIC`. See [Identity and auth](/build-an-oracle/develop/identity-and-auth).
 

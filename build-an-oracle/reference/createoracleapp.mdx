@@ -211,7 +211,7 @@ The function executes these steps in order:
 5. Composes env schema (base + all loaded plugins' `configSchema`) and validates `process.env`. Missing required vars fail boot with `[boot-error] Plugin '<name>' env validation failed for '<field>'`.
 6. Cross-field check: the API key for the selected `LLM_PROVIDER` is present. (Schema-merge can't express this.)
 7. Builds the internal `OracleIdentity` from `config` + validated env.
-8. Populates the six registries (tools, sub-agents, middlewares, manifests, configSchema, sharedState).
+8. Populates the six registries (tools, sub-agents, middleware, manifests, configSchema, sharedState).
 9. Collects `getNestModules` from every loaded plugin.
 10. Builds the dynamic `RuntimeAppModule` and bootstraps NestJS (`NestFactory.create`). CORS enabled with the framework's allowed headers. Swagger UI mounts at `/docs`.
 11. Builds `AmbientServices`.

@@ -60,7 +60,7 @@
 /articles/ixo-blocksync
 /articles/ixo-integrations
 /articles/ixo-matrix
-/articles/ixo-oracles
+/articles/agentic-oracles
 /articles/ixo-protocol
 /articles/ixo-signx
 /articles/orchestration
@@ -191,7 +191,7 @@
 /articles/ixo-blockchain
 /articles/ixo-matrix
 /articles/ixo-blocksync
-/articles/ixo-oracles
+/articles/agentic-oracles
 /articles/pods
 /articles/projects
 /platforms/Emerging/intro-emerging

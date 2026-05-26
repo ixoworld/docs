@@ -71,7 +71,7 @@ icon: "eye"
 - Default is `'on-demand'`. A plugin without an explicit `manifest.visibility` is treated as on-demand.
 - `'on-demand'` plugins live in a per-thread `loadedPlugins` set. The set is monotonic — loading is forever for that thread; a new thread resets it.
 - Per-tool overrides let you ship a mixed plugin (one `'always'` tool + several `'on-demand'` tools) without splitting it.
-- `'silent'` plugins still run their middlewares and Nest modules. Use this for instrumentation, rate limiting, billing.
+- `'silent'` plugins still run their middleware and Nest modules. Use this for instrumentation, rate limiting, billing.
 - A fork with 50 `'on-demand'` plugins can usually keep 3–5 loaded per thread — the budget stays bounded as the catalog grows.
 
 ## Where to read next

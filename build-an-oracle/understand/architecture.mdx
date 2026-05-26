@@ -45,7 +45,7 @@ Typically `apps/your-oracle/src/main.ts` (a `createOracleApp(...)` call), a `con
 
 ### Layer 2 — `@ixo/oracle-runtime`
 
-The framework. Owns the bootstrap (`createOracleApp`), the always-on Nest modules (Sessions, Messages, WebSocket, Secrets, UCAN, Auth, Subscription, Throttler, Health), the per-request agent builder, the four always-on middlewares, the Matrix-backed SQLite checkpointer, and the plugin API.
+The framework. Owns the bootstrap (`createOracleApp`), the always-on Nest modules (Sessions, Messages, WebSocket, Secrets, UCAN, Auth, Subscription, Throttler, Health), the per-request agent builder, the four always-on middleware, the Matrix-backed SQLite checkpointer, and the plugin API.
 
 You never edit this layer. Updates come via `pnpm update @ixo/oracle-runtime`.
 
@@ -79,7 +79,7 @@ Plugins don't talk to the runtime directly. They push contributions into one of 
 | --- | --- | --- |
 | ToolRegistry | All plugin tools | Flat namespace — collision is a boot error |
 | SubAgentRegistry | All plugin sub-agents | Flat namespace — collision is a boot error |
-| MiddlewareRegistry | All plugin middlewares | Ordered topologically; no names |
+| MiddlewareRegistry | All plugin middleware | Ordered topologically; no names |
 | ManifestRegistry | All plugin manifests | Title collision = soft warn |
 | ConfigSchemaRegistry | All plugin Zod schemas | Merged; later wins with warning |
 | SharedStateRegistry | Plugin shared-state accessors | Flat namespace — collision is a boot error |
@@ -94,7 +94,7 @@ Source: [`packages/oracle-runtime/src/registries/`](https://github.com/ixoworld/
 | `nestModules` (your Nest modules) | Graph state shape (except one new `loadedPlugins` field) |
 | `authExcludedRoutes` (host + plugin) | Checkpointer (Matrix-backed SQLite) |
 | LLM provider (env-driven) | Auth flow (UCAN delegation) |
-| `hooks.checkpointerForUser` (advanced) | The four always-on middlewares |
+| `hooks.checkpointerForUser` (advanced) | The four always-on middleware |
 | System prompt (via `OracleConfig.prompt`) | The Tier-1 block format |
 | Anything inside a custom plugin | The six registries |
 

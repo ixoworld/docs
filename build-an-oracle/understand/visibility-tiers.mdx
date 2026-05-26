@@ -20,7 +20,7 @@ icon: "eye"
 | --- | --- | --- |
 | `always` | Plugins the agent needs on nearly every turn (e.g. `memory`, `skills`, `user-preferences`) | ~80 tokens for the Tier-1 entry + tool schemas (~100–300 per tool) on every turn |
 | `on-demand` | Plugins useful in narrow situations (e.g. `portal`, `firecrawl`, `composio`) | Zero until loaded; same as `always` after |
-| `silent` | Plugins that act through middlewares or HTTP only (e.g. `credits`, `slack`) | Zero in the prompt; middlewares still run |
+| `silent` | Plugins that act through middleware or HTTP only (e.g. `credits`, `slack`) | Zero in the prompt; middleware still runs |
 
 ## Picking a tier
 

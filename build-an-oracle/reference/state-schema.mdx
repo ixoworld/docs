@@ -147,9 +147,9 @@ Each field has a reducer that merges partial updates from agent nodes:
 
 - **`messages`** — append + dedupe by ID (LangGraph default for the messages channel).
 - **`loadedPlugins`** — union via Set; never removes.
-- Most other fields use last-write-wins or "merge if present" semantics; consult the source for the exact reducer when authoring middlewares that mutate state.
+- Most other fields use last-write-wins or "merge if present" semantics; consult the source for the exact reducer when authoring middleware that mutate state.
 
-Plugin middlewares that need to update state should return a partial state object from the hook. The runtime applies it through the reducer pipeline.
+Plugin middleware that need to update state should return a partial state object from the hook. The runtime applies it through the reducer pipeline.
 
 ## Checkpointing
 

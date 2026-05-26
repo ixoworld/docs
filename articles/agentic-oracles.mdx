@@ -1,0 +1,159 @@
+---
+title: "Agentic Oracles"
+description: "Governed AI evaluators and workflow actors that are identity-bound, evidence-grounded, protocol-governed, and audit-producing economic actors."
+icon: "sparkles"
+---
+
+<Tip>
+  An **Agentic Oracle** is a governed AI evaluator and workflow actor. It performs **P-Functions** over verifiable state—turning claims, evidence, models, and context into accountable intelligence: typed facts, predictions, recommendations, attestations, determinations, risk signals, compliance checks, payment triggers, and permitted workflow actions. It is an identity-bound, evidence-grounded, protocol-governed, and audit-producing economic actor.
+</Tip>
+
+Most AI agents are good at *doing*. Agentic Oracles are accountable for *deciding*. They are the first class of AI service designed to participate in workflows where claims must be verified, authority must be respected, decisions must be replayable, and outcomes must be inspectable by more than one party.
+
+This is the capability that IXO and Qi were built for.
+
+<Info>
+  This is a **concept and architecture article**. For implementation, see [Build an Oracle](/build-an-oracle). For the evaluation pattern, see [Claim evaluation protocol](/articles/claim-evaluation-protocol). For the cooperation layer, see [Qi: cooperation on verified workflows](/articles/qi-intelligent-cooperating-system).
+</Info>
+
+## What makes it an Agentic Oracle
+
+Five properties distinguish an Agentic Oracle from any other generic AI agents. All five must hold.
+
+| Property | What it means |
+| --- | --- |
+| **Identity-bound** | Acts through a known service identity, with a DID, and verifiable credentials. |
+| **Authority-scoped** | May only inspect evidence, call tools, issue outputs, or trigger actions that a protocol, domain, workflow, policy, or delegation permits. The oracle is not allowed to act outside its authority. |
+| **Evidence-grounded** | Operates on claims, credentials, observations, and data that can be referenced, replayed, challenged, or reviewed. |
+| **Protocol-governed** | Outputs are constrained by explicit rubrics, thresholds, schemas, and workflow states. The oracle is not allowed to make arbitrary decisions. |
+| **Audit-producing** | Emits structured outputs that can be inspected, signed, anchored, challenged, or routed to human review. |
+
+The value is not autonomy. The value is **accountable intelligence**: AI reasoning connected to verifiable evidence, governed authority, repeatable evaluation, and permitted action.
+
+## Why this is a new category
+
+The category exists because three different families of system each solve part of the problem and none solve all of it.
+
+| System | What it gives you | What it cannot do |
+| --- | --- | --- |
+| **Generic AI agent** | Productivity: drafts, searches, plans, calls tools | Cannot bind decisions to verifiable evidence or governed authority |
+| **Blockchain oracle** | Connectivity: relays external data into on-chain logic | Does not evaluate what the data *means* under a rule and the given context |
+| **Data oracle** | Availability: supplies validated data to downstream systems | Does not decide which action is permitted or by whom |
+| **Agentic Oracle** | **Accountable cooperation**: evaluates claims and context under authority, produces inspectable determinations, and triggers governed action | — |
+
+An Agentic Oracle is the role that emerges when AI reasoning, verifiable state, and delegated authority meet inside one workflow.
+
+## Why IXO is uniquely positioned
+
+Other stacks can host an AI agent. They cannot easily make that agent *accountable*. Agentic Oracles depend on primitives that the IXO and Qi stack already provides as first-class infrastructure:
+
+<CardGroup cols={2}>
+  <Card title="Verifiable identity" icon="id-badge">
+    Every oracle has an **IXO entity DID** anchored on-chain. Its actions are attributable, its keys are revocable, and its credentials are inspectable.
+  </Card>
+  <Card title="Cryptographic authority" icon="key">
+    **UCAN delegation** scopes what an oracle may do for whom. Authority is granted, attenuated, and revocable—no ambient permissions.
+  </Card>
+  <Card title="Inspectable evidence" icon="file-shield">
+    **Claims, verifiable credentials, and the IXO Graph** give the oracle evidence it can reference, replay, and cite by identifier.
+  </Card>
+  <Card title="Encrypted cooperation" icon="lock">
+    **IXO Matrix** rooms host the conversation around each workflow—per-user, end-to-end encrypted, and preserved alongside actions.
+  </Card>
+  <Card title="Governed state transitions" icon="diagram-project">
+    **IXO Protocol** records claims, evaluations, and UDIDs as state changes the network can verify and downstream systems can trust.
+  </Card>
+  <Card title="Cooperation surface" icon="brain-circuit">
+    **Qi** orchestrates humans, agents, applications, and services around that state through declared interfaces and review paths.
+  </Card>
+</CardGroup>
+
+Take any of these away and you are back to a generic AI agent that you have to trust on its word. Together they make Agentic Oracles practical.
+
+## P-Functions: what an Agentic Oracle does
+
+**P-Functions** are the capability classes an Agentic Oracle can perform. A single oracle may implement one narrow function—proofing a claim—or combine several inside a governed workflow: detect risk, predict impact, prescribe an intervention, and route the case for human review.
+
+Treat this as a **capability map**, not a list of unrestricted powers. Every function is scoped by the oracle's authority and rubric.
+
+<AccordionGroup>
+  <Accordion title="Proving and protocol conformance" icon="shield-check">
+    - **Proofing and verification** — Validate claims, evidence, credentials, or state assertions against defined rules. *Output:* verification result, evaluation claim, signed determination, reason-coded route.
+    - **Protocol adherence** — Monitor conformance to protocol rules, schemas, authorities, and state transitions. *Output:* compliance result, invalid-state flag, allowed-transition check.
+  </Accordion>
+
+  <Accordion title="Prediction and perception" icon="chart-line">
+    - **Prediction** — Estimate future states, risks, trends, demand, or outcomes from evidence and models. *Output:* forecast, confidence score, early warning.
+    - **Pattern recognition** — Detect signals, clusters, correlations, or anomalies in complex datasets. *Output:* pattern report, anomaly flag, classification.
+    - **Performance monitoring** — Track indicators, service levels, milestones, or system health. *Output:* performance score, threshold breach, alert.
+    - **Providing data analysis and insights** — Analyse claims, evidence, and context for decision-useful intelligence. *Output:* insight report, analytic summary.
+    - **Personalisation** — Adapt recommendations or workflows to a person, organisation, place, or asset. *Output:* contextual recommendation, tailored workflow.
+    - **Pathfinding** — Identify viable routes through workflows, evidence paths, or operational constraints. *Output:* route recommendation, dependency map.
+  </Accordion>
+
+  <Accordion title="Prescription and planning" icon="route">
+    - **Prescription** — Recommend interventions or next-best actions to achieve a target outcome. *Output:* recommended action, intervention plan.
+    - **Planning** — Create ordered action sequences, resource plans, or implementation strategies. *Output:* plan, task graph, milestone sequence.
+    - **Process optimisation** — Improve workflows, supply chains, verification pipelines, or resource usage. *Output:* optimisation recommendation, bottleneck diagnosis.
+  </Accordion>
+
+  <Accordion title="Protection and risk" icon="shield-halved">
+    - **Prevention of risks** — Anticipate and mitigate operational, financial, health, environmental, governance, or compliance risks. *Output:* risk forecast, mitigation plan.
+    - **Privacy protection** — Minimise exposure through redaction, selective disclosure, access control, and privacy-preserving computation. *Output:* redacted evidence package, disclosure decision.
+    - **Problem detection and resolution** — Identify anomalies, failures, blockers, or disputes and propose resolution. *Output:* problem flag, root-cause hypothesis, corrective action.
+  </Accordion>
+
+  <Accordion title="Participation and governance" icon="users">
+    - **Participation of people and organisations** — Maintain human oversight, participatory review, consent, and accountable escalation. *Output:* review request, participation prompt.
+    - **Participating in governance** — Support governance through proposal analysis, quorum checks, and decision routing. *Output:* governance brief, proposal analysis.
+  </Accordion>
+
+  <Accordion title="Payments and portfolio" icon="coins">
+    - **Payment automation** — Trigger or recommend payments when verified conditions are met. *Output:* eligibility signal, settlement instruction, hold/release recommendation.
+    - **Portfolio management** — Assess and optimise portfolios of assets, projects, claims, risks, or financing positions. *Output:* portfolio score, allocation recommendation.
+  </Accordion>
+
+  <Accordion title="Policy and compliance" icon="scale-balanced">
+    - **Policy enforcement** — Check whether actions, claims, data flows, or decisions comply with applicable policies. *Output:* policy check, compliance status, violation flag.
+    - **Providing compliance and reporting** — Produce structured reports for funders, regulators, verifiers, or operators. *Output:* compliance report, audit packet.
+  </Accordion>
+</AccordionGroup>
+
+## Where this matters
+
+Agentic Oracles unlock workflows that previously required slow, expensive, and contestable human-only review—but where automation alone has never been trusted.
+
+- **Impact verification and digital MRV** — Evaluate field evidence against a rubric, attribute outcomes to interventions, and issue evaluation claims that funders and regulators can inspect.
+- **Outcome-based financing** — Trigger or recommend payments when verified conditions are met, with the evidence and authority trail attached.
+- **Claims evaluation and credential issuance** — Apply governed rubrics to evidence packages and prepare credentials within delegated authority.
+- **Governed data sharing** — Decide what may be disclosed to whom under consent and policy, with the decision itself recorded as an artifact.
+- **Operational and governance support** — Detect risk, summarise proposals, route escalations, and prepare reports without taking final authority.
+
+In each case the oracle moves work from *opaque expert judgment* or *unverifiable automation* to **accountable, reproducible intelligence**.
+
+## Boundaries
+
+<Note>
+  **Practical rule:** An Agentic Oracle increases the speed, consistency, and scale of a workflow. It does not remove the need for evidence, authority, protocol conformance, and human review where required. The canonical source of truth is the combination of claim, evidence, authority, rubric, workflow state, signed determination, and review path—not the oracle's response.
+</Note>
+
+An Agentic Oracle **may** inspect permitted evidence, normalise it into typed facts, apply governed rubrics, generate recommendations, produce reason-coded determinations, trigger explicitly delegated actions, route ambiguous cases to human review, and prepare payment, credential, or governance outputs where allowed.
+
+It **may not** silently change its rubric, approve high-value claims from an LLM response alone, treat private reasoning as canonical state, exceed delegated authority, execute irreversible actions when evidence is ambiguous, or become the sole final authority for material settlement, credentialing, or governance.
+
+## Go here next
+
+<CardGroup cols={2}>
+  <Card title="Build an Oracle" icon="compass" href="/build-an-oracle">
+    Ship an Agentic Oracle with QiForge: identity, UCAN auth, Matrix storage, and the plugin runtime.
+  </Card>
+  <Card title="Claim evaluation protocol" icon="clipboard-check" href="/articles/claim-evaluation-protocol">
+    The reference pattern for claims, evidence, rubrics, UDIDs, and bounded agent assistance.
+  </Card>
+  <Card title="Qi cooperation layer" icon="brain-circuit" href="/articles/qi-intelligent-cooperating-system">
+    How humans, agents, and services coordinate over IXO verifiable state.
+  </Card>
+  <Card title="Digital Twin Domains" icon="brain" href="/articles/cdt-systems">
+    P-Function groupings in protocol and domain design.
+  </Card>
+</CardGroup>

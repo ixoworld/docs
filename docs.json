@@ -61,7 +61,8 @@
               "articles/ixo-blocksync",
               "articles/pods",
               "articles/projects",
-              "articles/claim-evaluation-protocol"
+              "articles/claim-evaluation-protocol",
+              "articles/agentic-oracles"
             ]
           }
         ]
@@ -478,7 +479,7 @@
     },
     {
       "source": "/articles/ixo-oracles",
-      "destination": "/build-an-oracle"
+      "destination": "/articles/agentic-oracles"
     },
     {
       "source": "/guides/ixo-oracles-architecture",

@@ -1,10 +1,14 @@
 ---
 title: "Build an Oracle"
-description: "QiForge is the framework for shipping Agentic Oracles — AI agents with a verifiable identity, encrypted per-user storage, and a plugin runtime that takes ~30 lines of TypeScript to wire up."
+description: "QiForge is the framework for shipping Agentic Oracles — governed AI evaluators and workflow actors with verifiable identity, encrypted per-user storage, and a plugin runtime you wire up in ~30 lines of TypeScript."
 icon: "compass"
 ---
 
-An **Agentic Oracle** is an AI agent that owns a verifiable identity (an IXO entity DID), authenticates via UCAN delegation, stores conversations in encrypted per-user Matrix rooms, and composes its capabilities from typed plugins. **QiForge ships the runtime** ([`@ixo/oracle-runtime`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime)) — your oracle is a `main.ts` plus the plugins you want.
+An **Agentic Oracle** is a governed AI evaluator and workflow actor. It performs **P-Functions** over verifiable state—turning claims, evidence, models, and context into accountable intelligence: typed facts, predictions, recommendations, attestations, determinations, risk signals, compliance checks, payment triggers, and permitted workflow actions.
+
+Unlike a generic AI agent, an oracle is identity-bound, authority-scoped, evidence-grounded, protocol-governed, and audit-producing. Unlike a blockchain or data oracle, it does not merely relay information; it evaluates what information means, which rules apply, which actions are allowed, and what proof must be left behind.
+
+**QiForge** ships the runtime for that pattern: verifiable identity (IXO entity DID), UCAN delegation, encrypted per-user Matrix storage, and typed plugins ([`@ixo/oracle-runtime`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime)). Your oracle is a `main.ts` plus the plugins you want. For the full concept model, see [Agentic Oracles](/articles/agentic-oracles).
 
 ## What QiForge does for you
 
@@ -32,13 +36,13 @@ That's a working oracle. One call to [`createOracleApp`](/build-an-oracle/develo
     Each user gets a Matrix room; conversation history + agent checkpoints are E2E-encrypted and synced automatically.
   </Card>
   <Card title="A LangGraph agent" icon="diagram-project">
-    Per-request agent build, dynamic tool loading via meta-tools, four always-on middlewares (tool validation, retry, page context, safety guardrail).
+    Per-request agent build, dynamic tool loading via meta-tools, four always-on middleware (tool validation, retry, page context, safety guardrail).
   </Card>
   <Card title="15 bundled plugins" icon="boxes-stacked">
     `memory`, `skills`, `sandbox`, `portal`, `firecrawl`, `composio`, `editor`, `agui`, `slack`, `credits`, `user-preferences`, and more — toggle them via the `features` map.
   </Card>
   <Card title="A plugin API for your code" icon="puzzle-piece">
-    9 typed hooks let your plugin contribute tools, sub-agents, middlewares, HTTP routes, shared state, and env vars. Boot-time and per-request flavours.
+    9 typed hooks let your plugin contribute tools, sub-agents, middleware, HTTP routes, shared state, and env vars. Boot-time and per-request flavours.
   </Card>
 </CardGroup>
 

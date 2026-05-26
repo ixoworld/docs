@@ -59,7 +59,7 @@ All optional; defaults are production-sane.
   - `pin_room_fact` — persist a durable fact to this room (decisions, deadlines, roles).
   - `unpin_room_fact` — remove a pinned fact by id.
 - **Sub-agents:** none.
-- **Middlewares:** one — the per-turn group-chat gate (see below).
+- **Middleware:** one — the per-turn group-chat gate (see below).
 - **HTTP routes:** none.
 - **Nest modules:** `ChannelMemoryModule` (the per-room SQLite store + Matrix sync).
 - **Shared state:** `channelMemory` — other plugins read the `ChannelMemoryService` singleton via `rtCtx.shared.channelMemory`.
