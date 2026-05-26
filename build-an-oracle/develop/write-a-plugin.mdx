@@ -255,7 +255,7 @@ Each step below builds one of those lines.
   <Step title="Add a middleware with getMiddlewares">
     File: [`weather-middleware.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather-middleware.ts).
 
-    Middlewares run around every LLM call. Hooks come from LangChain's `createMiddleware`.
+    Middleware runs around every LLM call. Hooks come from LangChain's `createMiddleware`.
 
     ```ts
     import { type AgentMiddleware, type PluginContext } from '@ixo/oracle-runtime';
@@ -283,7 +283,7 @@ Each step below builds one of those lines.
     }
     ```
 
-    Plugin middlewares run after the framework's always-on middlewares (tool validation, retry, page context, safety guardrail), in topological dependency order across plugins.
+    Plugin middleware runs after the framework's always-on middleware (tool validation, retry, page context, safety guardrail), in topological dependency order across plugins.
   </Step>
 
   <Step title="Add an HTTP route with getNestModules + getAuthExcludedRoutes">

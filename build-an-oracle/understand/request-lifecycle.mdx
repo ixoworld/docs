@@ -46,7 +46,7 @@ sequenceDiagram
 | **MessagesController** | Reads the inbound message, looks up the session (creates on first contact), hands off to the agent builder. Returns SSE. |
 | **createMainAgent** | Builds the per-request `RuntimeContext`, reads cached registries, runs `getRequestTools` / `getRequestSubAgents`, composes the prompt, returns a LangChain agent compiled against the per-user checkpointer. |
 | **Checkpointer** | Loads `{ messages, loadedPlugins, userContext, ... }` for this `thread_id` (= session id) from per-user SQLite (synced to Matrix in the background). |
-| **LLM invocation** | Composed prompt + bound tools + state messages go to the model selected by `LLM_PROVIDER`. Plugin middlewares fire (`beforeModel`, `afterModel`, `onError`). |
+| **LLM invocation** | Composed prompt + bound tools + state messages go to the model selected by `LLM_PROVIDER`. Plugin middleware fires (`beforeModel`, `afterModel`, `onError`). |
 | **Tool calls** | The agent loop dispatches plugin tools, sub-agent tools, meta-tools, and browser tools. Each emits a typed event so the client can render "Agent called X". |
 | **Save state + stream** | The final state is checkpointed; the assistant message streams over SSE. WS events for intermediate steps have already shipped. |
 
@@ -68,7 +68,7 @@ sequenceDiagram
 | Credit check | 402. Agent never runs. |
 | Rate limit | 429. Agent never runs. |
 | Checkpointer load | Error logged; falls back to empty state. Turn proceeds. |
-| LLM | `onError` middlewares fire. Default: propagate to client. |
+| LLM | `onError` middleware fires. Default: propagate to client. |
 | Tool handler | One retry on validation error; otherwise the error becomes a `ToolMessage` the agent sees. |
 | Sub-agent init | `Promise.allSettled` — log and skip; rest of turn continues. |
 

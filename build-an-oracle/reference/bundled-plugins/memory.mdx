@@ -33,7 +33,7 @@ Durable memory across conversations — who the user is, what you have made for 
   - `memory-engine__delete_episode` — delete a memory.
   - `memory-engine__clear` — clear (destructive; main-agent only).
 - **Sub-agents:** none.
-- **Middlewares:** none directly contributed by the plugin (enrichment of `state.userContext` is handled upstream of the agent).
+- **Middleware:** none directly contributed by the plugin (enrichment of `state.userContext` is handled upstream of the agent).
 - **HTTP routes:** none.
 - **Shared state:** `userProfile` — other plugins read it via `rtCtx.shared.userProfile`.
 
