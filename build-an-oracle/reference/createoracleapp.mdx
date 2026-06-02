@@ -51,6 +51,61 @@ export interface CreateOracleAppOptions {
       },
     }
     ```
+
+    ### prompt sub-fields
+
+    All three `prompt` sub-fields are optional. Omit any you don't need.
+
+    **`opening`**
+
+    Used **verbatim** as the identity preamble — the very first section of the assembled system prompt. Write it as a complete paragraph describing who the oracle is and what it does.
+
+    If `opening` is absent, the runtime generates a fallback from the other top-level fields:
+    - `name` + `org` + `description` present → `"You are {name}, an AI agent operated by {org}. {description}."`
+    - `org` missing → `"You are {name}. {description}."`
+    - Both `org` and `description` missing → `"You are {name}."`
+
+    Providing `opening` gives you full control over tone, persona, and framing — use it whenever the generated fallback is too generic.
+
+    **`communicationStyle`**
+
+    Injected inside the hardcoded **"## Operating principles"** section of the prompt. If set, it appears as a paragraph within that section immediately after the 7 standard operating-principle bullets. If empty or absent, the field is omitted entirely — the operating-principles section still appears, just without the custom style block.
+
+    Use this to steer the agent's tone: formal, concise, empathetic, domain-specific jargon preferences, and so on.
+
+    **`capabilities`**
+
+    Rendered **above** the Tier-1 plugin capability block (the auto-generated list of `visibility='always'` plugins). No header is added by the runtime around this text — write your own heading if you want one. If empty or absent, the field is omitted entirely.
+
+    Use this to describe high-level skills the oracle has that aren't obvious from the plugin manifest alone — things like domain expertise, supported workflows, or what the agent should proactively offer.
+
+    **`entityDid`**
+
+    Do **not** set this in code. The runtime reads it from the `ORACLE_ENTITY_DID` environment variable and populates it automatically during boot. Setting it inline has no effect.
+
+    ### Full example
+
+    ```ts
+    config: {
+      name: 'Aria',
+      org: 'Acme Climate',
+      description: 'A carbon-project advisory oracle for Acme Climate portfolio managers.',
+      prompt: {
+        opening: `You are Aria, the carbon-project advisory oracle operated by Acme Climate.
+    You help portfolio managers track project status, assess methodology compliance,
+    and draft stakeholder communications. You have deep knowledge of Verra VCS,
+    Gold Standard, and REDD+ frameworks.`,
+        communicationStyle: `Be precise and data-driven. Lead with numbers and deadlines.
+    Use plain English — avoid jargon unless the user demonstrates familiarity.
+    When something is uncertain, say so explicitly rather than hedging with filler phrases.`,
+        capabilities: `## What Aria can do
+    - Retrieve live project status and registry issuance data via the IXO domain indexer.
+    - Draft verification reports, CORSIAs letters, and board summaries.
+    - Search and cite methodology documents from the oracle knowledge base.
+    - Schedule follow-up reminders and track open action items across conversations.`,
+      },
+    }
+    ```
   </Accordion>
 
   <Accordion title="features" icon="toggle-on">

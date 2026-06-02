@@ -184,6 +184,7 @@
               "build-an-oracle/understand/request-lifecycle",
               "build-an-oracle/understand/plugins-vs-skills",
               "build-an-oracle/understand/plugin-anatomy",
+              "build-an-oracle/understand/prompt-anatomy",
               "build-an-oracle/understand/manifest",
               "build-an-oracle/understand/visibility-tiers",
               "build-an-oracle/understand/shared-state",
