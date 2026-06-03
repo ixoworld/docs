@@ -14,21 +14,21 @@ Sections appear in this fixed order. "Always present" means the section is inclu
 
 | # | Section | Present |
 | --- | --- | --- |
-| 1 | **ORACLE_SECTION** — identity preamble | Always |
-| 2 | **[CAPABILITIES_NOTE]** — `config.prompt.capabilities` text | Conditional |
-| 3 | **[CAPABILITY_BLOCK]** — Tier-1 plugin manifest list | Conditional |
-| 4 | **## Operating principles** — 7 standard bullets + optional style | Always |
-| 5 | **## Working with files** — file-handling guidance | Always |
-| 6 | **[## What you know about the user]** — memory context (6 slots) | Conditional |
-| 7 | **Current time:** `{currentTime}` (`{timezone}`) | Always |
-| 8 | **[Current entity:** `{DID}`**]** | Conditional |
-| 9 | **[## Available user secrets]** | Conditional |
-| 10 | **[## User preferences]** | Conditional |
-| 11 | **## Operational mode** — general / editor / task / entity | Always |
-| 12 | **[COMPOSIO_CONTEXT]** — Composio tool context | Conditional |
-| 13 | **[EDITOR_SECTION]** — editor plugin state | Conditional |
-| 14 | **[SLACK_FORMATTING_CONSTRAINTS]** — Slack output rules | Conditional |
-| 15 | **[--- Degraded services]** — failed-init notices | Conditional |
+| 1 | **Oracle section** — identity preamble | Always |
+| 2 | **Capabilities note** — `config.prompt.capabilities` text | Conditional |
+| 3 | **Capability block** — Tier-1 plugin manifest list | Conditional |
+| 4 | **Operating principles** — 7 standard bullets + optional style | Always |
+| 5 | **Working with files** — file-handling guidance | Always |
+| 6 | **What you know about the user** — memory context (6 slots) | Conditional |
+| 7 | **Current time** — `{currentTime}` (`{timezone}`) | Always |
+| 8 | **Current entity** — `{DID}` | Conditional |
+| 9 | **Available user secrets** | Conditional |
+| 10 | **User preferences** | Conditional |
+| 11 | **Operational mode** — general / editor / task / entity | Always |
+| 12 | **Composio context** — Composio tool context | Conditional |
+| 13 | **Editor section** — editor plugin state | Conditional |
+| 14 | **Slack formatting constraints** — Slack output rules | Conditional |
+| 15 | **Degraded services** — failed-init notices | Conditional |
 
 ### Section details
 
@@ -44,15 +44,15 @@ Rendered if `config.prompt.capabilities` is non-empty. Appears immediately above
 
 Auto-generated list of all loaded plugins with `visibility='always'` (Tier-1). Each entry includes the plugin name and its manifest description. The runtime enforces a **5,000-token soft budget** on this block — if the combined manifest text would exceed that, lower-priority entries are trimmed. You never write this section; the runtime builds it from the loaded plugin set.
 
-**4. ## Operating principles**
+**4. Operating principles**
 
 Always present. Contains 7 hardcoded bullets covering tool use, safety, honesty, and task handling. If `config.prompt.communicationStyle` is non-empty, it is injected here as an additional paragraph after those bullets. If `communicationStyle` is absent, the section still appears — just without the custom style block.
 
-**5. ## Working with files**
+**5. Working with files**
 
 Always present. Hardcoded guidance on how the agent should handle file uploads, attachments, and generated file output.
 
-**6. [## What you know about the user]**
+**6. What you know about the user**
 
 Conditional on the memory plugin being loaded and at least one context slot being populated. Contains up to 6 slots fetched by `UserContextFetcher` before the agent is compiled: `identity`, `work`, `goals`, `interests`, `relationships`, `recent`. See [How memory reaches the prompt](/build-an-oracle/reference/bundled-plugins/memory) for the pre-fetch details.
 
@@ -72,7 +72,7 @@ Conditional on the secrets service having entries for the current user. Lists se
 
 Conditional on the user-preferences plugin being loaded and the user having saved preferences. May include `agentName`, `language`, `tone`, `formality`, and `customInstructions`.
 
-**11. ## Operational mode**
+**11. Operational mode**
 
 Always present, but content varies. The runtime selects one of four mode descriptions — `general`, `editor`, `task`, or `entity` — based on which plugins are active and the current session state.
 
