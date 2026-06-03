@@ -52,9 +52,7 @@ export interface CreateOracleAppOptions {
     }
     ```
 
-    ### prompt sub-fields
-
-    All three `prompt` sub-fields are optional. Omit any you don't need.
+    **prompt sub-fields** — all three are optional. Omit any you don't need.
 
     **`opening`**
 
@@ -83,7 +81,7 @@ export interface CreateOracleAppOptions {
 
     Do **not** set this in code. The runtime reads it from the `ORACLE_ENTITY_DID` environment variable and populates it automatically during boot. Setting it inline has no effect.
 
-    ### Full example
+    **Full example**
 
     ```ts
     config: {

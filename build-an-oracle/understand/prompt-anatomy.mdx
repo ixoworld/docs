@@ -32,15 +32,15 @@ Sections appear in this fixed order. "Always present" means the section is inclu
 
 ### Section details
 
-**1. ORACLE_SECTION**
+**1. Oracle section**
 
-The identity preamble. If `config.prompt.opening` is set, it is used verbatim. Otherwise the runtime generates a fallback: `"You are {name}, an AI agent operated by {org}. {description}."` (shorter variants when `org` or `description` are absent). See [`createOracleApp` config reference](/build-an-oracle/reference/createoracleapp) for the exact fallback logic.
+The identity preamble. If `config.prompt.opening` is set, it is used verbatim. Otherwise the runtime generates a fallback from the other top-level fields: `"You are {name}, an AI agent operated by {org}. {description}."` (shorter variants when `org` or `description` are absent). See the [`createOracleApp` config reference](/build-an-oracle/reference/createoracleapp) for the exact fallback logic.
 
-**2. [CAPABILITIES_NOTE]**
+**2. Capabilities note**
 
 Rendered if `config.prompt.capabilities` is non-empty. Appears immediately above the plugin capability block. No header is added by the runtime — include your own heading in the field value if you want one.
 
-**3. [CAPABILITY_BLOCK]**
+**3. Capability block**
 
 Auto-generated list of all loaded plugins with `visibility='always'` (Tier-1). Each entry includes the plugin name and its manifest description. The runtime enforces a **5,000-token soft budget** on this block — if the combined manifest text would exceed that, lower-priority entries are trimmed. You never write this section; the runtime builds it from the loaded plugin set.
 
@@ -58,17 +58,17 @@ Conditional on the memory plugin being loaded and at least one context slot bein
 
 **7. Current time**
 
-Always present. Stamped at agent-compile time with the wall-clock time and resolved timezone.
+Always present. Stamped at agent-compile time with the user's wall-clock time and resolved timezone.
 
-**8. [Current entity: {DID}]**
+**8. Current entity**
 
-Conditional on `state.currentEntityDid` being set in the agent state. Used by entity-aware workflows.
+Conditional on `state.currentEntityDid` being set in the agent state. Surfaces the active entity DID so the agent can route entity-aware tool calls correctly.
 
-**9. [## Available user secrets]**
+**9. Available user secrets**
 
 Conditional on the secrets service having entries for the current user. Lists secret names (not values) so the agent can reference them by name in tool calls.
 
-**10. [## User preferences]**
+**10. User preferences**
 
 Conditional on the user-preferences plugin being loaded and the user having saved preferences. May include `agentName`, `language`, `tone`, `formality`, and `customInstructions`.
 
@@ -76,21 +76,21 @@ Conditional on the user-preferences plugin being loaded and the user having save
 
 Always present, but content varies. The runtime selects one of four mode descriptions — `general`, `editor`, `task`, or `entity` — based on which plugins are active and the current session state.
 
-**12. [COMPOSIO_CONTEXT]**
+**12. Composio context**
 
 Conditional on the Composio plugin loading successfully. Auto-injected Composio account and connection context so the agent knows which third-party integrations are available for the current user.
 
-**13. [EDITOR_SECTION]**
+**13. Editor section**
 
 Conditional on the editor plugin being active in the current session. Describes the active document, cursor position, and editor affordances.
 
-**14. [SLACK_FORMATTING_CONSTRAINTS]**
+**14. Slack formatting constraints**
 
-Conditional on `client === 'slack'`. Appends Slack-specific markdown constraints to prevent the agent from using formatting that Slack does not render correctly.
+Conditional on the session client being Slack. Appends Slack-specific formatting rules to prevent the agent from using markdown that Slack does not render correctly (e.g. tables).
 
-**15. [--- Degraded services]**
+**15. Degraded services**
 
-Appended post-template when one or more plugins fail their init. Lists the failed plugins and explains which capabilities are unavailable for this turn.
+Appended after the main prompt when one or more plugins fail their init. Lists the failed services and tells the agent not to attempt their tools for this turn.
 
 ## The 5,000-token capability block budget
 
