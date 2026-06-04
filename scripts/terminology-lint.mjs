@@ -29,6 +29,10 @@ function aliasScanPattern(alias) {
   if (alias === "Matrix Client") {
     return new RegExp(`\\b${escaped}\\b(?!\\s+SDK)`, "g");
   }
+  // `JAMBO PWA` is deprecated but `JAMBO PWA SDK` (the canonical form) must not be flagged.
+  if (alias === "JAMBO PWA") {
+    return new RegExp(`\\b${escaped}\\b(?!\\s+SDK)`, "g");
+  }
   // `Multiclient` (spelling) must stay case-sensitive so canonical `MultiClient` is not flagged.
   if (alias === "Multiclient SDK") {
     return new RegExp(`(?<!\\b[Ww]eb\\s)\\b${escaped}\\b`, "g");

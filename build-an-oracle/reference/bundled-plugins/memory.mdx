@@ -39,6 +39,28 @@ Durable memory across conversations — who the user is, what you have made for 
 
 Tools available beyond the default selection (e.g. `memory-engine__add_oracle_knowledge`, `memory-engine__delete_edge`) can be enabled by passing `selectedTools` to `new MemoryPlugin({ selectedTools: [...] })`.
 
+## How memory reaches the prompt
+
+Memory context does not arrive in the prompt because the agent calls a tool to fetch it. Instead, a `UserContextFetcher` runs **before** the main agent is compiled — eagerly loading all six context slots in a single pass, before any message is processed.
+
+**What the fetcher loads:** six slots, in this order:
+1. `identity` — who the user is (name, role, background)
+2. `work` — ongoing projects and responsibilities
+3. `goals` — stated objectives and priorities
+4. `interests` — topics and domains the user cares about
+5. `relationships` — people and organizations mentioned in past conversations
+6. `recent` — notable things from the last few sessions
+
+**When it runs:** at agent-compile time, before turn 1. The fetcher runs once per session and caches the result for **5 minutes** (keyed by `sessionId`). Subsequent turns within the same session reuse the cached context — the Memory Engine is not called again unless the cache expires.
+
+**What appears in the prompt:** if at least one slot is non-empty, the runtime inserts a `## What you know about the user` block (section 6 of the 15-section prompt) containing all populated slots. If every slot is empty (no prior memory for this user), the block is omitted entirely.
+
+**Implication for oracle authors:** you do not need to instruct the agent to "look up the user's context" or "recall memory before responding" in `config.prompt.opening` or anywhere else. The context is already in the system prompt when the agent sees the user's first message. Adding such instructions is redundant and wastes tokens.
+
+<Note>
+The 5-minute session cache means very-recent memory writes (e.g. the agent just called `memory-engine__add_memory` in the same session) may not appear in the fetched context until the next session or cache expiry. This is intentional — the fetcher is optimised for read latency, not write-through consistency.
+</Note>
+
 ## Adding global oracle knowledge
 
 Global knowledge is content the oracle should know on every turn, for every user — product docs, brand voice, FAQs, reference material. It's stored on the Memory Engine and indexed under the **oracle's entity DID**, not the user's DID.
