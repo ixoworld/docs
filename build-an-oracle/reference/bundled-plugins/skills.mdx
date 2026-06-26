@@ -12,7 +12,7 @@ icon: "code"
 | Stability | `stable` |
 | Category | `data` |
 | Default state | On |
-| Depends on | `sandbox` (hard dep — boot fails without it) |
+| Depends on | `sandbox` (hard dep — see below) |
 
 ## Summary
 
@@ -24,6 +24,10 @@ Discover IXO skill capsules. Both `list_skills` and `search_skills` mint an `ixo
 | --- | --- | --- |
 | `SKILLS_CAPSULES_BASE_URL` | no | Defaults to `https://capsules.skills.ixo.earth`. |
 | `NETWORK` | no | Read but not owned (declared by the core base env schema). Forwarded as `X-IXO-Network`. |
+
+## Depends on
+
+Hard-depends on [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox) — skill *execution* runs through `sandbox_run`, which `sandbox` owns (listing/search is HTTP-only). But `sandbox` is auto-detect (`SANDBOX_MCP_URL`) and off by default, while `skills` is on by default. If `sandbox` is not loaded — e.g. `SANDBOX_MCP_URL` is unset — the loader **cascades `skills` off silently** (a `boot.plugin.cascaded_off` warning), it does **not** fail boot. A true boot failure only occurs if `sandbox` is removed from the plugin set entirely while `skills` still requires it.
 
 ## What it contributes
 

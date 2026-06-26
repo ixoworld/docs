@@ -8,6 +8,7 @@ icon: "plug"
 
 | Attribute | Value |
 | --- | --- |
+| Feature key | `composio` |
 | Visibility | `on-demand` |
 | Stability | `stable` |
 | Category | `integration` |
@@ -28,11 +29,21 @@ Hundreds of SaaS tools (Gmail, GitHub, Linear, Slack, Google Calendar, Notion, J
 
 ## What it contributes
 
-- **Tools:** dynamic catalog returned per request (one tool per upstream Composio tool, e.g. `COMPOSIO_MANAGE_CONNECTIONS`, `COMPOSIO_SEARCH_TOOLS`, plus toolkit-specific actions).
+Composio is a **tool router**, not a 1:1 catalog. Per request the session returns a small fixed set of directly-callable meta-tools; the thousands of app-specific tools (e.g. `GMAIL_SEND_EMAIL`, `COMPOSIO_SEARCH_FINANCE`) are **not** bound to the agent — they are discovered and then executed through the router.
+
+- **Tools (the four router meta-tools):**
+  - `COMPOSIO_MANAGE_CONNECTIONS` — check / start a toolkit's auth connection (returns a `redirect_url` when the user must connect).
+  - `COMPOSIO_SEARCH_TOOLS` — describe an action in natural language to find the exact tool slug(s).
+  - `COMPOSIO_GET_TOOL_SCHEMAS` — fetch the exact input schema for one or more discovered slugs.
+  - `COMPOSIO_MULTI_EXECUTE_TOOL` — run one or more discovered tools by slug. App-specific tools are executed here, never bound directly.
 - **Sub-agents:** none.
 - **Middleware:** none.
 - **HTTP routes:** none.
 - **Shared state:** none.
+
+<Note>
+The exact tool set is returned dynamically by the composio-worker session, so it can vary by user/connection. The plugin pins only the `COMPOSIO_MULTI_EXECUTE_TOOL` argument envelope (see below) — every slug lives in Composio's registry, not in the runtime.
+</Note>
 
 ## Opt out / Opt in
 
@@ -45,13 +56,35 @@ const app = await createOracleApp({
 });
 ```
 
+## The discover → execute flow
+
+App-specific tools are never callable directly. The agent follows a fixed four-step flow (this is the `whenToUse` guidance that ships in the manifest and reaches the model):
+
+1. **Connect** — for any connected-app action, call `COMPOSIO_MANAGE_CONNECTIONS` with the toolkit FIRST. If it returns a `redirect_url`, surface it as a clickable markdown link and stop. (Pure search tools — the `COMPOSIO_SEARCH_*` family — need no connection.)
+2. **Discover** — call `COMPOSIO_SEARCH_TOOLS`, describing the action in natural language, to find the exact tool slug(s).
+3. **Inspect (if unsure)** — call `COMPOSIO_GET_TOOL_SCHEMAS` with those slugs to fetch their exact input schema.
+4. **Execute** — call `COMPOSIO_MULTI_EXECUTE_TOOL` with the discovered slug(s).
+
+The execute envelope is strict — exactly `tools` + `sync_response_to_workbench`, with each call wrapped as `tool_slug` + `arguments`:
+
+```json
+{
+  "tools": [
+    { "tool_slug": "COMPOSIO_SEARCH_FINANCE", "arguments": { "query": "Bitcoin price USD today" } }
+  ],
+  "sync_response_to_workbench": false
+}
+```
+
+Never pass a tool name as a top-level key (e.g. `{ "COMPOSIO_SEARCH_FINANCE": {...} }`) — always wrap it inside the `tools` array.
+
 ## When to use it
 
-- ALWAYS call `COMPOSIO_MANAGE_CONNECTIONS` first — before calling any other Composio tool — to verify the required toolkit is connected. If the response contains a `redirect_url`, surface it as a clickable markdown link and stop; do not attempt the action.
 - User asks to send, read, or search emails (Gmail, Outlook).
 - User asks to create or modify issues, pull requests, or stars (GitHub, Linear, Jira).
 - User asks to manage calendar events, files, or documents in a SaaS app.
-- No native skill covers the requested action — call `COMPOSIO_SEARCH_TOOLS` before giving up.
+- Web, news, finance, academic, or trend searches — the `COMPOSIO_SEARCH_*` family covers these and needs no connection.
+- No native skill covers the requested action — discover what Composio offers with `COMPOSIO_SEARCH_TOOLS` before giving up.
 
 ## When NOT to use it
 

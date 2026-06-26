@@ -28,7 +28,8 @@ Per-user Linux sandbox. `sandbox_run` runs shell/python (writes anywhere via she
 
 ## What it contributes
 
-- **Tools:** every upstream MCP tool — `sandbox_run`, `sandbox_write_file`, the `artifact_*` family, `load_skill`. By default the `oracle_*` management tools (`oracle_list`, `oracle_get`, `oracle_health`, `oracle_stop`, `oracle_restart`, `oracle_get_logs`) are filtered out; opt in with `new SandboxPlugin({ includeOracleManagementTools: true })`.
+- **Tools:** every upstream MCP tool — `sandbox_run`, `sandbox_write_file`, the `artifact_*` family, `load_skill` — passed through verbatim. By default the `oracle_*` management tools (`oracle_list`, `oracle_get`, `oracle_health`, `oracle_stop`, `oracle_restart`, `oracle_get_logs`) are filtered out; opt in with `new SandboxPlugin({ includeOracleManagementTools: true })`.
+  - Plus one synthetic, non-upstream tool: `sandbox_write_blob` — takes a server-stored `blobId` + a sandbox path, looks the value up server-side, and forwards it to `sandbox_write_file` (the companion to blob storage). It is added per request only when `sandbox_write_file` is present upstream **and** the request has a known user DID (the blob store is namespaced by user DID).
 - **Sub-agents:** none.
 - **Middleware:** none.
 - **HTTP routes:** none.

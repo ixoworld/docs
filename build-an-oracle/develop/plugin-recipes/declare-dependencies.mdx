@@ -19,7 +19,7 @@ A plugin references other plugins by `name`. `dependsOn` is hard (boot fails on 
     }
     ```
 
-    Missing dep: `[boot-error] Plugin 'skills' depends on 'sandbox', which is not loaded. Add 'sandbox' to features, or remove 'skills'.` Canonical source: [oracle-plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/oracle-plugin.ts).
+    Missing dep (grep your boot logs for the `boot.plugin.dep_missing` code): `[boot-error] boot.plugin.dep_missing: plugin 'skills' requires 'sandbox', which is not loaded. Add 'sandbox' to features, or remove 'skills'.` Canonical source: [oracle-plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/oracle-plugin.ts).
   </Step>
 
   <Step title="Declare soft dependencies via softDependsOn">

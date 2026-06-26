@@ -88,7 +88,7 @@ Use `getNestModules` for webhooks, public probes, OAuth callbacks, or long-lived
     Boot the oracle with `pnpm dev`, then curl the route without an auth header.
 
     ```sh
-    curl 'http://localhost:5678/weather/now?city=Berlin'
+    curl 'http://localhost:3000/weather/now?city=Berlin'
     ```
 
     Other routes still 401 — the exclusion list only opts these specific paths out.

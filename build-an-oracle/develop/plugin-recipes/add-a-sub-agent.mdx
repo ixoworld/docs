@@ -99,13 +99,15 @@ A sub-agent is a `PluginSubAgent` the runtime auto-wraps as a tool (e.g. `weathe
 
     ```ts
     override getRequestSubAgents(rtCtx: RuntimeContext): PluginSubAgent[] {
-      const browserTools = rtCtx.history.state.browserTools;
-      if (!browserTools || browserTools.length === 0) return [];
-      return [buildPortalSubAgent(browserTools)];
+      // ReadonlyState's index signature types arbitrary keys as `unknown`,
+      // so narrow before reading `.length`.
+      const agActions = rtCtx.history.state.agActions;
+      if (!Array.isArray(agActions) || agActions.length === 0) return [];
+      return [buildActionAwareSubAgent(agActions)];
     }
     ```
 
-    Boot-time `getSubAgents` and request-time `getRequestSubAgents` outputs merge.
+    `state.agActions` (live AG-UI actions) is the canonical request-time field — reading it through `rtCtx.history.state` returns `unknown`, so validate with `Array.isArray(...)` before use. Boot-time `getSubAgents` and request-time `getRequestSubAgents` outputs merge.
   </Step>
 </Steps>
 

@@ -40,12 +40,14 @@ Everything in `PluginContext`, plus:
 | `session` | Thread ID (= `session.id`), client (`portal` / `matrix` / `slack`), request ID, room ID |
 | `history` | `messages`, `recent(n)`, `userContext`, typed `state` view |
 | `secrets` | `getIndex()`, `getValues(keys)` for per-user secrets |
+| `blobStore` | Short-TTL keyed store for values the model must never echo verbatim (UCAN invocation CARs, JWTs): `put()` returns an opaque `blob_<hex>` id, `get()` resolves it server-side, `isValidBlobId()` checks the format. Blobs are scoped to the issuing user's DID |
 | `matrix` | Scoped methods: `postToRoom`, `getRoomState`, `getEventById` |
-| `ucan` | `requireCapability`, `hasCapability`, `mintInvocation`, `resolveServiceDid` |
-| `llm` | `get(role, params)` for the configured provider |
+| `ucan` | `requireCapability`, `hasCapability`, `mintInvocation`, `resolveServiceDid`, `hasSigningKey()`, `createInvocationFromDelegation()` |
+| `llm` | `get(role, params)` for the configured provider — `role` is `'main'` / `'subagent'` / `'utility'` |
 | `emit` | Typed event emitter (`toolCall`, `actionCall`, `renderComponent`, `reasoning`, ...) |
 | `shared` | Typed reads from other plugins' `getSharedState` |
 | `loadedPlugins` | Set of plugin names loaded for this thread |
+| `toolCallId` | The current tool call's id — needed when a tool returns a LangGraph `Command` |
 | `abortSignal` | Request-scoped abort |
 
 Full field list and types: [RuntimeContext reference](/build-an-oracle/reference/runtime-context).

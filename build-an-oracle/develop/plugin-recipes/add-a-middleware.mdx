@@ -1,6 +1,6 @@
 ---
 title: "Add a middleware"
-description: "Hook into every LLM call via beforeModel, afterModel, and onError using createMiddleware."
+description: "Hook into every LLM call via beforeModel, afterModel, and wrapModelCall using createMiddleware."
 icon: "filter"
 ---
 
@@ -8,7 +8,7 @@ A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` a
 
 <Steps>
   <Step title="Build the middleware with createMiddleware">
-    Import `createMiddleware` from `langchain`. Set a `name` (appears in error messages) and any of the three hooks.
+    Import `createMiddleware` from `langchain`. Set a `name` (appears in error messages) and any of the six hooks.
 
     ```ts
     import { type AgentMiddleware, type PluginContext } from '@ixo/oracle-runtime';
@@ -34,28 +34,67 @@ A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` a
   </Step>
 
   <Step title="Pick the right hook">
-    Each hook receives the LangGraph state. Use the one whose timing matches your work.
+    `createMiddleware` accepts exactly six hooks. Pick the one whose timing matches your work — there is no `onError`, no `beforeToolCall`, no `afterToolCall`.
+
+    | Hook | Fires | Use for |
+    | --- | --- | --- |
+    | `beforeAgent` | Once, before the agent loop starts | One-time setup per turn |
+    | `beforeModel` | Before every LLM call | Logging, timers, observation |
+    | `wrapModelCall` | Around every LLM call (you call `handler`) | Error handling, fallbacks, retries |
+    | `wrapToolCall` | Around every tool call (you call `handler`) | Tool-level interception |
+    | `afterModel` | After every LLM call | Logging, emitting events |
+    | `afterAgent` | Once, after the agent loop ends | Teardown, final accounting |
 
     ```ts
     createMiddleware({
       name: 'MyMiddleware',
-      beforeModel: async (state) => {
-        // Loading context, mutating state, blocking unsafe inputs
+      beforeModel: async () => {
+        // Loading context, observation
       },
-      afterModel: async (state) => {
-        // Logging, observation, emitting events
-      },
-      onError: async (error, state) => {
-        // Recovery, metrics, fallback content
+      afterModel: async () => {
+        // Logging, emitting events
       },
     });
     ```
 
-    For state mutations, return a partial state object from the hook — same protocol as LangChain's `AgentMiddleware`.
+    Error handling lives in `wrapModelCall`: wrap the `handler(request)` call in a try/catch and retry with a fallback model. The hook owns the call, so you decide what happens on failure.
+
+    ```ts
+    import { ChatOpenAI } from '@langchain/openai';
+
+    createMiddleware({
+      name: 'ModelFallbackMiddleware',
+      wrapModelCall: async (request, handler) => {
+        try {
+          return await handler(request);
+        } catch (err) {
+          ctx.logger.warn(`primary model failed: ${String(err)} — falling back`);
+          return handler({ ...request, model: new ChatOpenAI({ model: 'gpt-4o-mini' }) });
+        }
+      },
+    });
+    ```
+  </Step>
+
+  <Step title="Return undefined or jumpTo — never a state object">
+    <Warning>
+      The flow-control hooks (`beforeAgent`, `beforeModel`, `afterModel`, `afterAgent`) must return **`undefined`** (pass through) or **`{ jumpTo: 'end' as const }`** (short-circuit the turn). Never return `{ messages: ... }` or any other state channel. (The `wrap*` hooks are different — they return the result of calling `handler`, as in the fallback example above.)
+    </Warning>
+
+    Returning a partial state object from a plugin middleware breaks LangGraph checkpointer thread continuity — the observed symptom is a brand-new thread spawned on every message. Message and state rewrites belong in the transport layer (the messages controller), not in a middleware hook.
+
+    ```ts
+    beforeModel: async (state) => {
+      if (shouldStop(state)) {
+        return { jumpTo: 'end' as const }; // stop the loop early
+      }
+      return undefined; // otherwise pass through
+    },
+    ```
   </Step>
 
   <Step title="Return it from getMiddlewares(ctx)">
-    The runtime appends your middleware after the four always-on framework middleware.
+    The runtime appends your middleware after the framework's built-in middleware (see the list below).
 
     ```ts
     import { OraclePlugin, type AgentMiddleware, type PluginContext } from '@ixo/oracle-runtime';
@@ -87,7 +126,7 @@ A middleware wraps the agent's LLM call. Return one from `getMiddlewares(ctx)` a
 
 ## What to know before shipping
 
-- The four always-on middleware (`tool-validation`, `tool-retry`, `page-context`, `safety-guardrail`) always run first. They are not removable.
+- Four always-on middleware run first and are not removable, in this order: `capability-gate`, `tool-validation`, `tool-repetition-guard`, `tool-retry`. Two more run only when the matching hook is set on `createOracleApp`: `page-context` (when `hooks.getRoomTitle` is provided) and `safety-guardrail` (when `hooks.safetyModel` is provided). Your plugin middleware is appended after all of these.
 - Plugin middleware runs in topological dependency order — encode ordering via `dependsOn` if it matters.
 - Middleware fires per LLM turn, not per individual tool invocation. Wrap the tool handler directly for per-tool behaviour.
 - Closure-scoped timers interleave across concurrent model calls. For accurate timing, push start times onto a per-call ID.

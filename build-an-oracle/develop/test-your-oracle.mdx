@@ -118,6 +118,8 @@ Every integration test file lists the env it needs and throws at module load if 
 
 ## Unit test — createTestRuntime
 
+`createTestRuntime` returns a `TestRuntime` directly (no `{ runtime }` wrapper). Drive it through that object's methods — `listTools`, `invokeTool`, `invokeMiddleware`, `invokeSubAgent`, `listCapabilities`, `getManifest`, `assertNoCollisions`, `assertManifestValid`.
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import { createTestRuntime } from '@ixo/oracle-runtime/testing';
@@ -125,16 +127,26 @@ import { WeatherPlugin } from '../src/plugins/weather/index.js';
 
 describe('WeatherPlugin', () => {
   it('registers get_current_weather at boot', async () => {
-    const { runtime } = await createTestRuntime({
+    const runtime = await createTestRuntime({
       plugins: [new WeatherPlugin()],
-      env: { WEATHER_DEFAULT_UNITS: 'celsius' },
+      config: { WEATHER_DEFAULT_UNITS: 'celsius' },
     });
-    expect(runtime.toolRegistry.toolNames()).toContain('get_current_weather');
+    expect(runtime.listTools().map((t) => t.name)).toContain('get_current_weather');
+  });
+
+  it('has valid manifests and no registry collisions', async () => {
+    const runtime = await createTestRuntime({ plugins: [new WeatherPlugin()] });
+    expect(() => runtime.assertManifestValid()).not.toThrow();
+    expect(() => runtime.assertNoCollisions()).not.toThrow();
   });
 });
 ```
 
-`createTestRuntime` resolves plugins, populates registries, and builds a `RuntimeContext` you can hand straight to tool handlers — but does not boot Nest, talk to Matrix, or call the LLM. Use for fast, focused tests.
+`createTestRuntime` resolves plugins, populates the six registries, and builds a `RuntimeContext` it hands to tool handlers — but does not boot Nest, talk to Matrix, or call the LLM (every ambient service is a mock). Pass plugin env through `config`. Use for fast, focused tests: tool registration, manifest validity, middleware hooks, and sub-agent prompts in isolation.
+
+<Note>
+`createTestRuntime` options take `config` (plugin env, read as `ctx.config`) — not `env`. Its `mocks.fetch` is exposed for handlers that read it explicitly; it is **not** auto-installed onto `globalThis.fetch`. To stub a plugin's upstream HTTP calls deterministically, use the Tier A `createIntegrationRuntime`, whose `fetch` option does replace `globalThis.fetch`. The full `TestRuntime` surface lives in [`create-test-runtime.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/testing/create-test-runtime.ts).
+</Note>
 
 ## Tier A integration — direct invoke
 
@@ -171,6 +183,12 @@ describe('Tier A — direct invoke', () => {
 
 Tier A boots the runtime registries against your plugin list but skips the agent loop entirely. Use it to verify env wiring, upstream-API contracts, and config threading.
 
+`createIntegrationRuntime` accepts more than `plugins` + `user`: `config` (plugin env, defaults to `process.env`), `features`, `delegation`, `capabilities`, `session`, `state`, `identity`, `fetch` (stub upstreams), and `ucan`.
+
+<Warning>
+The default `ucan` stub **throws** on `mintInvocation` / `createInvocationFromDelegation`. If the plugin under test mints downstream invocations (memory, sandbox, skills, composio, …), pass a real adapter — boot an oracle with `createIntegrationOracle()` and hand its `bootedOracle.app.ambient.ucan` through as `ucan`, after seeding the user's delegation into that oracle's `UcanService` cache.
+</Warning>
+
 ## Tier B integration — full agent loop
 
 ```ts
@@ -178,6 +196,7 @@ import {
   ChatClient,
   allCaps,
   createIntegrationOracle,
+  mintAuthInvocation,
   mintUserDelegation,
   waitForMatrixLoaded,
   type IntegrationOracle,
@@ -200,13 +219,20 @@ describe('Tier B — agent loop', () => {
     });
     await waitForMatrixLoaded(oracle, 90_000);
 
+    // Primary auth: a user-signed invocation (Authorization: Bearer +
+    // X-Auth-Type: ucan). Downstream authorization: the delegation.
+    const invocation = await mintAuthInvocation({
+      userMnemonic: process.env.TEST_USER_MNEMONIC!,
+      oracleDid: process.env.ORACLE_DID!,
+      userDid: process.env.TEST_USER_DID,
+    });
     const delegation = await mintUserDelegation({
       userMnemonic: process.env.TEST_USER_MNEMONIC!,
       oracleDid: process.env.ORACLE_DID!,
       userDid: process.env.TEST_USER_DID,
       capabilities: allCaps,
     });
-    client = new ChatClient(oracle.baseUrl, { delegation });
+    client = new ChatClient(oracle.baseUrl, { invocation, delegation });
   }, 180_000);
 
   afterAll(async () => {
@@ -224,6 +250,10 @@ describe('Tier B — agent loop', () => {
   });
 });
 ```
+
+<Note>
+`mintAuthInvocation` (sent as `Authorization: Bearer` + `X-Auth-Type: ucan`) is the **primary** auth artifact the runtime expects; `mintUserDelegation` (sent as `x-ucan-delegation`) carries the capabilities plugins use for downstream authorization. `ChatClient` sends both when supplied — that's the production path. A delegation-only `new ChatClient(url, { delegation })` still authenticates via the migration fallback, which is why older tests pass without an invocation.
+</Note>
 
 Full reference, including multi-turn scenarios: [`weather.int.test.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/weather.int.test.ts). Cross-plugin chains: [`agent-scenarios.int.test.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/agent-scenarios.int.test.ts). Boot smoke: [`boot.int.test.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/test/integration/boot.int.test.ts).
 
@@ -244,6 +274,10 @@ Full reference, including multi-turn scenarios: [`weather.int.test.ts`](https://
 
   <Accordion title="Assert structurally on streamed events" icon="list-check">
     Tier B uses a real model — response wording drifts. Collect `tool_call` events from the stream and assert which tools fired with which args, not on text output.
+  </Accordion>
+
+  <Accordion title="createIntegrationOracle swaps in cheaper test models" icon="dollar-sign">
+    `createIntegrationOracle` installs a default `resolveModel` hook that overrides the `main` and `subagent` roles with cheaper test models; every other role falls through to the production resolver. Pass your own `hooks` to override — caller hooks merge on top per key, so a caller-supplied `resolveModel` wins.
   </Accordion>
 </AccordionGroup>
 

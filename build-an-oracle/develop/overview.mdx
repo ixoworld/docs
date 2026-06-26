@@ -10,7 +10,7 @@ The Build track is task-oriented. Every page answers "how do I do X" with a copy
 
 <Steps>
   <Step title="Scaffold an oracle" icon="play">
-    Follow the [Quickstart](/build-an-oracle/quickstart) — `qiforge-cli init`, env, `pnpm dev`, first message. Ten minutes.
+    Follow the [Quickstart](/build-an-oracle/quickstart) — `qiforge-cli new`, env, `pnpm dev`, first message. Ten minutes.
   </Step>
   <Step title="Wire createOracleApp" icon="gear">
     [Create your oracle app](/build-an-oracle/develop/create-oracle-app) — what `main.ts` looks like, what every option does.
@@ -45,7 +45,7 @@ The Build track is task-oriented. Every page answers "how do I do X" with a copy
     Nest agents with their own prompt + tools.
   </Card>
   <Card title="Add a middleware" icon="filter" href="/build-an-oracle/develop/plugin-recipes/add-a-middleware">
-    `beforeModel` / `afterModel` / `onError` hooks.
+    `beforeModel` / `afterModel` / `wrapModelCall` hooks.
   </Card>
   <Card title="Add HTTP endpoints" icon="server" href="/build-an-oracle/develop/plugin-recipes/add-http-endpoints">
     Plugin-owned Nest controllers + auth-excluded routes.

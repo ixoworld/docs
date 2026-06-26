@@ -43,6 +43,11 @@ export interface RuntimeContext<TConfig = MergedConfig> {
     getIndex: () => Promise<SecretIndex>;
     getValues: (keys: string[]) => Promise<Record<string, string>>;
   };
+  blobStore: {
+    put: (params: { userDid: string; name: string; value: string; ttlSeconds?: number }) => Promise<string>;
+    get: (params: { userDid: string; blobId: string }) => Promise<{ name: string; value: string } | null>;
+    isValidBlobId: (value: unknown) => value is string;
+  };
   matrix: {
     postToRoom: (roomId: string, content: unknown) => Promise<string>;
     getRoomState: (roomId: string) => Promise<RoomStateSnapshot>;
@@ -53,6 +58,13 @@ export interface RuntimeContext<TConfig = MergedConfig> {
     hasCapability: (resource: string, action: string) => boolean;
     mintInvocation: (target: { did: string; capability: string }, opts?: { skipCache?: boolean }) => Promise<string>;
     resolveServiceDid: (serviceUrl: string) => Promise<string | null>;
+    hasSigningKey: () => boolean;
+    createInvocationFromDelegation: (
+      delegationCar: string,
+      serviceUrl: string,
+      capability: { can: string; with: string },
+      options?: { maxTtlSeconds?: number },
+    ) => Promise<{ invocation: string } | { error: string }>;
   };
   llm: {
     get: (role: ModelRole, params?: ChatOpenAIFields) => BaseChatModel;
@@ -126,6 +138,24 @@ export interface RuntimeContext<TConfig = MergedConfig> {
     Backed by today's `SecretsService`. Returns nothing if the encryption key isn't provisioned.
   </Accordion>
 
+  <Accordion title="blobStore" icon="box-archive">
+    Short-TTL, user-namespaced store for content the LLM must **never relay verbatim** — UCAN invocation CARs, JWTs, signed envelopes. A producing tool stores the value and returns a short opaque ID; a consuming tool looks it up server-side and forwards it on. The model only ever sees the ID.
+
+    - `put({ userDid, name, value, ttlSeconds? })` — store a value, returns a fresh `blob_<16 hex>` ID. TTL defaults to 1h and is clamped to the service max (24h). Pass `userDid` from a **trusted source** (e.g. `rtCtx.user.did`) — never from LLM-supplied tool args.
+    - `get({ userDid, blobId })` — retrieve a blob scoped to the requesting user. Returns `null` if it doesn't exist, has expired, or belongs to a different user (cross-user reads always miss).
+    - `isValidBlobId(value)` — cheap format check (`blob_<16 hex>`); use it in a tool's input handler to reject malformed IDs before paying for a lookup.
+
+    ```ts
+    const blobId = await rtCtx.blobStore.put({
+      userDid: rtCtx.user.did,
+      name: 'signed-invocation',
+      value: signedCar,
+    });
+    // hand `blobId` back to the model; resolve it server-side in the next tool
+    const blob = await rtCtx.blobStore.get({ userDid: rtCtx.user.did, blobId });
+    ```
+  </Accordion>
+
   <Accordion title="matrix" icon="cube">
     Scoped Matrix operations.
 
@@ -143,6 +173,21 @@ export interface RuntimeContext<TConfig = MergedConfig> {
     - `hasCapability(resource, action)` — boolean check.
     - `mintInvocation({ did, capability }, opts?)` — mint a downstream invocation signed by the oracle's signing mnemonic.
     - `resolveServiceDid(serviceUrl)` — look up a downstream service's DID document; returns `id` or `null`.
+    - `hasSigningKey()` — `true` once the oracle has loaded its Ed25519 signing mnemonic. **Gate registration of mint-capable tools on this**: without a key, minting is a no-op, so the tool should surface an error rather than pretend it worked.
+    - `createInvocationFromDelegation(delegationCar, serviceUrl, capability, options?)` — mint an invocation from a **directly-supplied** delegation CAR (rather than the user's cached one), targeted at a specific service route. Returns `{ invocation }` on success or `{ error }` with a surfaced-verbatim reason (missing signing key, audience mismatch, did:web unreachable, …).
+
+    ```ts
+    if (!rtCtx.ucan.hasSigningKey()) {
+      return { error: 'This oracle is not configured to mint invocations.' };
+    }
+    const result = await rtCtx.ucan.createInvocationFromDelegation(
+      delegationCar,
+      'https://service.example',
+      { can: 'submit', with: 'service:claims' },
+    );
+    if ('error' in result) return { error: result.error };
+    // use result.invocation
+    ```
   </Accordion>
 
   <Accordion title="llm" icon="brain">

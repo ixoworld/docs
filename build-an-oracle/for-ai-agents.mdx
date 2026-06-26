@@ -9,7 +9,7 @@ This page is for AI tools (Cursor, Claude Code, Codex, …) scaffolding a QiForg
 If you are an AI agent: read top-to-bottom once. Every signature you need is inlined. Source paths cite the canonical files on the QiForge runtime ([`packages/oracle-runtime`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime)) and the reference oracle ([`apps/qiforge-example`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/apps/qiforge-example)).
 
 <Note>
-**If you are working inside a scaffolded oracle project** (one created with `qiforge-cli --init` or `qiforge-cli new`), there is already a Claude Code skill at `.claude/skills/qiforge-oracle/SKILL.md` with project-local guidance: adding plugins, adding tools, wiring env, writing tests with `createTestRuntime`. Load it first — it carries denser, scenario-specific references than this page.
+**If you are working inside a scaffolded oracle project** (one created with `qiforge-cli new`), there is already a Claude Code skill at `.claude/skills/qiforge-oracle/SKILL.md` with project-local guidance: adding plugins, adding tools, wiring env, writing tests with `createTestRuntime`. Load it first — it carries denser, scenario-specific references than this page.
 </Note>
 
 ## TL;DR — what you produce
@@ -65,14 +65,19 @@ interface OracleConfig {
   name: string;
   org?: string;
   description?: string;
-  prompt?: { opening?: string; communicationStyle?: string; capabilities?: string };
+  prompt?: {
+    opening?: string;            // full replacement of the identity preamble
+    communicationStyle?: string; // appended to operating principles (tone/voice)
+    capabilities?: string;       // author elevator pitch above the capability list
+    customInstructions?: string; // verbatim `## Custom Instructions` block
+  };
 }
 
 interface AuthExcludedRoute { path: string; method?: RequestMethod }
 
 interface MainAgentHooks {
   checkpointerForUser?: (userDid: string) => Promise<BaseCheckpointSaver>;
-  resolveModel?: (role: ModelRole, params?: ChatOpenAIFields) => ChatModel;
+  resolveModel?: (role: ModelRole, params?: ChatOpenAIFields) => BaseChatModel;
   getRoomTitle?: (roomId: string) => Promise<string | undefined>;
   safetyModel?: BaseChatModel;
   validationSkipToolNames?: string[];
@@ -170,10 +175,12 @@ interface PluginSubAgent {
 | Visibility | Bound at boot? | In Tier-1 prompt? | Discoverable via `list_capabilities`? |
 | --- | --- | --- | --- |
 | `always` | yes | yes | yes |
-| `on-demand` (default) | no — until `load_capability(name)` | no | yes |
-| `silent` | yes, but agent doesn't see them | no | no |
+| `on-demand` (default) | no — until `load_capability({ names })` | no | yes |
+| `silent` | yes | no | no |
 
-## Bundled plugins (14)
+`silent` means *not advertised* — the tools are still bound and the agent can call them; they're just kept out of the Tier-1 prompt and `list_capabilities`. It is not a security boundary.
+
+## Bundled plugins (15)
 
 From [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts):
 
@@ -189,10 +196,11 @@ From [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworl
 | `editor` | on-demand | on (needs Matrix) | — |
 | `agui` | on-demand | on | — |
 | `slack` | silent | auto-detect | `SLACK_BOT_OAUTH_TOKEN` |
-| `tasks` | stub | auto-detect (stub) | `REDIS_URL` |
+| `tasks` | on-demand | auto-detect | `REDIS_URL` |
 | `credits` | silent | on unless `DISABLE_CREDITS=true` | — |
-| `calls` | stub | on (stub) | — |
+| `calls` | silent | on (placeholder stub — no tools) | — |
 | `user-preferences` | always | on | — |
+| `matrix-group-chats` | on-demand | on (opt out via `features`) | — (optional `CHANNEL_MEMORY_*`) |
 
 Toggle via `features` in `createOracleApp`: `true` forces on, `false` forces off, `'auto'` runs `autoDetect`.
 
@@ -202,22 +210,42 @@ Per-plugin reference pages: [`/build-an-oracle/reference/bundled-plugins/overvie
 
 From [`packages/oracle-runtime/src/config/base-env-schema.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts):
 
+These are the exact names the runtime validates — set them character-for-character or the boot-time Zod check fails.
+
 | Var | Required | Description |
 | --- | --- | --- |
-| `ORACLE_ENTITY_DID` | yes | The oracle's IXO entity DID |
-| `ORACLE_MNEMONIC` | yes | Wallet mnemonic for chain signing |
-| `ORACLE_MATRIX_USER_ID` | yes | Matrix user ID the bot logs in as |
-| `ORACLE_MATRIX_PASSWORD` | yes | Matrix bot password |
-| `ORACLE_MATRIX_HOMESERVER_URL` | yes | Matrix homeserver URL |
-| `IXO_NETWORK_RPC_URL` | yes | IXO chain RPC endpoint |
-| `OPENAI_API_KEY` *or* `ANTHROPIC_API_KEY` | yes | At least one LLM provider key |
-| `LANGSMITH_API_KEY` | optional | Enables LangSmith tracing |
-| `LANGSMITH_TRACING` | optional | `true` to enable |
-| `LANGSMITH_PROJECT` | optional | LangSmith project name |
-| `CORS_ORIGIN` | optional | Wildcard `*` is default |
-| `PORT` | optional | HTTP port; defaults to 3000 |
+| `ORACLE_NAME` | yes | Oracle display name. |
+| `NETWORK` | yes | `mainnet` \| `testnet` \| `devnet`. |
+| `ORACLE_DID` | yes | The oracle's own DID (`did:ixo:ixo1...`); the signer identity for downstream invocations. |
+| `ORACLE_ENTITY_DID` | yes | The oracle's on-chain entity DID (`did:ixo:entity:...`). |
+| `SECP_MNEMONIC` | yes | Wallet mnemonic used to sign UCAN invocations to downstream services. |
+| `RPC_URL` | yes | IXO chain RPC endpoint. |
+| `BLOCKSYNC_GRAPHQL_URL` | yes | Blocksync GraphQL endpoint (UCAN validation reads it). |
+| `MATRIX_BASE_URL` | yes | Matrix homeserver URL. |
+| `MATRIX_RECOVERY_PHRASE` | yes | Recovery phrase for the oracle's Matrix encryption. |
+| `MATRIX_ORACLE_ADMIN_USER_ID` | yes | Matrix user ID the bot logs in as. |
+| `MATRIX_ORACLE_ADMIN_PASSWORD` | yes | Matrix bot password. |
+| `MATRIX_ORACLE_ADMIN_ACCESS_TOKEN` | yes | Matrix bot access token. |
+| `MATRIX_ACCOUNT_ROOM_ID` | yes | Oracle's Matrix account room (holds signing key + secrets). |
+| `MATRIX_VALUE_PIN` | yes | PIN for the oracle's Matrix value store / vault. |
+| `SQLITE_DATABASE_PATH` | yes | Path for the per-user SQLite checkpointer DB. |
+| `LLM_PROVIDER` | optional | `openrouter` (default) \| `nebius`. Selects the per-role model map. |
+| `OPEN_ROUTER_API_KEY` | conditional | Required when `LLM_PROVIDER=openrouter` (the default). |
+| `NEBIUS_API_KEY` | conditional | Required when `LLM_PROVIDER=nebius`. |
+| `OPENAI_API_KEY` | optional | Only if a plugin needs OpenAI directly. Not required for the agent. |
+| `MATRIX_STORE_PATH` | optional | Matrix store dir. Defaults to `./matrix-storage`. |
+| `UCAN_AUTH_MAX_TTL_SECONDS` | optional | Max accepted lifetime of a user auth invocation. Default `900`. |
+| `UCAN_REAUTH_PROMPT_THROTTLE_SECONDS` | optional | Min gap between Matrix re-auth nudges. Default `21600`. |
+| `ORACLE_SECRETS` | optional | Operator secrets as `KEY=val,KEY2=val2`, surfaced as `x-os-*` headers. |
+| `CORS_ORIGIN` | optional | Allowed origins. Wildcard `*` is the default. |
+| `PORT` | optional | HTTP port. Defaults to `3000`. |
+| `NODE_ENV` | optional | `development` (default) \| `production` \| `test`. |
+| `LANGSMITH_TRACING` | optional | `true` to enable LangSmith tracing. |
+| `LANGSMITH_API_KEY` | optional | LangSmith API key. |
+| `LANGSMITH_PROJECT` | optional | LangSmith project name. |
+| `LANGSMITH_ENDPOINT` | optional | LangSmith endpoint override. |
 
-Plugin-specific env vars merge in via each plugin's `configSchema`.
+There is no `ANTHROPIC_API_KEY` — the agent's model id is fixed per role in the provider model map; switch the provider with `LLM_PROVIDER` + its key, or override the main model via the `resolveModel` hook. Plugin-specific env vars (`MEMORY_MCP_URL`, `FIRECRAWL_MCP_URL`, `SANDBOX_MCP_URL`, `COMPOSIO_API_KEY`, `SLACK_BOT_OAUTH_TOKEN`, `REDIS_URL`, …) merge in via each plugin's `configSchema`.
 
 ## Copy-pasteable plugin template
 

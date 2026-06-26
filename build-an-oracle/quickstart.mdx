@@ -12,7 +12,7 @@ Oracle: (calls list_capabilities → load_capability(weather) → get_current_we
         Berlin is currently 14°C with light rain.
 ```
 
-A live oracle on `localhost:5678` with:
+A live oracle on `localhost:3000` with:
 
 - The 15 bundled plugins resolved at boot.
 - A custom Weather plugin loading on demand.
@@ -29,9 +29,9 @@ A live oracle on `localhost:5678` with:
 ## Step 1 — install the CLI
 
 ```sh
-pnpm add -g qiforge-cli
-pnpm approve-builds -g           # approve protobufjs when prompted
-qiforge-cli --help
+pnpm add -g qiforge-cli           # npm package name
+pnpm approve-builds -g            # approve protobufjs when prompted
+qiforge-cli --help                # the installed binary is `qiforge-cli`
 ```
 
 If it prints the help text, the CLI is ready.
@@ -49,6 +49,10 @@ The CLI walks through:
 3. **Oracle profile** — name, description, price, model. Defaults are fine.
 4. **Entity creation** — the CLI writes a transaction to register your oracle's entity DID on chain. Confirm when prompted (SignX needs the mobile app; offline signs locally).
 5. **Matrix bot** — provisioned automatically.
+
+<Note>
+Entity creation registers the oracle's API URL as `http://localhost:4000` by default, but the runtime boots on `PORT=3000`. To make your oracle reachable at its registered URL, either set `PORT=4000` in `.env` to match, or change the registered URL later with `qiforge-cli update-oracle-api-url`.
+</Note>
 
 The result is a plugin-runtime-shaped project:
 
@@ -86,7 +90,7 @@ Then follow Step 3 onward against `apps/qiforge-example/`.
 
 ## Step 3 — fill in `.env`
 
-Open `apps/qiforge-example/.env` (or `apps/app/.env` if you used `--init`). The CLI populated identity vars; you need to add the LLM key and any plugin vars:
+Open your project's `.env` (`my-oracle/.env` from `qiforge-cli new`, or `apps/qiforge-example/.env` if you cloned the boilerplate). The CLI populated identity vars; you need to add the LLM key and any plugin vars:
 
 ```diff
 - OPEN_ROUTER_API_KEY=
@@ -122,7 +126,7 @@ You should see something like:
 [Nest] OraclePlugin {user-preferences} loaded (always)
 [Nest] OraclePlugin {weather} loaded (on-demand)
 [boot] excluded plugins: composio (COMPOSIO_API_KEY), slack (SLACK_BOT_OAUTH_TOKEN), tasks (REDIS_URL)
-Oracle 'QiForge Example Oracle' (runtime v0.X.Y) listening on :5678
+Oracle 'QiForge Example Oracle' (runtime v0.X.Y) listening on :3000
 [plugin] matrix pending → loaded
 ```
 
@@ -133,7 +137,7 @@ The excluded plugins are normal — they need env vars you didn't set. To enable
 The Weather plugin exposes `GET /weather/now`. It's marked auth-excluded via `getAuthExcludedRoutes()`, so no UCAN header needed:
 
 ```sh
-curl 'http://localhost:5678/weather/now?city=Berlin'
+curl 'http://localhost:3000/weather/now?city=Berlin'
 ```
 
 You should get back JSON:
@@ -157,7 +161,7 @@ This proves: the plugin loaded, its Nest module mounted, the auth exclusion work
 For interactive chat, use the CLI's streaming TUI:
 
 ```sh
-qiforge-cli chat
+qiforge-cli --chat
 ```
 
 Then type:
@@ -169,7 +173,7 @@ what's the weather in Berlin?
 The agent walks this path:
 
 1. **`list_capabilities`** — sees `weather` is `on-demand`, not loaded yet.
-2. **`load_capability({ name: 'weather' })`** — gets the manifest back with `whenToUse` and the tool list. `loadedPlugins` state field now contains `'weather'`.
+2. **`load_capability({ names: ['weather'] })`** — gets the manifest back with `whenToUse` and the tool list. `loadedPlugins` state field now contains `'weather'`.
 3. **`get_current_weather({ city: 'Berlin' })`** — the actual tool fires.
 4. **Final response** — natural-language summary of the result.
 

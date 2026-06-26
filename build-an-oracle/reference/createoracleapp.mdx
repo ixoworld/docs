@@ -48,11 +48,12 @@ export interface CreateOracleAppOptions {
         opening: '...',
         communicationStyle: '...',
         capabilities: '...',
+        customInstructions: '...',
       },
     }
     ```
 
-    **prompt sub-fields** — all three are optional. Omit any you don't need.
+    **prompt sub-fields** — all four are optional. Omit any you don't need.
 
     **`opening`**
 
@@ -76,6 +77,20 @@ export interface CreateOracleAppOptions {
     Rendered **above** the Tier-1 plugin capability block (the auto-generated list of `visibility='always'` plugins). No header is added by the runtime around this text — write your own heading if you want one. If empty or absent, the field is omitted entirely.
 
     Use this to describe high-level skills the oracle has that aren't obvious from the plugin manifest alone — things like domain expertise, supported workflows, or what the agent should proactively offer.
+
+    **`customInstructions`**
+
+    Free-form standing guidance injected **verbatim** into a dedicated `## Custom Instructions` section of the system prompt. Use it for house style, domain rules, compliance guardrails, or any directive that doesn't fit `communicationStyle` (tone) or `capabilities` (the elevator pitch). The runtime renders the section only when there is content.
+
+    Operating guides contributed by on-demand capabilities the agent loads mid-thread (e.g. the Flow Builder guide, which appears once `flows` is in `loadedPlugins`) are appended **after** your text in the same section — so they cost no tokens on turns where the capability is never loaded.
+
+    ```ts
+    prompt: {
+      customInstructions: `Always cite the registry document ID when quoting issuance data.
+    Never promise a delivery date you can't verify against the indexer.
+    Decline any request to move funds — you advise, you do not transact.`,
+    }
+    ```
 
     **`entityDid`**
 
@@ -101,6 +116,9 @@ export interface CreateOracleAppOptions {
     - Draft verification reports, CORSIAs letters, and board summaries.
     - Search and cite methodology documents from the oracle knowledge base.
     - Schedule follow-up reminders and track open action items across conversations.`,
+        customInstructions: `Always cite the registry document ID when quoting issuance data.
+    Treat any methodology version older than 18 months as "needs review" and flag it.
+    You advise on carbon projects — you never authorise transactions or move funds.`,
       },
     }
     ```
@@ -110,13 +128,13 @@ export interface CreateOracleAppOptions {
     - **Type:** `Partial<Record<BundledFeatureName | (string & {}), FeatureToggle>>` where `FeatureToggle = boolean | 'auto'`
     - **Required:** no
 
-    Override the default opt-in state per plugin. Keys are plugin names. Values: `true` (force on), `false` (force off), `'auto'` (run `autoDetect(env)`). Omitted keys are treated as `'auto'`.
+    Override the default opt-in state per plugin. Keys are plugin **names** — the kebab-case `name` field of each plugin (e.g. `'domain-indexer'`, `'user-preferences'`), not a camelCase alias. Values: `true` (force on), `false` (force off), `'auto'` (run `autoDetect(env)`). Omitted keys are treated as `'auto'`.
 
     ```ts
     features: {
       slack: false,
       composio: true,
-      domainIndexer: 'auto',
+      'domain-indexer': 'auto',
     }
     ```
   </Accordion>
@@ -126,6 +144,17 @@ export interface CreateOracleAppOptions {
     - **Required:** no
 
     Your plugin instances. Plus any bundled plugins you want to instantiate with constructor args (`new EditorPlugin({ matrixClient })`, `new CreditsPlugin({ redis, network })`). The plugin loader dedupes by `name`, so an explicit instance overrides the bundled default of the same name.
+
+    ```ts
+    import { EditorPlugin, FlowsPlugin } from '@ixo/oracle-runtime';
+    import { WeatherPlugin } from './plugins/weather/index.js';
+
+    plugins: [
+      new EditorPlugin({ matrixClient }), // overrides the bundled editor
+      new FlowsPlugin({ matrixClient }),  // opt-in, not bundled
+      new WeatherPlugin(),                // your own plugin
+    ]
+    ```
   </Accordion>
 
   <Accordion title="nestModules" icon="server">
@@ -133,6 +162,15 @@ export interface CreateOracleAppOptions {
     - **Required:** no
 
     Your own NestJS modules. Spread into `RuntimeAppModule.imports`. They get full DI access to the Tier-0 services (Sessions, Messages, Secrets, UCAN, …) and can declare controllers, providers, `OnModuleInit`, `OnModuleDestroy`.
+
+    ```ts
+    @Module({ controllers: [VersionController] })
+    class VersionModule {}
+
+    nestModules: [VersionModule]
+    ```
+
+    Routes these modules expose still pass through `AuthHeaderMiddleware` unless you list them in `authExcludedRoutes`.
   </Accordion>
 
   <Accordion title="authExcludedRoutes" icon="globe">
@@ -155,13 +193,23 @@ export interface CreateOracleAppOptions {
     - **Required:** no
 
     Override the bundled plugin set. Provided primarily for tests so the harness can spin up `createOracleApp` without dragging in the full bundled catalog. Production callers should leave this unset.
+
+    ```ts
+    // test only — boot with a single plugin instead of the full catalog
+    bundledPlugins: [new MemoryPlugin()]
+    ```
   </Accordion>
 
   <Accordion title="env" icon="file-lines">
     - **Type:** `NodeJS.ProcessEnv`
     - **Required:** no
 
-    Override `process.env`. Tests use this to inject a clean env. Production code should leave it unset.
+    Override `process.env`. Tests use this to inject a clean, controlled env so the boot doesn't depend on the machine's environment. Production code should leave it unset.
+
+    ```ts
+    // test only — inject a controlled env instead of process.env
+    env: { ...baseTestEnv, LLM_PROVIDER: 'nebius' }
+    ```
   </Accordion>
 
   <Accordion title="skipMatrixInit" icon="circle-pause">
@@ -169,6 +217,11 @@ export interface CreateOracleAppOptions {
     - **Required:** no
 
     Skip starting the Matrix background init. Tests set this so the factory resolves without touching real Matrix. Do not use in production.
+
+    ```ts
+    // test only
+    skipMatrixInit: true
+    ```
   </Accordion>
 
   <Accordion title="skipGracefulShutdown" icon="circle-pause">
@@ -176,22 +229,144 @@ export interface CreateOracleAppOptions {
     - **Required:** no
 
     Skip registering the SIGTERM/SIGINT shutdown handler. Tests set this so the harness does not leak process-level listeners. Do not use in production.
+
+    ```ts
+    // test only
+    skipGracefulShutdown: true
+    ```
   </Accordion>
 
   <Accordion title="logger" icon="scroll">
     - **Type:** `Logger`
     - **Required:** no
 
-    Override the bootstrap logger. Falls back to NestJS `Logger`.
+    Override the bootstrap logger — any object implementing the `Logger` interface (`log`, `error`, `warn`, optional `debug`/`verbose`/`child`). Falls back to NestJS `Logger`.
+
+    ```ts
+    import { Logger } from '@nestjs/common';
+
+    logger: new Logger('MyOracle')
+    ```
   </Accordion>
 
   <Accordion title="hooks" icon="link">
     - **Type:** `MainAgentHooks`
     - **Required:** no
 
-    Optional overrides for the agent-build hooks (checkpointer, model resolver, prompt section snippets). Merged on top of the runtime's defaults — host hooks win. The runtime supplies a per-user SQLite checkpointer by default; pass `{ checkpointerForUser: ... }` here to swap it for an alternate implementation.
+    Overrides for the agent build — the chat model (`resolveModel`), the per-user checkpointer (`checkpointerForUser`), and the prompt/middleware toggles. Merged on top of the runtime's defaults, and **host hooks win**.
+
+    This is where you **change the AI model**. See [MainAgentHooks](#mainagenthooks) below for all ten fields, the `resolveModel` example, and the `'main'`-only nuance.
+
+    ```ts
+    import { getProviderChatModel } from '@ixo/oracle-runtime';
+
+    hooks: {
+      resolveModel: (role, params) =>
+        getProviderChatModel(role, {
+          ...params,
+          ...(role === 'main' && { model: 'google/gemini-3.1-flash-lite' }),
+        }),
+    }
+    ```
   </Accordion>
 </AccordionGroup>
+
+## MainAgentHooks
+
+`hooks` lets you override how the runtime builds the main agent on every request, without forking the runtime. The runtime merges your hooks over its own defaults — **your hooks win** (`{ ...defaultHooks, ...opts.hooks }`). The only default the runtime sets is `checkpointerForUser` (a per-user SQLite store); everything else is unset unless you provide it.
+
+```ts
+import type { MainAgentHooks } from '@ixo/oracle-runtime';
+```
+
+### Change the AI model
+
+This is the answer to "how do I change the model?". `resolveModel` is the model resolver. Return any LangChain `BaseChatModel` for the given role:
+
+```ts
+import { createOracleApp, getProviderChatModel } from '@ixo/oracle-runtime';
+
+const app = await createOracleApp({
+  config,
+  plugins,
+  hooks: {
+    // role is 'main' | 'subagent' | 'utility' | (string & {}).
+    // Spreading `params` preserves the provider's fallback models + latency sort.
+    resolveModel: (role, params) =>
+      getProviderChatModel(role, {
+        ...params,
+        ...(role === 'main' && { model: 'google/gemini-3.1-flash-lite' }),
+      }),
+  },
+});
+```
+
+<Warning>
+  **The runtime only ever calls `resolveModel('main')`.** Sub-agent, utility, vision and guard models are resolved separately, straight through the provider config (`ambient.llm.get(role)` → `getProviderChatModel`). So a `resolveModel` hook changes **only the main agent's model** unless your own plugin code also routes its roles through the hook. Branch on `role === 'main'` (as above) so you don't accidentally rewrite a role you never see.
+</Warning>
+
+<Note>
+  **Where model IDs come from.** Each role (`main`, `subagent`, `vision`, `guard`, …) maps to a hardcoded model ID per provider. The provider is chosen by env: `LLM_PROVIDER` = `openrouter` (default) or `nebius`, with the matching key (`OPEN_ROUTER_API_KEY` / `NEBIUS_API_KEY`). There is **no env var to change the main model ID** — overriding it is exactly what `resolveModel` is for. Building the model with `getProviderChatModel` (rather than `new ChatOpenAI(...)`) keeps the OpenRouter fallback-models list and latency sort the `'main'` role ships with.
+</Note>
+
+Prefer a different SDK model? Return your own LangChain model instead — but you lose the provider's fallback/latency wiring, so you own retries and outages:
+
+```ts
+import { ChatOpenAI } from '@langchain/openai'; // add this dependency yourself
+
+hooks: {
+  resolveModel: () => new ChatOpenAI({ model: 'gpt-4o' }),
+}
+```
+
+### All ten fields
+
+| Field | Type | What it does |
+| --- | --- | --- |
+| `resolveModel` | `(role: ModelRole, params?: ChatOpenAIFields) => BaseChatModel` | Resolves the chat model. Called once, with `'main'`. Default: `ambient.llm.get('main')`. |
+| `checkpointerForUser` | `(userDid: string) => Promise<BaseCheckpointSaver>` | Per-user conversation store. Default: per-user SQLite synced to Matrix — override to swap the backend. |
+| `getRoomTitle` | `(roomId: string) => Promise<string \| undefined>` | Page-title lookup. **Providing it adds the page-context middleware** to the stack; omitting it leaves that middleware out. |
+| `safetyModel` | `BaseChatModel` | Cheap classifier model. **Providing it adds the safety-guardrail middleware**; omitting it leaves it out. |
+| `validationSkipToolNames` | `string[]` | Tool names whose dangling `ToolMessage` outputs are stripped before the next model call — typically sub-agent tools whose output the caller summarises, not the model. |
+| `operationalMode` | `string` | Replaces the default operational-mode prompt block. (The editor plugin's per-page mode still overrides this when a page is open.) |
+| `editorSection` | `string` | Editor prompt block — normally populated by the editor plugin; set it only if you compose the section yourself. |
+| `composioContext` | `string` | Composio guidance prompt block — normally populated by the composio plugin. |
+| `userSecretsContext` | `string` | Per-key secret bullet list rendered into the prompt (e.g. `- _USER_SECRET_FOO`). |
+| `degradedServicesBlock` | `string` | A "some services are degraded" notice appended to the system prompt body. |
+
+`ModelRole` is `'main' | 'subagent' | 'utility' | (string & {})`. `ChatOpenAIFields` is `Record<string, unknown>` — the optional fields forwarded to the underlying chat model.
+
+**Swap the checkpointer** — supply your own LangGraph saver per user:
+
+```ts
+import type { BaseCheckpointSaver } from '@langchain/langgraph';
+
+hooks: {
+  checkpointerForUser: async (userDid: string): Promise<BaseCheckpointSaver> => {
+    return myStore.saverFor(userDid);
+  },
+}
+```
+
+**Turn on the conditional middlewares** — both are added to the stack only when their hook is present:
+
+```ts
+hooks: {
+  // adds the page-context middleware
+  getRoomTitle: async (roomId) => myRoomTitles.get(roomId),
+  // adds the safety-guardrail middleware
+  safetyModel: getProviderChatModel('guard'),
+}
+```
+
+**Prompt blocks** — the string fields are appended to dedicated prompt sections. Most are populated by their owning plugin; set them only when you're driving the section yourself:
+
+```ts
+hooks: {
+  operationalMode: 'You are operating in read-only audit mode. Never call mutating tools.',
+  validationSkipToolNames: ['call_research_agent'],
+}
+```
 
 ## OracleApp
 
@@ -249,7 +424,7 @@ export interface OracleApp {
   </Accordion>
 
   <Accordion title="listen(port?)" icon="play">
-    Start the HTTP server. Honours `beforeListen` callbacks first. Port resolution: explicit `port` arg → `PORT` env (validated) → `5678` default. Throws if called twice.
+    Start the HTTP server. Honours `beforeListen` callbacks first. Port resolution: explicit `port` arg → `PORT` env (validated, defaults to **3000**). Throws if called twice.
   </Accordion>
 </AccordionGroup>
 
@@ -266,7 +441,11 @@ The function executes these steps in order:
 7. Builds the internal `OracleIdentity` from `config` + validated env.
 8. Populates the six registries (tools, sub-agents, middleware, manifests, configSchema, sharedState).
 9. Collects `getNestModules` from every loaded plugin.
-10. Builds the dynamic `RuntimeAppModule` and bootstraps NestJS (`NestFactory.create`). CORS enabled with the framework's allowed headers. Swagger UI mounts at `/docs`.
+10. Builds the dynamic `RuntimeAppModule` and bootstraps NestJS (`NestFactory.create`). Installs a global `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })`, enables CORS with the framework's allowed headers (`authorization`, `x-auth-type`, `x-ucan-delegation`, …), and mounts Swagger UI at `/docs`.
+
+   <Note>
+     The global `ValidationPipe` applies to **every** controller — including ones you add via `nestModules` or a plugin's `getNestModules`. Annotate request DTOs with `class-validator` decorators: unknown body fields are rejected (`forbidNonWhitelisted`), unannotated props are stripped (`whitelist`), and nested DTOs are instantiated (`transform`). A controller that silently 400s on an extra field is hitting this pipe.
+   </Note>
 11. Builds `AmbientServices`.
 12. Warms the boot caches (each registry runs its boot-time hooks once).
 13. Wires the default checkpointer (`UserMatrixSqliteSyncService` + `SqliteSaver`), then merges host `hooks` over it.

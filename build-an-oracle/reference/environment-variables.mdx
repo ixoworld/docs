@@ -48,10 +48,19 @@ Always required by the runtime. Source: `packages/oracle-runtime/src/config/base
 | Variable | Type | Default | Notes |
 | --- | --- | --- | --- |
 | `BLOCKSYNC_GRAPHQL_URL` | string | — | Required. |
-| `ORACLE_DID` | string | — | Required. The oracle's own DID (`did:ixo:ixo1...`) used as signer identity. |
-| `ORACLE_ENTITY_DID` | string | — | Required. The oracle's on-chain entity record. |
+| `ORACLE_DID` | string | — | Required. The oracle's own DID (`did:ixo:ixo1...`) — the signer identity used by the UCAN service and the auth middleware. |
+| `ORACLE_ENTITY_DID` | string | — | Required. The oracle's on-chain entity record DID. Distinct from `ORACLE_DID` — do not conflate them. |
 | `SECP_MNEMONIC` | string | — | Required. |
 | `RPC_URL` | string | — | Required. |
+
+### Auth / UCAN
+
+Always present. Both are `z.coerce.number()` — set them as plain integer strings in `.env`.
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `UCAN_AUTH_MAX_TTL_SECONDS` | number (coerced) | `900` | Max lifetime (seconds) the oracle accepts for a user **auth invocation**. Bounds the server-side replay window regardless of the TTL the client declares. Default 15 minutes. |
+| `UCAN_REAUTH_PROMPT_THROTTLE_SECONDS` | number (coerced) | `21600` | Throttle window (seconds) between "please re-authorize" prompts posted into a user's Matrix room when their stored delegation is missing or expired. Default 6 hours. |
 
 ### LLM
 
@@ -62,7 +71,7 @@ Always required by the runtime. Source: `packages/oracle-runtime/src/config/base
 | `OPEN_ROUTER_API_KEY` | string | — | Required if `LLM_PROVIDER=openrouter`. |
 | `NEBIUS_API_KEY` | string | — | Required if `LLM_PROVIDER=nebius`. |
 
-Cross-field: the API key for the selected `LLM_PROVIDER` must be present; otherwise boot fails with a named-field error.
+Cross-field check (`validateLlmProviderKey`): the API key for the selected `LLM_PROVIDER` must be present — `OPEN_ROUTER_API_KEY` when `LLM_PROVIDER=openrouter` (the default), `NEBIUS_API_KEY` when `LLM_PROVIDER=nebius`. A missing key fails boot with a named-field error (e.g. `OPEN_ROUTER_API_KEY` / `NEBIUS_API_KEY`) rather than a generic upstream 401 at request time. The per-role model ids are hardcoded per provider — there is no env var to swap the main model id (use the `resolveModel` hook for that).
 
 ### Misc
 
@@ -80,7 +89,7 @@ Cross-field: the API key for the selected `LLM_PROVIDER` must be present; otherw
 | `LANGSMITH_PROJECT` | string | — | |
 | `LANGSMITH_ENDPOINT` | string | — | Optional override of the LangSmith API URL. |
 
-Declared in the base schema so they show up in `qiforge env` output. LangChain auto-wires when these are present in `process.env`; the runtime never reads them directly.
+Declared in the base schema so they show up in `qiforge-cli env` output. LangChain auto-wires when these are present in `process.env`; the runtime never reads them directly.
 
 ## Per-plugin
 
@@ -95,7 +104,7 @@ Only required when the named plugin is loaded.
 | `composio` | `COMPOSIO_API_KEY` | Yes (when loaded) | |
 | `composio` | `COMPOSIO_BASE_URL` | No | Defaults to `https://composio.ixo.earth`. |
 | `sandbox` | `SANDBOX_MCP_URL` | Yes | Must be a valid URL. |
-| `skills` | `SKILLS_CAPSULES_BASE_URL` | No | Defaults to bundled URL. |
+| `skills` | `SKILLS_CAPSULES_BASE_URL` | No | URL. Defaults to `https://capsules.skills.ixo.earth`. |
 | `slack` | `SLACK_BOT_OAUTH_TOKEN` | Yes | Triggers autoDetect. |
 | `slack` | `SLACK_APP_TOKEN` | No | |
 | `slack` | `SLACK_USE_SOCKET_MODE` | No | Defaults to `'true'`. |
@@ -103,8 +112,15 @@ Only required when the named plugin is loaded.
 | `slack` | `SLACK_RECONNECT_DELAY_MS` | No | Coerced to number; default `1000`. |
 | `credits` | `SUBSCRIPTION_URL` | No | URL. |
 | `credits` | `SUBSCRIPTION_ORACLE_MCP_URL` | No | URL. |
-| `credits` | `DISABLE_CREDITS` | No | Set to `'true'` to skip the plugin. |
+| `credits` | `DISABLE_CREDITS` | No | Enum — exactly `'true'` or `'false'` (any other value fails env validation). `'true'` disables the credit-enforcement middleware; the plugin's `autoDetect` also excludes the whole plugin when `DISABLE_CREDITS=true`. |
 | `tasks` | `REDIS_URL` | Yes (when loaded) | Triggers autoDetect. |
+| `tasks` | `TASKS_MAX_PER_USER` | No | Coerced positive int; default `50`. Max scheduled tasks per user. |
+| `tasks` | `TASKS_RUN_LOCK_TTL_SEC` | No | Coerced positive int; default `600`. Per-run lock TTL (seconds). |
+| `tasks` | `TASKS_MIN_CRON_INTERVAL_SEC` | No | Coerced positive int; default `300`. Minimum allowed cron interval (seconds). |
+| `matrix-group-chats` | `CHANNEL_MEMORY_SYNC_INTERVAL_MS` | No | Coerced int, min `1000`; default `60000`. Debounce window between a write and the Matrix snapshot upload. |
+| `matrix-group-chats` | `GROUP_CHAT_ACTIVE_THREAD_TTL_MS` | No | Coerced int, min `60000`; default `1800000`. How long a thread stays "active with the bot" after a reply. |
+| `matrix-group-chats` | `GROUP_CHAT_REQUIRE_POWER_LEVEL` | No | Coerced int, min `0`; default `0`. Extra minimum power level the bot must have before posting (`0` = use the room default). |
+| `matrix-group-chats` | `GROUP_CHAT_ROOM_INFO_TTL_MS` | No | Coerced int, min `60000`; default `1800000`. How long roomInfo (membership, DM flag) stays cached. |
 
 ## Variables read but not owned
 
@@ -118,7 +134,7 @@ These are declared in the plugin's sibling schemas (typed `optional()`); a missi
 
 ## Generating an `.env` template
 
-`qiforge env` (ships with TASK-33) generates a `.env` template for your installed plugin set. Until that lands, write the file by hand using this reference.
+`qiforge-cli env` generates a `.env` template for your installed plugin set. Until that lands, write the file by hand using this reference.
 
 ## Related references
 

@@ -118,7 +118,7 @@ Important: the runtime starts HTTP listening even when Matrix is still pending. 
 
 **Cause:** The oracle's Matrix account room doesn't contain the encrypted signing mnemonic state event.
 
-**Fix:** Run the CLI command to provision it. Until then, authenticated routes will 401.
+**Fix:** Run `qiforge-cli setup-encryption-key` to provision it. Until then, authenticated routes will 401. (The boot warning still prints the legacy command name `oracles-cli setup-claim-signing-mnemonics`; the current CLI provisions the signing key under `qiforge-cli setup-encryption-key`.)
 
 ### Boot warns: No P-256 encryption key found
 
@@ -184,12 +184,20 @@ The plugin loaded but its `softDependsOn` is missing. This is informational — 
 
 ### Every protected request returns 401
 
-Likely causes:
+When no auth is present at all, the middleware returns **401** with:
 
+```text
+Missing UCAN authentication: provide Authorization: Bearer <invocation> with X-Auth-Type: ucan, or an x-ucan-delegation header
+```
+
+A malformed or expired invocation returns **401** `Invalid UCAN invocation`. Likely causes:
+
+- **No invocation sent.** Primary auth is a user-signed UCAN invocation carried as `Authorization: Bearer <invocation>` **plus** `X-Auth-Type: ucan` — the bearer is ignored without the `X-Auth-Type: ucan` selector. (A bare `x-ucan-delegation` header is accepted only as a migration fallback.)
+- **Invocation expired or malformed**, or its lifetime exceeds `UCAN_AUTH_MAX_TTL_SECONDS` (default 900s).
 - **Matrix init still pending.** The runtime needs Matrix up to validate UCANs. Watch for `[plugin] matrix pending → loaded` before retrying.
-- **Signing mnemonic not loaded** (see Matrix issues above). Auth middleware can't mint downstream invocations.
-- **UCAN delegation expired or malformed.** Check the `x-ucan-delegation` header.
-- **`x-did` doesn't match the delegation.** The middleware verifies the audience.
+- **Signing mnemonic not loaded** (see Matrix issues above). The oracle can't mint downstream invocations until it's provisioned.
+
+`x-did` is **not** used for authentication — the authenticated DID is derived from the validated invocation (or delegation), never from a header the client sets. See [Identity and auth](/build-an-oracle/develop/identity-and-auth#per-request-user-auth).
 
 ### My webhook hits 401
 
@@ -218,7 +226,6 @@ If you wrote a middleware with closure-scoped timing state, concurrent LLM calls
 
 - Check `app.plugins.status()` — `loaded`, `excluded` (with reason), `softDepGaps`.
 - Check the Swagger UI at `/docs` — the live route list.
-- Run `qiforge inspect` (once TASK-33 ships) for a structured registry dump.
 - Open the LangSmith trace for the failing turn.
 
 ## Where to read next

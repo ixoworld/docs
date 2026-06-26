@@ -12,7 +12,7 @@ icon: "book"
 
 **`autoDetect`** — predicate `(env) => boolean` a plugin implements to opt itself in or out based on `process.env`. Runs when `features` doesn't explicitly set the toggle. See [Using bundled plugins](/build-an-oracle/develop/enable-bundled-plugins).
 
-**Bundled plugin** — a plugin shipped inside `@ixo/oracle-runtime` (one of 14). Loaded from `BUNDLED_PLUGINS` by default. See [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview).
+**Bundled plugin** — a plugin shipped inside `@ixo/oracle-runtime` (one of 15). Loaded from `BUNDLED_PLUGINS` by default. See [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview).
 
 **Checkpointer** — per-user SQLite saver (`UserMatrixSqliteSyncService` + `SqliteSaver`) that persists graph state across turns. Synced to Matrix in the background. See [State schema](/build-an-oracle/reference/state-schema).
 
@@ -50,7 +50,7 @@ icon: "book"
 
 **Meta-tool** — a built-in tool the runtime registers on every agent, not authored by any plugin. There are two: `list_capabilities` and `load_capability`. See [Meta-tools](/build-an-oracle/understand/meta-tools-and-loading).
 
-**Middleware** — LangChain `AgentMiddleware`. Hooks: `beforeModel`, `afterModel`, `onError`. Four are always-on (tool validation, retry, page context, safety guardrail); plugins add more via `getMiddlewares`. See [Plugin middleware](/build-an-oracle/develop/plugin-recipes/add-a-middleware).
+**Middleware** — LangChain `AgentMiddleware`. Hooks: `beforeAgent`, `beforeModel`, `wrapModelCall`, `wrapToolCall`, `afterModel`, `afterAgent` (there is no `onError` middleware hook — to handle errors, wrap a call in `wrapModelCall`/`wrapToolCall` with try/catch). Four are always-on, in order — capability gate, tool validation, tool-repetition guard, tool retry — plus two conditional: page context (when `hooks.getRoomTitle` is set) and safety guardrail (when `hooks.safetyModel` is set). Plugins add more via `getMiddlewares`. See [Plugin middleware](/build-an-oracle/develop/plugin-recipes/add-a-middleware).
 
 **NestJS module** — a unit of Nest DI (controllers, providers, lifecycle). Plugins ship modules via `getNestModules`; the host ships them via `createOracleApp({ nestModules })`.
 
@@ -82,6 +82,6 @@ icon: "book"
 
 **Topological sort** — the boot ordering pass over `dependsOn`. Plugins are loaded in dependency order; middleware fires in this order; tools are emitted in this order (for deterministic prompts).
 
-**UCAN** — User-Controlled Authorisation Network. The delegation envelope on every authenticated request (`x-ucan-delegation` header). The oracle mints downstream invocations signed by its `SECP_MNEMONIC`. See [Identity and auth](/build-an-oracle/develop/identity-and-auth).
+**UCAN** — User-Controlled Authorisation Network. Authentication is a user-signed UCAN *invocation* (`Authorization: Bearer …` + `X-Auth-Type: ucan`); authorization is the user→oracle *delegation* (`x-ucan-delegation`, also accepted as a migration-only auth fallback). The oracle mints downstream invocations signed by its `SECP_MNEMONIC`. See [Identity and auth](/build-an-oracle/develop/identity-and-auth).
 
 **Visibility** — one of `always`, `on-demand`, `silent`. Controls whether a plugin's tools are bound at boot, loaded on demand, or invisible to the agent. See [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility).

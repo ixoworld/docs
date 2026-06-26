@@ -73,9 +73,9 @@ That's a working oracle — every bundled plugin runs its `autoDetect(env)` and 
     const app = await createOracleApp({
       config,
       features: {
-        composio: false,        // force off
-        firecrawl: true,        // force on, even if env is missing (will fail env validation if so)
-        domainIndexer: 'auto',  // default — runs autoDetect(env)
+        composio: false,           // force off
+        firecrawl: true,           // force on, even if env is missing (will fail env validation if so)
+        'domain-indexer': 'auto',  // default — runs autoDetect(env)
       },
     });
     ```
@@ -87,6 +87,10 @@ That's a working oracle — every bundled plugin runs its `autoDetect(env)` and 
     | `'auto'` | Default. Run `autoDetect(env)`. |
 
     Omitted keys are treated as `'auto'`. Recipe: [Enable bundled plugins](/build-an-oracle/develop/enable-bundled-plugins).
+
+    <Warning>
+      Feature keys are the plugin's kebab-case `name` — `'domain-indexer'`, `'user-preferences'`, `'matrix-group-chats'`. A camelCase key like `domainIndexer` type-checks (it falls into the open `string` arm) but is a silent no-op: the plugin keeps its default behaviour. Always quote the exact `name`.
+    </Warning>
   </Step>
 
   <Step title="Mount your own Nest modules" icon="cube">
@@ -168,6 +172,26 @@ That's a working oracle — every bundled plugin runs its `autoDetect(env)` and 
     | `degradedServicesBlock` | empty | Degraded-services notice appended to system prompt |
 
     Source: [`graph/main-agent-types.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/graph/main-agent-types.ts) (search `MainAgentHooks`).
+
+    **Change the AI model.** The most common reason to set `hooks` is to swap the model. The runtime resolves the main agent's model via `resolveModel('main')`; override it and spread `params` to keep the provider's fallback models and latency sort:
+
+    ```ts
+    import { createOracleApp, getProviderChatModel } from '@ixo/oracle-runtime';
+
+    const app = await createOracleApp({
+      config,
+      hooks: {
+        // role is 'main' | 'subagent' | 'utility' | (string & {}).
+        resolveModel: (role, params) =>
+          getProviderChatModel(role, {
+            ...params,
+            ...(role === 'main' && { model: 'google/gemini-3.1-flash-lite' }),
+          }),
+      },
+    });
+    ```
+
+    The provider (`LLM_PROVIDER` = `openrouter` default | `nebius`) and per-role default model ids are otherwise fixed in the runtime — there is no env var to change the main model id without this hook. You can also return any LangChain `BaseChatModel` (e.g. `new ChatOpenAI({ model: 'gpt-4o' })`), but doing so drops the OpenRouter fallback/latency wiring.
   </Step>
 
   <Step title="Run a beforeListen hook" icon="play">
@@ -201,16 +225,16 @@ That's a working oracle — every bundled plugin runs its `autoDetect(env)` and 
     logger.log(`[boot] loaded: ${status.loaded.join(', ')}`);
     ```
 
-    `onPluginStatusChange` fires when Matrix transitions `pending → loaded` (or `failed`). `onError` catches Matrix init + lifecycle errors. `plugins.status()` returns the same shape `qiforge inspect` prints.
+    `onPluginStatusChange` fires when Matrix transitions `pending → loaded` (or `failed`). `onError` catches Matrix init + lifecycle errors. `plugins.status()` returns a snapshot of loaded, excluded, and soft-dep-gap plugins.
   </Step>
 
   <Step title="Listen" icon="rocket">
     ```ts
-    await app.listen();        // honours config.PORT, env.PORT, then 5678
-    await app.listen(3000);    // explicit port
+    await app.listen();        // uses the PORT env var (defaults to 3000)
+    await app.listen(8080);    // explicit port — overrides PORT
     ```
 
-    Calling `listen()` twice throws. Default port is **5678** — set `PORT` env or pass a number to override.
+    Calling `listen()` twice throws. Default port is **3000** — set the `PORT` env var or pass a number to `listen()` to override.
   </Step>
 </Steps>
 

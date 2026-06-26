@@ -6,7 +6,7 @@ icon: "chart-line"
 
 ## Turn on LangSmith in one block
 
-LangChain auto-wires tracing when these env vars are present in `process.env` — the runtime never reads them, only declares them in the [base env schema](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts) so they show up in `qiforge env` output.
+LangChain auto-wires tracing when these env vars are present in `process.env` — the runtime never reads them, only declares them in the [base env schema](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts) so they show up in `qiforge-cli env` output.
 
 ```text
 LANGSMITH_TRACING=true
@@ -15,12 +15,16 @@ LANGSMITH_PROJECT=my-oracle
 LANGSMITH_ENDPOINT=https://api.smith.langchain.com   # optional, defaults to LangSmith cloud
 ```
 
-| Env var | Required | Purpose |
+| Env var | Required for tracing | Purpose |
 | --- | --- | --- |
 | `LANGSMITH_TRACING` | yes | Set to `true` to enable tracing. Anything else (or unset) disables it. |
 | `LANGSMITH_API_KEY` | yes | API key from your LangSmith workspace. |
 | `LANGSMITH_PROJECT` | yes | Project name traces land under. |
 | `LANGSMITH_ENDPOINT` | no | Override for self-hosted LangSmith. Defaults to LangSmith cloud. |
+
+<Note>
+All four `LANGSMITH_*` vars are `optional()` in the [base env schema](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts) — boot never fails when they're absent. "Required" above means "required for tracing to work," not a boot-time requirement.
+</Note>
 
 No code changes needed. Set the vars and every LLM call, tool invocation, and middleware hook produces a span in the LangSmith UI. Unset them to turn it off.
 
@@ -99,7 +103,7 @@ if (status.excluded.length > 0) {
 }
 ```
 
-Shape of the snapshot — defined in [`packages/oracle-runtime/src/bootstrap/plugin-loader.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/plugin-loader.ts):
+Shape of the snapshot — the `PluginStatusReport` defined in [`packages/oracle-runtime/src/bootstrap/create-oracle-app.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/create-oracle-app.ts):
 
 ```ts
 {
@@ -107,11 +111,14 @@ Shape of the snapshot — defined in [`packages/oracle-runtime/src/bootstrap/plu
   excluded: Array<{
     plugin: string;
     reason: string;                                  // e.g. "auto-detect precondition not met (COMPOSIO_API_KEY)"
-    cause: 'feature_false' | 'auto_detect_missing' | 'cascaded';
   }>;
   softDepGaps: Array<{ plugin: string; missing: string }>;
 }
 ```
+
+<Note>
+The loader tracks an internal `cause` (`feature_false` / `auto_detect_missing` / `cascaded`) for each excluded plugin, but the public `app.plugins.status()` report drops it — `excluded` items are `{ plugin, reason }` only.
+</Note>
 
 ## Use the plugin-scoped logger
 

@@ -35,7 +35,7 @@ If only your plugin reads it, keep it private.
 - **Read-only.** Consumers never mutate the value. Producers update their own internal state via tool handlers or middleware; the accessor just exposes a view.
 - **Flat namespace.** Keys live in a single global record. Two plugins registering the same key fail boot — no quiet overrides.
 - **Lazy.** Each accessor is a function `(state, runCtx) => value`. It runs every time a consumer reads. Cheap reads only; cache in the producer if derivation is expensive.
-- **Optional.** A consumer must assume the producer may not be installed. `rtCtx.shared.someKey` can be `undefined`. Pair shared state with `softDependsOn` so the soft dependency is explicit in `qiforge inspect`.
+- **Optional.** A consumer must assume the producer may not be installed. `rtCtx.shared.someKey` can be `undefined`. Pair shared state with `softDependsOn` so the soft dependency is explicit in the `app.plugins.status()` report.
 
 ## Typed reads
 

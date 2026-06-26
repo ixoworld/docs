@@ -1,36 +1,126 @@
 ---
 title: "tasks"
-description: "Background jobs plugin — stub. Full implementation deferred."
-icon: "hourglass"
+description: "Schedule the main agent to run on time-based triggers and deliver results to the user's chat — in the background, not inline."
+icon: "clock"
 ---
 
-**Source:** [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) (stub manifest)
+**Source:** [`packages/oracle-runtime/src/plugins/tasks/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/tasks/)
 
 | Attribute | Value |
 | --- | --- |
-| Visibility | `silent` |
-| Stability | `experimental` |
-| Default state | Stub (auto-detects on `REDIS_URL`) |
+| Feature key | `tasks` |
+| Visibility | `on-demand` |
+| Stability | `beta` |
+| Category | `automation` |
+| Default state | Auto-detect (env: `REDIS_URL`) |
+| Depends on | — |
+| Soft-depends on | `memory` |
 
-## Status: deferred
+## Summary
 
-`tasks` is a **stub** entry in `BUNDLED_PLUGINS` so feature toggles and the `REDIS_URL` auto-detect hint work, but no functionality is wired. The original port revealed contract violations that need rework before a full implementation lands.
+Lets the agent schedule itself to run later. A task is a saved spec (title + intent) plus a trigger (`time.once` or `time.cron`). When the trigger fires, the runtime starts a **fresh background session** — no memory of the conversation that created it — runs one agent turn, and delivers the result to the user's main oracle room or a dedicated `[Task]` room. The agent owns the whole lifecycle through 10 tools, a mandatory **preview → create** approval flow, and an optional per-run **before-action** approval gate.
 
-See the framework's [follow-ups](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/docs/spec-and-roadmap/follow-ups.md) and the task spec at `specs/tasks/` for the rebuild plan.
+<Note>
+Because each run is a fresh session, every ID, URL, name, or reference the run needs must be written into `intent.context` when the task is created. The run cannot "remember" anything discussed in the chat that scheduled it.
+</Note>
 
-## Environment variables (when implemented)
+## Environment variables
 
-| Var | Required | Description |
+| Var | Required | Default | Description |
+| --- | --- | --- | --- |
+| `REDIS_URL` | yes | — | Redis connection URL. Backs the BullMQ `task_run` queue + worker and the task state store. Triggers auto-detect. |
+| `TASKS_MAX_PER_USER` | no | `50` | Max live tasks per user (not counting `cancelled` / `completed`). `create_task` rejects new tasks past this. |
+| `TASKS_RUN_LOCK_TTL_SEC` | no | `600` | TTL (seconds) on a run's execution lock — guards against a double-fire running the same task twice. |
+| `TASKS_MIN_CRON_INTERVAL_SEC` | no | `300` | Floor (seconds) on how often a `time.cron` trigger may fire. Faster schedules are rejected at create/update time. |
+
+## Depends on
+
+Soft-depends on [`memory`](/build-an-oracle/reference/bundled-plugins/memory): tasks loads and runs fine if `memory` is absent, but background runs lose durable per-user context. A `boot.plugin.soft_dep_missing` log line is emitted when `memory` is not loaded — it is a warning, never a boot failure.
+
+## What it contributes
+
+- **Tools (10, `on-demand`):** the agent loads them via the capability gate before use.
+  - `preview_task` — run a candidate spec **once, for real**, and return the output + a `previewToken`. Always required before scheduling; the agent must show the user this output and stop.
+  - `create_task` — schedule a previewed task. Requires a matching `previewToken` minted in an **earlier** turn (re-preview if anything changed). Picks `time.once` vs `time.cron` and the delivery room.
+  - `list_my_tasks` — list the user's tasks (id, title, status, trigger, next run); optional status filter.
+  - `get_task` — full spec body, status, trigger, delivery room, and the last error if it has been failing.
+  - `update_task` — patch title, trigger, approval mode, or intent. Changing the intent needs a fresh `previewToken`; changing the trigger reschedules automatically.
+  - `pause_task` — pause a task; pending runs are cancelled until resumed.
+  - `resume_task` — resume a paused, `pending-approval`, or `failed-pending-review` task; recomputes the next run.
+  - `cancel_task` — cancel permanently (spec kept for the audit trail).
+  - `resolve_task_approval` — record the user's decision (`approved` / `declined`) after a **nuanced** reply in a `[Task]` room. Plain yes/no replies are recorded automatically — don't call this for those.
+  - `suggest_spec_fix` — for a failing task, return the current body + last error so the agent can propose a revision (applied via `update_task` only after the user agrees).
+- **Sub-agents:** none.
+- **Middleware:** one — `TaskRoomApprovalGate`. Wraps every model call but only acts inside a dedicated task room whose task is `pending-approval`. A plain yes/no reply is classified and resolved deterministically **before** the model runs; nuanced replies get a system-prompt hint pointing the model at `resolve_task_approval`. It never short-circuits the turn and never posts to Matrix.
+- **HTTP routes:** none.
+- **Nest module:** `TasksModule` — owns the BullMQ `task_run` queue + `TaskRunWorker`, a Redis-backed state/task store, the scheduler, delivery service, agent invoker, and approval flow. On init it registers a room→session resolver on the Matrix bridge so a plainly-typed reply in a task room continues that run's own thread instead of starting a fresh one.
+- **Shared state:** none.
+
+## Triggers
+
+| Type | Fields | Use for |
 | --- | --- | --- |
-| `REDIS_URL` | yes | Will trigger auto-detect when the real plugin lands. |
+| `time.once` | `runAtIso` (ISO datetime), `tz` | One-time requests — "in 10 minutes", "tomorrow at 5pm". Compute `runAtIso` from now. |
+| `time.cron` | `pattern` (cron), `tz` | Genuinely recurring schedules — "every morning at 7". `*/10 * * * *` means every-10-minutes-forever, not once-in-10-minutes. |
+
+## The preview → create flow
+
+Scheduling is always two turns:
+
+<Steps>
+  <Step title="preview_task">
+    The agent runs the candidate spec once with live tools and returns the real output plus a `previewToken`. It then **stops** and shows the output to the user — it must not call `create_task` in the same turn.
+  </Step>
+  <Step title="User confirms in a new message">
+    The user replies to schedule it (and optionally asks for a dedicated room or per-run approval).
+  </Step>
+  <Step title="create_task">
+    Called with the same title/intent and the `previewToken`. The runtime re-checks the token (owner + content hash + a different request id), enforces the per-user limit and the cron floor, saves the spec, and enqueues the first run.
+  </Step>
+</Steps>
+
+## Before-action approval
+
+Set `approval: 'before-action'` (with `intent.requiresApproval` naming the guarded action) when a run would send, post, publish, or create something on the user's behalf. Such tasks always get their own `[Task]` room. Each run does the work, **drafts** the action, and asks the user to approve by replying in that room:
+
+- A plain "yes" / "no" (and close variants) is recorded deterministically by the `TaskRoomApprovalGate` middleware before the model runs.
+- A nuanced reply ("fix the typo first, then send") is handled by the agent, which acts on it and then calls `resolve_task_approval`.
+
+## Task statuses
+
+`active` · `pending-approval` · `paused` · `failed-pending-review` · `completed` · `cancelled`.
+
+## Opt out / Opt in
+
+`tasks` auto-detects on `REDIS_URL` and is off when that env var is unset.
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { tasks: false }, // never load
+  // features: { tasks: true }, // force load (fails env validation if REDIS_URL missing)
+  // features: { tasks: 'auto' }, // run autoDetect (default — loads when REDIS_URL is set)
+});
+```
+
+## When to use it
+
+- The user wants a reminder or recurring report ("every morning at 7", "tomorrow at 5pm", "remind me to…").
+- The user wants the agent to monitor or track something on a schedule.
+- The user wants a piece of work run later, in the background, without sitting in the chat.
+
+## When NOT to use it
+
+- A one-shot action the user wants done right now — just do it inline.
+- Real-time / streaming requirements — tasks run on a scheduled cadence, not on demand.
 
 ## Where to read next
 
 <CardGroup cols={2}>
-  <Card title="Bundled plugins" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
-    The full bundled set.
+  <Card title="memory" icon="brain" href="/build-an-oracle/reference/bundled-plugins/memory">
+    Soft dependency — durable per-user context for background runs.
   </Card>
-  <Card title="Plugin anatomy" icon="diagram-subtask" href="/build-an-oracle/understand/plugin-anatomy">
-    What a real plugin looks like.
+  <Card title="Visibility tiers" icon="layer-group" href="/build-an-oracle/understand/visibility-tiers">
+    Why `on-demand` tools are loaded through the capability gate.
   </Card>
 </CardGroup>

@@ -44,7 +44,7 @@ export interface ManifestExample {
     - **Type:** `string`
     - **Required:** yes
 
-    Human-readable name. Used to prefix every tool description (`[Climate Data] Fetch emissions…`) and appears in `qiforge inspect`. Distinct from `name` — `name` is kebab-case unique identifier, `title` is prose.
+    Human-readable name. Used to prefix every tool description (`[Climate Data] Fetch emissions…`) and appears in the `app.plugins.status()` report. Distinct from `name` — `name` is kebab-case unique identifier, `title` is prose.
   </Accordion>
 
   <Accordion title="summary" icon="quote-right">
@@ -74,6 +74,9 @@ export interface ManifestExample {
     - **Required:** no
 
     Anti-patterns. Use to disambiguate from other plugins.
+
+    **Validation:**
+    - Soft warn: > 4 entries, or any entry > 80 chars.
   </Accordion>
 
   <Accordion title="examples" icon="lightbulb">
@@ -83,7 +86,8 @@ export interface ManifestExample {
     Few-shot examples. Each example binds a user message to a tool call.
 
     **Validation:**
-    - Hard: every `example.tool` must reference a tool actually registered by this plugin.
+    - Hard: every `example.tool` must reference a tool the plugin actually registers — **but only when the plugin registers boot-time tools.** Plugins whose tools arrive at request time (MCP-sourced: `sandbox`, `memory`, `firecrawl`) register zero boot-time tools, so the cross-check is skipped for them. A sub-agent's wrapped name (`call_<name>`) is a valid example tool too.
+    - Soft warn: > 3 examples.
 
     ```ts
     examples: [
@@ -104,7 +108,7 @@ export interface ManifestExample {
     Labels for search and filter. Surfaced in `list_capabilities` output.
 
     **Validation:**
-    - Soft warn: any tag containing uppercase.
+    - Hard: every tag must be lowercase. An uppercase tag is a boot error — `createOracleApp` throws `Plugin manifest validation failed` and the oracle never starts (so `tags: ['Weather']` aborts boot; use `['weather']`).
   </Accordion>
 
   <Accordion title="category" icon="folder-tree">
@@ -121,9 +125,9 @@ export interface ManifestExample {
 
     Discovery and loading mode.
 
-    - `always` — tools bound at boot; listed in Tier-1 prompt.
-    - `on-demand` — tools NOT bound; manifest discoverable via `list_capabilities`; agent calls `load_capability` to make tools available.
-    - `silent` — invisible to agent; runs as middleware-only.
+    - `always` — tools bound at boot; the plugin is listed in the Tier-1 prompt block.
+    - `on-demand` — tools NOT bound at boot; the manifest is discoverable via `list_capabilities`; the agent calls `load_capability` to make the tools available.
+    - `silent` — the plugin is not advertised in the capability block or `list_capabilities`, but its tools still pass through the capability gate exactly like `always` and are visible to the model. `silent` means "unadvertised", **not** "hidden" or "secure" — it is not a security boundary.
 
     See [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility).
   </Accordion>
@@ -169,13 +173,15 @@ Manifest validation runs before env validation, so manifest errors surface even 
 
 ## Cross-checking examples against tools
 
-Every `example.tool` is checked against the plugin's registered tool names. If a manifest references `tool: 'foo'` but the plugin doesn't register a tool named `foo`, boot fails:
+Each `example.tool` is checked against the names the plugin registers — the union of its boot-time tool names and its sub-agent wrapped names (`call_<name>`). If a manifest references `tool: 'foo'` but the plugin registers no such tool, boot fails:
 
 ```text
-[boot-error] Plugin 'weather' manifest example references unknown tool 'foo'.
+[boot-error] [weather] examples[0].tool: references unknown tool "foo".
 ```
 
 This catches typos and stale manifests during refactors.
+
+The check is **lenient for MCP-sourced plugins**: when a plugin registers no boot-time tools (its tools come from `getRequestTools` fetched per-request from an upstream MCP server — `sandbox`, `memory`, `firecrawl`), the runtime can't see those names at boot, so it skips the cross-check rather than false-flag every example.
 
 ## Worked example
 
