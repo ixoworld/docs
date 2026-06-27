@@ -6,7 +6,7 @@ icon: "layer-group"
 
 ## Overview
 
-`PluginContext` is what plugin code sees during request build. It's the input to `getTools`, `getSubAgents`, `getMiddlewares`, `getRequestTools`'s sibling `getTools`, and `getNestModules`.
+`PluginContext` is the boot-time context. It's the input to the boot-time hooks — `getTools`, `getSubAgents`, `getMiddlewares`, and `getNestModules`. (The request-time hooks `getRequestTools` / `getRequestSubAgents` receive the richer [`RuntimeContext`](/build-an-oracle/reference/runtime-context) instead.)
 
 ```ts
 export interface PluginContext<TConfig = MergedConfig> {
@@ -84,7 +84,7 @@ No authenticated user, no session, no live socket, no request data. If your code
 
 ## Lifetime
 
-A new `PluginContext` is built per request build. The runtime caches boot-time hook outputs (`getTools`, `getSubAgents`, `getMiddlewares`) — they fire once at boot for warming and once per request build for retrieval. Per-request-only data lives in `RuntimeContext`.
+Boot-time hooks (`getTools`, `getSubAgents`, `getMiddlewares`) fire **once** at boot, against a boot-warm `PluginContext`, and their output is **cached**. The per-request agent build reuses that cache and only re-runs the request-time hooks (`getRequestTools`, `getRequestSubAgents`) — so anything that varies per request must come from `RuntimeContext`, not `PluginContext`. `PluginContext` only ever carries boot-fixed data (`config`, `identity`, `availablePlugins`, `logger`).
 
 ## Related references
 

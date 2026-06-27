@@ -6,18 +6,20 @@ icon: "magnifying-glass"
 
 ## Why meta-tools exist
 
-A QiForge oracle can have dozens of plugins installed. Binding every one of them to the agent at boot would explode the prompt and the tool list. Instead, `on-demand` plugins are invisible at boot — the agent discovers them mid-conversation via two built-in meta-tools and loads what it needs for the current thread.
+A QiForge oracle can have dozens of plugins installed. Listing every one in the prompt would explode the system prompt and the tool list the model has to reason over. Instead, `on-demand` plugins are **not advertised** at boot — the agent discovers them mid-conversation via two built-in meta-tools and loads what it needs for the current thread.
 
-The runtime registers these tools itself. They are not authored by any plugin and cannot be overridden.
+Under the hood every tool is bound to the agent at compile time; a `CapabilityGateMiddleware` hides on-demand tools from the model until their plugin is loaded (see [How on-demand gating works](/build-an-oracle/understand/visibility-tiers#how-on-demand-gating-actually-works)). So "loading" lifts a per-turn filter — it does not bind new tools.
+
+The runtime registers these meta-tools itself. They are not authored by any plugin and cannot be overridden.
 
 ## The two tools
 
 | Tool | Purpose |
 | --- | --- |
 | `list_capabilities` | Returns every visible plugin with its summary, visibility, loaded status, category, and tags. The agent uses this to scan what's available. |
-| `load_capability` | Marks a plugin as loaded for the current thread, returns its full manifest plus tool descriptions, and appends a `ToolMessage` so the agent sees the manifest in conversation history on the same turn. |
+| `load_capability` | Takes `names: string[]` — an array, so the agent can load several capabilities in one call. Marks each plugin as loaded for the current thread, returns each one's full manifest plus tool descriptions, and appends a `ToolMessage` so the agent sees the manifests in conversation history on the same turn. |
 
-`load_capability` errors when the named plugin doesn't exist, when it is `silent` (silent plugins are internal, not agent-loadable), and a no-op (returns `alreadyAvailable: true`) when the plugin is `always` or has already been loaded for this thread.
+`load_capability` accepts a batch and is processed per name: it throws when a named plugin doesn't exist, throws when one is `silent` (silent plugins are internal, not agent-loadable), and treats a name that is `always` or already loaded as a no-op (`alreadyAvailable: true`). Batching is preferred — the prompt instructs the agent to pass every capability it needs in a single `load_capability({ names: [...] })` call rather than making multiple calls in the same turn.
 
 ## The discovery loop
 
@@ -34,10 +36,10 @@ sequenceDiagram
     Note over Agent: No weather tool bound — plugin is on-demand
     Agent->>ListCaps: list_capabilities()
     ListCaps-->>Agent: [..., { name: 'weather', loaded: false }, ...]
-    Agent->>LoadCap: load_capability({ name: 'weather' })
+    Agent->>LoadCap: load_capability({ names: ['weather'] })
     LoadCap->>State: loadedPlugins += ['weather']
-    LoadCap-->>Agent: manifest + tools
-    Note over Agent: Next turn includes get_current_weather
+    LoadCap-->>Agent: manifests + tools
+    Note over Agent: Capability gate now passes get_current_weather
     Agent->>User: (calls get_current_weather, returns answer)
 ```
 
@@ -51,28 +53,30 @@ Loading a plugin in thread A does not affect thread B. Every new conversation re
 
 ## What the agent sees in the system prompt
 
-For `always` plugins, the runtime renders a Tier-1 prompt block:
+For `always` plugins, the runtime renders a Tier-1 prompt block. Each entry is more than a one-liner — the plugin name and summary, then sub-bullets pulled straight from the manifest (`whenToUse`, `whenNotToUse`, and the first `example`):
 
 ```text
 ## Available Capabilities
 
-- memory: Durable memory across conversations...
-- skills: Discover IXO skill capsules...
-- domain-indexer: Domain analysis and entity lookup...
-- sandbox: Per-user Linux box for code execution...
-- user-preferences: ...
+- **memory** — Durable memory across conversations.
+  - When to use: user refers to something from a past chat; you learn a durable fact
+  - Avoid for: one-off lookups that don't need to persist
+  - Example: "remember I prefer metric units" → save_memory({"text":"prefers metric"})
+- **skills** — Discover and run IXO skill capsules.
+  - When to use: a packaged skill could generate a file, report, or run a workflow
+  - Example: "make me an invoice" → search_skills({"query":"invoice"})
 
-For more capabilities, call list_capabilities to discover what else
-you can use, then load_capability to make tools available.
+For more capabilities, call `list_capabilities()` to see what else is available,
+then `load_capability({ names: ["cap1", "cap2"] })` to make their tools available in one call.
 ```
 
-`on-demand` plugins are *not* listed here — the agent has to ask. `silent` plugins are never visible.
+Because `whenToUse`, `whenNotToUse`, and the first example all render into Tier-1, manifest quality directly drives prompt size. `on-demand` plugins are *not* listed here — the agent has to discover them. `silent` plugins are never listed and can't be loaded through the meta-tools.
 
 ## Token cost
 
 | Item | Cost per turn |
 | --- | --- |
-| Tier-1 prompt block | ~80 tokens per `always` plugin |
+| Tier-1 prompt block | ~80–150 tokens per `always` plugin (name + summary + whenToUse/avoid/example sub-bullets) |
 | Bound tool schemas | ~100–300 tokens per tool |
 | Meta-tools themselves | ~100 tokens combined (negligible) |
 

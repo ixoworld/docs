@@ -17,12 +17,12 @@ The runtime bundles 15 plugins. They load by default; opt out per plugin via the
 | [`composio`](/build-an-oracle/reference/bundled-plugins/composio) | `on-demand` | Auto-detect | `COMPOSIO_API_KEY` | — |
 | [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox) | `always` | Auto-detect | `SANDBOX_MCP_URL` | — |
 | [`skills`](/build-an-oracle/reference/bundled-plugins/skills) | `always` | On | — | `sandbox` |
-| [`editor`](/build-an-oracle/reference/bundled-plugins/editor) | `on-demand` | On (needs Matrix client) | — | — |
+| [`editor`](/build-an-oracle/reference/bundled-plugins/editor) | `always` | On | — | — |
 | [`agui`](/build-an-oracle/reference/bundled-plugins/agui) | `on-demand` | On | — | — |
 | [`slack`](/build-an-oracle/reference/bundled-plugins/slack) | `silent` | Auto-detect | `SLACK_BOT_OAUTH_TOKEN` | — |
-| [`tasks`](/build-an-oracle/reference/bundled-plugins/tasks) | (stub) | Auto-detect (stub) | `REDIS_URL` | — |
+| [`tasks`](/build-an-oracle/reference/bundled-plugins/tasks) | `on-demand` | Auto-detect | `REDIS_URL` | — |
 | [`credits`](/build-an-oracle/reference/bundled-plugins/credits) | `silent` | On unless `DISABLE_CREDITS=true` | — | — |
-| [`calls`](/build-an-oracle/reference/bundled-plugins/calls) | (stub) | On (stub) | — | — |
+| [`calls`](/build-an-oracle/reference/bundled-plugins/calls) | `silent` | On (stub) | — | — |
 | [`user-preferences`](/build-an-oracle/reference/bundled-plugins/user-preferences) | `always` | On | — | — |
 | [`matrix-group-chats`](/build-an-oracle/reference/bundled-plugins/matrix-group-chats) | `on-demand` | On | — | — |
 
@@ -81,7 +81,7 @@ const app = await createOracleApp({
     Slack bot transport.
   </Card>
   <Card title="tasks" icon="hourglass" href="/build-an-oracle/reference/bundled-plugins/tasks">
-    Background jobs (stub — deferred).
+    Schedule the agent to run on time-based triggers, in the background.
   </Card>
   <Card title="credits" icon="coins" href="/build-an-oracle/reference/bundled-plugins/credits">
     Per-user credit enforcement and claim settlement.
@@ -99,26 +99,35 @@ const app = await createOracleApp({
 
 ## Wiring custom-constructed plugins
 
-Two plugins need constructor args for production behaviour. Pass them via the `plugins` array (the loader dedupes by name, so your instance overrides the bundled default):
+Some plugins accept constructor args. Pass a custom instance via the `plugins` array — the loader dedupes by name, so your instance overrides the bundled default.
+
+**`credits` genuinely needs a Redis client.** Without one the enforcement middleware loads in pass-through mode and the settlement cron is skipped, so production must construct it explicitly:
 
 ```ts
-import { createOracleApp, EditorPlugin, CreditsPlugin } from '@ixo/oracle-runtime';
-import * as sdk from 'matrix-js-sdk';
+import { createOracleApp, CreditsPlugin } from '@ixo/oracle-runtime';
 import Redis from 'ioredis';
 
-const matrixClient = sdk.createClient({ /* ... */ });
-const redis = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
+const redis = new Redis(process.env.REDIS_URL!);
 
 const app = await createOracleApp({
   config,
-  plugins: [
-    new EditorPlugin({ matrixClient }),
-    ...(redis ? [new CreditsPlugin({ redis, network: 'devnet' })] : []),
-  ],
+  plugins: [new CreditsPlugin({ redis, network: 'devnet' })],
 });
 ```
 
-The bundled `editorPlugin` and `creditsPlugin` singletons in `BUNDLED_PLUGINS` work in stub form for tests; for real behaviour, instantiate explicitly.
+**`editor` works from env on its own.** The bundled `editorPlugin` is fully functional: when no `matrixClient` is passed it lazily builds an internal Matrix client from the `MATRIX_*` admin env vars. Pass `matrixClient` only to reuse a client your app already keeps synced:
+
+```ts
+import { createOracleApp, EditorPlugin } from '@ixo/oracle-runtime';
+import * as sdk from 'matrix-js-sdk';
+
+const matrixClient = sdk.createClient({ /* ... */ });
+
+const app = await createOracleApp({
+  config,
+  plugins: [new EditorPlugin({ matrixClient })], // optional — env fallback otherwise
+});
+```
 
 ## Read next
 

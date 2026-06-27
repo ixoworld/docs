@@ -9,9 +9,9 @@ icon: "react"
 `@ixo/oracles-client-sdk` is the official React client for a QiForge oracle. It wraps:
 
 - The streaming chat endpoint over SSE.
-- The WebSocket event channel (tool calls, render components, browser tools, reasoning, AG-UI actions).
-- UCAN delegation handling (refreshing Matrix access tokens, signing).
-- Browser-side tool registration (so the agent can call DOM/UI actions on the user's tab).
+- The WebSocket event channel (tool calls, render components, browser tools, AG-UI actions).
+- UCAN auth — signing invocations (authentication) and delegations (downstream authorization).
+- Browser-side tools and AG-UI actions (so the agent can act on the user's tab / UI).
 
 If you're building a Portal-like web UI for your oracle, use this. If you're building a non-React client (CLI, mobile app), implement the HTTP/WS protocol directly — the API reference is [API endpoints](/build-an-oracle/reference/api-endpoints).
 
@@ -21,86 +21,219 @@ If you're building a Portal-like web UI for your oracle, use this. If you're bui
 pnpm add @ixo/oracles-client-sdk
 ```
 
-## useChat
+`react >= 18` and `zod ^3` are peer dependencies.
 
-The primary hook. Provides the message thread, the send function, and the SSE/WS event stream.
+## OraclesProvider (required wrapper)
+
+Every hook calls `useOraclesContext()`, which throws `useOraclesContext must be used within a OraclesProvider` if there's no provider above it. Wrap your app once. The provider holds the wallet, signs transactions, and turns your `createDelegation` / `createInvocation` callbacks into the cached auth artifacts the hooks attach to requests.
 
 ```tsx
-import { useChat } from '@ixo/oracles-client-sdk';
+import { OraclesProvider } from '@ixo/oracles-client-sdk';
 
-function Chat({ oracleUrl, sessionId, ucanDelegation, userDid }) {
-  const { messages, sendMessage, isStreaming, events } = useChat({
-    oracleUrl,
+function Root({ children }) {
+  return (
+    <OraclesProvider
+      initialWallet={{
+        address: 'ixo1...',
+        did: 'did:ixo:ixo1...',
+        matrix: { accessToken: 'syt_...', homeServer: 'https://matrix.ixo.world' },
+      }}
+      transactSignX={async (messages, memo) => {
+        // sign + broadcast the chain tx with your wallet; return the result
+        return undefined;
+      }}
+      createDelegation={async (oracleDid) => {
+        // sign a user→oracle UCAN delegation (downstream authorization)
+        return { serialized: '<base64-car>', expiresAt: Date.now() + 60 * 60 * 1000 };
+      }}
+      createInvocation={async (oracleDid) => {
+        // sign a short-lived UCAN invocation (primary authentication)
+        return { serialized: '<base64-car>', expiresAt: Date.now() + 15 * 60 * 1000 };
+      }}
+    >
+      {children}
+    </OraclesProvider>
+  );
+}
+```
+
+<ParamField path="initialWallet" type="{ address, did, matrix: { accessToken, homeServer } }" required>
+  The connected user's wallet + Matrix session. Required.
+</ParamField>
+<ParamField path="transactSignX" type="(messages, memo?) => Promise<unknown>" required>
+  Signs and broadcasts chain transactions (e.g. paying to contract the oracle).
+</ParamField>
+<ParamField path="createDelegation" type="(oracleDid: string) => Promise<{ serialized: string; expiresAt: number }>" required>
+  Mints a user→oracle UCAN delegation. The provider caches it and sends it as `x-ucan-delegation`.
+</ParamField>
+<ParamField path="createInvocation" type="(oracleDid: string) => Promise<{ serialized: string; expiresAt: number }>">
+  Optional (migration-safe). Mints a short-lived UCAN invocation; the provider sends it as `Authorization: Bearer …` + `X-Auth-Type: ucan` (primary auth). Omit to stay on delegation-only auth.
+</ParamField>
+
+## useChat
+
+The primary hook. Provides the message thread, the send function, and live streaming state.
+
+```tsx
+import { useChat, useOracleSessions, renderMessageContent } from '@ixo/oracles-client-sdk';
+
+function Chat({ oracleDid }: { oracleDid: string }) {
+  const { sessions, createSession } = useOracleSessions(oracleDid);
+  const sessionId = sessions?.[0]?.sessionId ?? '';
+
+  const { messages, sendMessage, isSending, status } = useChat({
+    oracleDid,
     sessionId,
-    headers: {
-      'x-ucan-delegation': ucanDelegation,
-      'x-did': userDid,
+    onPaymentRequiredError: (claimIds) => {
+      // the oracle needs payment before answering — surface a paywall
+      console.log('Payment required:', claimIds);
     },
   });
 
   return (
     <div>
-      {messages.map((m) => <Message key={m.id} message={m} />)}
-      <Input onSubmit={sendMessage} disabled={isStreaming} />
+      <button onClick={() => createSession()}>New chat</button>
+      {messages.map((m) => (
+        <div key={m.id} className={m.type}>{renderMessageContent(m.content)}</div>
+      ))}
+      <form onSubmit={(e) => { e.preventDefault(); sendMessage(e.currentTarget.message.value); }}>
+        <input name="message" />
+        <button type="submit" disabled={isSending}>
+          {status === 'streaming' ? 'Streaming…' : 'Send'}
+        </button>
+      </form>
     </div>
   );
 }
 ```
 
-The returned values:
+Options (`IChatOptions`):
 
-- **`messages`** — current thread history, including pending streamed tokens.
-- **`sendMessage(text)`** — submit a user message. Triggers a streaming response.
-- **`isStreaming`** — `true` while the agent is generating.
-- **`events`** — typed event stream (tool calls, render components, browser tool calls, reasoning, …).
+<ParamField path="oracleDid" type="string" required>
+  The oracle's DID. The SDK resolves its API/WS URL from the oracle's on-chain config.
+</ParamField>
+<ParamField path="sessionId" type="string" required>
+  The chat session to read/write. Create one with `useOracleSessions().createSession()`.
+</ParamField>
+<ParamField path="onPaymentRequiredError" type="(claimIds: string[]) => void" required>
+  Called when the oracle returns a payment-required error. Surface a paywall.
+</ParamField>
+<ParamField path="browserTools" type="Record<string, { toolName, description, schema, fn }>">
+  Browser-side tools the agent may call on the user's tab (see below).
+</ParamField>
+<ParamField path="uiComponents" type="UIComponents">
+  Map of render-component name → React component for `render_component` events.
+</ParamField>
+<ParamField path="overrides" type="{ baseUrl?, wsUrl? }">
+  Override the resolved API / WebSocket URLs (local dev, self-host).
+</ParamField>
+<ParamField path="streamingMode" type="'batched' | 'immediate'">
+  How streamed tokens are flushed to state.
+</ParamField>
+
+Returned values:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `messages` | `IMessage[]` | Thread history, including in-flight streamed content. |
+| `sendMessage` | `(message: string) => void` | Submit a user message. |
+| `abortStream` | `() => Promise<void>` | Abort the in-flight response. |
+| `status` | `'submitted' \| 'streaming' \| 'ready' \| 'error'` | Current chat state. |
+| `isSending` | `boolean` | `true` while submitting or streaming. |
+| `isLoading` | `boolean` | Initial history fetch in flight. |
+| `error` / `sendMessageError` | `Error \| undefined` | Load error / send error. |
+| `refetchMessages` | `() => Promise<…>` | Re-pull the thread from the server. |
+| `isRealTimeConnected` | `boolean` | WebSocket connection status. |
+| `isConfigReady` | `boolean` | The oracle's config has resolved. |
+
+There is no `isStreaming` or `events` field — use `status` / `isSending` for streaming state.
 
 ## Browser tools
 
-Browser tools let the agent call DOM/UI actions on the user's tab. Register them once on mount:
+Browser tools let the agent call DOM/UI actions on the user's tab. Pass them as the `browserTools` option to `useChat` — a map keyed by tool name. The SDK advertises them to the agent, forwards each call to your `fn`, and returns the result over the WebSocket.
 
 ```tsx
-import { registerBrowserTools } from '@ixo/oracles-client-sdk';
+import { useChat } from '@ixo/oracles-client-sdk';
+import { z } from 'zod';
 
-useEffect(() => {
-  registerBrowserTools([
-    {
-      name: 'open_portal_route',
-      description: 'Navigate to a route inside the Portal.',
-      schema: z.object({ route: z.string() }),
-      handler: async ({ route }) => {
-        router.push(route);
-        return { ok: true };
-      },
+const browserTools = {
+  open_portal_route: {
+    toolName: 'open_portal_route',
+    description: 'Navigate to a route inside the Portal.',
+    schema: z.object({ route: z.string() }),
+    fn: async ({ route }: { route: string }) => {
+      router.push(route);
+      return { ok: true };
     },
-  ]);
-}, []);
+  },
+};
+
+const { messages, sendMessage } = useChat({
+  oracleDid,
+  sessionId,
+  onPaymentRequiredError: () => {},
+  browserTools,
+});
 ```
 
-The SDK forwards browser tool calls from the agent to your registered handlers and returns the results back through the WebSocket. The Portal plugin's sub-agent only constructs when `state.browserTools` is non-empty (declared via registration).
+There is no `registerBrowserTools` export — browser tools are the `browserTools` option above.
 
-## Events you can render
+## AG-UI actions
 
-| Event | What you render |
+`useAgAction` registers an agent-invokable action with an optional render. The provider tracks registered actions; `useChat` advertises them and renders their output inline.
+
+```tsx
+import { useAgAction } from '@ixo/oracles-client-sdk';
+import { z } from 'zod';
+
+useAgAction({
+  name: 'create_data_table',
+  description: 'Render a data table from structured rows.',
+  parameters: z.object({
+    title: z.string().optional(),
+    columns: z.array(z.any()),
+    data: z.array(z.any()),
+  }),
+  handler: async ({ data }) => ({ ok: true, rowCount: data.length }),
+  render: ({ status, args }) =>
+    status === 'done' && args ? <DataTable {...args} /> : null,
+});
+```
+
+## Events
+
+Streamed and WebSocket events are surfaced as the typed `AnyEvent` union and rendered through `renderMessageContent` / your `uiComponents` map. The event `eventName` values match the wire names:
+
+| `eventName` | What it carries |
 | --- | --- |
-| `toolCall` | "Agent called `<tool>`" with args/result. |
-| `actionCall` | An AG-UI action invocation. |
-| `renderComponent` | A structured UI component the agent wants displayed (table, chart, form). |
-| `reasoning` | Intermediate reasoning text the agent emitted. |
-| `browserToolCall` | A tool call to a browser-side tool you registered. |
-| `router` | Routing decision between agents/sub-agents. |
-| `messageCacheInvalidation` | Hint to drop a cached message. |
+| `tool_call` | A tool invocation (and its result). |
+| `render_component` | A structured UI component the agent wants displayed. |
+| `browser_tool_call` | A call to one of your `browserTools`. |
 
-The SDK exposes typed event objects; you decide how to render them.
+The full server/client WebSocket event catalog is in [API endpoints → WebSocket](/build-an-oracle/reference/api-endpoints#websocket).
+
+## Other exports
+
+| Export | Purpose |
+| --- | --- |
+| `useOracleSessions(oracleDid)` | Create, list, and delete chat sessions. |
+| `useOraclesConfig(oracleDid)` | The oracle's resolved public config (API URL, model, price). |
+| `useContractOracle()` | Pay to contract (subscribe to) an oracle. |
+| `useMemoryEngine()` | Read/write the optional persistent memory engine. |
+| `useGetOpenIdToken()` / `getOpenIdToken()` | Mint a Matrix OpenID token for the user. |
+| `renderMessageContent(content)` | Turn stored message content into React nodes. |
+| `OraclesProvider`, `useOraclesContext` | The provider + its context accessor. |
+| `@ixo/oracles-client-sdk/live-agent` → `useLiveAgent` | Encrypted voice/video live-agent calls (separate entry point). |
 
 ## Auth lifecycle
 
-The SDK handles:
+The provider owns auth. From your `createDelegation` / `createInvocation` callbacks it:
 
-- Refreshing the Matrix access token before it expires.
-- Signing UCAN delegations from the user's session key.
-- Re-establishing the WebSocket on reconnect.
+- Caches the signed delegation and invocation per `(userDid, oracleDid)`.
+- Attaches `Authorization: Bearer <invocation>` + `X-Auth-Type: ucan` (primary) and `x-ucan-delegation` (downstream / fallback) to every request.
+- Passes the same artifacts on the WebSocket handshake (`auth.invocation` / `auth.ucanDelegation`).
 
-Provide a `getDelegation()` function that returns a fresh UCAN delegation when called — the SDK calls it on connect and on reconnect.
+When a stored delegation is missing or expired, the oracle nudges the user to re-authorize; your app calls `createDelegation` again to mint a fresh one (the client-sdk POSTs it to [`/delegation`](/build-an-oracle/reference/api-endpoints#delegation-delegation)).
 
 ## Where to read next
 

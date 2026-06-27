@@ -18,10 +18,9 @@ export const MainAgentGraphState = Annotation.Root({
   editorRoomId: Annotation<string | undefined>({ /* ... */ }),
   spaceId: Annotation<string | undefined>({ /* ... */ }),
   currentEntityDid: Annotation<string | undefined>({ /* ... */ }),
-  browserTools: Annotation<BrowserToolCallDto[] | undefined>({ /* ... */ }),
-  agActions: Annotation<AgActionDto[] | undefined>({ /* ... */ }),
+  browserTools: Annotation<BrowserToolCall[] | undefined>({ /* default: () => [] */ }),
+  agActions: Annotation<AgAction[] | undefined>({ /* default: () => [] */ }),
   userContext: Annotation<UserContextData>({ /* ... */ }),
-  mcpUcanContext: Annotation<{ invocations: Record<string, string> } | undefined>({ /* ... */ }),
   userPreferences: Annotation<UserPreferences | undefined>({ /* ... */ }),
   loadedPlugins: Annotation<string[]>({
     reducer: (current, update) =>
@@ -80,17 +79,19 @@ Plugins read state via `rtCtx.history.state` (typed as `ReadonlyState`) or via s
   </Accordion>
 
   <Accordion title="browserTools" icon="browser">
-    - **Type:** `BrowserToolCallDto[] | undefined`
+    - **Type:** `BrowserToolCall[] | undefined`
+    - **Default:** `[]` (empty array).
     - **Owner:** Portal client.
 
-    Browser tools declared by the Portal frontend for this turn. The Portal plugin's sub-agent only builds when this array is non-empty.
+    Browser tools declared by the Portal frontend for this turn. Each entry is `{ name, description, schema }`. The Portal plugin's sub-agent only builds when this array is non-empty.
   </Accordion>
 
   <Accordion title="agActions" icon="table-cells">
-    - **Type:** `AgActionDto[] | undefined`
+    - **Type:** `AgAction[] | undefined`
+    - **Default:** `[]` (empty array).
     - **Owner:** Portal client (AG-UI).
 
-    AG-UI actions declared by the frontend. The AG-UI plugin's sub-agent only builds when this is non-empty.
+    AG-UI actions declared by the frontend. Each entry is `{ name, description, schema, hasRender? }`. The AG-UI plugin's sub-agent only builds when this is non-empty.
   </Accordion>
 
   <Accordion title="userContext" icon="user">
@@ -98,13 +99,6 @@ Plugins read state via `rtCtx.history.state` (typed as `ReadonlyState`) or via s
     - **Owner:** Memory plugin (writes via enrichment middleware).
 
     Memory-enriched user profile. Other plugins read via `rtCtx.shared.userProfile` (registered by Memory's `getSharedState`).
-  </Accordion>
-
-  <Accordion title="mcpUcanContext" icon="shield">
-    - **Type:** `{ invocations: Record<string, string> } | undefined`
-    - **Owner:** runtime / UCAN service.
-
-    Pre-minted MCP UCAN invocations indexed by service name.
   </Accordion>
 
   <Accordion title="userPreferences" icon="sliders">
@@ -149,7 +143,9 @@ Each field has a reducer that merges partial updates from agent nodes:
 - **`loadedPlugins`** — union via Set; never removes.
 - Most other fields use last-write-wins or "merge if present" semantics; consult the source for the exact reducer when authoring middleware that mutate state.
 
-Plugin middleware that need to update state should return a partial state object from the hook. The runtime applies it through the reducer pipeline.
+<Warning>
+Plugin middleware hooks must **not** return a partial state object (`{ messages: ... }`, etc.). A middleware hook returns only `undefined` (pass through) or `{ jumpTo: 'end' as const }` (flow control). Returning a state channel from `beforeAgent` / `wrapModelCall` / `afterModel` breaks LangGraph checkpointer thread continuity (the symptom is "a new thread per message"). Message rewrites belong in the transport/messages layer, not in a middleware.
+</Warning>
 
 ## Checkpointing
 

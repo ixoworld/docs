@@ -12,18 +12,26 @@ The Swagger UI at `/docs` is generated from the running app's controllers — op
 
 ## Authentication
 
-Every protected route requires these headers:
+Protected routes authenticate with a user-signed UCAN **invocation**, plus an optional delegation for downstream authorization. This is the same model the [Identity and auth](/build-an-oracle/develop/identity-and-auth) guide describes.
 
 | Header | Required | Notes |
 | --- | --- | --- |
-| `x-ucan-delegation` | Yes | UCAN envelope authorising the request. |
-| `x-did` | Yes | The user's IXO DID. |
-| `x-matrix-access-token` | Optional | Matrix session token (used by Portal/Slack). |
-| `x-matrix-homeserver` | Optional | Matrix homeserver URL. |
-| `x-timezone` | Optional | Propagates to `rtCtx.user.timezone`. |
-| `x-request-id` | Optional | Correlation ID; echoed back as `X-Request-Id`. |
+| `Authorization: Bearer <invocation>` | Yes (primary) | The user-signed UCAN invocation — proves *who* is calling. Only read when `X-Auth-Type: ucan` is also present. |
+| `X-Auth-Type: ucan` | Yes (primary) | Selector telling the middleware to read the bearer as a UCAN invocation. Without it the bearer is ignored. |
+| `x-ucan-delegation` | Fallback / downstream-authz | The user→oracle delegation. Carries the capabilities plugins use to mint downstream invocations. Also accepted as the auth artifact on its own for clients that haven't migrated to invocation auth. |
+| `x-did` | No | The user's IXO DID (informational). The runtime derives the authenticated DID from the invocation/delegation — **`x-did` is not used for authentication.** |
+| `x-matrix-access-token` | No | Matrix session token (used by Portal/Slack). |
+| `x-matrix-homeserver` | No | Matrix homeserver URL. |
+| `x-timezone` | No | Propagates to `rtCtx.user.timezone`. |
+| `x-request-id` | No | Correlation ID; echoed back as `X-Request-Id`. |
 
-Public routes ignore auth headers and don't validate them.
+When neither an invocation nor a delegation is present, protected routes return **401**:
+
+```text
+Missing UCAN authentication: provide Authorization: Bearer <invocation> with X-Auth-Type: ucan, or an x-ucan-delegation header
+```
+
+A malformed or expired invocation returns **401** `Invalid UCAN invocation`. Public routes ignore auth headers and don't validate them.
 
 ## CORS
 
@@ -32,9 +40,9 @@ Public routes ignore auth headers and don't validate them.
 Allowed request headers:
 
 ```text
-Content-Type, Authorization,
-x-ucan-delegation, x-matrix-access-token, x-matrix-homeserver,
-x-did, x-request-id, x-timezone
+Content-Type, Authorization, x-ucan-delegation,
+x-matrix-access-token, x-matrix-homeserver,
+x-did, x-request-id, x-auth-type, x-timezone
 ```
 
 Allowed methods: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`.
@@ -45,44 +53,126 @@ Exposed response headers: `X-Request-Id`.
 
 | Route | Method | Auth | Purpose |
 | --- | --- | --- | --- |
-| `/health` | GET | Public | Liveness probe. |
+| `/` | GET | Public | Landing JSON (`{ status, message, timestamp }`). |
+| `/health` | GET | Public | Liveness probe (`{ status, timestamp }`). |
 | `/docs` | GET | Public | Swagger UI. |
 | `/docs/(.*)` | GET | Public | Swagger static assets. |
 
 Plus any route returned by a plugin's `getAuthExcludedRoutes()` or by `createOracleApp({ authExcludedRoutes })`.
 
-## Protected routes (overview)
+## Protected routes
 
-The runtime ships these modules:
+All of these require the auth headers above. For the request/response schemas of your specific deployment, hit `GET /docs`.
 
-- **`SessionsModule`** — manage chat sessions (`/sessions`).
-- **`MessagesModule`** — send and stream messages (`/messages`).
-- **`WsModule`** — WebSocket gateway for event streaming.
-- **`SubscriptionModule`** — credit/subscription gating middleware (active when `credits` plugin is loaded).
+### Sessions (`/sessions`)
 
-Plugins can contribute additional routes via `getNestModules()`. Bundled examples:
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/sessions` | POST | Create a chat session. Returns the new `sessionId`. |
+| `/sessions?limit&offset` | GET | List the authenticated user's sessions (paginated; defaults `limit=20`, `offset=0`). |
+| `/sessions/:sessionId` | DELETE | Delete a session. |
 
-- **`SlackModule`** — Slack webhook endpoints (when `slack` plugin is loaded).
-- **`UserPreferencesController`** — `/user-preferences` CRUD (when `user-preferences` plugin is loaded).
-- **`ClaimProcessingModule`** — claim cron endpoints (when `credits` plugin is fully configured).
+### Messages (`/messages`)
 
-For the authoritative route list and request/response schemas of your deployment, hit `GET /docs`. The shape is generated from your app's controllers — including plugin and host routes — so it's always in sync.
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/messages/:sessionId` | POST | Send a message. Set `stream: true` in the body for an SSE stream instead of a single JSON reply. |
+| `/messages/:sessionId` | GET | List the messages in a session. |
+| `/messages/abort` | POST | Abort an in-flight stream. Body: `{ "sessionId": "..." }`. |
 
-## WebSocket events
+`POST /messages/:sessionId` body (`SendMessageDto`):
 
-Plugins emit typed events via `rtCtx.emit`. The framework forwards them over the active WebSocket connection to the client.
+| Field | Type | Notes |
+| --- | --- | --- |
+| `message` | string | **Required.** The user's message text. |
+| `stream` | boolean | `true` → SSE stream; otherwise a single JSON reply. Default `false`. |
+| `returnAllMessages` | boolean | Non-stream only: also return the full transcript. Testing aid. Default `false`. |
+| `tools` | array | Browser-tool declarations (`{ name, schema, description }`). |
+| `agActions` | array | AG-UI action declarations (`{ name, description, schema, hasRender? }`). |
+| `attachments` | array | Up to 10 Matrix attachments (`mxcUri` or `eventId`, plus `filename`, `mimetype`). |
+| `mcpInvocations` | object | Map of MCP tool name → base64 CAR invocation for protected MCP tools. |
+| `timezone` | string | Overrides `rtCtx.user.timezone`. |
+| `homeServer` | string | The user's Matrix homeserver. |
+| `metadata` | object | Free-form (`editorRoomId`, `spaceId`, …). |
+
+Streaming is a flag on this single endpoint — there is no separate `/stream` route.
+
+### Delegation (`/delegation`)
+
+A user→oracle UCAN delegation lets the oracle mint downstream-service invocations on the user's behalf. The client-sdk re-auth popup POSTs here; a non-React client must implement this to complete the authorization flow.
+
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/delegation` | POST | Store a freshly-signed delegation. Returns `{ ok: true, expiration? }`. |
+| `/delegation` | GET | Authorization status: `{ authorized: boolean, expiration? }`. |
+| `/delegation` | DELETE | Revoke the stored delegation. Returns `{ ok: true }`. |
+
+`POST /delegation` body (`StoreDelegationDto`):
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `raw` | string | **Required.** Base64-encoded UCAN delegation CAR (user → oracle). |
+| `issuer` | string | Delegation issuer DID (the user). |
+| `audience` | string | Delegation audience DID (this oracle). |
+| `expiration` | number | Unix timestamp, seconds. |
+
+### Other modules
+
+- **`SubscriptionModule`** — credit/subscription gating middleware (active when the `credits` plugin is loaded).
+- **`WsModule`** — the WebSocket gateway (see below).
+
+Plugins contribute more routes via `getNestModules()` — e.g. `SlackModule` (Slack webhooks), `UserPreferencesController` (`/user-preferences`), and claim-processing cron endpoints. The Swagger UI at `/docs` is generated from your app's controllers — including plugin and host routes — so it's always the authoritative, deployment-specific list.
+
+## WebSocket
+
+The oracle runs a socket.io gateway on namespace `/`. Plugins emit typed events via `rtCtx.emit`; the framework forwards them to the client over the session's room.
+
+### Handshake
+
+Connect with a `sessionId` query param and a UCAN in `auth`. A handshake with no `sessionId`, or with no valid UCAN, is disconnected immediately.
+
+```ts
+import { io } from 'socket.io-client';
+
+const socket = io('https://your-oracle.example', {
+  query: { sessionId },
+  auth: {
+    invocation,      // primary: the user-signed UCAN invocation
+    ucanDelegation,  // fallback: a bare delegation (pre-invocation clients)
+  },
+});
+```
+
+The server validates the invocation (primary) or delegation (fallback) the same way HTTP requests do; the authenticated DID is the validated invoker, never the query value. On success it emits `connected`.
+
+### Server → client events
 
 | Event | When it fires |
 | --- | --- |
-| `toolCall` | A tool is being invoked (or has returned). |
-| `actionCall` | An action (e.g. AG-UI action) is being invoked. |
-| `renderComponent` | A render component result is ready for the client. |
-| `reasoning` | The agent emits intermediate reasoning. |
-| `browserToolCall` | A browser-side tool is being invoked on the user's Portal. |
-| `router` | Routing decision between agents/sub-agents. |
-| `messageCacheInvalidation` | A message cache entry should be invalidated. |
+| `connected` | Handshake accepted. |
+| `pong` | Reply to a `ping`. |
+| `status` | Reply to a `status` request (connection stats). |
+| `subscribed` | Subscription acknowledged. |
+| `available-events` | Reply to `list-events` — the full event catalog. |
+| `tool_call` | A tool is being invoked (or has returned). |
+| `action_call` | An AG-UI action is being invoked. |
+| `render_component` | A render-component result is ready for the client. |
+| `browser_tool_call` | A browser-side tool is being invoked on the user's tab. |
+| `router_update` | A routing decision between agents/sub-agents. |
+| `message_cache_invalidation` | A cached message should be dropped. |
 
-Payload types are currently `Record<string, unknown>` and may be tightened in future runtime versions. The `@ixo/oracles-client-sdk` React SDK parses these and renders them.
+### Client → server events
+
+| Event | Purpose |
+| --- | --- |
+| `ping` | Keep-alive; server replies `pong`. |
+| `status` | Request connection stats; server replies `status`. |
+| `subscribe` | Subscribe to session events. |
+| `list-events` | Ask for the event catalog; server replies `available-events`. |
+| `tool_result` | Return a browser-tool result (`{ toolCallId, result, error? }`). |
+| `action_call_result` | Return an AG-UI action result (`{ sessionId, toolCallId, result }`). |
+
+Event payload types are currently `Record<string, unknown>` and may be tightened in future runtime versions. The `@ixo/oracles-client-sdk` React SDK handles this handshake, parses these events, and renders them.
 
 ## Client SDK
 

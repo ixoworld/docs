@@ -53,7 +53,7 @@ Memory context does not arrive in the prompt because the agent calls a tool to f
 
 **When it runs:** at agent-compile time, before turn 1. The fetcher runs once per session and caches the result for **5 minutes** (keyed by `sessionId`). Subsequent turns within the same session reuse the cached context — the Memory Engine is not called again unless the cache expires.
 
-**What appears in the prompt:** if at least one slot is non-empty, the runtime inserts a `## What you know about the user` block (section 6 of the 15-section prompt) containing all populated slots. If every slot is empty (no prior memory for this user), the block is omitted entirely.
+**What appears in the prompt:** if at least one slot is non-empty, the runtime inserts a `## What you know about the user` block into the system prompt containing all populated slots. If every slot is empty (no prior memory for this user), the block is omitted entirely.
 
 **Implication for oracle authors:** you do not need to instruct the agent to "look up the user's context" or "recall memory before responding" in `config.prompt.opening` or anywhere else. The context is already in the system prompt when the agent sees the user's first message. Adding such instructions is redundant and wastes tokens.
 

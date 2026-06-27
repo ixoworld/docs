@@ -21,7 +21,11 @@ icon: "eye"
     };
     ```
 
-    Three tiers: `'always'` (bound to agent at boot, listed in Tier-1 prompt), `'on-demand'` (default — discoverable via `list_capabilities`, loaded via `load_capability`), `'silent'` (invisible to agent; runs middleware-only). Canonical source: [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+    Three tiers: `'always'` (bound to the agent at boot, listed in the Tier-1 prompt), `'on-demand'` (default — discoverable via `list_capabilities`, loaded via `load_capability`), `'silent'` (not advertised — see the warning below). Canonical source: [weather.plugin.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/plugins/weather/weather.plugin.ts).
+
+    <Warning>
+      `'silent'` controls **advertising, not access** — it is not a security boundary. A silent plugin is left out of the Tier-1 capability block, excluded from `list_capabilities` (by default), and rejected by `load_capability`. But if a silent plugin returns tools, the capability gate passes them straight through to the model, exactly like `'always'`-tier tools. Use `'silent'` for transport/middleware/Nest-module plugins (e.g. Slack transport, credits/billing) that have nothing to advertise to the agent — never to "hide" a sensitive capability.
+    </Warning>
   </Step>
 
   <Step title="Override visibility per tool">
@@ -55,14 +59,14 @@ icon: "eye"
 
     ```mermaid
     graph TD
-        A["Does the LLM need to<br/>see this plugin as tools?"]
-        A -->|No| Silent[silent]
-        A -->|Yes| B["Will the LLM use this<br/>plugin on most turns?"]
+        A["Does this plugin expose<br/>agent-callable tools?"]
+        A -->|No — middleware / transport only| Silent[silent]
+        A -->|Yes| B["Should the agent use it<br/>on most turns?"]
         B -->|Yes| Always[always]
-        B -->|No| OnDemand[on-demand]
+        B -->|No — discover on demand| OnDemand[on-demand]
     ```
 
-    Promoting to `'always'` costs ~80 tokens per plugin in the Tier-1 prompt plus the tool schemas on every turn. Demoting to `'silent'` removes the plugin from the agent's view entirely.
+    Promoting to `'always'` costs ~80 tokens per plugin in the Tier-1 prompt plus the tool schemas on every turn. `'silent'` simply stops advertising the plugin to the agent — it does not hide or disable any tools the plugin returns.
   </Step>
 </Steps>
 
@@ -71,7 +75,7 @@ icon: "eye"
 - Default is `'on-demand'`. A plugin without an explicit `manifest.visibility` is treated as on-demand.
 - `'on-demand'` plugins live in a per-thread `loadedPlugins` set. The set is monotonic — loading is forever for that thread; a new thread resets it.
 - Per-tool overrides let you ship a mixed plugin (one `'always'` tool + several `'on-demand'` tools) without splitting it.
-- `'silent'` plugins still run their middleware and Nest modules. Use this for instrumentation, rate limiting, billing.
+- `'silent'` plugins still run their middleware and Nest modules, and any tools they return stay callable by the agent — they're just never advertised. Use it for instrumentation, rate limiting, billing, and transports. It is not a way to hide a capability for security.
 - A fork with 50 `'on-demand'` plugins can usually keep 3–5 loaded per thread — the budget stays bounded as the catalog grows.
 
 ## Where to read next

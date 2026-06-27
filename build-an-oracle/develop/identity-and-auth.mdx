@@ -27,29 +27,33 @@ The `OracleConfig` type lives in [`packages/oracle-runtime/src/plugin-api/types.
 | Layer | What it is | Where it comes from |
 | --- | --- | --- |
 | **Oracle identity** | DID + Matrix bot user + on-chain entity | `OracleConfig` (inline) + `ORACLE_DID` / `ORACLE_ENTITY_DID` / `MATRIX_ORACLE_ADMIN_*` env vars |
-| **User identity** | Per-request DID + UCAN capabilities | Headers on every incoming request (`x-ucan-delegation`, `x-did`, ...) |
+| **User identity** | Per-request DID + UCAN capabilities | Headers on every incoming request — a user-signed UCAN invocation (`Authorization: Bearer …` + `X-Auth-Type: ucan`) for authentication, plus `x-ucan-delegation` for downstream authorization |
 
 ## One-time oracle setup
 
 <Steps>
   <Step title="Run the CLI to create the oracle's on-chain entity and Matrix account">
     ```sh
-    qiforge create-entity --no-interactive \
+    qiforge-cli create-entity --no-interactive \
       --network devnet \
       --oracle-name "My Oracle" \
       --org-name "My Org" \
-      --api-url http://localhost:5678 \
+      --api-url http://localhost:3000 \
       --model "anthropic/claude-sonnet-4"
     ```
 
     This creates a blockchain entity (`did:ixo:entity:...`), registers linked resources, provisions a Matrix bot account, and writes both `oracle.config.json` and `.env`. Run once per deployment — subsequent deploys reuse the identity.
+
+    <Note>
+    `create-entity` registers `--api-url http://localhost:4000` by default, but the runtime's own default `PORT` is `3000` (the example above pins the URL to `:3000` to match). If you take the default URL instead, make your oracle reachable at it: either set `PORT=4000` in `.env`, or change the registered URL later with `qiforge-cli update-oracle-api-url`.
+    </Note>
 
     See the [CLI reference](/build-an-oracle/reference/cli) for every flag.
   </Step>
 
   <Step title="Provision the encryption key for per-room secrets">
     ```sh
-    qiforge setup-encryption-key
+    qiforge-cli setup-encryption-key
     ```
 
     Sets up the P-256 keyAgreement on the oracle's Matrix account room. Without this, the secrets read path returns nothing (acceptable degraded mode for routes that don't need it).
@@ -76,6 +80,15 @@ The `OracleConfig` type lives in [`packages/oracle-runtime/src/plugin-api/types.
     ```
 
     The runtime validates all of these at boot via [`baseEnvSchema`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/config/base-env-schema.ts); missing vars fail with a clear message.
+
+    Two auth-tuning vars have safe defaults — set them only to override:
+
+    ```text
+    UCAN_AUTH_MAX_TTL_SECONDS=900           # max lifetime the oracle accepts for a user auth invocation (default 15 min)
+    UCAN_REAUTH_PROMPT_THROTTLE_SECONDS=21600  # min gap between "please re-authorize" prompts (default 6 hours)
+    ```
+
+    `UCAN_AUTH_MAX_TTL_SECONDS` bounds the replay window server-side regardless of the TTL the client declares; `UCAN_REAUTH_PROMPT_THROTTLE_SECONDS` keeps a de-authorized user from being nagged on every message.
   </Step>
 </Steps>
 
@@ -86,30 +99,51 @@ After Matrix init completes in the background, the runtime reads two further pie
 1. **UCAN signing mnemonic** — used by `UcanService` to mint downstream-service invocations.
 2. **P-256 encryption key** — used by `SecretsService` to decrypt per-room secrets.
 
-If a key is missing, boot logs a warning naming the CLI command to fix it. Auth-requiring routes return 401 until provisioned; non-authenticated routes (`/health`, `/docs`, any host or plugin `authExcludedRoutes`) stay reachable.
+If a key is missing, boot logs a warning naming the CLI command to fix it. Auth-requiring routes return 401 until provisioned; non-authenticated routes (`/`, `/health`, `/docs`, any host or plugin `authExcludedRoutes`) stay reachable.
 
 ## Per-request user auth
 
-Every chat request carries headers [`AuthHeaderMiddleware`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/modules/auth/auth-header.middleware.ts) verifies on protected routes.
+Two distinct concerns, two distinct artifacts — [`AuthHeaderMiddleware`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/modules/auth/auth-header.middleware.ts) verifies both on every protected route:
+
+- **Authentication (who is calling)** = a user-signed UCAN **invocation**. Short-lived, replay-bounded, sent as `Authorization: Bearer <invocation>` + `X-Auth-Type: ucan`. This is the **primary** auth path.
+- **Authorization (what the oracle may do downstream)** = the user→oracle **delegation**, sent as `x-ucan-delegation`. Plugins read it to mint downstream-service invocations on the user's behalf.
+
+<Note>
+A bare `x-ucan-delegation` (no invocation) is still accepted **as a migration fallback** for clients that haven't moved to invocation auth yet. New clients should send both: the invocation to authenticate, the delegation for downstream authorization.
+</Note>
 
 | Header | Required | Purpose |
 | --- | --- | --- |
-| `x-ucan-delegation` | yes | UCAN envelope authorising this user. Missing → 401 `Missing x-ucan-delegation header`. |
-| `x-did` | no | The user's IXO DID (set by SDK; runtime also derives it from the UCAN). |
+| `Authorization: Bearer <invocation>` | yes (primary) | The user-signed UCAN invocation — proves *who* is calling. Only read when `X-Auth-Type: ucan` is also present. |
+| `X-Auth-Type: ucan` | yes (primary) | Selector that tells the middleware to read the bearer token as a UCAN invocation. Without it the bearer is ignored. |
+| `x-ucan-delegation` | fallback / downstream-authz | The user→oracle delegation. Carries the capabilities plugins use to mint downstream invocations. Also accepted as the auth artifact on its own for pre-invocation clients. |
+| `x-did` | no | The user's IXO DID (set by SDK; runtime derives the authenticated DID from the invocation/delegation regardless). Not used for authentication. |
 | `x-matrix-access-token` | no | For clients that already have a Matrix session. |
 | `x-matrix-homeserver` | no | Matrix homeserver for the user. |
 | `x-timezone` | no | Propagates to `rtCtx.user.timezone`. |
 | `x-request-id` | no | Correlation ID for logs and traces. |
 
+When neither an invocation nor a delegation is present, the middleware returns **401** with:
+
+```text
+Missing UCAN authentication: provide Authorization: Bearer <invocation> with X-Auth-Type: ucan, or an x-ucan-delegation header
+```
+
+A malformed or expired invocation returns **401** `Invalid UCAN invocation`.
+
 `AuthHeaderMiddleware`:
 
 <Steps>
-  <Step title="Validates the UCAN delegation">
-    Calls [`createUCANValidator`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/modules/auth/auth-header.middleware.ts) with the oracle's DID as audience. Verifies signature, expiry, and capabilities. Caches the result for 3 minutes (or until the delegation expires, whichever is sooner).
+  <Step title="Validates the invocation (primary)">
+    When `X-Auth-Type: ucan` + `Authorization: Bearer …` are present, [`validateUcanInvocation`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/modules/auth/validate-ucan-invocation.ts) verifies the signature and audience (the oracle's `ORACLE_DID`) and rejects any invocation whose lifetime exceeds `UCAN_AUTH_MAX_TTL_SECONDS` (default 900s). Results are cached by the token's SHA-256 hash with **TTL = the invocation's own expiry**, so reusing the same token until it expires (JWT-style) doesn't re-hit Blocksync. The invocation's signer becomes `req.authData.did`.
   </Step>
 
-  <Step title="Resolves the user's DID">
-    The delegation's invoker becomes `req.authData.did`. Plugin tool handlers read it as `rtCtx.user.did`.
+  <Step title="Falls back to the delegation (migration only)">
+    When no invocation is sent, [`validateUcanDelegation`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/modules/auth/validate-ucan-delegation.ts) authenticates the request from `x-ucan-delegation` instead. Delegation results cache with TTL = the delegation's expiry (or a 3-minute fallback when it declares none).
+  </Step>
+
+  <Step title="Trusts the delegation downstream only when it's the caller's own">
+    A delegation is public and shareable, so the middleware acts on it downstream **only when its issuer DID equals the authenticated DID**. When they differ, the delegation is ignored downstream — `req.authData.ucanDelegation.raw` is set to `''`, and plugins branch on `raw.length === 0`. This stops a client from pairing their own invocation with someone else's delegation to make the oracle act on that person's behalf.
   </Step>
 
   <Step title="Attaches RuntimeUserContext to the request">
@@ -119,7 +153,7 @@ Every chat request carries headers [`AuthHeaderMiddleware`](https://github.com/i
 
 ## Opt routes out of auth
 
-Two mechanisms to expose public routes — host-level and plugin-level. Both merge onto the runtime's built-in exclusion list (`/health`, `/docs`, ...).
+Two mechanisms to expose public routes — host-level and plugin-level. Both merge onto the runtime's built-in exclusion list: `/` (the JSON landing payload), `/health`, `/docs`, and `/docs/(.*)`.
 
 <Steps>
   <Step title="From the host — pass authExcludedRoutes to createOracleApp">
@@ -156,16 +190,33 @@ Any other plugin or host route returns 401 without a UCAN header — exclusion i
 
 ## Mint downstream UCAN invocations
 
-When a plugin calls a downstream service on the user's behalf, it does not reuse the user's UCAN — it mints a fresh invocation signed by the oracle's `SECP_MNEMONIC`, delegating from the user's delegation.
+When a plugin calls a downstream service on the user's behalf, it does not reuse the user's invocation — it mints a fresh one signed by the oracle's `SECP_MNEMONIC`, derived from the user's stored delegation. The minted invocation goes out to the downstream service the same way the user authenticates to *this* oracle: `Authorization: Bearer <invocation>` + `X-Auth-Type: ucan`.
 
 ```ts
 handler: async (args, rtCtx: RuntimeContext) => {
+  // No signing key (mnemonic not yet provisioned) → minting is a no-op.
+  if (!rtCtx.ucan.hasSigningKey()) {
+    return JSON.stringify({ error: 'Oracle signing key not provisioned.' });
+  }
+
+  // Resolve the service URL to its did:web identifier, then mint against it.
+  const serviceDid = await rtCtx.ucan.resolveServiceDid(
+    'https://downstream-service.example',
+  );
+  if (!serviceDid) {
+    return JSON.stringify({ error: 'Could not resolve downstream service DID.' });
+  }
+
   const invocation = await rtCtx.ucan.mintInvocation({
-    did: 'did:web:downstream-service',
-    capability: 'fetch/read',
+    did: serviceDid,
+    capability: 'ixo:downstream',
   });
+
   const resp = await fetch('https://downstream-service.example/data', {
-    headers: { 'x-ucan-delegation': invocation },
+    headers: {
+      Authorization: `Bearer ${invocation}`,
+      'X-Auth-Type': 'ucan',
+    },
   });
   // ...
 }
@@ -175,10 +226,12 @@ The full UCAN helper surface on `rtCtx.ucan`:
 
 | Method | Purpose |
 | --- | --- |
-| `mintInvocation(target, opts?)` | Mint a service-targeted invocation. `opts.skipCache` forces a fresh signature. |
+| `mintInvocation(target, opts?)` | Mint a service-targeted invocation from the user's cached delegation. `target` = `{ did, capability }`; `opts.skipCache` forces a fresh signature. |
 | `requireCapability(resource, action)` | Throws if the user's delegation doesn't include the capability. |
 | `hasCapability(resource, action)` | Returns a boolean — non-throwing variant. |
 | `resolveServiceDid(serviceUrl)` | Resolves a service URL to its `did:web:...` identifier. Returns `null` when the DID document is missing or has no `id`. |
+| `hasSigningKey()` | Returns `true` once the oracle has loaded its Ed25519 signing mnemonic. Gate tool registration on this — without a key, minting is a no-op. |
+| `createInvocationFromDelegation(car, serviceUrl, capability, opts?)` | Mint from a directly-supplied delegation CAR (rather than the per-user cached one). Returns `{ invocation }` or `{ error }`. Used by the editor's `mint_invocation` tool. |
 
 See [`packages/oracle-runtime/src/modules/ucan/`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime/src/modules/ucan) for the service implementation.
 

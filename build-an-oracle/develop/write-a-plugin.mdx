@@ -36,10 +36,83 @@ export class WeatherPlugin extends OraclePlugin {
 
 Each step below builds one of those lines.
 
+## Two ways to author a plugin
+
+Every hook in this guide works identically whether you subclass `OraclePlugin` or use the `defineOraclePlugin` helper. Pick whichever you prefer — the runtime treats the resulting object exactly the same way.
+
+<Tabs>
+  <Tab title="Class (extends OraclePlugin)">
+    Subclass and `override` each hook. Per-session state lives on `private` fields. Register with `new WeatherPlugin()`.
+
+    ```ts
+    export class WeatherPlugin extends OraclePlugin {
+      readonly name = 'weather';
+      readonly version = '0.1.0';
+      readonly manifest = manifest;
+      override readonly configSchema = configSchema;
+
+      private readonly lastBySession: LastQueryStore = new Map();
+
+      override autoDetect(): boolean { return true; }
+      override getTools(ctx: PluginContext): PluginTool[] {
+        return [buildCurrentWeatherTool(this.units(ctx.config), this.lastBySession)];
+      }
+      // …every other hook as an override
+    }
+    ```
+
+    ```ts
+    plugins: [new WeatherPlugin()],
+    ```
+  </Tab>
+  <Tab title="POJO (defineOraclePlugin)">
+    Pass a plain object — `name`, `version`, and `manifest` are required; every hook is optional. Per-session state lives in a module-scoped closure. `defineOraclePlugin` returns a ready `OraclePlugin`, so register it **without** `new`.
+
+    ```ts
+    import {
+      defineOraclePlugin,
+      type PluginContext,
+      type RuntimeContext,
+    } from '@ixo/oracle-runtime';
+    import { RequestMethod } from '@nestjs/common';
+
+    const lastBySession: LastQueryStore = new Map();
+    const units = (config: unknown) => configSchema.parse(config).WEATHER_DEFAULT_UNITS;
+
+    export const weatherPlugin = defineOraclePlugin({
+      name: 'weather',
+      version: '0.1.0',
+      manifest,
+      configSchema,
+      autoDetectHint: 'always on (set WEATHER_DEFAULT_UNITS to celsius|fahrenheit)',
+      autoDetect: () => true,
+      getTools: (ctx) => [buildCurrentWeatherTool(units(ctx.config), lastBySession)],
+      getRequestTools: (rtCtx) => [buildForecastTool(units(rtCtx.config), lastBySession)],
+      getSubAgents: (ctx) => [buildWeatherPlannerSubAgent(units(ctx.config), lastBySession)],
+      getMiddlewares: (ctx) => [buildWeatherMiddleware(ctx)],
+      getNestModules: (ctx) => [WeatherHttpModule.register(units(ctx.config))],
+      getAuthExcludedRoutes: () => [{ path: 'weather/now', method: RequestMethod.GET }],
+      getSharedState: () => ({
+        lastWeatherQuery: (_state, runCtx: RuntimeContext) =>
+          lastBySession.get(runCtx.session.id),
+      }),
+    });
+    ```
+
+    ```ts
+    plugins: [weatherPlugin],   // already an instance — no `new`
+    ```
+
+    `defineOraclePlugin` throws a `TypeError` at authoring time if `name`, `version`, or `manifest` is missing. Source: [`define-plugin.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugin-api/define-plugin.ts).
+  </Tab>
+</Tabs>
+
+The rest of this guide uses the class form (matching the reference oracle), but every snippet maps one-to-one onto a `defineOraclePlugin` field.
+
 ## Prerequisites
 
 - A working `main.ts` calling `createOracleApp` — see [Create your oracle](/build-an-oracle/develop/create-oracle-app).
-- The oracle scaffolded by the CLI (`qiforge init`) — see the [CLI reference](/build-an-oracle/reference/cli).
+- The oracle scaffolded by the CLI (`qiforge-cli new`) — see the [CLI reference](/build-an-oracle/reference/cli).
 - Files live under `src/plugins/weather/` — same layout as the reference [apps/qiforge-example/src/plugins/weather/](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/apps/qiforge-example/src/plugins/weather).
 
 ## Step-by-step
@@ -283,7 +356,7 @@ Each step below builds one of those lines.
     }
     ```
 
-    Plugin middleware runs after the framework's always-on middleware (tool validation, retry, page context, safety guardrail), in topological dependency order across plugins.
+    Plugin middleware runs after the framework's always-on middleware (`capability-gate`, `tool-validation`, `tool-repetition-guard`, `tool-retry`) — plus the conditional `page-context` / `safety-guardrail` when their hooks are configured — in topological dependency order across plugins. A plugin middleware hook must return `undefined` or `{ jumpTo: 'end' as const }`, never a partial state object — see [Add a middleware](/build-an-oracle/develop/plugin-recipes/add-a-middleware).
   </Step>
 
   <Step title="Add an HTTP route with getNestModules + getAuthExcludedRoutes">
@@ -375,7 +448,7 @@ Each step below builds one of those lines.
 
     | Hook | How to verify |
     | --- | --- |
-    | `getNestModules` + `getAuthExcludedRoutes` | `curl 'http://localhost:5678/weather/now?city=Berlin'` returns JSON without a UCAN header. |
+    | `getNestModules` + `getAuthExcludedRoutes` | `curl 'http://localhost:3000/weather/now?city=Berlin'` returns JSON without a UCAN header. |
     | `manifest.visibility: 'on-demand'` | Chat `what's the weather in Berlin?` — the agent calls `list_capabilities` and/or `load_capability` before any weather tool. |
     | `getTools` | After weather is loaded, chat `what's the temperature in Tokyo?` — `get_current_weather` fires. |
     | `getRequestTools` | Chat `forecast for São Paulo this week` with an `x-timezone` header — `get_weather_forecast` fires; handler reads `rtCtx.user.timezone`. |

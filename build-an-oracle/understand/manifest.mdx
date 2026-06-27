@@ -17,10 +17,10 @@ Every plugin declares a `manifest` of type `PluginManifest`. It is not human doc
 | Field | Purpose |
 | --- | --- |
 | `title` | Human-readable label. Distinct from `name` (kebab-case unique ID). |
-| `summary` | One-line description. Rendered in Tier-1 for `always` plugins as `- {name}: {summary}`. |
-| `whenToUse` | Trigger phrases. The single most important field — quality here determines whether the LLM picks the plugin when it should. Required when `visibility !== 'silent'`. |
-| `whenNotToUse` | Anti-pattern phrases. Use to disambiguate from overlapping plugins. |
-| `examples` | Few-shot user-message → tool-call bindings. Cross-checked at boot — every example's `tool` must reference a tool this plugin registers. |
+| `summary` | One-line description. Heads each Tier-1 entry for `always` plugins as `- **{name}** — {summary}`. |
+| `whenToUse` | Trigger phrases. The single most important field — quality here determines whether the LLM picks the plugin when it should. Required when `visibility !== 'silent'`. The first two render into Tier-1 as a `When to use:` sub-bullet. |
+| `whenNotToUse` | Anti-pattern phrases. Use to disambiguate from overlapping plugins. The first renders into Tier-1 as an `Avoid for:` sub-bullet. |
+| `examples` | Few-shot user-message → tool-call bindings. Cross-checked at boot — every example's `tool` must reference a tool this plugin registers. The first renders into Tier-1 as an `Example:` sub-bullet. |
 | `tags` | Lowercase labels for search. |
 | `category` | One of: `data`, `communication`, `automation`, `memory`, `integration`, `ui`, `auth`, `observability`, `core`. |
 | `visibility` | `always` / `on-demand` / `silent`. See [Visibility tiers](/build-an-oracle/understand/visibility-tiers). |
@@ -34,13 +34,13 @@ Full schema table and validation rules live at [Manifest schema reference](/buil
 graph LR
     Manifest["manifest"] --> Tier1["Tier-1 prompt block<br/>(if visibility=always)"]
     Manifest --> ListCaps["list_capabilities()"]
-    Manifest --> LoadCap["load_capability(name)"]
+    Manifest --> LoadCap["load_capability({ names })"]
     Tier1 --> System["System prompt<br/>every turn"]
     ListCaps --> Agent["Agent"]
     LoadCap --> Agent
 ```
 
-Tier-1 plugins pay token cost on every turn forever. `on-demand` plugins cost nothing until the agent loads them. `silent` plugins are never visible to the LLM.
+Tier-1 plugins pay token cost on every turn forever — and not just the summary: each entry also renders `whenToUse`, `whenNotToUse`, and the first `example` as sub-bullets, so manifest length is prompt length. `on-demand` plugins cost nothing in the prompt until the agent loads them. `silent` plugins are never listed in Tier-1 and can't be loaded through the meta-tools (note: a silent plugin's tools, if it ships any, are still bound and callable — `silent` is not a security boundary).
 
 ## Writing a good manifest
 

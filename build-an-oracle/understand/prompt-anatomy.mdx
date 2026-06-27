@@ -1,14 +1,14 @@
 ---
 title: "Prompt anatomy"
-description: "How the runtime assembles the system prompt — 15 sections, what's automatic, what you configure."
+description: "How the runtime assembles the system prompt — 16 sections, what's automatic, what you configure."
 icon: "layer-group"
 ---
 
 ## Overview
 
-Every time the main agent is invoked, the runtime compiles a system prompt from up to 15 sections. Most sections are automatic — the runtime builds them from env state, loaded plugins, and live session data. You are only responsible for three fields in `config.prompt`. Everything else is handled for you.
+Every time the main agent is invoked, the runtime compiles a system prompt from up to 16 sections. Most sections are automatic — the runtime builds them from env state, loaded plugins, and live session data. You are only responsible for four fields in `config.prompt`. Everything else is handled for you.
 
-## The 15 sections
+## The 16 sections
 
 Sections appear in this fixed order. "Always present" means the section is included on every turn regardless of configuration; "conditional" means the section only appears when a specific condition is met.
 
@@ -17,18 +17,19 @@ Sections appear in this fixed order. "Always present" means the section is inclu
 | 1 | **Oracle section** — identity preamble | Always |
 | 2 | **Capabilities note** — `config.prompt.capabilities` text | Conditional |
 | 3 | **Capability block** — Tier-1 plugin manifest list | Conditional |
-| 4 | **Operating principles** — 7 standard bullets + optional style | Always |
-| 5 | **Working with files** — file-handling guidance | Always |
-| 6 | **What you know about the user** — memory context (6 slots) | Conditional |
-| 7 | **Current time** — `{currentTime}` (`{timezone}`) | Always |
-| 8 | **Current entity** — `{DID}` | Conditional |
-| 9 | **Available user secrets** | Conditional |
-| 10 | **User preferences** | Conditional |
-| 11 | **Operational mode** — general / editor / task / entity | Always |
-| 12 | **Composio context** — Composio tool context | Conditional |
-| 13 | **Editor section** — editor plugin state | Conditional |
-| 14 | **Slack formatting constraints** — Slack output rules | Conditional |
-| 15 | **Degraded services** — failed-init notices | Conditional |
+| 4 | **Operating principles** — fixed bullets + optional communication style | Always |
+| 5 | **Custom instructions** — `config.prompt.customInstructions` + loaded operating guides | Conditional |
+| 6 | **Working with files** — file-handling guidance | Always |
+| 7 | **What you know about the user** — memory context (6 slots) | Conditional |
+| 8 | **Current time** — `{currentTime}` (`{timezone}`) | Always |
+| 9 | **Current entity** — `{DID}` | Conditional |
+| 10 | **Available user secrets** | Conditional |
+| 11 | **User preferences** | Conditional |
+| 12 | **Operational mode** — general (default) or editor variants | Always |
+| 13 | **Composio context** — Composio tool context | Conditional |
+| 14 | **Editor section** — editor plugin state | Conditional |
+| 15 | **Slack formatting constraints** — Slack output rules | Conditional |
+| 16 | **Degraded services** — failed-init notices | Conditional |
 
 ### Section details
 
@@ -42,69 +43,74 @@ Rendered if `config.prompt.capabilities` is non-empty. Appears immediately above
 
 **3. Capability block**
 
-Auto-generated list of all loaded plugins with `visibility='always'` (Tier-1). Each entry includes the plugin name and its manifest description. The runtime enforces a **5,000-token soft budget** on this block — if the combined manifest text would exceed that, lower-priority entries are trimmed. You never write this section; the runtime builds it from the loaded plugin set.
+Auto-generated list of all loaded plugins with `visibility='always'` (Tier-1). Each entry is more than a one-liner: the plugin name and summary, then up to three sub-bullets pulled from the manifest — `When to use:` (first two `whenToUse` triggers), `Avoid for:` (first `whenNotToUse`), and `Example:` (the first `examples` entry). Manifest quality therefore drives prompt size. You never write this section; the runtime builds it from the loaded plugin set. See [the 5,000-token capability-block budget](#the-5000-token-capability-block-budget) below — it is a warn-only soft budget, not an auto-trim.
 
 **4. Operating principles**
 
-Always present. Contains 7 hardcoded bullets covering tool use, safety, honesty, and task handling. If `config.prompt.communicationStyle` is non-empty, it is injected here as an additional paragraph after those bullets. If `communicationStyle` is absent, the section still appears — just without the custom style block.
+Always present. Contains a fixed set of operating-principle bullets (currently nine) covering discovery-first tool use, clarifying questions, reporting results, surfacing failures, delegating with context, and completing-then-stopping. If `config.prompt.communicationStyle` is non-empty, it is injected here as an additional paragraph after those bullets. If `communicationStyle` is absent, the section still appears — just without the custom style block.
 
-**5. Working with files**
+**5. Custom instructions**
+
+Conditional. Rendered as a `## Custom Instructions` section when there is anything to put in it. Its body is your `config.prompt.customInstructions` field plus any operating guides contributed by on-demand capabilities the agent has loaded for this thread (e.g. the Flow Builder guide). When nothing contributes, the whole section is omitted and costs zero tokens.
+
+**6. Working with files**
 
 Always present. Hardcoded guidance on how the agent should handle file uploads, attachments, and generated file output.
 
-**6. What you know about the user**
+**7. What you know about the user**
 
 Conditional on the memory plugin being loaded and at least one context slot being populated. Contains up to 6 slots fetched by `UserContextFetcher` before the agent is compiled: `identity`, `work`, `goals`, `interests`, `relationships`, `recent`. See [How memory reaches the prompt](/build-an-oracle/reference/bundled-plugins/memory) for the pre-fetch details.
 
-**7. Current time**
+**8. Current time**
 
 Always present. Stamped at agent-compile time with the user's wall-clock time and resolved timezone.
 
-**8. Current entity**
+**9. Current entity**
 
 Conditional on `state.currentEntityDid` being set in the agent state. Surfaces the active entity DID so the agent can route entity-aware tool calls correctly.
 
-**9. Available user secrets**
+**10. Available user secrets**
 
 Conditional on the secrets service having entries for the current user. Lists secret names (not values) so the agent can reference them by name in tool calls.
 
-**10. User preferences**
+**11. User preferences**
 
 Conditional on the user-preferences plugin being loaded and the user having saved preferences. May include `agentName`, `language`, `tone`, `formality`, and `customInstructions`.
 
-**11. Operational mode**
+**12. Operational mode**
 
-Always present, but content varies. The runtime selects one of four mode descriptions — `general`, `editor`, `task`, or `entity` — based on which plugins are active and the current session state.
+Always present, but content varies. The runtime ships a `general` default (`DEFAULT_OPERATIONAL_MODE`) and editor-mode variants supplied by the editor plugin. Any other mode arrives through `hooks.operationalMode` — a plugin or host override — not a built-in runtime selection. See [Model resolution & hooks](/build-an-oracle/understand/architecture#model-resolution-and-hooks).
 
-**12. Composio context**
+**13. Composio context**
 
 Conditional on the Composio plugin loading successfully. Auto-injected Composio account and connection context so the agent knows which third-party integrations are available for the current user.
 
-**13. Editor section**
+**14. Editor section**
 
 Conditional on the editor plugin being active in the current session. Describes the active document, cursor position, and editor affordances.
 
-**14. Slack formatting constraints**
+**15. Slack formatting constraints**
 
 Conditional on the session client being Slack. Appends Slack-specific formatting rules to prevent the agent from using markdown that Slack does not render correctly (e.g. tables).
 
-**15. Degraded services**
+**16. Degraded services**
 
 Appended after the main prompt when one or more plugins fail their init. Lists the failed services and tells the agent not to attempt their tools for this turn.
 
 ## The 5,000-token capability block budget
 
-Section 3 (the Tier-1 capability block) is the only section subject to a token budget. If the combined manifest text of all `visibility='always'` plugins exceeds 5,000 tokens, the runtime trims lower-priority plugins from the block. The trimmed plugins are still loaded and their tools are still callable — they simply don't appear in the capability summary at the top of the prompt. To keep a plugin's description in the block reliably, keep its manifest description concise.
+Section 3 (the Tier-1 capability block) is the only section with a token budget — and it is a **warn-only soft budget, not a cap**. If the combined manifest text of all `visibility='always'` plugins exceeds 5,000 tokens, the runtime logs a warning naming the largest manifests so you can decide what to mark `on-demand`. Nothing is trimmed automatically: the full block is always emitted with every `always` plugin in it. Degrading verbosity is an operator decision, not a runtime guess — so keep manifest text (`summary`, `whenToUse`, `examples`) concise to keep the block small.
 
 ## What you actually need to write in config.ts
 
-Only three things — all optional:
+Only four things — all optional:
 
 | Field | What to write | What happens if you skip it |
 | --- | --- | --- |
 | `config.prompt.opening` | A paragraph describing the oracle's identity, purpose, and domain expertise. | Runtime generates a generic fallback from `name`, `org`, `description`. |
 | `config.prompt.communicationStyle` | One or two paragraphs on tone, vocabulary, and response style. | The operating-principles section appears without a custom style block. |
 | `config.prompt.capabilities` | A short section (with your own heading) listing what the oracle can do. | The capability-notes section is omitted; only the auto-generated plugin list appears. |
+| `config.prompt.customInstructions` | Standing guidance that should hold across every turn (house rules, escalation policy, domain constraints). | The `## Custom Instructions` section is omitted unless a loaded capability contributes a guide. |
 
 Time, memory, user preferences, Composio context, entity DID, secrets, editor state, Slack constraints, and degraded-service notices are all injected automatically. You do not need to mention them in `config.ts`, instruct the agent to fetch them, or account for them in your opening paragraph.
 
@@ -133,11 +139,14 @@ When something is uncertain, say so explicitly.`,
 - Retrieve live project status and registry issuance data.
 - Draft verification reports, CORSIA letters, and board summaries.
 - Search and cite methodology documents from the oracle knowledge base.`,
+    customInstructions: `Always cite the registry framework (Verra VCS, Gold Standard, REDD+)
+behind any compliance claim. Never approve a credit issuance on the user's behalf —
+draft it and ask them to confirm.`,
   },
 };
 ```
 
-Everything else in the 15-section prompt — plugin tools, current time, user memory, preferences, Composio context — is assembled by the runtime from the loaded plugins and session state.
+Everything else in the 16-section prompt — plugin tools, current time, user memory, preferences, Composio context — is assembled by the runtime from the loaded plugins and session state.
 
 ## Related
 

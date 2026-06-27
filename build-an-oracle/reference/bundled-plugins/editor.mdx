@@ -8,10 +8,11 @@ icon: "pen-to-square"
 
 | Attribute | Value |
 | --- | --- |
-| Visibility | `on-demand` |
+| Feature key | `editor` |
+| Visibility | `always` |
 | Stability | `stable` |
 | Category | `data` |
-| Default state | On (needs an explicit Matrix client for production behaviour) |
+| Default state | On |
 | Depends on | — |
 
 ## Summary
@@ -43,9 +44,11 @@ The plugin owns no env vars. It reads the following from the core base env schem
 - **HTTP routes:** none.
 - **Shared state:** none.
 
-## Production constructor
+## Matrix client (optional)
 
-The bundled singleton works for inspect / test; production behaviour needs an explicit Matrix client:
+The bundled `editorPlugin` is fully functional from env. When no `matrixClient` is passed, the plugin lazily builds an internal Matrix client from the `MATRIX_*` admin env vars (`MATRIX_BASE_URL`, `MATRIX_ORACLE_ADMIN_USER_ID`, `MATRIX_ORACLE_ADMIN_ACCESS_TOKEN`). So you do **not** need to construct it explicitly for production.
+
+Pass a `matrixClient` only as a reuse optimization — when your app already keeps a long-lived `matrix-js-sdk` client synced and you want the editor tools to share it:
 
 ```ts
 import { createOracleApp, EditorPlugin } from '@ixo/oracle-runtime';
@@ -55,7 +58,7 @@ const matrixClient = sdk.createClient({ /* … */ });
 
 const app = await createOracleApp({
   config,
-  plugins: [new EditorPlugin({ matrixClient })],
+  plugins: [new EditorPlugin({ matrixClient })], // optional — env fallback otherwise
 });
 ```
 

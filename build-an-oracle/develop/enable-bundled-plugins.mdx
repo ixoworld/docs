@@ -67,7 +67,7 @@ Each plugin's `autoDetect` predicate decides whether to opt in when you leave it
 
 | Plugin | Auto-detects when | Notes |
 | --- | --- | --- |
-| `memory` | `MEMORY_MCP_URL` and `MEMORY_ENGINE_URL` set | Visibility `always` |
+| `memory` | `MEMORY_MCP_URL` set | Visibility `always` |
 | `portal` | always on | Visibility `on-demand` |
 | `firecrawl` | `FIRECRAWL_MCP_URL` set | Visibility `on-demand` |
 | `domain-indexer` | always on | Visibility `always` |
@@ -77,9 +77,9 @@ Each plugin's `autoDetect` predicate decides whether to opt in when you leave it
 | `editor` | always on | Needs `matrixClient` — instantiate explicitly |
 | `agui` | always on | Visibility `on-demand` |
 | `slack` | `SLACK_BOT_OAUTH_TOKEN` set | Visibility `silent` (transport) |
-| `tasks` | `REDIS_URL` set | Stub |
+| `tasks` | `REDIS_URL` set | Visibility `on-demand`; BullMQ-backed async tasks (needs `REDIS_URL`) |
 | `credits` | always on | Visibility `silent`; pass `redis` for production |
-| `calls` | always on | Stub |
+| `calls` | always on | Visibility `silent`; placeholder stub (no tools yet) |
 | `user-preferences` | always on | Visibility `always` |
 | `matrix-group-chats` | always on | Visibility `on-demand`; gating middleware + tools fire only in Matrix group rooms (`memberCount > 2`) |
 
@@ -176,22 +176,14 @@ The bundled `editorPlugin` and `creditsPlugin` instances boot in stub form (for 
     // {
     //   loaded: ['memory', 'domain-indexer', 'editor', 'user-preferences', 'weather'],
     //   excluded: [
-    //     { plugin: 'composio', reason: 'auto-detect precondition not met (COMPOSIO_API_KEY)', cause: 'auto_detect_missing' },
-    //     { plugin: 'slack',    reason: 'feature flag set to false',                              cause: 'feature_false' },
+    //     { plugin: 'composio', reason: 'auto-detect precondition not met (COMPOSIO_API_KEY)' },
+    //     { plugin: 'slack',    reason: 'feature flag set to false' },
     //   ],
     //   softDepGaps: [],
     // }
     ```
 
-    `cause` is one of `'feature_false'`, `'auto_detect_missing'`, `'cascaded'`. Surface this in your boot logs so operators see what came up.
-  </Step>
-
-  <Step title="Or use the CLI">
-    ```sh
-    qiforge inspect
-    ```
-
-    Same data, formatted for the terminal. See the [CLI reference](/build-an-oracle/reference/cli).
+    Each `excluded` entry is `{ plugin, reason }` — surface the `reason` in your boot logs so operators see why a plugin came up missing. (`softDepGaps` entries are `{ plugin, missing }`.)
   </Step>
 </Steps>
 

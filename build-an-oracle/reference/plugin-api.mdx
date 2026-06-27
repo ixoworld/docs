@@ -51,13 +51,13 @@ export abstract class OraclePlugin {
     - **Type:** `string`
     - **Convention:** kebab-case unique identifier.
 
-    Used by `features`, `dependsOn`, `softDependsOn`, `qiforge inspect`, the meta-tools. Boot fails on collision with another plugin's name.
+    Used by `features`, `dependsOn`, `softDependsOn`, the `app.plugins.status()` report, the meta-tools. Boot fails on collision with another plugin's name.
   </Accordion>
 
   <Accordion title="version" icon="code-branch">
     - **Type:** `string`
 
-    Plugin version. Surfaced in `qiforge inspect` output. Not used for compatibility checking in v1.
+    Plugin version. Surfaced in the `app.plugins.status()` report. Not used for compatibility checking in v1.
   </Accordion>
 
   <Accordion title="manifest" icon="scroll">
@@ -143,7 +143,16 @@ export abstract class OraclePlugin {
     getMiddlewares?(ctx: PluginContext): AgentMiddleware[];
     ```
 
-    LangChain `AgentMiddleware` instances inserted after the four always-on framework middleware (tool-validation, retry, page-context, safety-guardrail). Plugin middleware runs in topological dependency order across plugins.
+    LangChain `AgentMiddleware` instances appended to the stack after the framework's own middleware. Plugin middleware runs **last**, in topological dependency order across plugins.
+
+    The framework's four **always-on** middlewares, in order, are:
+
+    1. `capability-gate` — gates on-demand tools by the thread's `loadedPlugins`.
+    2. `tool-validation` — turns schema errors into recoverable `ToolMessage`s.
+    3. `tool-repetition-guard` — blocks identical repeated tool calls.
+    4. `tool-retry` — retries a failed tool call once.
+
+    Two more are **conditional** — added only when the matching `createOracleApp({ hooks })` field is set: `page-context` (when `hooks.getRoomTitle` is provided) and `safety-guardrail` (when `hooks.safetyModel` is provided). Both run before your plugin middleware.
   </Accordion>
 
   <Accordion title="getSharedState()" icon="share-nodes">

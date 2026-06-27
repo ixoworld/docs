@@ -12,7 +12,7 @@ sequenceDiagram
     participant Client
     participant Auth as AuthHeaderMiddleware
     participant Sub as SubscriptionMW<br/>(if credits loaded)
-    participant Throttle as ThrottlerMW
+    participant Throttle as ThrottlerGuard
     participant Ctrl as MessagesController
     participant Agent as createMainAgent
     participant Ckpt as Checkpointer
@@ -42,11 +42,11 @@ sequenceDiagram
 | --- | --- |
 | **AuthHeaderMiddleware** | Validates the UCAN delegation (signature, expiry, audience, capability). Resolves the user's DID and attaches `RuntimeUserContext`. Failure → 401, agent never runs. |
 | **SubscriptionMiddleware** | Only when the `credits` plugin is loaded. Checks user balance. Empty + `DISABLE_CREDITS !== 'true'` → 402. |
-| **ThrottlerMiddleware** | Per-user rate limit. Breach → 429. |
+| **ThrottlerGuard** | Per-user rate limit, registered as a global Nest guard (`APP_GUARD`), not an HTTP middleware. Nest runs middleware before guards, so it still gates after auth and subscription. Breach → 429. |
 | **MessagesController** | Reads the inbound message, looks up the session (creates on first contact), hands off to the agent builder. Returns SSE. |
 | **createMainAgent** | Builds the per-request `RuntimeContext`, reads cached registries, runs `getRequestTools` / `getRequestSubAgents`, composes the prompt, returns a LangChain agent compiled against the per-user checkpointer. |
 | **Checkpointer** | Loads `{ messages, loadedPlugins, userContext, ... }` for this `thread_id` (= session id) from per-user SQLite (synced to Matrix in the background). |
-| **LLM invocation** | Composed prompt + bound tools + state messages go to the model selected by `LLM_PROVIDER`. Plugin middleware fires (`beforeModel`, `afterModel`, `onError`). |
+| **LLM invocation** | Composed prompt + bound tools + state messages go to the model resolved for the `main` role (provider from `LLM_PROVIDER`, or a `hooks.resolveModel` override). Plugin middleware fires (`beforeModel`, `wrapModelCall`, `afterModel`). |
 | **Tool calls** | The agent loop dispatches plugin tools, sub-agent tools, meta-tools, and browser tools. Each emits a typed event so the client can render "Agent called X". |
 | **Save state + stream** | The final state is checkpointed; the assistant message streams over SSE. WS events for intermediate steps have already shipped. |
 
@@ -56,7 +56,8 @@ sequenceDiagram
 | --- | --- |
 | `getTools`, `getSubAgents`, `getMiddlewares`, `getSharedState` | Read from boot cache during agent build |
 | `getRequestTools`, `getRequestSubAgents` | Per-request agent build |
-| `middlewares[].beforeModel` / `afterModel` / `onError` | Around each LLM invocation |
+| `middlewares[].beforeModel` / `wrapModelCall` / `afterModel` | Around each LLM invocation |
+| `middlewares[].wrapToolCall` | Around each tool call |
 | Tool / sub-agent `handler` | When the LLM calls the tool |
 | `getNestModules` controllers | Any HTTP request to a plugin route |
 
@@ -68,7 +69,7 @@ sequenceDiagram
 | Credit check | 402. Agent never runs. |
 | Rate limit | 429. Agent never runs. |
 | Checkpointer load | Error logged; falls back to empty state. Turn proceeds. |
-| LLM | `onError` middleware fires. Default: propagate to client. |
+| LLM | Propagates to the client by default. A middleware can catch it by wrapping the call in `wrapModelCall` with `try`/`catch`. |
 | Tool handler | One retry on validation error; otherwise the error becomes a `ToolMessage` the agent sees. |
 | Sub-agent init | `Promise.allSettled` — log and skip; rest of turn continues. |
 

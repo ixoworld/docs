@@ -24,7 +24,7 @@ COPY package.json ./
 RUN mkdir -p /data
 ENV MATRIX_STORE_PATH=/data/matrix-storage
 ENV SQLITE_DATABASE_PATH=/data/sqlite
-EXPOSE 5678
+EXPOSE 3000
 CMD ["node", "dist/main.js"]
 ```
 
@@ -55,7 +55,7 @@ Everything below explains the moving parts. The reference oracle (`apps/qiforge-
 
     ```text
     NODE_ENV=production
-    PORT=5678
+    PORT=3000
     ORACLE_NAME=My Oracle
     CORS_ORIGIN=https://your-portal.example
     NETWORK=mainnet
@@ -66,6 +66,10 @@ Everything below explains the moving parts. The reference oracle (`apps/qiforge-
     SECP_MNEMONIC=...
     RPC_URL=https://rpc.ixo.world
     BLOCKSYNC_GRAPHQL_URL=https://blocksync.ixo.world/graphql
+
+    # Auth tuning (optional — safe defaults)
+    UCAN_AUTH_MAX_TTL_SECONDS=900               # max accepted lifetime of a user auth invocation (default 15 min)
+    UCAN_REAUTH_PROMPT_THROTTLE_SECONDS=21600   # gap between re-authorize prompts (default 6 hours)
 
     # Matrix
     MATRIX_BASE_URL=https://matrix.ixo.world
@@ -98,8 +102,8 @@ Everything below explains the moving parts. The reference oracle (`apps/qiforge-
     Identity and Matrix keys are provisioned via the CLI — see [identity and auth](/build-an-oracle/develop/identity-and-auth) for the full flow.
 
     ```sh
-    qiforge create-entity --no-interactive --network mainnet ...
-    qiforge setup-encryption-key
+    qiforge-cli create-entity --no-interactive --network mainnet ...
+    qiforge-cli setup-encryption-key
     ```
   </Step>
 </Steps>
@@ -159,13 +163,13 @@ Everything below explains the moving parts. The reference oracle (`apps/qiforge-
 
 <Steps>
   <Step title="Use /health as the liveness probe">
-    The framework exposes `GET /health`, always public, never goes through `AuthHeaderMiddleware`. Returns 200 once Nest is up.
+    The framework exposes `GET /health`, always public, never goes through `AuthHeaderMiddleware`. Returns 200 once Nest is up. The built-in auth-excluded routes are `/` (a JSON landing payload), `/health`, `/docs`, and `/docs/(.*)` — everything else requires auth.
 
     Docker:
 
     ```dockerfile
     HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-      CMD curl -fsS http://localhost:5678/health || exit 1
+      CMD curl -fsS http://localhost:3000/health || exit 1
     ```
 
     Kubernetes:
@@ -174,7 +178,7 @@ Everything below explains the moving parts. The reference oracle (`apps/qiforge-
     livenessProbe:
       httpGet:
         path: /health
-        port: 5678
+        port: 3000
     ```
   </Step>
 
@@ -201,8 +205,10 @@ The framework allows these headers on every request:
 ```text
 Content-Type, Authorization,
 x-ucan-delegation, x-matrix-access-token, x-matrix-homeserver,
-x-did, x-request-id, x-timezone
+x-did, x-request-id, x-auth-type, x-timezone
 ```
+
+`Authorization` and `x-auth-type` carry the primary invocation-auth path (`Authorization: Bearer <invocation>` + `X-Auth-Type: ucan`); `x-ucan-delegation` carries the downstream-authorization delegation. If you replicate CORS at a reverse proxy, mirror this full list — dropping `x-auth-type` breaks browser clients on the primary auth path.
 
 ## Logging
 
@@ -212,7 +218,9 @@ For structured tracing instead of free-form logs, set the LangSmith env vars —
 
 ## Graceful shutdown
 
-The runtime registers a `SIGTERM` / `SIGINT` handler that closes the Nest app and disconnects Matrix.
+The runtime registers a `SIGTERM` / `SIGINT` handler that drains in order: (1) **flushes the per-user checkpoint to Matrix**, (2) closes the Nest app, (3) shuts down the Matrix client, (4) runs any plugin teardowns. Each step is isolated — a failure in one is logged and the rest still run.
+
+That first step is why a clean `SIGTERM` matters: an abrupt `SIGKILL` skips the checkpoint upload and loses recent thread state. See [`graceful-shutdown.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/bootstrap/graceful-shutdown.ts).
 
 ```ts
 // To disable (rare — only when your platform's process manager
@@ -224,7 +232,7 @@ const app = await createOracleApp({
 ```
 
 <Warning>
-Disable graceful shutdown only when your platform's process manager guarantees a clean `app.close()` on termination. Otherwise you'll get partial flushes and Matrix sync corruption.
+Disable graceful shutdown only when your platform's process manager guarantees a clean `app.close()` on termination. Otherwise you'll skip the checkpoint flush and risk Matrix sync corruption.
 </Warning>
 
 ## Where to read next

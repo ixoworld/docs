@@ -1,6 +1,6 @@
 ---
 title: "Anatomy of a plugin"
-description: "The nine hooks an OraclePlugin can declare and where each one plugs into the runtime."
+description: "The ten contribution channels an OraclePlugin can declare and where each one plugs into the runtime."
 icon: "microscope"
 ---
 
@@ -44,9 +44,11 @@ graph LR
 
 The runtime never reaches inside your plugin. Every contribution flows through one of these channels.
 
-## The nine hooks at a glance
+## The ten contribution channels at a glance
 
-| Hook | What it contributes | When called |
+The first four are **declarative properties** (data the runtime reads); the rest are **hooks** (methods the runtime calls).
+
+| Channel | What it contributes | When called |
 | --- | --- | --- |
 | `manifest` | The agent-facing interface — title, summary, `whenToUse`, examples, visibility | Boot (validation + Tier-1 composition) |
 | `configSchema` | A Zod object merged into the global env schema | Boot (env validation) |
@@ -54,10 +56,12 @@ The runtime never reaches inside your plugin. Every contribution flows through o
 | `autoDetect(env)` | Decide whether to load based on env | Boot (resolution) |
 | `getTools(ctx)` / `getRequestTools(rtCtx)` | LLM-callable tools | Boot cache + per-request |
 | `getSubAgents(ctx)` / `getRequestSubAgents(rtCtx)` | Focused inner agents (auto-wrapped as tools) | Boot cache + per-request |
-| `getMiddlewares(ctx)` | `beforeModel` / `afterModel` / `onError` hooks | Boot cache |
+| `getMiddlewares(ctx)` | LangChain `AgentMiddleware` objects (`beforeAgent` / `beforeModel` / `wrapModelCall` / `afterModel` / `wrapToolCall` / `afterAgent` hooks) | Boot cache |
 | `getNestModules(ctx?)` | Nest modules (HTTP routes, services) | Boot, once |
 | `getAuthExcludedRoutes()` | Routes that skip UCAN auth | Boot, once |
 | `getSharedState()` | Read-only accessors other plugins can consume | Boot, once |
+
+A middleware can declare any of the six LangChain hooks above. There is **no `onError` middleware hook** — to handle an LLM or tool error inside a middleware, wrap the call in `wrapModelCall` / `wrapToolCall` with `try`/`catch`.
 
 Boot-time hooks (`getTools`, `getSubAgents`, `getMiddlewares`) are called once and the results are cached for every request. The per-request variants run on every agent build — use them only when the contribution depends on live state (e.g. `loadedPlugins`, current user, `rtCtx.shared.*`).
 
