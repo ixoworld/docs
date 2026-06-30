@@ -217,8 +217,13 @@ const manifest: PluginManifest = {
 };
 ```
 
+## Retuning a bundled plugin's manifest
+
+You don't have to fork a bundled plugin to change its manifest. `createOracleApp` accepts a [`manifestOverrides`](/build-an-oracle/reference/createoracleapp#manifestoverrides) option that shallow-merges fork-supplied fields onto each loaded plugin's manifest before validation and registration — so the override is what the Tier-1 prompt, the meta-tools, and the visibility index all see. This is the supported way to flip a bundled plugin's `visibility` (e.g. drop a noisy `always` plugin to `on-demand`) or relabel its `summary` / `tags` / `whenToUse` without touching the plugin source.
+
 ## Related references
 
 - [Manifest concept](/build-an-oracle/understand/manifest)
 - [Visibility tiers](/build-an-oracle/develop/plugin-recipes/set-visibility)
 - [Plugin API](/build-an-oracle/reference/plugin-api)
+- [`manifestOverrides` on `createOracleApp`](/build-an-oracle/reference/createoracleapp#manifestoverrides)

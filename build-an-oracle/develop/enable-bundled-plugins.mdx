@@ -167,6 +167,24 @@ Live example: [apps/qiforge-example/src/main.ts](https://github.com/ixoworld/ixo
 The bundled `editorPlugin` and `creditsPlugin` instances boot in stub form (for testing). For production behaviour, instantiate them yourself and pass the live objects in.
 </Note>
 
+## Retune a bundled plugin's manifest
+
+`features` decides **whether** a bundled plugin loads. To change **how it's advertised** — most usefully its [visibility tier](/build-an-oracle/understand/visibility-tiers), but also `summary`, `tags`, or `whenToUse` — use [`manifestOverrides`](/build-an-oracle/reference/createoracleapp#manifestoverrides) instead of forking the plugin. The override is shallow-merged onto the plugin's own manifest at boot, validated like any authored manifest, and seen by every downstream reader (Tier-1 prompt, `list_capabilities` / `load_capability`, visibility index).
+
+```ts
+const app = await createOracleApp({
+  config,
+  manifestOverrides: {
+    // Take a noisy `always` bundled plugin out of the Tier-1 prompt.
+    'domain-indexer': { visibility: 'on-demand' },
+    // Hide a transport plugin entirely; its tools still bind.
+    portal: { visibility: 'silent' },
+  },
+});
+```
+
+Override keys that don't match a loaded plugin are logged (`boot.plugin.manifest_override_unknown`) and ignored — so disabling a plugin via `features` and leaving its override entry behind is safe.
+
 ## Inspect what loaded
 
 <Steps>
