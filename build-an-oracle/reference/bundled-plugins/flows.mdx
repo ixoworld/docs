@@ -1,0 +1,150 @@
+---
+title: "flows"
+description: "Opt-in flow-builder plugin: author, inspect, wire, and form-fill multi-step Qi Flow action templates on top of the editor's Qi Flow engine."
+icon: "diagram-project"
+---
+
+| Attribute | Value |
+| --- | --- |
+| Feature key | `flows` |
+| Visibility | `on-demand` |
+| Stability | `beta` |
+| Category | `automation` |
+| Default state | Off — opt-in only |
+| Depends on | [`editor`](/build-an-oracle/reference/bundled-plugins/editor) Qi Flow engine + Matrix CRDT (shared at runtime) |
+
+<Note>
+The `flows` plugin is **not loaded by default** even though it ships in `@ixo/oracle-runtime`. Wire it in explicitly via the `plugins` array (see [Opt in](#opt-in)). The bundled set in `BUNDLED_PLUGINS` does not include it.
+</Note>
+
+## Summary
+
+`flows` is a flow **builder** capability. The agent designs reusable flow *templates* — steps (action blocks), the data wired between them, conditions, schedules, assignees, and forms — and reads the live state of running flows. The agent never executes, signs, mints, holds a key, or enters a PIN; **the user runs the flow in the portal**, where signing and any state transitions happen.
+
+It coexists with the [`editor`](/build-an-oracle/reference/bundled-plugins/editor) plugin: flows are written as documents over the `@ixo/editor` Qi Flow engine, using oracle-runtime's native yjs reads/writes. The plugin does not require `editor` to be loaded — it contributes its own tool surface.
+
+## When to use it
+
+- User wants to build an automation/workflow from steps or action blocks.
+- User wants to change a step's inputs, condition, trigger, schedule, or assignee.
+- User wants to know what an action needs (its inputs/prerequisites) before adding it.
+- User wants to fill in a form or survey attached to a flow step.
+- User wants to inspect a flow run, find out why a step failed, and fix the template.
+
+## When NOT to use it
+
+- Editing prose, pages, or BlockNote documents — use [`editor`](/build-an-oracle/reference/bundled-plugins/editor).
+- Actually executing, running, or signing a step — that happens in the portal, by the user. No transaction tooling lives here.
+- IXO entity lookups — use [`domain-indexer`](/build-an-oracle/reference/bundled-plugins/domain-indexer).
+
+## Environment variables
+
+The plugin owns no env vars. It relies on the same admin Matrix credentials the `editor` plugin reads from the core base env schema:
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `MATRIX_BASE_URL` | yes (base schema) | Matrix homeserver base URL. |
+| `MATRIX_ORACLE_ADMIN_USER_ID` | yes (base schema) | Admin Matrix user ID. |
+| `MATRIX_ORACLE_ADMIN_ACCESS_TOKEN` | yes (base schema) | Admin Matrix access token. |
+
+## What it contributes
+
+- **Tools:** a flow-authoring surface grouped into five buckets — see below.
+- **Sub-agents:** none.
+- **Middleware:** none.
+- **HTTP routes:** none.
+- **Shared state:** reads `state.spaceId` / current flow ref from the per-request runtime context; writes flow documents through the editor Qi Flow engine.
+
+### Tools
+
+**Discovery** — learn what blocks exist and what they need before adding them.
+
+- `list_actions` — list available action blocks (optionally filtered by tag).
+- `describe_action` — return an action's inputs, outputs, and prerequisites.
+- `list_referenceable_fields` — list fields the agent can wire from prior steps.
+
+**Linkage** — typed wiring checks between steps.
+
+- `check_link` — verify a single field-to-input wiring between two steps.
+- `compatible_actions` — find actions whose inputs match a step's outputs.
+- `requirements` — pure action lookup of required inputs.
+
+**Inspect** — read live flow state to debug a run or review a template.
+
+- `read_flow` — assemble the full flow document from its native sources.
+- `get_step` — fetch a single step's configuration and current state.
+- `flow_status` — high-level status of the flow and each step.
+- `explain_step` — explain why a step is in its current state.
+
+**Authoring** — build and edit the template.
+
+- `validate_flow` — run static checks against the current flow.
+- `create_flow` — start a new flow template from `get_flow_template`.
+- `add_step`, `remove_step`, `reorder_step` — manipulate the step list.
+- `update_flow_meta` — title, description, tags.
+- `connect_steps` — wire an upstream output to a downstream input.
+- `update_step` — per-block / delta edit that never disturbs sibling steps.
+
+**Settings** — per-step mutators with narrow scope.
+
+- `set_step_inputs` — set or replace a step's static inputs.
+- `set_step_conditions` — set `props.conditions` directly in the frontend evaluator's operator vocabulary.
+- `set_step_schedule` — set or clear a step's schedule.
+- `set_step_assignment` — set or clear a step's assignee.
+- `set_step_confirmation` — toggle the user-confirmation gate before a step runs.
+- `set_step_trigger` — configure the trigger that starts the flow.
+
+**Forms** — attach and fill structured forms on a step.
+
+- `set_form_schema` — set or replace a step's form schema.
+- `describe_form` — return a form's schema and current values.
+- `fill_form` — fill or update form fields.
+
+## How the agent should behave
+
+Follow a tight loop: **discover → plan → confirm → build → hand off.** One discovery pass, one short plan, one user confirmation, then build with the authoring tools. The plugin injects an operating guide into the system prompt while it is loaded — see the `FLOWS_OPERATING_GUIDE` exported from the package.
+
+Conditions are written **directly as `props.conditions`** in the frontend evaluator's operator vocabulary; the compiler's verbatim operators never evaluate at runtime.
+
+## Opt in
+
+`flows` is opt-in. Add the plugin instance explicitly — the bundled loader will not load it for you:
+
+```ts
+import { createOracleApp, FlowsPlugin } from '@ixo/oracle-runtime';
+import * as sdk from 'matrix-js-sdk';
+
+const matrixClient = sdk.createClient({ /* … */ });
+
+const app = await createOracleApp({
+  config,
+  plugins: [new FlowsPlugin({ matrixClient })], // matrixClient is optional — env fallback otherwise
+});
+```
+
+If your app already constructs the [`editor`](/build-an-oracle/reference/bundled-plugins/editor) plugin with a shared `matrixClient`, reuse it here so both plugins share the same long-lived sync.
+
+## Examples
+
+**User: "Build a flow that emails the applicant when their claim is approved."**
+
+The agent calls `list_actions` (tag: `claims`) to discover blocks, picks a submit/approve/email chain, confirms the plan, then `create_flow` + `add_step` + `connect_steps` + `set_step_conditions` to wire it up. The user runs the flow from the portal.
+
+**User: "What does the submit-claim step need before I can add it?"**
+
+The agent calls `describe_action` with `action: 'qi/claim.submit'` and reports its required inputs and prerequisites.
+
+**User: "Why did the second step of my flow fail?"**
+
+The agent calls `flow_status` followed by `explain_step` on the failed step to surface the error, then proposes an `update_step` or `set_step_inputs` fix on the template.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="editor" icon="pen-to-square" href="/build-an-oracle/reference/bundled-plugins/editor">
+    The Qi Flow engine the builder writes against.
+  </Card>
+  <Card title="Shared state" icon="share-nodes" href="/build-an-oracle/understand/shared-state">
+    `spaceId` and the per-request flow ref the tools key off.
+  </Card>
+</CardGroup>
