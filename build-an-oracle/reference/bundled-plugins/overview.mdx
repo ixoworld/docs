@@ -1,10 +1,10 @@
 ---
 title: "Bundled plugins"
-description: "The 15 plugins the runtime ships with. Toggle each one through the features map, set its env vars, ship."
+description: "The plugins the runtime ships with. Toggle each one through the features map, set its env vars, ship."
 icon: "boxes-stacked"
 ---
 
-The runtime bundles 15 plugins. They load by default; opt out per plugin via the `features` map on `createOracleApp`.
+The runtime bundles 15 plugins that load by default; opt out per plugin via the `features` map on `createOracleApp`. One additional plugin — [`flows`](/build-an-oracle/reference/bundled-plugins/flows) — ships in the package but is **opt-in only**: wire it in explicitly via the `plugins` array.
 
 ## At a glance
 
@@ -25,6 +25,7 @@ The runtime bundles 15 plugins. They load by default; opt out per plugin via the
 | [`calls`](/build-an-oracle/reference/bundled-plugins/calls) | `silent` | On (stub) | — | — |
 | [`user-preferences`](/build-an-oracle/reference/bundled-plugins/user-preferences) | `always` | On | — | — |
 | [`matrix-group-chats`](/build-an-oracle/reference/bundled-plugins/matrix-group-chats) | `on-demand` | On | — | — |
+| [`flows`](/build-an-oracle/reference/bundled-plugins/flows) | `on-demand` | Opt-in (not bundled) | — | `editor` Qi Flow engine |
 
 `Default state` legend:
 
@@ -94,6 +95,9 @@ const app = await createOracleApp({
   </Card>
   <Card title="matrix-group-chats" icon="comments" href="/build-an-oracle/reference/bundled-plugins/matrix-group-chats">
     Gate the bot + per-room compacted memory for Matrix group rooms.
+  </Card>
+  <Card title="flows" icon="diagram-project" href="/build-an-oracle/reference/bundled-plugins/flows">
+    Author and inspect multi-step Qi Flow templates (opt-in).
   </Card>
 </CardGroup>
 
