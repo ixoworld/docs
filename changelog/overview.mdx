@@ -1,6 +1,6 @@
 ---
 title: Product Updates
-description: "What's new"
+description: "What's new across IXO products — Oracle Runtime, bundled plugins, Creator Studio, and the IXO Mobile wallet, with features, updates, and fixes."
 ---
 
 <Update label="June 2026" description="Oracle Runtime 1.2.0 · Flows plugin · Creator Studio">
@@ -8,7 +8,7 @@ description: "What's new"
 **New features**
 
 - **Flows plugin (beta) for Oracle apps.** A new bundled plugin lets an agent author, inspect, wire, and form-fill multi-step Qi Flow action templates. The agent builds the flow; users run it from the portal. Opt in via the `plugins` array — it does not load by default. See [`flows`](/build-an-oracle/reference/bundled-plugins/flows).
-- **Manifest overrides on `createOracleApp`.** Forks can now retune a bundled plugin's manifest — most usefully its visibility (`always`, `on-demand`, `silent`) — without forking the plugin source. Pass `manifestOverrides` to `createOracleApp` or `createTestRuntime`; merges are shallow and validated. See [`createOracleApp`](/build-an-oracle/reference/createoracleapp) and [Retune a bundled plugin's manifest](/build-an-oracle/develop/enable-bundled-plugins#retune-a-bundled-plugins-manifest).
+- **Manifest overrides on `createOracleApp`.** You can now retune a bundled plugin's manifest — most usefully its visibility (`always`, `on-demand`, `silent`) — without forking the plugin source. Pass `manifestOverrides` to `createOracleApp` or `createTestRuntime`; merges are shallow and validated. See [`createOracleApp`](/build-an-oracle/reference/createoracleapp) and [Retune a bundled plugin's manifest](/build-an-oracle/develop/enable-bundled-plugins#retune-a-bundled-plugins-manifest).
 - **Relayer node selection in Creator Studio.** When creating an entity you can now choose which relayer node to use, giving you control over which validator ledgers your transaction.
 - **Entity filters and slider.** New filters and a slider control on entity lists make it easier to scope and browse large entity sets.
 
