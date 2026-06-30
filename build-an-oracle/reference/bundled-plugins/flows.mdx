@@ -1,6 +1,6 @@
 ---
 title: "flows"
-description: "Author, inspect, and form-fill multi-step Qi Flow action flows on top of the editor engine."
+description: "Opt-in flow-builder plugin: author, inspect, wire, and form-fill multi-step Qi Flow action templates on top of the editor's Qi Flow engine."
 icon: "diagram-project"
 ---
 
@@ -88,7 +88,7 @@ The plugin owns no env vars. It relies on the same admin Matrix credentials the 
 **Settings** — per-step mutators with narrow scope.
 
 - `set_step_inputs` — set or replace a step's static inputs.
-- `set_step_conditions` — set `props.conditions` directly in the FE evaluator's operator vocabulary.
+- `set_step_conditions` — set `props.conditions` directly in the frontend evaluator's operator vocabulary.
 - `set_step_schedule` — set or clear a step's schedule.
 - `set_step_assignment` — set or clear a step's assignee.
 - `set_step_confirmation` — toggle the user-confirmation gate before a step runs.
@@ -104,7 +104,7 @@ The plugin owns no env vars. It relies on the same admin Matrix credentials the 
 
 Follow a tight loop: **discover → plan → confirm → build → hand off.** One discovery pass, one short plan, one user confirmation, then build with the authoring tools. The plugin injects an operating guide into the system prompt while it is loaded — see the `FLOWS_OPERATING_GUIDE` exported from the package.
 
-Conditions are written **directly as `props.conditions`** in the FE evaluator's operator vocabulary; the compiler's verbatim operators never evaluate at runtime.
+Conditions are written **directly as `props.conditions`** in the frontend evaluator's operator vocabulary; the compiler's verbatim operators never evaluate at runtime.
 
 ## Opt in
 
