@@ -92,7 +92,8 @@
                   "guides/dev/session-keys",
                   "guides/dev/smart-accounts",
                   "guides/dev/authz",
-                  "guides/dev/authz-custom"
+                  "guides/dev/authz-custom",
+                  "guides/dev/vfs-hidden-files"
                 ]
               },
               {
