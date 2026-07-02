@@ -1,6 +1,6 @@
 ---
 title: "VFS content addressing (IPFS CIDs)"
-description: "How the IXO Virtual Filesystem computes IPFS-compatible CIDs per file, the fetch/list-by-CID endpoints and MCP tools, the x-vfs-cid header, and CID-scoped UCAN grants."
+description: "How the IXO Virtual Filesystem computes IPFS CIDs per file, the fetch and list-by-CID endpoints, MCP tools, x-vfs-cid header, and CID-scoped UCANs."
 ---
 
 The IXO Virtual Filesystem (VFS) stamps every file with an **IPFS-compatible CID** computed over its plaintext. Nothing is uploaded to IPFS — the CID is a content-addressed identity and integrity check that a downloader can re-derive to verify the bytes. The bytes themselves stay encrypted in R2.
