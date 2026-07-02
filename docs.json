@@ -173,6 +173,7 @@
               "build-an-oracle/develop/test-your-oracle",
               "build-an-oracle/develop/identity-and-auth",
               "build-an-oracle/develop/observability",
+              "build-an-oracle/develop/flow-agent-dashboard",
               "build-an-oracle/develop/deploy"
             ]
           },
