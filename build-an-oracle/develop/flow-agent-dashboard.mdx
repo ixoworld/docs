@@ -1,6 +1,6 @@
 ---
 title: "Flow Agent dashboard"
-description: "Read-only observability UI for the headless Flow Agent. Operators sign in with their IXO identity via the ixo Auth Hub and drill into per-flow runs and span waterfalls."
+description: "Read-only observability UI for the Flow Agent. Sign in via the ixo Auth Hub and drill into fleet health, run history, and span waterfalls."
 icon: "gauge-high"
 ---
 
@@ -35,7 +35,7 @@ The flow is:
   </Step>
 </Steps>
 
-There is no PIN prompt, no Matrix vault read, and no QR / WebAuthn step — the Auth Hub returns the operator's signing key directly, so the whole exchange finishes in one round trip.
+There is no PIN prompt, no Matrix vault read, and no QR or WebAuthn step. The Auth Hub returns the operator's signing key directly, so the whole exchange finishes in one round trip.
 
 ## Configure the Auth Hub URL
 
