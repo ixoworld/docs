@@ -1,0 +1,126 @@
+---
+title: "VFS content addressing (IPFS CIDs)"
+description: "How the IXO Virtual Filesystem computes IPFS-compatible CIDs per file, the fetch/list-by-CID endpoints and MCP tools, the x-vfs-cid header, and CID-scoped UCAN grants."
+---
+
+The IXO Virtual Filesystem (VFS) stamps every file with an **IPFS-compatible CID** computed over its plaintext. Nothing is uploaded to IPFS — the CID is a content-addressed identity and integrity check that a downloader can re-derive to verify the bytes. The bytes themselves stay encrypted in R2.
+
+Use this page when you need to:
+
+- Address a VFS file by content (fetch or list by CID) instead of by path.
+- Cross-reference a file against another IXO service that speaks the same CID (for example `ixo-cellnode` or a Storacha upload).
+- Grant an agent access to a specific set of blobs — and nothing else — via a CID-scoped UCAN.
+
+## The CID contract
+
+The VFS uses the exact UnixFS encoder settings that Storacha / web3.storage (and `ixo-cellnode`) use, so the CID a VFS file carries is **byte-identical** to the CID you would get by running `ipfs add` (via Storacha) on the same plaintext.
+
+| Setting | Value |
+| --- | --- |
+| CID version | CIDv1 |
+| Leaf encoder | `raw` |
+| Chunk size | 1 MiB (1 048 576 bytes) |
+| Layout | Balanced, fan-out 1024 |
+| Hash | sha2-256 |
+
+Consequences:
+
+- A file **≤ 1 MiB** is a single raw leaf and its CID starts with `bafkrei…`.
+- A larger file is a dag-pb UnixFS DAG and its CID starts with `bafybei…`.
+- The CID is computed over the **plaintext**, in a single streaming pass alongside the encryptor, so it works on files larger than Worker memory.
+- The CID is type-agnostic — text, binary, images all hash the same way.
+
+## The `x-vfs-cid` response header
+
+Every content-returning route sets `x-vfs-cid` to the CID stored for the file. A client that keeps the plaintext can re-derive the same CID locally to verify the download:
+
+```http
+GET /api/fs/files/:id/content
+Authorization: Bearer <UCAN>
+
+HTTP/1.1 200 OK
+content-type: text/markdown
+x-vfs-cid: bafkreib...
+x-vfs-content-hash: 3f9c...
+x-vfs-version: 4
+```
+
+`GET /api/fs/cid/:cid` sets the same header on its response.
+
+## Fetch and list by CID (REST)
+
+Two content-addressed routes complement the path-oriented API. Authority comes from the namespace: the auth middleware has already proved the caller owns the address (or controls the entity), so these routes only ever see the caller's own files, and a CID that lives in another namespace returns **404** (never confirmed to exist).
+
+| Method | Path | Returns | Ability |
+| --- | --- | --- | --- |
+| `GET` | `/api/fs/cids?limit=&offset=` | List of files addressable by CID in the caller's namespace (`cid`, `id`, `path`, `name`, `size`, `mimeType`) | `fs/read` |
+| `GET` | `/api/fs/cid/:cid` | Decrypted bytes for that CID in the caller's namespace (`x-vfs-cid` header; 404 if no accessible match) | `fs/read` |
+
+Path scope still applies: a path-scoped UCAN can only fetch or list CIDs whose file lives inside its subtree, even if an identical-content file exists elsewhere in the namespace.
+
+```bash
+# List content in this namespace
+curl -H "Authorization: Bearer $UCAN" \
+  "https://vfs.example.com/api/fs/cids?limit=50"
+
+# Fetch bytes by CID
+curl -H "Authorization: Bearer $UCAN" \
+  "https://vfs.example.com/api/fs/cid/bafkreib..." \
+  --output file.bin
+```
+
+## MCP tools
+
+Agents connected via the VFS MCP server get two content-addressed tools alongside the path-oriented ones. Both honour path scope in addition to CID scope.
+
+| Tool | What it does | Ability |
+| --- | --- | --- |
+| `vfs_list_cids` | List files addressable by CID; returns `cid  path  (size)` per line. | `fs/read` |
+| `vfs_read_cid` | Numbered-line read of a text file by its CID, with `offset` / `limit` paging (same shape as `vfs_read`). | `fs/read` |
+
+`vfs_write` also reports the freshly computed CID for the newly written version in its result, so an agent can immediately hand the CID to a downstream tool.
+
+## CID-scoped UCANs (`nb.cids` caveat)
+
+A UCAN can be attenuated to a **specific set of CIDs** by adding an `nb.cids` caveat to a capability. This is IXO's "least privilege for blobs": share exactly the files you mean to share and nothing else — the token cannot browse, search, or mutate the tree.
+
+### Semantics
+
+- **Confined surface.** A CID-scoped token may use *only* the content-addressed surface:
+  - REST: `GET /api/fs/cid/:cid` and `GET /api/fs/cids`.
+  - MCP: `vfs_read_cid` and `vfs_list_cids` are the only tools the session advertises.
+- **Restricted set.** Requests are allowed only for CIDs in the granted set. Anything else returns `403`.
+- **Attenuates down the chain.** The effective scope is the **intersection** of every `nb.cids` set found in the delegation chain (leaf + all proofs). A delegate can only ever **shrink** the set, never widen it — a CID absent from an ancestor's set drops out of the intersection and is denied.
+- **Composes with other scope caveats.** `nb.cids` intersects with path scope and namespace scope; **the most restrictive wins**. A CID-scoped token that also carries a path scope can only reach CIDs whose file lives inside the granted subtree.
+- **Namespace isolation is preserved.** A CID-scoped token still can't cross namespaces — a granted CID that doesn't exist in the caller's namespace resolves to `404`.
+- **Explicit empty list.** `nb.cids: []` is a valid but useless grant: no CIDs are reachable.
+- **Absence means unrestricted.** If no capability in the chain carries `nb.cids`, the token is not CID-scoped at all.
+
+### Example capability shape
+
+```json
+{
+  "can": "fs/read",
+  "with": "vfs://user:did:ixo:...",
+  "nb": {
+    "cids": [
+      "bafkreib...",
+      "bafybei..."
+    ]
+  }
+}
+```
+
+Delegate that token further and the child can only list a **subset** of those two CIDs — never a third one.
+
+## When to use content addressing
+
+- **Verifiable delivery.** Pair `/cid/:cid` with a client-side re-hash to prove the bytes match a known CID before you trust them.
+- **Cross-service references.** Store a CID in another system (a claim, an on-chain entity record, a Storacha pin) and resolve it back to the VFS file later, regardless of where it lives in the tree.
+- **Precise sharing.** Hand an agent a CID-scoped UCAN when it needs to read a fixed set of blobs (evaluator inputs, a specific policy document) and should not see anything else — even if the token is later delegated onward, the set can only shrink.
+- **Interop with the wider IXO stack.** The CID matches what `ixo-cellnode` and a direct Storacha / web3.storage upload would produce for the same plaintext, so the same identifier can flow across those systems.
+
+## Related
+
+- [Authentication matrix](/reference/authentication-matrix) — where the VFS `Bearer <UCAN>` pattern fits.
+- [MCP servers](/mcp/model-context-protocol) — how agents connect to IXO MCP surfaces.
