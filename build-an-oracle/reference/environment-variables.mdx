@@ -73,6 +73,19 @@ Always present. Both are `z.coerce.number()` — set them as plain integer strin
 
 Cross-field check (`validateLlmProviderKey`): the API key for the selected `LLM_PROVIDER` must be present — `OPEN_ROUTER_API_KEY` when `LLM_PROVIDER=openrouter` (the default), `NEBIUS_API_KEY` when `LLM_PROVIDER=nebius`. A missing key fails boot with a named-field error (e.g. `OPEN_ROUTER_API_KEY` / `NEBIUS_API_KEY`) rather than a generic upstream 401 at request time. The per-role model ids are hardcoded per provider — there is no env var to swap the main model id (use the `resolveModel` hook for that).
 
+### Latency tuning
+
+| Variable | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `MAIN_REASONING_EFFORT` | `'low' \| 'medium' \| 'high'` | `'medium'` | Extended-thinking effort for the **main** agent role only. Sub-agent reasoning is unchanged. Lower values reduce time-to-first-token at some cost to hard multi-step reasoning; higher values do the reverse. `'medium'` preserves current behaviour, so leaving this unset is safe. |
+
+<Note>
+Two related latency wins ship **always-on** — there is no env var to disable them:
+
+- **Request-path caches.** The per-user `SqliteSaver` is reused across the two build-time hook calls per turn instead of being rebuilt (and re-running `setup()`); the agent builder reads prior build-time checkpoints via a light path that skips the message-history join (O(1) instead of O(history)); and the Memory Engine `userContext` cache is keyed by `roomId` instead of `sessionId`, so a fresh session for the same room reuses the cached context.
+- **Memory-context compaction.** The `## What you know about the user` prompt block is deduped across all six memory buckets (entities collapsed by name, keeping the richest summary; facts / episodes / communities collapsed by normalized text — lowercase, punctuation stripped, whitespace collapsed) and bounded by fixed internal caps (per-entity summary and whole-block budget). When either cap trims content, the block ends with a `_(More remembered — ask me to recall.)_` footer so trimmed detail stays reachable via the memory tool. No unique fact is dropped; paraphrases survive.
+</Note>
+
 ### Misc
 
 | Variable | Type | Default | Notes |
