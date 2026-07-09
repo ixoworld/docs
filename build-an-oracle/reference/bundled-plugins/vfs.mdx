@@ -1,0 +1,124 @@
+---
+title: "vfs"
+description: "The user's Virtual Filesystem — read, create, edit, search, organise, and share their real files, inside the folder they granted the oracle."
+icon: "folder"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/vfs/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/vfs/)
+
+| Attribute | Value |
+| --- | --- |
+| Visibility | `always` |
+| Stability | `stable` |
+| Category | `data` |
+| Default state | On (always-on; contributes tools only when the oracle has a UCAN signing key **and** the user has granted access) |
+| Depends on | — (`sandbox` is an optional sibling — see [bridge tools](#sandbox-bridge-tools)) |
+
+## Summary
+
+The user's **Virtual Filesystem (VFS)** — their persistent, access-controlled home for real documents, notes, datasets, and artifacts, in folders, searchable and versioned. This is reusable context that lives across sessions — not sandbox scratch files, not chat attachments, not the web.
+
+The oracle acts **as the user**, inside the exact folder the user delegated to it. The **user owns their filesystem and is the sole grantor**: only their key can sign the delegation — the oracle can never grant itself access. Every file the oracle reads or writes is confined to the granted subtree and audited as `invoker=oracle, actor=user`.
+
+The filesystem is securely stored with managed encryption; authorized IXO services can read content to power search and previews, so it is **not** end-to-end encrypted — never describe it as zero-knowledge.
+
+## How the oracle gets access
+
+The user grants access from the IXO Portal — the oracle never self-grants:
+
+<Steps>
+  <Step title="User opens their domain's file access">
+    In the Portal: **your domain → Library → Files → Access** (top-right).
+  </Step>
+  <Step title="User adds the oracle's agent DID">
+    In **Manage access**, paste the oracle's account DID (its `ORACLE_DID`) as the Recipient DID, choose the rights (Read / Write / Delete), set the folder scope and duration, and **Grant access**.
+  </Step>
+  <Step title="The oracle picks it up automatically">
+    The grant is a UCAN delegation deposited in the UCAN Store Worker, addressed to the oracle. Per request the oracle pulls that delegation and mints a fresh, single-use VFS invocation — no extra wiring. Until a grant exists, the file tools return a short message telling the user how to grant access (including the oracle's DID).
+  </Step>
+</Steps>
+
+See [Identity and auth](/build-an-oracle/develop/identity-and-auth) for the two-hop UCAN flow (oracle → UCAN Store → VFS).
+
+## Environment variables
+
+The worker URLs are **bundled per network** — there is nothing to configure. Everything else is optional tuning.
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `NETWORK` | yes | `mainnet` / `testnet` / `devnet`. Selects the bundled VFS + UCAN Store worker URLs (`https://[testnet.\|devnet.]vfs.ixo.earth`). Owned by the core base env schema. |
+| `VFS_MAX_READ_LINES` | no | Max lines a single `vfs_read` window returns. Default `2000`. |
+| `VFS_REQUEST_TIMEOUT_MS` | no | Per-request timeout to the VFS worker. Default `20000`. |
+| `SANDBOX_MCP_URL` | no | Read but not owned (declared by [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox)). When set, adds the two [sandbox bridge tools](#sandbox-bridge-tools). |
+
+The oracle's UCAN signing key (loaded from its Matrix account room at boot) is required — without it the plugin contributes no tools.
+
+## What it contributes
+
+- **Tools:** ten file tools, each resolving a fresh single-use UCAN bearer per call:
+
+  | Tool | Ability | What it does |
+  | --- | --- | --- |
+  | `vfs_search` | `fs/read` | Find files by meaning (hybrid lexical + semantic); returns paths + cited line ranges. |
+  | `vfs_grep` | `fs/read` | Find files containing an exact term. |
+  | `vfs_glob` | `fs/list` | Match files by path pattern, e.g. `/notes/*.md`, `**/*.pdf`. |
+  | `vfs_list` | `fs/list` | List a folder's contents. |
+  | `vfs_read` | `fs/read` | Read a file. Text → windowed numbered lines (page with `offset`); images/PDFs → transcribed via the vision model. |
+  | `vfs_write` | `fs/write` | Create a file (or overwrite when the user asked to replace it). |
+  | `vfs_edit` | `fs/write` | Exact-string edit — change one occurrence (or `replaceAll`). |
+  | `vfs_move` | `fs/write` | Move or rename a file. |
+  | `vfs_delete` | `fs/delete` | Move a file to trash (recoverable). |
+  | `vfs_share` | `fs/write` | Publish a file/folder and return an anyone-with-the-link URL. |
+
+- **Sub-agents:** none.
+- **Middleware:** none.
+- **HTTP routes:** none.
+- **Shared state:** none.
+
+### Sandbox bridge tools
+
+When [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox) is configured (`SANDBOX_MCP_URL` set), two extra tools move a file between the user's sandbox and their filesystem **server-side — the bytes never pass through the LLM**:
+
+- `sandbox_to_vfs` — persist something the sandbox produced (a report, export, chart) into the user's files so it survives the session.
+- `vfs_to_sandbox` — feed one of the user's files into the sandbox (under `/workspace/data/`) so `sandbox_run` code can process it.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { vfs: false }, // never load
+  // features: { vfs: true },  // force on (the default — always bundled)
+});
+```
+
+## When to use it
+
+- The user refers to a document, note, file, or folder they "saved", "uploaded", or "shared with you".
+- You need to create, update, or organise a file that should persist across sessions.
+- You need to find or quote something from the user's files ("what did my notes say about X").
+- You can reuse a file the user already has instead of asking them to re-paste it.
+- The user asks you to share a file or make it downloadable.
+- Persist a sandbox artifact into the user's files (`sandbox_to_vfs`), or feed a file into the sandbox (`vfs_to_sandbox`).
+
+## When NOT to use it
+
+- General knowledge or web questions — the files are the user's private content, not a knowledge base of the world.
+- Content the user pasted directly into chat — act on it inline; don't write it to a file unless asked.
+- Temporary/scratch files from a compute run — those belong to the [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox), not the user's filesystem.
+- Data another plugin owns (flows, skills, memory) — use that plugin.
+
+<Note>
+If a file action reports no access (or read-only), the oracle relays the grant steps above — with its agent DID — so the user can authorize it, then retries. It never claims a file is missing when the real issue is access.
+</Note>
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Identity and auth" icon="id-card" href="/build-an-oracle/develop/identity-and-auth">
+    The two-hop UCAN flow that lets the oracle act as the user.
+  </Card>
+  <Card title="sandbox" icon="server" href="/build-an-oracle/reference/bundled-plugins/sandbox">
+    The compute box the VFS bridges to.
+  </Card>
+</CardGroup>

@@ -18,7 +18,7 @@ graph TB
 
     subgraph Runtime["@ixo/oracle-runtime"]
         Core["Always-on Nest modules<br/>Sessions · Messages · WS · Secrets · UCAN · Auth · Subscription · Throttler · Checkpointer"]
-        Bundled["15 bundled plugins<br/>memory · skills · sandbox · editor · agui · portal · firecrawl · domain-indexer · composio · slack · credits · user-preferences · matrix-group-chats · tasks · calls"]
+        Bundled["16 bundled plugins<br/>memory · skills · sandbox · editor · agui · portal · firecrawl · domain-indexer · composio · slack · credits · user-preferences · matrix-group-chats · tasks · calls · vfs"]
         Agent["LangChain agent<br/>built per request"]
     end
 
@@ -51,7 +51,7 @@ You never edit this layer. Updates come via `pnpm update @ixo/oracle-runtime`.
 
 ### Layer 3 — Bundled plugins
 
-15 plugins shipped inside the runtime package, each independently toggleable via `features`. See the [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) for what each one does.
+16 plugins shipped inside the runtime package, each independently toggleable via `features`. See the [Plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) for what each one does.
 
 ## Bootstrap, in one picture
 
