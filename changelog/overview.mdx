@@ -1,7 +1,25 @@
 ---
 title: Product Updates
-description: "What's new in 2025"
+description: "What's new"
 ---
+
+<Update label="July 2026" description="QiForge oracle runtime">
+  **New features**
+
+  - **Virtual Filesystem plugin for oracles** — Oracles can now read, create, edit, search, organise, and share a user's real files on the IXO Virtual Filesystem, acting as the user inside a folder the user delegated. Access is granted from the Portal (**Domain → Library → Files → Access**) via a signed UCAN — the oracle can never self-grant. See [vfs plugin](/build-an-oracle/reference/bundled-plugins/vfs) and [Identity and auth](/build-an-oracle/develop/identity-and-auth). This is the 16th [bundled plugin](/build-an-oracle/reference/bundled-plugins/overview) shipped with `@ixo/oracle-runtime`.
+  - **Delegated flow execution from templates** — Agents can hand off a flow template to the user, who runs it in the Portal where signing and state transitions happen. New email actions (Gmail, Outlook) are available inside flows. See the [flows plugin](/build-an-oracle/reference/bundled-plugins/flows).
+
+  **Updates**
+
+  - **Matrix UCAN authentication** — The chain client now authenticates Matrix bots via self-issued UCAN invocations signed with the derived claim-signing key, replacing the previous OpenID path. Existing oracles pick this up on the next runtime upgrade.
+  - **Tunable reasoning effort** — Oracle operators can now dial the main model's extended-thinking effort (`low` / `medium` / `high`) without a redeploy, trading first-token latency against reasoning depth.
+  - **Faster chat request path** — Optional request-path caches (checkpointer, light build-state reads, per-room user context) reduce latency on repeat turns. Off by default; enable per deployment.
+  - **ESM and tree-shakeable packages** — `@ixo/oracle-runtime`, `@ixo/chain-client`, `@ixo/ucan`, `@ixo/events`, and `@ixo/oracles-client-sdk` ship as tree-shakeable ESM. Smaller bundles for oracles and web apps that import them.
+
+  **Fixes**
+
+  - Security patch for a critical `form-data` advisory propagated via the Matrix client dependency chain.
+</Update>
 
 <Update label="January 2025" description="IXO Mobile v2.1.6">
   Backup and restore Profiles and keys from the IXO Mobile wallet to the IXO Matrix Personal Data Vault.
