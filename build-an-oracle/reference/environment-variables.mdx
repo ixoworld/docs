@@ -113,6 +113,7 @@ Only required when the named plugin is loaded.
 | `credits` | `SUBSCRIPTION_URL` | No | URL. |
 | `credits` | `SUBSCRIPTION_ORACLE_MCP_URL` | No | URL. |
 | `credits` | `DISABLE_CREDITS` | No | Enum — exactly `'true'` or `'false'` (any other value fails env validation). `'true'` disables the credit-enforcement middleware; the plugin's `autoDetect` also excludes the whole plugin when `DISABLE_CREDITS=true`. |
+| `credits` | `MINIMUM_CLAIM_THRESHOLD` | No | Positive integer (coerced from string). Held-credit threshold at or above which the claim-processing cron settles a user's accumulated credits on-chain. Defaults to `1000` when unset. Invalid values (non-positive, non-numeric) log a warning and fall back to the default. |
 | `tasks` | `REDIS_URL` | Yes (when loaded) | Triggers autoDetect. |
 | `tasks` | `TASKS_MAX_PER_USER` | No | Coerced positive int; default `50`. Max scheduled tasks per user. |
 | `tasks` | `TASKS_RUN_LOCK_TTL_SEC` | No | Coerced positive int; default `600`. Per-run lock TTL (seconds). |

@@ -31,6 +31,7 @@ Silent (no agent-visible tools). When loaded, this plugin also activates the run
 | `SUBSCRIPTION_URL` | no | Subscription API URL. |
 | `SUBSCRIPTION_ORACLE_MCP_URL` | no | Subscription Agentic Oracles MCP server URL. |
 | `DISABLE_CREDITS` | no | Set to `'true'` to skip the plugin entirely. |
+| `MINIMUM_CLAIM_THRESHOLD` | no | Positive integer. Held-credit threshold at or above which the settlement cron submits a user's accumulated credits as an on-chain claim. Defaults to `1000` when unset; invalid values log a warning and fall back to the default. Tune per-oracle to trade off transaction cost against settlement latency. |
 | `NETWORK` | no | Read but not owned (declared by the core base env schema). Required by the cron module. |
 
 ## What it contributes
@@ -62,6 +63,25 @@ const app = await createOracleApp({
 ```
 
 Without a Redis client the middleware loads in pass-through mode and the cron modules are skipped.
+
+## Observing claim settlement
+
+The settlement cron emits structured logs under the `[Credits/Claims]` prefix — grep for that tag to trace a claim end-to-end.
+
+- **Boot** — one line at startup with the effective settings, e.g. `Claim processing initialized: network=… denom=… minimumClaimThreshold=… disableCredits=… matrixAccountRoomId=set|MISSING`. Use it to confirm the threshold override and required config actually applied.
+- **Per tick** — one summary line, `Cron tick: N user(s) at/above threshold T`, then a `user=… heldAmount=… — evaluating` line per candidate, an explicit `SKIP user=… — <reason>` for each user the cron drops (below threshold, no subscription payload in Redis, missing `oracleClaimsCollectionId`, insufficient available credits), and a closing `Cron tick complete: submitted=X skipped=Y failed=Z` counter.
+- **Per claim** — for every settled claim, the 4-step workflow logs `[step 1/4 submitIntent]` → `[step 2/4 saveToMatrix]` → `[step 3/4 submitToChain]` → `[step 4/4 sendToSubsApi]`, each marked `OK` or `FAILED` and carrying the `intentTxHash`, `claimCid`, and on-chain `chainTxHash` values. A successful claim finishes with `✔ SUBMITTED user=… claimCid=…`. When held credits exceed the oracle's per-claim ceiling, the split is announced with `heldAmount=… exceeds per-claim max … — splitting into N chunks: …`.
+- **Pricing source** — before submitting, the cron logs `pricing: fetched on-chain oracle pricing list …` and `cost: claiming heldAmount=… <denom> | per-claim ceiling maxAmount=… <denom>`, so you can confirm the chain-side pricing feeding the split.
+
+The credit-charging path (`TokenLimiter.creditsForUsage`) also logs a `source=` marker on every request so you can see which of the three pricing fallbacks priced a call:
+
+| Source | When it fires |
+| --- | --- |
+| `source=provider-cost` | Provider (e.g. OpenRouter) returned a real USD cost with the response. |
+| `source=model-pricing` | Provider cost was missing; per-model input/output pricing was found in cache. |
+| `source=flat-rate` | Neither of the above; the flat-rate token-to-credit fallback ran. |
+
+Each line includes `costUsd=$…` and `→ N credits (network=…)`, which makes it easy to spot sub-1-credit charges rounding to `0`.
 
 ## Opt out / Opt in
 
