@@ -121,6 +121,8 @@ Only required when the named plugin is loaded.
 | `matrix-group-chats` | `GROUP_CHAT_ACTIVE_THREAD_TTL_MS` | No | Coerced int, min `60000`; default `1800000`. How long a thread stays "active with the bot" after a reply. |
 | `matrix-group-chats` | `GROUP_CHAT_REQUIRE_POWER_LEVEL` | No | Coerced int, min `0`; default `0`. Extra minimum power level the bot must have before posting (`0` = use the room default). |
 | `matrix-group-chats` | `GROUP_CHAT_ROOM_INFO_TTL_MS` | No | Coerced int, min `60000`; default `1800000`. How long roomInfo (membership, DM flag) stays cached. |
+| `vfs` | `VFS_MAX_READ_LINES` | No | Coerced positive int; default `2000`. Max lines a single `vfs_read` window returns. |
+| `vfs` | `VFS_REQUEST_TIMEOUT_MS` | No | Coerced positive int; default `20000`. Per-request timeout to the VFS worker. |
 
 ## Variables read but not owned
 
@@ -129,6 +131,7 @@ Some plugins read variables that live in another schema:
 - **`composio`** reads the core `NETWORK` and forwards it as `x-ixo-network`.
 - **`skills`** reads `NETWORK` and forwards as `X-IXO-Network`.
 - **`sandbox`** reads `ORACLE_SECRETS` (core) and `SKILLS_CAPSULES_BASE_URL` (owned by `skills`) and forwards them as headers.
+- **`vfs`** reads the core `NETWORK` (selects the bundled VFS + UCAN Store worker URLs — nothing to configure) and `SANDBOX_MCP_URL` (owned by `sandbox`; when set, adds the two sandbox↔files bridge tools).
 
 These are declared in the plugin's sibling schemas (typed `optional()`); a missing value just skips the matching header instead of failing the plugin build.
 
