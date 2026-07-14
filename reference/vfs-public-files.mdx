@@ -188,6 +188,15 @@ curl -X PUT "$VFS/api/fs/folders/public?path=/site&public=false" \
 
 `GET /api/fs/files/:id` includes `public` (the *effective* state) and, when servable, `publicUrl`.
 
+### Flags on authenticated listings
+
+Authenticated listing endpoints surface the same publish state, so a UI can render "Public" badges and share links without a second lookup per row:
+
+- `GET /api/fs/tree?path=…` — every file and folder node carries `hidden`, `public` (the *effective* state), and, when servable, `publicUrl` (files → `/public/id/…`, published folders → `/public/folder/id/…`).
+- `GET /api/fs/files?path=…` — each file entry carries `hidden`, `public`, and `publicUrl` when servable.
+
+Nodes that aren't servable simply omit `publicUrl`. Path-scoped `fs/list` still governs which subtree is visible to the caller.
+
 ## Fetch by path
 
 Anywhere you'd chain `list → id → content`, you can now address a file by path in one call:
