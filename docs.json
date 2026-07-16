@@ -110,6 +110,7 @@
                 "pages": [
                   "guides/dev/ixo-claims",
                   "guides/dev/agent-evaluations",
+                  "guides/dev/verify-udid-receipts",
                   "guides/digital-mrv"
                 ]
               },

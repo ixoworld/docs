@@ -1,0 +1,172 @@
+---
+title: "Verify UDID receipts"
+icon: "stamp"
+description: "Independently verify signed UDID determinations from the IXO Evals Engine with the @ixo/udid-verify npm package."
+---
+
+Use this guide when a third party — a bridge, worker, oracle-to-oracle integration, or any external verifier — needs to check that a presented UDID receipt is authentic, addressed to them, unexpired, byte-canonical, and schema-valid, without running an IXO Evals Engine deployment.
+
+<Info>
+  The verification path described here is a standalone extract of the engine's own acceptance rule. Third-party verifiers run byte-identical code to the engine before it acts on a UDID, so a receipt that verifies for you would also verify for the engine.
+</Info>
+
+## What `@ixo/udid-verify` is
+
+`@ixo/udid-verify` is a publishable npm package (`Apache-2.0`) that verifies **UDID receipts** — the signed determinations issued by the [IXO Evals Engine](/articles/claim-evaluation-protocol) when a claim-evaluation workflow reaches a decision point.
+
+A UDID receipt is a compact JWS (`EdDSA` / Ed25519, algorithm-pinned) over the canonical JSON encoding of a determination payload (`iss`, `aud`, `sub`, `jti`, `act`, `res`, optional `out`). Verifying one correctly means more than checking the signature. The package ships:
+
+- `EdDSA`-pinned compact-JWS verification with `kid` selection.
+- A verification-only `VerifierKeyring` built from the public `GET /v1/issuer-keys` response (kids are recomputed from key bytes and rejected on mismatch — fail-closed).
+- Canonical-JSON helpers (deep key-sorted `canonicalJsonString`) and CID helpers (`cidV1RawSha256`, `cidV1RawSha256Utf8`).
+- Bundled copies of the normative UDID payload schemas.
+- `out` binding / consistency checks (the `out` narrative is descriptive only; `res` is the trusted decision surface).
+- `fetchIssuerKeys` and `parseIssuerKeysResponse` for issuer-key discovery.
+- A one-call `verifyUdidReceipt` that applies the engine's full acceptance rule and returns a list of named failures.
+
+## Who should use it
+
+Reach for `@ixo/udid-verify` when your service consumes UDID receipts but is **not** the engine that issued them.
+
+<AccordionGroup>
+  <Accordion title="Bridges and workers" icon="bridge">
+    An `ixo-bridge` or worker that gates on-chain submissions on a valid UDID should reject anything that fails the same acceptance rule as the engine.
+  </Accordion>
+  <Accordion title="Oracle-to-oracle trust" icon="robot">
+    An Agentic Oracle consuming another oracle's determination should verify the receipt end-to-end before treating `res` as trustworthy.
+  </Accordion>
+  <Accordion title="Third-party integrators" icon="plug">
+    Registries, dashboards, or downstream services that show or act on determinations should verify receipts locally so the decision surface can be inspected without trusting an intermediate transport.
+  </Accordion>
+</AccordionGroup>
+
+If you are building an engine deployment that signs UDIDs, use the engine's internal `udid-validator` package instead — it keeps the issuer-side helpers (secret-to-key derivation, signing `IssuerKeyring`) and delegates verification to `@ixo/udid-verify` so both sides run identical code.
+
+## Install
+
+```sh
+npm install @ixo/udid-verify
+```
+
+Requires Node.js 20.10 or newer.
+
+## One-call verification
+
+For the common case — you have a compact JWS and know the engine that issued it — pass the engine's base URL and the audience the receipt must be addressed to:
+
+```ts
+import { verifyUdidReceipt } from "@ixo/udid-verify";
+
+const { valid, failures, report } = await verifyUdidReceipt(compactJws, {
+  expectedAud: "did:ixo:my-oracle",
+  issuerKeys: "https://evals.example.org",
+});
+
+if (!valid) {
+  throw new Error(`receipt rejected: ${failures.join(", ")}`);
+}
+
+// report.payload.res is the trusted decision surface (outcome, patch, reason).
+const decision = report.payload.res;
+```
+
+`verifyUdidReceipt` resolves the issuer's public keys from `GET /v1/issuer-keys` on the supplied base URL, verifies the compact JWS with `kid`-selected key material, and applies the engine's full acceptance rule. Canonical-byte enforcement is always on: a receipt whose signed bytes are not the canonical encoding of its payload is not a UDID the engine issued.
+
+## Bring your own keys
+
+If the keys are pinned, cached, or resolved out-of-band, pass a raw published-keys array or a pre-built `VerifierKeyring`:
+
+```ts
+import { VerifierKeyring, verifyUdidJws, verificationReportFailures } from "@ixo/udid-verify";
+
+const keyring = VerifierKeyring.fromPublishedKeys(publishedKeys); // the `keys` array
+const report = await verifyUdidJws(compactJws, keyring, {
+  expectedAud: "did:ixo:my-oracle",
+  enforceCanonicalBytes: true,
+});
+
+const failures = verificationReportFailures(report);
+if (failures.length > 0) throw new Error(`receipt rejected: ${failures.join(", ")}`);
+```
+
+`VerifierKeyring.fromPublishedKeys` holds no private material. It maps each JWS header `kid` to an Ed25519 public `KeyObject`, so historically issued UDIDs keep verifying across signing-key rotations. Every listed key is checked: `kid` is recomputed from the raw public key bytes and a mismatch is rejected. An unknown or missing `kid` fails closed as `unknown_kid`.
+
+## Fetch issuer keys manually
+
+If you want to cache the response, share it across verifications, or apply custom TLS or retry behavior, use `fetchIssuerKeys` (or `parseIssuerKeysResponse` when you already have the body):
+
+```ts
+import { fetchIssuerKeys, parseIssuerKeysResponse } from "@ixo/udid-verify";
+
+// Fetch from the engine's base URL.
+const keyring = await fetchIssuerKeys("https://evals.example.org", {
+  signal: controller.signal,
+});
+
+// Or parse a body you already have.
+const cached = parseIssuerKeysResponse(await response.json());
+```
+
+The `GET /v1/issuer-keys` route needs no auth token and is cacheable (`cache-control: public, max-age=300`). Your trust root is the TLS connection to the deployment you already trust to have evaluated the claim. Pin the keys if you need to remove that runtime dependency.
+
+## The acceptance rule
+
+Only trust `report.payload` after **every** check passes. `verificationReportFailures(report)` returns an empty array exactly when the receipt is trustworthy — the same acceptance rule the engine applies before submitting a determination on-chain, and the same one bridges and workers should apply before acting.
+
+The named failures mirror the engine's own gates:
+
+| Failure code | Meaning |
+| --- | --- |
+| `signature_invalid` | The compact JWS signature did not verify with the resolved `kid`. |
+| `audience_mismatch` | `payload.aud` is missing, malformed, or does not match `expectedAud`. |
+| `replay_rejected` | A supplied `replayCheck` reported the `jti` as already seen for this audience. |
+| `expired` | `payload.exp` is in the past (with optional `clockSkewSec`). |
+| `canonical_bytes_mismatch` | Signed bytes are not the deep-key-sorted canonical JSON encoding of the payload. |
+| `payload_schema_invalid` | Payload failed validation against the bundled UDID schemas. |
+| `missing_payload_after_verify` | Payload could not be parsed as a JSON object after signature verification. |
+
+Additional low-level errors — for example `unknown_kid` when the JWS header refers to a `kid` not in the keyring — surface on `report.errors`.
+
+<Warning>
+  Do not gate downstream actions on the JWS signature alone. A receipt with a valid signature but a mismatched audience or a non-canonical payload is not a UDID the engine would act on, and it is not one your service should either.
+</Warning>
+
+## `out` is descriptive, `res` is the decision surface
+
+The optional `out` block in a UDID payload is a human-readable narrative. It should not be treated as the trusted decision. The package exposes helpers to check that `out` stays consistent with `res` — for example, that a summary does not contradict the outcome or claim settlement authority it does not have:
+
+```ts
+import { checkOutConsistency, outIsDescriptiveOnlyNotSettlement } from "@ixo/udid-verify";
+
+const consistency = checkOutConsistency(report.payload);
+if (!consistency.ok) {
+  // Bindings resolve, but `out` conflicts with `res`.
+}
+```
+
+When you extract trusted decision data from a verified receipt, read it from `report.payload.res` — never from `out`.
+
+## Also included
+
+- `canonicalJsonString` / `sortKeysDeep` — the signing canonicalization.
+- `cidV1RawSha256` / `cidV1RawSha256Utf8` — the engine's content-proof convention (CIDv1, `raw` codec, sha2-256, base32) for traces, evidence, and rubric bindings.
+- `validateUdidPayloadSchema` — standalone payload schema validation.
+- `verificationReportMatchesCompactJws` — bind a verification report back to the exact compact bytes it was produced from.
+- `issuerKid` / `issuerPublicKeyFromRaw` — recompute a `kid` from raw Ed25519 public key bytes.
+
+## Related docs
+
+<CardGroup cols={2}>
+  <Card title="Claim evaluation protocol" icon="clipboard-check" href="/articles/claim-evaluation-protocol">
+    The architecture behind Claims, evidence, rubrics, and UDID determinations.
+  </Card>
+  <Card title="Agent evaluations" icon="clipboard-list" href="/guides/dev/agent-evaluations">
+    Design Qi evaluation workflows that issue UDID records.
+  </Card>
+  <Card title="Agentic Oracles" icon="robot" href="/articles/agentic-oracles">
+    Learn how oracle services fit into the IXO stack.
+  </Card>
+  <Card title="Claims management" icon="file-signature" href="/guides/dev/ixo-claims">
+    Build Claim workflows and record evaluations.
+  </Card>
+</CardGroup>
