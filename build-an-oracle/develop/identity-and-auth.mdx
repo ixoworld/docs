@@ -207,10 +207,11 @@ handler: async (args, rtCtx: RuntimeContext) => {
     return JSON.stringify({ error: 'Could not resolve downstream service DID.' });
   }
 
-  const invocation = await rtCtx.ucan.mintInvocation({
-    did: serviceDid,
-    capability: 'ixo:downstream',
-  });
+  const invocation = await rtCtx.ucan.mintInvocation(
+    { did: serviceDid, capability: 'ixo:downstream' },
+    // Claim the ability the user's delegation grants — see below.
+    { can: 'downstream/*' },
+  );
 
   const resp = await fetch('https://downstream-service.example/data', {
     headers: {
@@ -226,7 +227,7 @@ The full UCAN helper surface on `rtCtx.ucan`:
 
 | Method | Purpose |
 | --- | --- |
-| `mintInvocation(target, opts?)` | Mint a service-targeted invocation from the user's cached delegation. `target` = `{ did, capability }`; `opts.skipCache` forces a fresh signature. |
+| `mintInvocation(target, opts?)` | Mint a service-targeted invocation from the user's cached delegation. `target` = `{ did, capability }`; `opts.can` is the ability claimed (default `'*'`); `opts.skipCache` forces a fresh signature. |
 | `requireCapability(resource, action)` | Throws if the user's delegation doesn't include the capability. |
 | `hasCapability(resource, action)` | Returns a boolean — non-throwing variant. |
 | `resolveServiceDid(serviceUrl)` | Resolves a service URL to its `did:web:...` identifier. Returns `null` when the DID document is missing or has no `id`. |
@@ -234,6 +235,39 @@ The full UCAN helper surface on `rtCtx.ucan`:
 | `createInvocationFromDelegation(car, serviceUrl, capability, opts?)` | Mint from a directly-supplied delegation CAR (rather than the per-user cached one). Returns `{ invocation }` or `{ error }`. Used by the editor's `mint_invocation` tool. |
 
 See [`packages/oracle-runtime/src/modules/ucan/`](https://github.com/ixoworld/ixo-oracles-boilerplate/tree/main/packages/oracle-runtime/src/modules/ucan) for the service implementation.
+
+### Claim only what you were granted
+
+An invocation says what the oracle is *doing right now*; the delegation says what the user *permitted*. The service accepts the invocation only if the delegation covers it — and coverage is narrower than it looks. A granted ability covers a claim when it is:
+
+- `'*'` — covers everything, or
+- **exactly equal** to the claim, or
+- a `prefix/*` pattern matching it (`memory/*` covers `memory/read`).
+
+Nothing else. In particular **`'*'` is not a wildcard when you *claim* it** — a `'*'` claim is satisfiable only by a `'*'` grant, because `'*'` does not start with `memory/`:
+
+```ts
+// delegation grants { can: 'memory/*', with: 'ixo:memory' }
+
+// ❌ over-claim — refused: "Delegated capability not found"
+await rtCtx.ucan.mintInvocation({ did, capability: 'ixo:memory' });
+
+// ✅ claims exactly what was granted
+await rtCtx.ucan.mintInvocation(
+  { did, capability: 'ixo:memory' },
+  { can: 'memory/*' },
+);
+```
+
+<Warning>
+The service must **register** the ability you claim. It matches an invocation's `can` by strict string equality, so a service that only defines `'*'` rejects a `memory/*` invocation as an unknown capability *before* authorization is considered. When narrowing a claim, roll out in this order:
+
+1. service accepts the narrow ability **and** `'*'`
+2. oracle switches to claiming the narrow ability
+3. service tightens or upgrades
+
+Reversing steps 1 and 2 produces a 401 on every call.
+</Warning>
 
 ## What plugins can and cannot do
 
