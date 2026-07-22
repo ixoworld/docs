@@ -56,7 +56,7 @@ export interface RuntimeContext<TConfig = MergedConfig> {
   ucan: {
     requireCapability: (resource: string, action: string) => void;
     hasCapability: (resource: string, action: string) => boolean;
-    mintInvocation: (target: { did: string; capability: string }, opts?: { skipCache?: boolean }) => Promise<string>;
+    mintInvocation: (target: { did: string; capability: string }, opts?: { skipCache?: boolean; can?: string }) => Promise<string>;
     resolveServiceDid: (serviceUrl: string) => Promise<string | null>;
     hasSigningKey: () => boolean;
     createInvocationFromDelegation: (
@@ -171,7 +171,21 @@ export interface RuntimeContext<TConfig = MergedConfig> {
 
     - `requireCapability(resource, action)` — throws if the user's delegation doesn't include this capability.
     - `hasCapability(resource, action)` — boolean check.
-    - `mintInvocation({ did, capability }, opts?)` — mint a downstream invocation signed by the oracle's signing mnemonic.
+    - `mintInvocation({ did, capability }, opts?)` — mint a downstream invocation signed by the oracle's signing mnemonic. `opts.can` is the **ability** the invocation claims (default `'*'`); `opts.skipCache` bypasses the invocation cache, required for services that enforce single-use replay protection per invocation CID.
+
+    <Warning>
+    **Claim the ability the user's delegation actually grants.** A claim resolves against a delegation only when the granted ability is `'*'`, equals the claim, or is a `prefix/*` covering it. So the default `'*'` claim is satisfiable **only** by a `'*'` grant — if the user granted `memory/*`, a `'*'` claim is an over-claim and the service refuses it:
+
+    ```ts
+    // ✅ delegation grants { can: 'memory/*', with: 'ixo:memory' }
+    await rtCtx.ucan.mintInvocation(
+      { did: memoryDid, capability: 'ixo:memory' },
+      { can: 'memory/*' },
+    );
+    ```
+
+    The service must also register that ability: it matches an invocation's `can` by **strict equality**, so one that only defines `'*'` rejects a `memory/*` invocation as an unknown capability before authorization is considered. Roll out the service side first.
+    </Warning>
     - `resolveServiceDid(serviceUrl)` — look up a downstream service's DID document; returns `id` or `null`.
     - `hasSigningKey()` — `true` once the oracle has loaded its Ed25519 signing mnemonic. **Gate registration of mint-capable tools on this**: without a key, minting is a no-op, so the tool should surface an error rather than pretend it worked.
     - `createInvocationFromDelegation(delegationCar, serviceUrl, capability, options?)` — mint an invocation from a **directly-supplied** delegation CAR (rather than the user's cached one), targeted at a specific service route. Returns `{ invocation }` on success or `{ error }` with a surfaced-verbatim reason (missing signing key, audience mismatch, did:web unreachable, …).
