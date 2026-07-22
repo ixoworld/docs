@@ -1,0 +1,178 @@
+---
+title: "Flow Agent dashboard"
+description: "Read-only observability UI for the Flow Agent. Sign in via the ixo Auth Hub and drill into fleet health, run history, and span waterfalls."
+icon: "gauge-high"
+---
+
+The Flow Agent dashboard is a thin browser client over the read-only trace API the oracle exposes at `/flow-agent/traces/*`. It gives fleet-wide visibility across every flow room your oracle is running and lets you drill into any single run down to its span waterfall.
+
+Use it when you need to:
+
+- Watch throughput and flow health across the fleet in real time.
+- Inspect the run history and recent errors for a specific flow.
+- Trace a single tick — command counts, span durations, status snapshots — to debug a stuck or misbehaving flow.
+
+Access is limited to the operator DIDs you allowlist on the oracle — a non-listed account is rejected at UCAN delegation time, before any dashboard data is returned.
+
+## Sign in with ImpactsX
+
+The dashboard has a single sign-in front door: **Sign in with ImpactsX**, backed by the WorkOS-based ixo Auth Hub.
+
+The flow is:
+
+<Steps>
+  <Step title="Click Sign in with ImpactsX">
+    The dashboard generates a CSRF `state` value, stashes it in `sessionStorage`, and redirects the browser to `${AUTH_HUB_URL}/api/auth/login?redirect_uri=${origin}/auth/callback&state=…`.
+  </Step>
+  <Step title="Authenticate at the Auth Hub">
+    The Auth Hub authenticates the operator (via WorkOS) and redirects back to `${origin}/auth/callback` with a single-use `code` (~120s TTL) and the `state` echoed back for verification.
+  </Step>
+  <Step title="Exchange the code for a session">
+    On `/auth/callback`, the dashboard verifies `state`, then calls `${AUTH_HUB_URL}/api/auth/exchange?code=…`. The Auth Hub returns the operator's `did` and their Ed25519 signing mnemonic. The `code` is single-use — the callback route is guarded against React's double-invoke so the exchange runs exactly once.
+  </Step>
+  <Step title="Mint a UCAN invocation and get a session token">
+    The dashboard mints a UCAN invocation of the oracle's pre-issued `flow/observe` delegation and `POST`s it to `/flow-agent/auth/session` as `Authorization: Bearer <invocation>`. The oracle verifies the invocation chain back to its root key and, if the invoker is in the operator allowlist, returns a short-lived HMAC session token.
+  </Step>
+</Steps>
+
+There is no PIN prompt, no Matrix vault read, and no QR or WebAuthn step. The Auth Hub returns the operator's signing key directly, so the whole exchange finishes in one round trip.
+
+## Configure the Auth Hub URL
+
+The dashboard picks the Auth Hub URL from the chain network by default:
+
+| `VITE_CHAIN_NETWORK` | Auth Hub URL |
+| --- | --- |
+| `devnet` (default) | `https://dev.auth.ixo.earth` |
+| `testnet` | `https://test.auth.ixo.earth` |
+| `mainnet` | `https://auth.ixo.earth` |
+
+To point at a local Auth Hub during development, set `VITE_AUTH_HUB_URL` on the dashboard — it overrides the network-derived default:
+
+```bash
+# apps/flow-dashboard/.env
+VITE_CHAIN_NETWORK=devnet
+VITE_AUTH_HUB_URL=http://localhost:3001   # optional local override
+```
+
+Whatever origin serves the dashboard must be registered as a valid `redirect_uri` on the Auth Hub, since the callback URL is `${window.location.origin}/auth/callback`.
+
+## Session contract
+
+The oracle exposes three routes under `/flow-agent/auth`. All of them are excluded from the runtime auth middleware — the `FlowDashboardAuthGuard` is the sole authority for the trace API.
+
+| Route | Purpose |
+| --- | --- |
+| `POST /flow-agent/auth/session` | Exchange a UCAN invocation for a session token. |
+| `GET /flow-agent/auth/session` | Check the current operator session. |
+| `POST /flow-agent/auth/logout` | Stateless no-op — the client discards its token. |
+
+### POST /flow-agent/auth/session
+
+Send the one-time UCAN invocation as a Bearer credential:
+
+```http
+POST /flow-agent/auth/session
+Authorization: Bearer <ucan-invocation>
+```
+
+Response body:
+
+```json
+{
+  "did": "did:ixo:entity:…",
+  "token": "<opaque-hmac-session-token>",
+  "expiresAt": 1735689600000
+}
+```
+
+The session token is a compact HMAC (`base64url(body).base64url(sig)`) signed with `FLOW_DASHBOARD_SESSION_SECRET`. It is stateless — the oracle keeps no session store — and short-lived (`sessionTtlMs`, default 15 minutes).
+
+The dashboard stores the token in `localStorage` under `fa_session` and attaches it to every subsequent request as `Authorization: Bearer <token>`.
+
+<Note>
+Requests carry the token in a header, not a cookie. That means the browser never sends credentials cross-origin, so the oracle can serve every dashboard origin under a **wildcard `Access-Control-Allow-Origin`** — a single oracle can back many dashboard deployments. This is the reason the old `fa_session` httpOnly cookie was replaced.
+</Note>
+
+### GET /flow-agent/auth/session
+
+```http
+GET /flow-agent/auth/session
+Authorization: Bearer <session-token>
+```
+
+Returns `{ "did": "…" }` when the token is valid, `401` otherwise.
+
+### POST /flow-agent/auth/logout
+
+Returns `{ "ok": true }`. The token is stateless, so logout is a client-side concern — the dashboard clears its `localStorage` entry. The endpoint is kept for symmetry and future revocation.
+
+## Configure the oracle
+
+The oracle side reads its configuration from `process.env`. The relevant vars:
+
+| Env var | Required | Purpose |
+| --- | --- | --- |
+| `FLOW_DASHBOARD_OPERATORS` | yes | Comma-separated allowlist of operator DIDs that may sign in. Anyone not listed is rejected at the delegation step. |
+| `FLOW_DASHBOARD_SESSION_SECRET` | yes | HMAC secret used to sign session tokens. Without it, `POST /session` returns `null` and no session can be issued. |
+| `FLOW_DASHBOARD_SESSION_TTL_MS` | no | Session lifetime in milliseconds. Defaults to `15 * 60 * 1000` (15 minutes). Read via `FlowDashboardAuthService.sessionTtlMs`. |
+| `FLOW_DASHBOARD_AUTH_DISABLED` | no | Set to `true` to bypass the guard for local development. |
+
+<Warning>
+`FLOW_DASHBOARD_COOKIE` has been removed and the service getter `cookieTtlMs` has been renamed to `sessionTtlMs`. If you were reading either name, update your callers. The env var name for the TTL itself is unchanged.
+</Warning>
+
+## Dashboard security headers
+
+The deployed dashboard ships a strict Content-Security-Policy plus companion headers. On Vercel these come from `apps/flow-dashboard/vercel.json`; the same CSP is applied to `vite preview` from `apps/flow-dashboard/vite.config.ts` so violations surface locally too.
+
+```text
+Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none';
+  frame-ancestors 'none'; form-action 'self';
+  script-src 'self' 'wasm-unsafe-eval';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: https:; font-src 'self' data:;
+  connect-src 'self' https://*.ixo.earth wss://*.ixo.earth
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+X-Frame-Options: DENY
+```
+
+Why these settings:
+
+- **`script-src 'self'`** is the XSS guard for the session token, which is now readable to JavaScript (it lives in `localStorage` rather than an httpOnly cookie).
+- **`'wasm-unsafe-eval'`** is required because `@cosmjs/crypto` instantiates libsodium as inline WebAssembly to sign the UCAN invocation. It permits WebAssembly instantiation only — JavaScript `eval()` stays blocked.
+- **`connect-src`** allow-lists `*.ixo.earth` (HTTP + WSS) so the dashboard can reach the oracle API and the Auth Hub. If your oracle API is served from a different domain, extend `connect-src` in both `vercel.json` and `vite.config.ts`.
+- **`frame-ancestors 'none'`** + **`X-Frame-Options: DENY`** prevent the dashboard from being framed (clickjacking).
+
+## Local development
+
+Run the dashboard against a locally-running oracle:
+
+```bash
+# apps/flow-dashboard/.env
+VITE_CHAIN_NETWORK=devnet
+VITE_API_BASE_URL=/api           # default — uses the dev proxy
+# VITE_AUTH_HUB_URL=http://localhost:3001   # only if running your own hub
+```
+
+The Vite dev server proxies `/api/*` to the oracle so the dashboard runs same-origin. Auth still rides a Bearer token — the proxy just spares you from configuring CORS locally.
+
+To open the trace API without any sign-in (no wallet, no operator DID), set `FLOW_DASHBOARD_AUTH_DISABLED=true` on the oracle. Do not do this in production.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="Observability" icon="chart-line" href="/build-an-oracle/develop/observability">
+    LangSmith tracing, plugin status events, and the runtime logger.
+  </Card>
+  <Card title="Identity and auth" icon="id-card" href="/build-an-oracle/develop/identity-and-auth">
+    UCAN delegations, operator identity, and the auth surfaces the runtime exposes.
+  </Card>
+  <Card title="Deployment" icon="rocket-launch" href="/build-an-oracle/develop/deploy">
+    Ship the oracle and the dashboard to production.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Every env var the runtime declares.
+  </Card>
+</CardGroup>
