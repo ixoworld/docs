@@ -12,7 +12,7 @@ icon: "coins"
 | Visibility | `silent` |
 | Stability | `stable` |
 | Category | `core` |
-| Default state | On unless `DISABLE_CREDITS=true` |
+| Default state | Opt-in — not in `BUNDLED_PLUGINS`. Construct it and pass it in `plugins`. |
 | Depends on | — |
 
 ## Summary
@@ -65,14 +65,11 @@ Without a Redis client the middleware loads in pass-through mode and the cron mo
 
 ## Opt out / Opt in
 
-```ts
-const app = await createOracleApp({
-  config,
-  features: { credits: false }, // never load
-});
+`credits` is not in `BUNDLED_PLUGINS`, so nothing loads it unless you pass an instance in `plugins` (see [Production constructor](#production-constructor) above). Once wired, `DISABLE_CREDITS=true` still turns it off via `autoDetect` without touching the code.
 
-// Or via env: DISABLE_CREDITS=true
-```
+<Warning>
+LLM token metering **is** this plugin. An oracle that never wires it has no metering at all — worth knowing before you leave it out, especially alongside [`oracle-payments`](/build-an-oracle/reference/bundled-plugins/oracle-payments), where "free support" means "no work claim", not "free LLM".
+</Warning>
 
 ## Where to read next
 

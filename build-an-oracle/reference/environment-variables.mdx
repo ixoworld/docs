@@ -123,6 +123,13 @@ Only required when the named plugin is loaded.
 | `matrix-group-chats` | `GROUP_CHAT_ROOM_INFO_TTL_MS` | No | Coerced int, min `60000`; default `1800000`. How long roomInfo (membership, DM flag) stays cached. |
 | `vfs` | `VFS_MAX_READ_LINES` | No | Coerced positive int; default `2000`. Max lines a single `vfs_read` window returns. |
 | `vfs` | `VFS_REQUEST_TIMEOUT_MS` | No | Coerced positive int; default `20000`. Per-request timeout to the VFS worker. |
+| `oracle-payments` | `ORACLE_PAYMENTS_DISABLED` | No | Enum — exactly `'true'` or `'false'`. `'true'` excludes the whole plugin at boot. |
+| `oracle-payments` | `EVAL_ENGINE_URL` | No | URL. Evaluation engine base URL. Without it contract lookups are disabled, so no user can start paid work; support chat is unaffected. |
+| `oracle-payments` | `AGENT_CARD_PATH` | No | Path to the oracle's local agent-card JSON (written by `qiforge-cli agent-card`). Seeds the card cache and derives the plugin manifest from the card. A path that is set but unreadable, malformed, or describing a different entity than `ORACLE_ENTITY_DID` fails boot. |
+| `oracle-payments` | `ORACLE_PAYMENTS_ROUTER_MODEL` | No | Model id for the support/work classifier. Defaults to the provider's `routing` role model. |
+| `oracle-payments` | `ORACLE_PAYMENTS_EXTRACTOR_MODEL` | No | Model id for the trusted request/work-summary extractor. Defaults to the provider's `custom_medium` role model. |
+| `oracle-payments` | `ORACLE_PAYMENTS_MAX_DELIVERABLE_MB` | No | Coerced positive number; default `25`. Size ceiling on a single delivered file. |
+| `oracle-payments` | `PORTAL_URL` | No | URL. Portal base URL — when set, the delivery receipt and payment cards carry a deep link to the claim. |
 
 ## Variables read but not owned
 
@@ -132,6 +139,7 @@ Some plugins read variables that live in another schema:
 - **`skills`** reads `NETWORK` and forwards as `X-IXO-Network`.
 - **`sandbox`** reads `ORACLE_SECRETS` (core) and `SKILLS_CAPSULES_BASE_URL` (owned by `skills`) and forwards them as headers.
 - **`vfs`** reads the core `NETWORK` (selects the bundled VFS + UCAN Store worker URLs — nothing to configure) and `SANDBOX_MCP_URL` (owned by `sandbox`; when set, adds the two sandbox↔files bridge tools).
+- **`oracle-payments`** reads the core `ORACLE_ENTITY_DID` (whose Agent Card to resolve), `ORACLE_DID` + `SECP_MNEMONIC` + `MATRIX_VALUE_PIN` (claim signing), `MATRIX_ACCOUNT_ROOM_ID` (where the pending-claims index is stored), `NETWORK` (price → denom), and `BLOCKSYNC_GRAPHQL_URL` (card and evaluation reads).
 
 These are declared in the plugin's sibling schemas (typed `optional()`); a missing value just skips the matching header instead of failing the plugin build.
 

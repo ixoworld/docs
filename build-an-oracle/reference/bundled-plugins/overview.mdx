@@ -4,7 +4,7 @@ description: "Reference for every plugin the oracle runtime ships with — toggl
 icon: "boxes-stacked"
 ---
 
-The runtime bundles 16 plugins that load by default; opt out per plugin via the `features` map on `createOracleApp`. One additional plugin — [`flows`](/build-an-oracle/reference/bundled-plugins/flows) — ships in the package but is **opt-in only**: wire it in explicitly via the `plugins` array.
+The runtime bundles 14 plugins that load by default; opt out per plugin via the `features` map on `createOracleApp`. Four more ship in the package but are **not** in the default set — [`credits`](/build-an-oracle/reference/bundled-plugins/credits), [`slack`](/build-an-oracle/reference/bundled-plugins/slack), [`calls`](/build-an-oracle/reference/bundled-plugins/calls), and [`flows`](/build-an-oracle/reference/bundled-plugins/flows) — so you wire each one in explicitly via the `plugins` array. The authoritative list is [`BUNDLED_PLUGINS`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts).
 
 ## At a glance
 
@@ -19,20 +19,22 @@ The runtime bundles 16 plugins that load by default; opt out per plugin via the 
 | [`skills`](/build-an-oracle/reference/bundled-plugins/skills) | `always` | On | — | `sandbox` |
 | [`editor`](/build-an-oracle/reference/bundled-plugins/editor) | `always` | On | — | — |
 | [`agui`](/build-an-oracle/reference/bundled-plugins/agui) | `on-demand` | On | — | — |
-| [`slack`](/build-an-oracle/reference/bundled-plugins/slack) | `silent` | Auto-detect | `SLACK_BOT_OAUTH_TOKEN` | — |
 | [`tasks`](/build-an-oracle/reference/bundled-plugins/tasks) | `on-demand` | Auto-detect | `REDIS_URL` | — |
-| [`credits`](/build-an-oracle/reference/bundled-plugins/credits) | `silent` | On unless `DISABLE_CREDITS=true` | — | — |
-| [`calls`](/build-an-oracle/reference/bundled-plugins/calls) | `silent` | On (stub) | — | — |
 | [`user-preferences`](/build-an-oracle/reference/bundled-plugins/user-preferences) | `always` | On | — | — |
 | [`matrix-group-chats`](/build-an-oracle/reference/bundled-plugins/matrix-group-chats) | `on-demand` | On | — | — |
 | [`vfs`](/build-an-oracle/reference/bundled-plugins/vfs) | `always` | On | — (URLs from `NETWORK`) | — |
+| [`oracle-payments`](/build-an-oracle/reference/bundled-plugins/oracle-payments) | `always` | On unless `ORACLE_PAYMENTS_DISABLED=true` | — (`EVAL_ENGINE_URL` for the paid lane) | — |
+| [`credits`](/build-an-oracle/reference/bundled-plugins/credits) | `silent` | Opt-in (not bundled) | — | — |
+| [`slack`](/build-an-oracle/reference/bundled-plugins/slack) | `silent` | Opt-in (not bundled) | `SLACK_BOT_OAUTH_TOKEN` | — |
+| [`calls`](/build-an-oracle/reference/bundled-plugins/calls) | `silent` | Opt-in (not bundled, stub) | — | — |
 | [`flows`](/build-an-oracle/reference/bundled-plugins/flows) | `on-demand` | Opt-in (not bundled) | — | `editor` Qi Flow engine |
 
 `Default state` legend:
 
 - **On** — loaded by default; opt out with `features: { name: false }`.
 - **Auto-detect** — loaded when its env var is set; opt in by setting it, force on with `features: { name: true }`, force off with `false`.
-- **(stub)** — placeholder entry in `BUNDLED_PLUGINS` so feature toggles work; full implementation deferred.
+- **Opt-in (not bundled)** — absent from `BUNDLED_PLUGINS`, so `features` never reaches it. Construct it and pass it in [`plugins`](#wiring-custom-constructed-plugins).
+- **(stub)** — placeholder entry; full implementation deferred.
 
 ## How to use `features`
 
@@ -41,7 +43,7 @@ const app = await createOracleApp({
   config,
   features: {
     composio: false,            // never load even if COMPOSIO_API_KEY is set
-    slack: true,                // force load even if SLACK_BOT_OAUTH_TOKEN is missing (will fail env validation)
+    sandbox: true,              // force load even if SANDBOX_MCP_URL is missing (will fail env validation)
     'domain-indexer': 'auto',   // explicit auto (same as omitting)
   },
 });
@@ -79,17 +81,8 @@ const app = await createOracleApp({
   <Card title="agui" icon="table" href="/build-an-oracle/reference/bundled-plugins/agui">
     Render interactive UI components in the browser.
   </Card>
-  <Card title="slack" icon="slack" href="/build-an-oracle/reference/bundled-plugins/slack">
-    Slack bot transport.
-  </Card>
   <Card title="tasks" icon="hourglass" href="/build-an-oracle/reference/bundled-plugins/tasks">
     Schedule the agent to run on time-based triggers, in the background.
-  </Card>
-  <Card title="credits" icon="coins" href="/build-an-oracle/reference/bundled-plugins/credits">
-    Per-user credit enforcement and claim settlement.
-  </Card>
-  <Card title="calls" icon="phone" href="/build-an-oracle/reference/bundled-plugins/calls">
-    LiveKit call integration (stub — deferred).
   </Card>
   <Card title="user-preferences" icon="sliders" href="/build-an-oracle/reference/bundled-plugins/user-preferences">
     Tone / format / language preferences.
@@ -100,6 +93,18 @@ const app = await createOracleApp({
   <Card title="vfs" icon="folder" href="/build-an-oracle/reference/bundled-plugins/vfs">
     Read, write, search, and share the user's real files on their Virtual Filesystem.
   </Card>
+  <Card title="oracle-payments" icon="handshake" href="/build-an-oracle/reference/bundled-plugins/oracle-payments">
+    Sell services from the chat — contract on-chain, deliver work, get paid.
+  </Card>
+  <Card title="credits" icon="coins" href="/build-an-oracle/reference/bundled-plugins/credits">
+    Per-user credit enforcement and claim settlement (opt-in).
+  </Card>
+  <Card title="slack" icon="slack" href="/build-an-oracle/reference/bundled-plugins/slack">
+    Slack bot transport (opt-in).
+  </Card>
+  <Card title="calls" icon="phone" href="/build-an-oracle/reference/bundled-plugins/calls">
+    LiveKit call integration (opt-in stub — deferred).
+  </Card>
   <Card title="flows" icon="diagram-project" href="/build-an-oracle/reference/bundled-plugins/flows">
     Author and inspect multi-step Qi Flow templates (opt-in).
   </Card>
@@ -107,9 +112,9 @@ const app = await createOracleApp({
 
 ## Wiring custom-constructed plugins
 
-Some plugins accept constructor args. Pass a custom instance via the `plugins` array — the loader dedupes by name, so your instance overrides the bundled default.
+Anything in the `plugins` array is always loaded — `features` never gates it, and the loader dedupes by name, so your instance overrides a bundled default of the same name. This is how you load the four opt-in plugins, and how you replace a bundled one with a custom-constructed instance.
 
-**`credits` genuinely needs a Redis client.** Without one the enforcement middleware loads in pass-through mode and the settlement cron is skipped, so production must construct it explicitly:
+**`credits` genuinely needs a Redis client.** It is not in the bundled set, so nothing loads it unless you do. Without a Redis client the enforcement middleware loads in pass-through mode and the settlement cron is skipped, so production must construct it explicitly:
 
 ```ts
 import { createOracleApp, CreditsPlugin } from '@ixo/oracle-runtime';
