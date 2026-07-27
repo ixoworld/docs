@@ -88,6 +88,7 @@
                 "group": "Identity and access",
                 "pages": [
                   "guides/dev/authentication",
+                  "guides/dev/auth-hub",
                   "articles/identity-and-credentials",
                   "guides/dev/session-keys",
                   "guides/dev/smart-accounts",
