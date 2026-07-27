@@ -1,0 +1,168 @@
+---
+title: 'VFS hidden files and folders'
+description: 'Keep sensitive files out of listings, reads, and search in the IXO Virtual Filesystem, and reveal them selectively with the nb.hidden UCAN caveat.'
+---
+
+The IXO Virtual Filesystem (VFS) supports **hidden** files and folders so a domain can keep sensitive content — `.env`, `.config/…`, private reports — out of normal listings, reads, and search. Hidden items are reachable only by a token that explicitly asks for them via an `nb.hidden` UCAN caveat. This is a **policy layer on top of** the existing namespace, path scope, and UCAN model — not a separate permission system.
+
+<Tip>
+`.env` is a perfectly valid filename. It just isn't a *visible* one by default.
+</Tip>
+
+## When to use it
+
+- Store per-domain secrets or configuration alongside user content without leaking them through generic list, search, or agent tools.
+- Ship VFS-backed AI agents that only ever see the non-sensitive subset of a user's tree, unless the caller mints a token that explicitly opts them in.
+- Give the domain owner (or their client) a token with reveal-everything so they can manage their own hidden content, while every delegated agent stays blind by default.
+
+## Concept
+
+- A file or folder whose **own name starts with `.`** is **hidden by default** — the Unix dotfile convention. This default is overridable per item.
+- A **hidden folder hides its entire subtree.** An item is *effectively hidden* when it, or any ancestor folder, is hidden.
+- Hidden items are **invisible and unreadable** on every read surface **unless** the caller's UCAN carries an `nb.hidden` reveal caveat that covers them.
+- **Safe by default:** with no reveal caveat, nothing hidden leaks — not even to a whole-tree owner token. Owner clients mint tokens with `nb.hidden: ["*"]` so the owner sees their own hidden content.
+
+## What "hidden" means on every surface
+
+Without a matching reveal caveat, an effectively-hidden item is filtered from every read surface — REST and MCP alike:
+
+| Surface | Behaviour |
+| --- | --- |
+| `GET /api/fs/files` (list), `GET /api/fs/tree`, `GET /api/fs/glob` | Excluded from results |
+| `GET /api/fs/grep`, `GET /api/fs/search` (lexical **and semantic**) | Never matched; content never returned in snippets |
+| `GET /api/fs/files/:id`, `/content`, `/read`, `/events`, `/provenance` | `404` — existence is never confirmed |
+| `GET /api/fs/cid/:cid`, `GET /api/fs/cids` | Not listed; fetch-by-CID returns `404` |
+| `GET /api/fs/trash` | Excluded |
+| MCP tools (all 13, including `vfs_list`, `vfs_grep`, `vfs_search`, `vfs_read`, `vfs_read_cid`) | Same as above |
+| Batch operations across any of the above | Same as above |
+
+Hiddenness never affects **writes by explicit id or path.** You can create, un-hide, or move an item you can address directly — even one you can't yet list.
+
+## Set or unset the hidden flag
+
+Every item can be forced hidden or visible regardless of its name. The dot-prefix is only the **default**. All calls require `Authorization: Bearer <ucan>` with `fs/write` capability and `X-Auth-Type: ucan`.
+
+<Warning>
+Setting the flag is **always an explicit set, never a toggle.** You must supply the value; omitting it returns `400`.
+</Warning>
+
+### On upload — `?hidden=true|false`
+
+```bash
+# a dotfile kept VISIBLE
+curl -X POST "$VFS/api/fs/files?path=/.env&hidden=false" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan" \
+  -H "Content-Type: text/plain" --data-binary 'PORT=3000'
+# → 201  { "id": "…", "path": "/.env", "hidden": false, … }
+
+# a NORMAL file made hidden from birth
+curl -X POST "$VFS/api/fs/files?path=/report.pdf&hidden=true" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan" \
+  -H "Content-Type: application/pdf" --data-binary @report.pdf
+```
+
+Omit `?hidden=` to fall back to the dotfile convention (`.env` → hidden, `report.pdf` → visible).
+
+### Change a file's flag afterwards — `PATCH /api/fs/files/:id/hidden`
+
+The value comes from `?hidden=true|false` (preferred) **or** a JSON body `{ "hidden": <bool> }`:
+
+```bash
+# un-hide via query param
+curl -X PATCH "$VFS/api/fs/files/<FILE_ID>/hidden?hidden=false" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan"
+
+# hide via JSON body (equivalent)
+curl -X PATCH "$VFS/api/fs/files/<FILE_ID>/hidden" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan" \
+  -H "Content-Type: application/json" -d '{ "hidden": true }'
+# → 200  { …, "hidden": true }
+```
+
+You get `<FILE_ID>` from the upload response. To *discover* the id of an already-hidden file via `GET /api/fs/files`, the token needs a reveal caveat — but flipping the flag itself needs no reveal, since you supply the id directly.
+
+### Change a folder's flag — `PUT /api/fs/folders/hidden`
+
+Sets the folder's own flag and **cascades effective-hidden through its whole subtree.** Value comes from `?hidden=true|false` or a JSON body.
+
+```bash
+# hide a normal folder (hides everything under /reports)
+curl -X PUT "$VFS/api/fs/folders/hidden?path=/reports&hidden=true" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan"
+# → 200  { "path": "/reports", "hidden": true, "hiddenEffective": true }
+
+# un-hide a dot-folder — reveals its non-dotted descendants;
+# self-dotted children stay hidden
+curl -X PUT "$VFS/api/fs/folders/hidden?path=/.config&hidden=false" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan"
+```
+
+Folders are first-class in the data model, so a dotted folder can be un-hidden as a unit and its non-dotted descendants correctly reappear while any self-dotted children stay hidden.
+
+### Quick reference
+
+| Goal | Endpoint | Value |
+| --- | --- | --- |
+| Set at upload | `POST /api/fs/files?path=…&hidden=true\|false` | Query param |
+| Set a file later | `PATCH /api/fs/files/:id/hidden` | `?hidden=` **or** JSON `{ "hidden": bool }` |
+| Set a folder (cascades) | `PUT /api/fs/folders/hidden?path=…` | `?hidden=` **or** JSON `{ "hidden": bool }` |
+
+`GET /api/fs/files/:id` returns a `hidden` boolean on file metadata — the *effective* state, so it accounts for any hidden ancestor folder.
+
+## From an agent — MCP
+
+Agents get the same behaviour. Every read, list, and search tool honours the session token's reveal set, and a dedicated tool sets the flag on either a file or a folder:
+
+```
+vfs_set_hidden { path: "/secrets", hidden: true }   // file OR folder; folders cascade
+```
+
+A CID-scoped MCP session still needs an `nb.hidden` entry to reach hidden content by CID.
+
+## Reveal hidden items — the `nb.hidden` UCAN caveat
+
+A hidden item becomes visible to a token whose UCAN capability carries an `nb.hidden` caveat that covers it. The caveat lives on the capability, alongside `with` and `can`:
+
+```jsonc
+{
+  "can": "fs/read",
+  "with": "ixo:filesystem",
+  "nb": {
+    "hidden": ["*"]              // reveal EVERYTHING hidden in scope
+    // or a specific set:
+    // "hidden": ["/secrets/.env", "/reports"]   // paths reveal that item + its subtree
+    // "hidden": ["bafkrei…"]                     // a CID reveals matching files
+  }
+}
+```
+
+### Reveal entry forms
+
+- **`*`** — reveal all hidden items in scope. Owner clients typically mint this for the owner's own tokens.
+- **A path** (`/secrets/.env`, `/reports`) — reveal that item **and its subtree.**
+- **A CID** (`bafkrei…`) — reveal files whose content id matches. Use with `GET /api/fs/cid/:cid` or `vfs_read_cid`.
+
+### Attenuation
+
+Like `nb.cids`, the reveal set only narrows down a delegation chain — a delegate can never widen what an ancestor granted. `*` is the *universal* set, so the effective reveal is the intersection of the specific (non-`*`) sets down the chain:
+
+```
+owner mints  nb.hidden: ["*"]               →  delegate  nb.hidden: ["/reports"]              ⇒ effective ["/reports"]
+owner mints  nb.hidden: ["/reports"]        →  delegate  nb.hidden: ["/reports", "/secrets"]  ⇒ effective ["/reports"]
+```
+
+### Composition with other scopes
+
+`nb.hidden` only lifts the hidden filter. It **composes with, never overrides,** the other UCAN scopes — the most restrictive wins:
+
+- **Namespace isolation** still applies: a reveal-all token cannot see another user's namespace.
+- **Path scope** still applies: `nb.hidden: ["*"]` on a token scoped to `/reports` reveals only hidden items under `/reports`.
+- **CID scope** still applies: a CID-scoped token still needs a CID or `*` in `nb.hidden` to fetch matching hidden files.
+
+## Security properties
+
+- **Default-deny.** No `nb.hidden` caveat means nothing hidden is visible or readable, on any surface, for any token — including a whole-tree `*` owner token.
+- **No cross-surface leak.** The same reveal check gates listings, grep, semantic search (vector candidates are re-validated against the metadata store with the hidden filter, so hidden content never escapes via embeddings), CID lookup, trash, metadata, and content.
+- **Attenuation only.** A delegate can never widen the reveal set an ancestor granted.
+- **Composes, never bypasses.** Reveal lifts only the hidden filter; namespace isolation, path scope, and CID scope still apply.
+- **Bounded.** Reveal sets are capped, and the folder-toggle cascade is bounded by the subtree size.
