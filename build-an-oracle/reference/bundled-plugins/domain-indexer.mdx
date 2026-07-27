@@ -51,6 +51,49 @@ const app = await createOracleApp({
 - Looking up a domain card by its DID.
 - Discovering entities by topic, category, or keyword.
 
+## Search filters
+
+`domain_indexer_search` accepts a `filters` object that maps directly to the Domain Indexer's `dc.*` query parameters. Two of these come from on-chain data and have exact-match semantics you need to know about.
+
+### `dc.entity_type` — exact compound match
+
+The `entity_type` on each domain card is sourced from the chain `type` field and stored as a single compound token. It is **never split on `/`**, so filter values must match the full compound value:
+
+| Filter value | Matches |
+| --- | --- |
+| `dc.entity_type=asset/device` | Only entities whose chain type is exactly `asset/device` |
+| `dc.entity_type=asset` | Only entities whose chain type is exactly `asset` (not `asset/device`, not `asset/vehicle`) |
+| `dc.entity_type=dao/pod` | Only pods |
+| `dc.entity_type=dao/protocol` | Only protocol DAOs |
+| `dc.entity_type=dao` | Only plain DAOs |
+
+Passing a partial prefix like `asset` when you want every asset sub-type returns zero results. To match multiple compound types, pass a comma-separated list: `dc.entity_type=asset/device,asset/vehicle`.
+
+### `dc.entity_verified` — chain-verified status
+
+`entity_verified` reflects the on-chain `entityVerified` flag for the entity:
+
+| Filter value | Behaviour |
+| --- | --- |
+| `dc.entity_verified=true` | Only entities marked verified on chain |
+| `dc.entity_verified=false` | Only entities explicitly marked not verified on chain |
+| _(omitted)_ | Both verified and unverified entities, plus records that have not yet been backfilled from chain |
+
+`null` (not-yet-indexed) is distinct from `false`. Records still awaiting the chain-metadata backfill return `entity_verified: null` in results and are only excluded when you set the filter to `true` or `false`.
+
+### Example
+
+```ts
+// Find verified protocol DAOs relevant to "mining"
+await tools.domain_indexer_search.invoke({
+  query: 'mining',
+  filters: {
+    'dc.entity_type': 'dao/protocol',
+    'dc.entity_verified': 'true',
+  },
+});
+```
+
 ## When NOT to use it
 
 - General web search unrelated to IXO entities — use [`firecrawl`](/build-an-oracle/reference/bundled-plugins/firecrawl).
