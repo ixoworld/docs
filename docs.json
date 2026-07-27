@@ -263,6 +263,7 @@
             "pages": [
               "reference/networks-and-endpoints",
               "reference/authentication-matrix",
+              "reference/vfs-content-addressing",
               "reference/product-and-sdk-map",
               "reference/glossary"
             ]
