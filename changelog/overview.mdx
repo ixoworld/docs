@@ -1,7 +1,30 @@
 ---
 title: Product Updates
-description: "What's new in 2025"
+description: "What's new across IXO products — Oracle Runtime, bundled plugins, Creator Studio, and the IXO Mobile wallet, with features, updates, and fixes."
 ---
+
+<Update label="June 2026" description="Oracle Runtime 1.2.0 · Flows plugin · Creator Studio">
+
+**New features**
+
+- **Flows plugin (beta) for Oracle apps.** A new bundled plugin lets an agent author, inspect, wire, and form-fill multi-step Qi Flow action templates. The agent builds the flow; users run it from the portal. Opt in via the `plugins` array — it does not load by default. See [`flows`](/build-an-oracle/reference/bundled-plugins/flows).
+- **Manifest overrides on `createOracleApp`.** You can now retune a bundled plugin's manifest — most usefully its visibility (`always`, `on-demand`, `silent`) — without forking the plugin source. Pass `manifestOverrides` to `createOracleApp` or `createTestRuntime`; merges are shallow and validated. See [`createOracleApp`](/build-an-oracle/reference/createoracleapp) and [Retune a bundled plugin's manifest](/build-an-oracle/develop/enable-bundled-plugins#retune-a-bundled-plugins-manifest).
+- **Relayer node selection in Creator Studio.** When creating an entity you can now choose which relayer node to use, giving you control over which validator ledgers your transaction.
+- **Entity filters and slider.** New filters and a slider control on entity lists make it easier to scope and browse large entity sets.
+
+**Updates**
+
+- **Cross-server Matrix routing.** Creator Studio now routes Matrix calls to the correct homeserver for cross-server entities, passes `server_name` on cross-server room joins, and skips the entity Matrix-room flow for non-invitees. Survey templates are now Matrix-safe.
+- **Claims display.** Linked claim names from the ledger now render correctly, and existing claim node profiles resolve as expected.
+
+**Bug fixes**
+
+- **Carbon claim limits.** Fixed limits handling for harvested carbon claims so submissions respect configured caps.
+- **CARBON batch resolution.** Received CARBON batches now resolve their `entityDid` correctly on the web app.
+- **GraphQL filter.** Resolved an issue where GraphQL filter parameters were not applied as expected.
+- **Token chunking.** Large token payloads are now chunked correctly to avoid truncated responses.
+
+</Update>
 
 <Update label="January 2025" description="IXO Mobile v2.1.6">
   Backup and restore Profiles and keys from the IXO Mobile wallet to the IXO Matrix Personal Data Vault.
