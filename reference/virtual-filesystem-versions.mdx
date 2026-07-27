@@ -1,0 +1,177 @@
+---
+title: "Virtual Filesystem file versions & history"
+description: "List, read, and restore prior versions of a VFS file, resolve old CIDs after edits, and handle the 50-version cap and concurrent-write 409 responses."
+icon: "clock-rotate-left"
+---
+
+The IXO Virtual Filesystem (VFS) keeps prior content versions of every file. Each update snapshots the superseded head — bytes and key material — into an immutable history row, so old **IPFS CIDs stay queryable** for as long as the file lives. The model is git/S3, not Google Docs: immutable content versions behind a mutable head, identified by their CIDs.
+
+Use this reference when your application needs to:
+
+- Show a user the change history of a file and let them download a previous version.
+- Restore a file to a known-good past state without losing the intervening history.
+- Fetch bytes by CID and still resolve to the exact content, even after the head has moved on.
+- Handle concurrent-write conflicts correctly (retry-on-`409`).
+
+## Concept
+
+- A **version = the full content at each update or edit**, snapshotted atomically with the write. Non-content writes (move, trash, restore-from-trash) bump the version counter but snapshot nothing — history rows are distinct content states only.
+- **Old CIDs keep resolving** on the authenticated fetch-by-CID surface (`GET /api/fs/cid/:cid` and MCP `vfs_read_cid`) while the file lives. When no active head matches, retained history answers. Heads always win over history when both match.
+- **History is append-only.** Restoring a past version writes a new head whose content equals the old one — because content is addressed by its plaintext, the CID comes out identical. Nothing in history is ever rewritten.
+- Access to history always follows the file's **current** path and hidden flags. A version of a now-hidden file requires the `nb.hidden` reveal caveat on the UCAN; a moved file's history follows the new path.
+
+## REST endpoints
+
+All three routes require a UCAN bearer token with the ability listed in the table. They enforce the same path scope and hidden-reveal caveats as the head.
+
+| Endpoint | Ability | Purpose |
+| --- | --- | --- |
+| `GET /api/fs/files/:id/versions` | `fs/read` | List a file's retained content versions, current head first. |
+| `GET /api/fs/files/:id/versions/:version/content` | `fs/read` | Stream one retained version's decrypted bytes. |
+| `POST /api/fs/files/:id/versions/:version/restore` | `fs/write` | Make an old version the new current content, as a NEW head. |
+| `GET /api/fs/cid/:cid` | `fs/read` | Content-addressed fetch. Resolves heads first, then retained history. |
+
+### List versions
+
+```http
+GET /api/fs/files/{id}/versions
+Authorization: Bearer <ucan>
+```
+
+Response:
+
+```json
+{
+  "fileId": "01HXK…",
+  "cap": 50,
+  "count": 3,
+  "versions": [
+    {
+      "version": 5,
+      "cid": "bafybeigd…",
+      "size": 4321,
+      "contentHash": "sha256-…",
+      "mimeType": "text/markdown",
+      "path": "/notes/plan.md",
+      "current": true,
+      "createdAt": 1751913600,
+      "createdBy": "did:ixo:…"
+    },
+    { "version": 4, "cid": "bafybeif…", "current": false, "…": "…" },
+    { "version": 3, "cid": "bafybeic…", "current": false, "…": "…" }
+  ]
+}
+```
+
+`current: true` identifies the head. Each retained version names its CID — fetch its bytes with `GET /api/fs/cid/:cid` or with `GET /api/fs/files/:id/versions/:version/content`.
+
+### Read an old version
+
+```http
+GET /api/fs/files/{id}/versions/{version}/content
+Authorization: Bearer <ucan>
+```
+
+Streams the decrypted bytes of that version. The response carries `x-vfs-cid` so callers can re-derive the CID over the plaintext to verify. The head serves through its own row; a past version serves through its snapshot's key material.
+
+### Restore a past version
+
+```http
+POST /api/fs/files/{id}/versions/{version}/restore
+Authorization: Bearer <ucan>
+```
+
+Writes a new head whose content equals version `{version}`. Because content addressing is deterministic, the new head's CID equals the restored version's CID. The pre-restore head is snapshotted like any update, and history is not rewritten — this is why `restore` is safe: the intervening versions are still there.
+
+Response is the new file metadata (same shape as `GET /api/fs/files/:id`), with `metadata.revertedTo` naming the version that was restored.
+
+Errors:
+
+| Status | Meaning |
+| --- | --- |
+| `400` | The requested version is already the current head. |
+| `404` | The file, or that version of it, is not accessible. |
+| `409` | The write would exceed the [50-version cap](#the-50-version-cap), or another write landed concurrently. |
+
+### CID fallback to history
+
+`GET /api/fs/cid/:cid` resolves the caller's active heads first, then falls back to retained history when nothing matches. That means a client that stored a raw CID can still fetch the exact bytes it committed against, even after later edits moved the head.
+
+The fallback is **never exposed on the public surface**: `/public/cid/:cid`, `/public/id/:id`, and `/public/:namespace/:path` all resolve through live heads only. Publishing a file must not accidentally re-expose a secret that was edited out before publishing.
+
+## MCP tools
+
+The agent surface mirrors REST exactly — same shared implementations, same guarantees.
+
+| Tool | Ability | Purpose |
+| --- | --- | --- |
+| `vfs_versions` | `fs/read` | List a file's retained versions by path — number, CID, size, author, timestamp. |
+| `vfs_read_cid` | `fs/read` | Read by CID — current head first, then retained history. |
+| `vfs_restore_version` | `fs/write` | Restore version N of a file as the new current content. |
+
+`vfs_versions` and `vfs_restore_version` are **path-oriented**, so they are only registered on the MCP session when the token is **not** CID-scoped. A CID-scoped session (`nb.cids`) has no visibility into a file's history beyond the CIDs already in its grant — it can still call `vfs_read_cid` for those.
+
+Typical agent flow:
+
+1. Call `vfs_versions /notes/plan.md` to list the retained versions.
+2. Pick a past version's CID and read it with `vfs_read_cid` to inspect the exact bytes.
+3. Call `vfs_restore_version` to bring that content back as the new head.
+
+`vfs_write` and `vfs_edit` report the version-cap rejection with the same message as REST.
+
+## The 50-version cap
+
+Each file retains **at most 50 content versions**, and the head counts as one. A content write — PUT, edit, or version-restore — that would exceed the cap is **rejected with `409` before any blob upload happens**, so a rejected write leaves nothing behind. The rejection is logged.
+
+Semantics:
+
+- Only **content** writes count toward the cap. Moves, renames, trash, and restore-from-trash never count and are never blocked by the cap.
+- **Deleting the file** (purge) and uploading fresh starts a new history.
+- **Trash + restore-from-trash** does NOT reset the cap. The whole history is still there, hidden while the file is trashed.
+
+Clients should treat `409` from a content write as: "the file already has 50 retained versions, or another write landed first — surface it, retry, or offer purge-and-upload".
+
+## Optimistic concurrency (`409` responses)
+
+Content writes now use optimistic concurrency. Every batch — head update, version snapshot, event row, chunk re-index — carries a version CAS plus per-statement guards, and uses attempt-unique blob keys. The result: concurrent writers can no longer corrupt the head. The winner's content, key material, history, and search index stay consistent; **the loser changes nothing and gets a clean `409`**:
+
+```json
+{
+  "error": "Conflict",
+  "message": "The file was modified concurrently — fetch the latest version and retry",
+  "status": 409
+}
+```
+
+The same discipline extends to non-content operations:
+
+- **Moves** — a stale move fails per-item with `409` instead of rolling the version counter back over history.
+- **Delete, restore, purge** — a lost race records no phantom audit event; the operation either commits atomically or does nothing.
+
+Clients that write to the same file from multiple places should:
+
+1. Read the current head (or its metadata) immediately before the write.
+2. Retry once on `409`, after re-reading.
+3. If `409` persists, distinguish version-cap (fixed by purge or deleting older content) from concurrent-write (fixed by retry) using the response `message`.
+
+## Lifecycle and shred
+
+- **Trash** hides the whole history. Version routes and the CID fallback require the file to be active; a trashed file returns `404` to both. Restoring from trash brings the whole history back untouched.
+- **Purge crypto-shreds everything.** Every version row is deleted in the same atomic D1 batch that nulls the head's key material, and every version blob is removed from R2. Old CIDs then 404 forever. Audit events survive (they never carry key material).
+
+Because every version carries its own wrapped DEK, nulling the key material makes prior ciphertext unrecoverable even if a copy were retained elsewhere — GDPR-compatible crypto-erasure.
+
+## Auth and scope on history surfaces
+
+Every history surface enforces the same gates as the head, driven by the file's **current** state:
+
+- **UCAN ability.** `versions` list and version-content read require `fs/read`; `restore` requires `fs/write`.
+- **Path scope.** A path-scoped token can only see history of files inside its scope. Access follows the file's current path — if a file has since been moved, its history moves with it.
+- **Hidden reveal.** If the file is currently hidden (dotfile, explicit `hidden: true`, or under a hidden folder), history routes require the `nb.hidden` reveal caveat (`*`, path, or CID) exactly as the head does.
+- **CID scope.** A CID-scoped token (`nb.cids`) can resolve only CIDs in its grant via `GET /api/fs/cid/:cid` and `vfs_read_cid` — head or retained. It has no visibility into `vfs_versions` or `vfs_restore_version`.
+- **Public surface.** History is never reachable through `/public/*` — publishing exposes only live heads.
+
+## Related
+
+- [`ixoworld/ixo-virtual-filesystem`](https://github.com/ixoworld/ixo-virtual-filesystem) — source, migrations, and full design log (`DECISIONS.md` D36/D37).
+- [MCP servers](/mcp/model-context-protocol) — how agents mount VFS as a toolset.
