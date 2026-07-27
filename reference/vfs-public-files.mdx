@@ -1,0 +1,235 @@
+---
+title: "VFS public files and folders"
+description: "Publish files or folders from the IXO Virtual File System so anyone can download the decrypted content over plain HTTPS — no UCAN required."
+---
+
+The IXO Virtual File System (VFS) supports **publishing** files and folders. An explicitly-published item's decrypted content is downloadable by anyone over plain HTTPS with no `Authorization` header — a lightweight "share link" surface on top of the normal namespace + UCAN model.
+
+Use publishing when you want to:
+
+- Share a single file (report, PDF, image) with recipients who don't hold a UCAN.
+- Expose a subtree as a static-site-shaped share (a whole folder becomes publicly downloadable).
+- Offer a whole folder as a one-shot ZIP download.
+- Let third parties browse what a namespace has chosen to publish.
+
+## Publishing rules
+
+- **Private by default.** Nothing is public unless it — or an ancestor folder — has been explicitly published. There is no naming convention that publishes anything implicitly.
+- **A public folder publishes its whole subtree.** New uploads into a published folder inherit the flag. An item is *effectively public* when it, or any ancestor folder, is public.
+- **Public overrides hidden.** Publishing means anyone can download the content, hidden or not. The `hidden` flag continues to gate the *authenticated* surfaces (where an `nb.hidden` reveal is still required), but never blocks public serving. Publishing a folder therefore also exposes its dotfiles.
+- **Writes stay gated.** Publishing and unpublishing always require an `fs/write` UCAN — only *reading* is anonymous. Every change is audited, and anonymous reads land in the access log too.
+- **Set, not toggle.** Every publish endpoint requires an explicit `true` or `false` value; omitting it returns `400`.
+
+## The three public URL forms
+
+All three routes live at the origin root (not under `/api/fs`), require no auth, stream the decrypted bytes, and return a uniform `404` for anything not servable (private, hidden-but-not-public, trashed, purged, or nonexistent).
+
+| URL | Semantics | Survives rename/move | Survives content edit |
+| --- | --- | --- | --- |
+| `GET /public/id/:id` | Canonical share link — this item, wherever it goes. | Yes | Yes |
+| `GET /public/cid/:cid` | Immutable — exactly these bytes (plaintext IPFS CID). | Yes | No (new content = new CID) |
+| `GET /public/:namespace/:path` | Mutable — the latest content at this location. | No | Yes |
+
+`<namespace>` is the storage namespace verbatim: `user:<ixo-address>` or `entity:<did>`.
+
+```
+https://vfs.example/public/user:ixo1abc.../reports/q1.pdf
+```
+
+File metadata (`GET /api/fs/files/:id`) advertises the canonical link as `publicUrl` (relative — prepend the service origin) whenever the file is actually servable.
+
+### Response headers
+
+Public downloads stream with:
+
+- The file's original `Content-Type`.
+- `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff` — uploaded HTML never executes at the service origin; `<img>`/`<video>` embedding still works.
+- `x-vfs-cid`, `x-vfs-content-hash`, and `x-vfs-version` for client-side verification.
+- `ETag` — pair with `If-None-Match` for a `304 Not Modified`.
+- `Cache-Control: public, max-age=60` — public GETs are edge-cached, so **unpublishing takes up to ~60 s to fully converge**.
+
+## Folder ZIP downloads
+
+Download a whole folder as a single ZIP archive. Files stream through STORE + ZIP64 at constant memory, so any folder size works within the Worker's CPU budget.
+
+### Authenticated (any folder in scope)
+
+```bash
+GET /api/fs/folder/download?path=/reports
+GET /api/fs/folder/download?id=<FOLDER_ID>
+```
+
+Requires an `fs/read` UCAN. Honours the token's path scope and any `nb.hidden` reveal. `id` (available on published or hidden folders) references a folder without exposing its ancestor path.
+
+### Anonymous (public folders only)
+
+```bash
+# By opaque folder id — the share handle; reveals nothing about the ancestor path or sibling folders.
+curl -L "$VFS/public/folder/id/1f3c...-uuid" -o reports.zip
+
+# By namespace + path — human-readable, leaks the path.
+curl -L "$VFS/public/folder/user:ixo1abc.../reports" -o reports.zip
+```
+
+Both forms return `application/zip; attachment; filename="<folder>.zip"`.
+
+- Includes every `public_effective = 1` active file under the folder — **hidden files included** (public overrides hidden). The folder becomes the archive's top directory.
+- Pre-flight caps: **20,000 files** and **50 GiB** total. Oversized folders return `413`.
+- Returns `404` when nothing under the path is public.
+- Not edge-cached (archives are large and dynamic).
+
+<Tip>
+  Prefer the `/public/folder/id/:id` form for sharing. A folder gains an id the moment you publish (or hide) it; a folder that merely *contains* individually-public files is not itself shareable by id.
+</Tip>
+
+## Browsing a namespace's public content
+
+Anyone can list what a namespace has chosen to publish — no UCAN. Listing is per-namespace only; there is no global "all public files on the server" discovery.
+
+```bash
+# Everything published in a namespace (flat, keyset-paginated by path).
+curl "$VFS/public/list/user:ixo1abc..."
+
+# Scope to a folder and paginate.
+curl "$VFS/public/list/user:ixo1abc...?path=/reports&limit=100"
+curl "$VFS/public/list/user:ixo1abc...?path=/reports&cursor=<next-cursor>"
+
+# File-manager style — immediate child files + subfolders, one level.
+curl "$VFS/public/list/user:ixo1abc...?path=/reports&view=tree"
+```
+
+Response:
+
+```json
+{
+  "namespace": "user:ixo1abc...",
+  "path": "/reports",
+  "view": "flat",
+  "folders": [
+    {
+      "id": "...",
+      "path": "/reports/q1",
+      "name": "q1",
+      "publicUrl": "/public/folder/id/..."
+    }
+  ],
+  "foldersTruncated": false,
+  "files": [
+    {
+      "id": "...",
+      "path": "/reports/q1/summary.pdf",
+      "name": "summary.pdf",
+      "size": 20481,
+      "mimeType": "application/pdf",
+      "cid": "bafk...",
+      "updatedAt": 1751200000,
+      "publicUrl": "/public/id/..."
+    }
+  ],
+  "cursor": "/reports/q1/summary.pdf"
+}
+```
+
+- `view=flat` (default) returns every public file *under* the path, keyset-paginated by `cursor` (O(page) at any depth). `view=tree` returns only immediate child files + subfolders.
+- `folders` appear on the **first page only** and are capped at 1,000 with `foldersTruncated` signalling more. Every published folder — including subfolders created after the parent was published — carries its `id`, so the listing doubles as an index of ZIP-downloadable folders.
+- `limit` defaults to 100 (max 500). `cursor` is absent on the last page.
+- Only `public_effective = 1` rows appear. Private content is never listed. Published-but-hidden items DO appear (public overrides hidden).
+- Owner DIDs (`createdBy` / `updatedBy`) are **omitted** so an entity namespace never leaks which controller touched a file. Only public-safe fields ship.
+
+## Publishing and unpublishing
+
+All publish endpoints require `Authorization: Bearer <ucan>` with `fs/write` and `X-Auth-Type: ucan`.
+
+### Publish at upload
+
+```bash
+curl -X POST "$VFS/api/fs/files?path=/reports/q1.pdf&public=true" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan" \
+  -H "Content-Type: application/pdf" --data-binary @q1.pdf
+# → 201  { "id": "...", "public": true, "publicUrl": "/public/id/...", ... }
+```
+
+### Publish or unpublish a file
+
+`PATCH /api/fs/files/:id/public` — value from `?public=true|false` (preferred) **or** JSON body `{ "public": <bool> }`.
+
+```bash
+# Publish.
+curl -X PATCH "$VFS/api/fs/files/<FILE_ID>/public?public=true" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan"
+
+# Unpublish (JSON body form).
+curl -X PATCH "$VFS/api/fs/files/<FILE_ID>/public" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan" \
+  -H "Content-Type: application/json" -d '{ "public": false }'
+```
+
+### Publish or unpublish a folder (cascades)
+
+`PUT /api/fs/folders/public?path=…` sets the folder's own flag and cascades effective-public through the whole subtree.
+
+```bash
+# Publish everything under /site.
+curl -X PUT "$VFS/api/fs/folders/public?path=/site&public=true" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan"
+
+# Unpublish. Files that carry their own public flag stay public (self OR ancestor).
+curl -X PUT "$VFS/api/fs/folders/public?path=/site&public=false" \
+  -H "Authorization: Bearer $BEARER" -H "X-Auth-Type: ucan"
+```
+
+### Quick reference
+
+| Goal | Endpoint | Value |
+| --- | --- | --- |
+| Publish at upload | `POST /api/fs/files?path=…&public=true\|false` | query param |
+| Publish a file later | `PATCH /api/fs/files/:id/public` | `?public=` **or** `{ "public": bool }` |
+| Publish a folder (cascades) | `PUT /api/fs/folders/public?path=…` | `?public=` **or** `{ "public": bool }` |
+
+`GET /api/fs/files/:id` includes `public` (the *effective* state) and, when servable, `publicUrl`.
+
+### Flags on authenticated listings
+
+Authenticated listing endpoints surface the same publish state, so a UI can render "Public" badges and share links without a second lookup per row:
+
+- `GET /api/fs/tree?path=…` — every file and folder node carries `hidden`, `public` (the *effective* state), and, when servable, `publicUrl` (files → `/public/id/…`, published folders → `/public/folder/id/…`).
+- `GET /api/fs/files?path=…` — each file entry carries `hidden`, `public`, and `publicUrl` when servable.
+
+Nodes that aren't servable simply omit `publicUrl`. Path-scoped `fs/list` still governs which subtree is visible to the caller.
+
+## Fetch by path
+
+Anywhere you'd chain `list → id → content`, you can now address a file by path in one call:
+
+```bash
+GET /api/fs/content?path=/reports/q1.pdf
+```
+
+Requires `fs/read`. Same streaming, ETag, and verification-header semantics as `GET /api/fs/files/:id/content`.
+
+## MCP tools
+
+Both publishing and path-addressed fetching are available to agents over the VFS MCP endpoint (`POST /api/fs/mcp`):
+
+| Tool | Purpose | Ability |
+| --- | --- | --- |
+| `vfs_set_public` | Publish or unpublish a file or folder (folders cascade). Returns the `/public/id/…` share link, with a warning if the item is currently hidden and therefore not yet servable. | `fs/write` |
+| `vfs_fetch` | Full raw content by path — text as text, binary as base64 resource (≤ 4 MiB). | `fs/read` |
+
+```jsonc
+// Publish a report and get its share link back.
+vfs_set_public { "path": "/reports/q1.pdf", "public": true }
+
+// Fetch a file by path in one call.
+vfs_fetch { "path": "/reports/q1.pdf" }
+```
+
+## Security posture
+
+- **Private by default.** No flag ⇒ no anonymous access. Pre-existing content is backfilled as private.
+- **Uniform 404.** Private, hidden-but-not-public, trashed, and nonexistent all answer identically — public routes never confirm existence.
+- **No enumeration.** There is no server-wide public listing; browsing is per-namespace only, and folder ids are unguessable UUIDs.
+- **Public overrides hidden** applies only to serving. Hidden still gates the authenticated surfaces (still needs an `nb.hidden` reveal there).
+- **Write-gated + audited.** Only `fs/write` tokens (owner or delegate, within their path scope) can publish or unpublish; anonymous reads are logged too.
+- **Same XSS posture as authenticated downloads.** `Content-Disposition: attachment` + `nosniff`.
+- **Rate-limited.** Per-IP rate limiting applies to `/public/*` like every other route.
