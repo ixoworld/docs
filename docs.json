@@ -74,6 +74,7 @@
             "group": "User Guides",
             "pages": [
               "guides/users/intro-users",
+              "guides/users/outcome-graph",
               "guides/users/ussd"
             ]
           },
@@ -225,6 +226,7 @@
                   "build-an-oracle/reference/bundled-plugins/calls",
                   "build-an-oracle/reference/bundled-plugins/user-preferences",
                   "build-an-oracle/reference/bundled-plugins/matrix-group-chats",
+                  "build-an-oracle/reference/bundled-plugins/vfs",
                   "build-an-oracle/reference/bundled-plugins/flows"
                 ]
               }

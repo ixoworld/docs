@@ -20,6 +20,7 @@ import { createOracleApp } from '@ixo/oracle-runtime';
 export interface CreateOracleAppOptions {
   config: OracleConfig;
   features?: Partial<Record<BundledFeatureName | (string & {}), FeatureToggle>>;
+  manifestOverrides?: Partial<Record<BundledFeatureName | (string & {}), PluginManifestOverride>>;
   plugins?: OraclePlugin[];
   nestModules?: Array<Type | DynamicModule>;
   authExcludedRoutes?: AuthExcludedRoute[];
@@ -137,6 +138,63 @@ export interface CreateOracleAppOptions {
       'domain-indexer': 'auto',
     }
     ```
+  </Accordion>
+
+  <Accordion title="manifestOverrides" icon="sliders">
+    - **Type:** `Partial<Record<BundledFeatureName | (string & {}), PluginManifestOverride>>` where `PluginManifestOverride = Partial<PluginManifest>`
+    - **Required:** no
+    - **Added in:** `@ixo/oracle-runtime` 1.2.0
+
+    Per-plugin overrides for fields on a loaded plugin's [manifest](/build-an-oracle/reference/manifest-schema). Use this to retune a bundled plugin's discovery — most commonly its [`visibility`](/build-an-oracle/understand/visibility-tiers) — **without forking the plugin source**. Typical uses: flip a noisy `always` plugin to `on-demand`, hide one behind `silent`, or relabel its `summary` / `tags` / `whenToUse`.
+
+    Keys are plugin **names** (the same kebab-case identifiers used by [`features`](#features), e.g. `'domain-indexer'`). Values are a `Partial<PluginManifest>` — set only the fields you want to change.
+
+    ```ts
+    import { createOracleApp } from '@ixo/oracle-runtime';
+
+    const app = await createOracleApp({
+      config,
+      manifestOverrides: {
+        // Drop a noisy bundled plugin out of the Tier-1 prompt.
+        'domain-indexer': { visibility: 'on-demand' },
+        // Hide a transport plugin entirely; its tools still bind.
+        portal: { visibility: 'silent' },
+        // Sharpen the trigger phrases the agent sees for memory.
+        memory: {
+          summary: 'Long-term user memory store.',
+          whenToUse: ['When the user refers to a past conversation or stored preference.'],
+        },
+      },
+    });
+    ```
+
+    **Merge semantics**
+
+    Each override is **shallow-merged** onto the plugin's own manifest before validation and registration:
+
+    - Keys you set win; keys you omit keep the plugin default.
+    - `undefined` values are ignored — a sparse override never blanks out a field.
+    - Arrays and nested objects are replaced wholesale (not deep-merged). For example, supplying `whenToUse: [...]` **replaces** the plugin's full list rather than appending to it.
+
+    The merged manifest is what the runtime validates and what every downstream reader sees — the Tier-1 prompt block, the `list_capabilities` / `load_capability` meta-tools, and the agent's visibility index — so an override is the single source of truth from boot onwards.
+
+    **Validation**
+
+    Because the merged manifest is run through the same `validateManifest` rules as an authored one (see [Manifest schema](/build-an-oracle/reference/manifest-schema)), an override is held to the same constraints. For example, an override that empties `whenToUse` on a non-silent plugin fails boot with a clear `Plugin manifest validation failed` error.
+
+    **Unknown keys**
+
+    Override keys that don't match a loaded plugin (e.g. the plugin is excluded by `features` or simply misspelt) are **logged and ignored** — they do not fail boot:
+
+    ```text
+    [boot] manifestOverrides references 'composio', which is not a loaded plugin — ignored (event: boot.plugin.manifest_override_unknown)
+    ```
+
+    Watch for that event when a retune doesn't appear to take effect.
+
+    <Note>
+    The same option is available on [`createTestRuntime`](/build-an-oracle/develop/test-your-oracle) with identical shape and semantics, so a test can exercise a plugin under a retuned visibility (e.g. forcing `silent`) without a bespoke fixture.
+    </Note>
   </Accordion>
 
   <Accordion title="plugins" icon="puzzle-piece">
@@ -435,7 +493,7 @@ The function executes these steps in order:
 1. Validates `config` (`name` required).
 2. Resolves plugin set: bundled + your plugins, deduped by `name`, with `features` toggles and `autoDetect` predicates applied. Excluded plugins surface in `plugins.status().excluded` with their reason.
 3. Topologically sorts by `dependsOn`. Cycles or missing hard deps fail boot.
-4. Validates every plugin's manifest. Hard violations fail boot.
+4. Shallow-merges any `manifestOverrides` onto each loaded plugin's manifest, then validates the **merged** manifest. Hard violations fail boot. Override keys that don't match a loaded plugin are logged (`boot.plugin.manifest_override_unknown`) and ignored.
 5. Composes env schema (base + all loaded plugins' `configSchema`) and validates `process.env`. Missing required vars fail boot with `[boot-error] Plugin '<name>' env validation failed for '<field>'`.
 6. Cross-field check: the API key for the selected `LLM_PROVIDER` is present. (Schema-merge can't express this.)
 7. Builds the internal `OracleIdentity` from `config` + validated env.
