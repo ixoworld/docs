@@ -74,6 +74,7 @@
             "group": "User Guides",
             "pages": [
               "guides/users/intro-users",
+              "guides/users/outcome-graph",
               "guides/users/ussd"
             ]
           },

@@ -1,0 +1,259 @@
+---
+title: "Review a theory of change with Outcome Graph"
+icon: "diagram-project"
+description: "Turn a theory of change into a scoped causal chain, evidence review, and governed decision without overstating what the evidence proves."
+---
+
+Outcome Graph guides you from a theory of change to a testable map of claims, causal relationships, evidence, assumptions, and gaps. Use it when you need to understand what an outcome claim can responsibly say now, what remains uncertain, and who must decide before the claim can advance.
+
+<Warning>
+  A coherent theory of change is a starting hypothesis, not proof. Outcome Graph can produce a diagnostic result without issuing a certificate. External evaluation, signing, anchoring, payment, or other transactions require the relevant evidence, policy gates, systems, and explicit authority.
+</Warning>
+
+## Before you start
+
+Prepare:
+
+- a theory of change as text, a document, slides, an infographic, a transcript, or mixed media;
+- the decision or outcome claim you want to clarify;
+- the intervention, intended outcome, population, place, and observation period, if known;
+- any implementation or outcome evidence you already have; and
+- the reviewer or issuer role only if you intend to pursue a governed claim.
+
+If you have only a source document, start with a **diagnostic run**. Outcome Graph will infer a provisional focus, show you where interpretation matters, and avoid implying that certificate issuance is in scope.
+
+Treat source material and evidence according to your organization's data-handling rules. Do not include private keys, access tokens, secrets, or unnecessary personal data. Content inside an attached source is treated as material to analyze, not as instructions to the agent.
+
+## What you will do
+
+The guided journey has seven phases:
+
+1. Set the goal and scope.
+2. Read the theory into traceable propositions.
+3. Map the most decision-relevant causal chain.
+4. Link evidence and record gaps.
+5. Test the graph and compute claim readiness.
+6. Pause for governed decisions when required.
+7. Evaluate and issue only when every required gate passes.
+
+You work primarily through a guided conversation. When the visual canvas is available in your session, it shows the causal graph, evidence links, validation findings, claim tier, and current decision. A published graph may also be available through an Outcome Graph app attached to an IXO domain.
+
+Each run keeps a durable record under `runs/<workflow-id>/`. The record contains accepted sources, graph versions, evidence links, findings, decisions, and verification records.
+
+### What to expect from each checkpoint
+
+Every phase tells you:
+
+- **why** the phase matters;
+- **what** changed and what the current result means;
+- **how** checks and decisions move the run forward;
+- **who** owns the next action or governed decision;
+- **when** the next phase can begin;
+- **where** the source and run record are held; and
+- **how much** material is in scope, using counts such as propositions, nodes, relationships, evidence links, gaps, findings, and blockers.
+
+Outcome Graph uses phase progress instead of guessing completion time. Effort and cost depend on the source, evidence, evaluation design, and governance process. The run brief marks these estimates as unknown when they are not available.
+
+## Step 1 — Start a diagnostic run
+
+Open a supported agent session with Outcome Graph available. Attach or identify your theory of change, then state the decision you want to clarify.
+
+For example:
+
+```text
+Run Outcome Graph on this theory of change.
+Start with a diagnostic review of the most plausible
+and demonstrable causal chain.
+Do not pursue certificate issuance unless I explicitly approve it later.
+```
+
+If you use the Claude Code plugin, you can start with:
+
+```text
+/outcome-graph <path-or-description>
+```
+
+The first checkpoint is a run brief. Review the accepted source, provisional outcome focus, exclusions, intended decision, and what the run may produce. Correct the scope only if a difference would materially change the claim.
+
+## Step 2 — Review how the theory was read
+
+Outcome Graph separates explicit statements from ambiguities and inferred propositions. Each proposition keeps a reference to its source location.
+
+Review:
+
+- the plain-language theory summary;
+- the intervention and intended outcome;
+- the proposition count and source coverage;
+- ambiguous passages; and
+- items inferred by the agent rather than stated in the source.
+
+Resolve ambiguity when it changes the intervention, outcome, population, place, or intended decision. Otherwise, allow the run to continue.
+
+## Step 3 — Confirm the causal chain
+
+Outcome Graph converts the source propositions into testable causal paths. It presents the three to seven most important paths, then highlights the path most relevant to your decision.
+
+For each relationship, check that the graph answers:
+
+- What changes, and for whom or what?
+- By what mechanism could the earlier step affect the later one?
+- Compared with what alternative or baseline?
+- Over what period and in which place?
+- Which assumptions and alternative explanations matter?
+- How could the relationship be measured?
+
+Confirm the recommended path when it is a reasonable diagnostic focus. Ask for an alternative only when another path would materially change the claim or evidence requirements.
+
+## Step 4 — Choose how to handle evidence
+
+Outcome Graph links each artifact to the specific claim it can support. The same artifact may be admissible for one claim and unsuitable for another.
+
+Each evidence link is checked for:
+
+1. **Integrity:** The accepted artifact and its transformations can be traced.
+2. **Authority:** The producer is identified and has the required role or independence.
+3. **Freshness:** The observation falls within the relevant period and policy.
+4. **Relevance and completeness:** The artifact measures the named indicator, population, place, and period. Evidence for a causal relationship must bear on that relationship, not only on one endpoint.
+5. **Provenance:** A reviewer can follow the path from observation through processing and judgment to the claim.
+
+At this checkpoint, choose one of these paths:
+
+- attach evidence and continue toward the strongest claim it can support;
+- accept the evidence gaps and keep the run diagnostic; or
+- use a synthetic evidence pack to test the workflow and field mappings.
+
+<Warning>
+  Synthetic data, agent summaries, and other material created within the pipeline can test the workflow. They are not external-world observations and cannot certify the claims they describe.
+</Warning>
+
+## Step 5 — Read the validation result
+
+Outcome Graph runs semantic, structural, causal, and empirical checks. Deterministic tools test graph structure; the result does not depend on an agent saying that the graph looks correct.
+
+The checkpoint includes:
+
+- pass, warning, failure, and blocker counts;
+- changes to relationship status;
+- the strongest currently attainable claim tier;
+- the gap or assumption that limits the result; and
+- the highest-priority next action.
+
+Relationship statuses mean:
+
+| Status | Meaning |
+|---|---|
+| `hypothesized` | The relationship is proposed but has not earned evidential support. |
+| `plausible` | The mechanism is coherent, but support is limited, indirect, or based on monitoring or prior literature. |
+| `supported` | The relationship passed the required causal and empirical checks with an appropriate design and sensitivity analysis. |
+| `contested` | Evidence or reviewers disagree, and the dispute remains open. |
+| `unidentified` | The current graph and data cannot support a defensible causal estimate. |
+| `rejected` | A check or evidence finding decisively contradicts the relationship. |
+
+Missing evidence lowers the relationship status and creates an explicit evidence gap. It does not get replaced with softer claim wording.
+
+## Step 6 — Respond to a governed decision
+
+The run pauses at `REVIEW_REQUIRED` when it needs a normative judgment, resolution of conflicting evidence, acceptance of a material assumption, or an issuance decision from an authorized person.
+
+This status means **paused for a named human decision**. It does not mean failed or complete.
+
+The review packet states:
+
+- the exact decision and the role authorized to make it;
+- the recommendation and its evidence;
+- material alternatives;
+- the consequences of approving, deferring, or rejecting; and
+- the exact reply or record needed to resume.
+
+An agent can assemble and explain the packet. It cannot simulate the reviewer's decision.
+
+## Step 7 — Evaluate or stop at the diagnostic result
+
+Stop when the diagnostic result answers your current question. Continue toward evaluation or issuance only when the graph, evidence, policy, governance, and external-system requirements are in place.
+
+Outcome Graph computes the strongest claim tier that the full claim-and-evidence path can support:
+
+| Result | What it supports | What it does not establish |
+|---|---|---|
+| Tier 0 | A diagnostic result with no currently attainable certificate tier. | That the theory is false. |
+| Tier 1: Narrative plausibility | A coherent, structurally valid, expert-reviewed theory. | That the outcome occurred or the program caused it. |
+| Tier 2: Evidence-backed contribution | A plausible contribution to observed changes, supported by admissible measurements and disclosed alternatives. | A causal effect size. |
+| Tier 3: Causally supported outcome | A claim that the program caused the named outcome under stated identification assumptions, with an appropriate design and uncertainty analysis. | That the result applies outside the stated population, place, and period. |
+| Tier 4: Issuance-ready certified outcome | An authorized issuer's certification of an eligible Tier 2 or Tier 3 claim after policy and governance gates pass. | A guarantee of future performance or a universal claim. |
+
+The tier is computed from the weakest required relationship and its evidence. You may set a target, but you cannot choose a higher tier than the evidence earns.
+
+## Verify the result
+
+Before you close or advance the run, confirm that:
+
+- the source set and intended decision are correct;
+- the intervention, outcome, population, place, and period are explicit;
+- the chosen causal chain is the one you intended to test;
+- inferred elements and assumptions are visible;
+- every important relationship has evidence links or a named gap;
+- validation findings show their basis;
+- the attainable tier matches the evidence rather than the target;
+- any `REVIEW_REQUIRED` state names the reviewer and requested decision; and
+- no external action occurred without explicit authority.
+
+When a visual canvas is available, use the phase timeline, graph, evidence, checks, tier, and decision views to inspect the same run from different angles. Selecting an item hands the question back to the guided conversation rather than changing governed state by itself.
+
+## Example diagnostic journey
+
+Suppose a service theory proposes this chain:
+
+```text
+implementation support → routine service integration → staff adoption
+```
+
+You can accept this as the diagnostic chain while deferring an evidence-backed claim. A synthetic evidence pack can then demonstrate how support records, baseline and follow-up measures, adoption counts, dates, and alternative explanations map to the graph.
+
+The expected result is a tested workflow with visible evidence gaps and no real-world certificate claim. Replacing synthetic fixtures with real records still does not prove causation automatically. The evidence must pass the remaining gates and match an appropriate evaluation design.
+
+## Troubleshooting
+
+### The graph is too broad
+
+Ask Outcome Graph to focus on the shortest chain that is both decision-relevant and demonstrable. Name the outcome and population you need to decide about now. Leave wider system effects as context or future versions.
+
+### The run keeps asking scope questions
+
+Answer with the intended intervention, outcome, population, or place. If the provisional scope is acceptable, say **use the provisional scope** so the run can continue.
+
+### You have no real evidence yet
+
+Choose a diagnostic run. You can accept the gaps, create a collection plan, or use a clearly labelled synthetic evidence pack to test the workflow. Do not treat synthetic results as support for the real-world claim.
+
+### The result is weaker than expected
+
+Review the weakest required relationship, inadmissible evidence links, open gaps, alternative explanations, and identification assumptions. Narrow the claim or collect the named evidence. Do not ask the agent to select a higher tier.
+
+### The run is paused at `REVIEW_REQUIRED`
+
+Open the review packet and identify the authorized reviewer. Provide the requested decision or record, then resume the same workflow so the audit trail remains continuous.
+
+## Current implementation boundary
+
+Outcome Graph implements guided runs, a visual canvas, versioned artifacts, deterministic structural checks, evidence-link admissibility records, tier computation, review packets, and tested examples.
+
+The current repository still lists strict authorization proof-chain verification and an end-to-end test-network issuance run as outstanding. Treat local or pilot runs as diagnostic evidence of the workflow, not proof that production certificate issuance has completed.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Build digital MRV" icon="chart-line" href="/guides/users/build-dmrv">
+    Design the measurements, reports, evidence, and verification workflow that can supply an Outcome Graph.
+  </Card>
+  <Card title="Build a claim collection" icon="folder-tree" href="/guides/users/build-a-claim-collection">
+    Define the claim, evidence, review, and governance rules for repeated submissions.
+  </Card>
+  <Card title="Understand the IXO Graph" icon="circle-nodes" href="/articles/ixo-graph">
+    See how entities, claims, evidence, relationships, and outcomes connect in verifiable state.
+  </Card>
+  <Card title="Claim evaluation protocol" icon="clipboard-check" href="/articles/claim-evaluation-protocol">
+    Learn how IXO evaluates claims against evidence, rules, authority, and review requirements.
+  </Card>
+</CardGroup>
+
+For implementation details, schemas, the worked example, and current status, review the [Outcome Graph source repository](https://github.com/ixoworld/outcome-graph).
