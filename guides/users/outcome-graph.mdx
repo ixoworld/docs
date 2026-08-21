@@ -12,7 +12,25 @@ Outcome Graph guides you from a theory of change to a testable map of claims, ca
 
 ## Before you start
 
-Prepare:
+### Confirm access
+
+<Warning>
+  Outcome Graph is not currently available as a self-service feature from this documentation site or the public IXO Portal. The source repository does not yet provide a validated public installation flow. To use this guide, you need a Claude Code session that an IXO maintainer has configured with Outcome Graph.
+</Warning>
+
+Before you prepare a theory of change:
+
+1. Install and authenticate [Claude Code](https://code.claude.com/docs/en/quickstart), if it is not already available to you.
+2. Open the Claude Code session configured for Outcome Graph.
+3. Enter `/help` and confirm that an Outcome Graph command is listed.
+
+The expected result is an Outcome Graph entry that you can select or invoke from the session. If it is missing, [contact IXO support](mailto:assistant@ixo.world) and request **Outcome Graph guided-run access**. Include your organization or IXO domain, and whether your theory of change is text, a document, slides, an infographic, or a transcript.
+
+Do not continue to Step 1 until the Outcome Graph command appears in `/help`.
+
+### Prepare your source
+
+You need:
 
 - a theory of change as text, a document, slides, an infographic, a transcript, or mixed media;
 - the decision or outcome claim you want to clarify;
@@ -56,7 +74,7 @@ Outcome Graph uses phase progress instead of guessing completion time. Effort an
 
 ## Step 1 — Start a diagnostic run
 
-Open a supported agent session with Outcome Graph available. Attach or identify your theory of change, then state the decision you want to clarify.
+Open the configured Claude Code session that you verified above. Attach or identify your theory of change, then state the decision you want to clarify.
 
 For example:
 
@@ -67,7 +85,7 @@ and demonstrable causal chain.
 Do not pursue certificate issuance unless I explicitly approve it later.
 ```
 
-If you use the Claude Code plugin, you can start with:
+You can also use the Outcome Graph command shown in `/help`. The current source package documents this command as:
 
 ```text
 /outcome-graph <path-or-description>
