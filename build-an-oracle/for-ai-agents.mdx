@@ -180,7 +180,7 @@ interface PluginSubAgent {
 
 `silent` means *not advertised* — the tools are still bound and the agent can call them; they're just kept out of the Tier-1 prompt and `list_capabilities`. It is not a security boundary.
 
-## Bundled plugins (15)
+## Bundled plugins (16)
 
 From [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts):
 
@@ -201,6 +201,7 @@ From [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworl
 | `calls` | silent | on (placeholder stub — no tools) | — |
 | `user-preferences` | always | on | — |
 | `matrix-group-chats` | on-demand | on (opt out via `features`) | — (optional `CHANNEL_MEMORY_*`) |
+| `vfs` | always | on (needs UCAN grant) | — (URLs from `NETWORK`) |
 
 Toggle via `features` in `createOracleApp`: `true` forces on, `false` forces off, `'auto'` runs `autoDetect`.
 
