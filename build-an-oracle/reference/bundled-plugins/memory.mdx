@@ -51,14 +51,16 @@ Memory context does not arrive in the prompt because the agent calls a tool to f
 5. `relationships` — people and organizations mentioned in past conversations
 6. `recent` — notable things from the last few sessions
 
-**When it runs:** at agent-compile time, before turn 1. The fetcher runs once per session and caches the result for **5 minutes** (keyed by `sessionId`). Subsequent turns within the same session reuse the cached context — the Memory Engine is not called again unless the cache expires.
+**When it runs:** at agent-compile time, before turn 1. The fetcher caches the result for **5 minutes**, keyed by `roomId`. Subsequent turns within the same room reuse the cached context — including a fresh session for the same room — and the Memory Engine is not called again unless the cache expires.
 
 **What appears in the prompt:** if at least one slot is non-empty, the runtime inserts a `## What you know about the user` block into the system prompt containing all populated slots. If every slot is empty (no prior memory for this user), the block is omitted entirely.
+
+The block is deduped and budgeted before it reaches the model: entities are collapsed by name (keeping the richest summary), facts / episodes / communities are collapsed by normalized text so exact repeats across the six slots don't render 4-5 times, and per-entity and whole-block caps are applied. If either cap trims content, the block ends with a `_(More remembered — ask me to recall.)_` footer — trimmed detail is still reachable via the memory tool. No unique fact is dropped, and paraphrases survive.
 
 **Implication for oracle authors:** you do not need to instruct the agent to "look up the user's context" or "recall memory before responding" in `config.prompt.opening` or anywhere else. The context is already in the system prompt when the agent sees the user's first message. Adding such instructions is redundant and wastes tokens.
 
 <Note>
-The 5-minute session cache means very-recent memory writes (e.g. the agent just called `memory-engine__add_memory` in the same session) may not appear in the fetched context until the next session or cache expiry. This is intentional — the fetcher is optimised for read latency, not write-through consistency.
+The 5-minute room-keyed cache means very-recent memory writes (e.g. the agent just called `memory-engine__add_memory` in the current turn) may not appear in the fetched context until the cache expires. This is intentional — the fetcher is optimised for read latency, not write-through consistency.
 </Note>
 
 ## Adding global oracle knowledge
