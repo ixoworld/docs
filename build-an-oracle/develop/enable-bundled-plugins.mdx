@@ -1,6 +1,6 @@
 ---
 title: "Enable bundled plugins"
-description: "Toggle the 16 bundled QiForge plugins via the features map — opt out, force on, or let auto-detect handle it — and retune their manifests."
+description: "Toggle the 14 bundled QiForge plugins via the features map — opt out, force on, or let auto-detect handle it — and retune their manifests."
 icon: "boxes-stacked"
 ---
 
@@ -16,7 +16,7 @@ const app = await createOracleApp({
   config,
   features: {
     composio: true,       // force on (set COMPOSIO_API_KEY)
-    slack: false,         // force off
+    'matrix-group-chats': false,  // force off
     firecrawl: 'auto',    // same as omitting — runs autoDetect
   },
   plugins: [],            // your own plugins go here
@@ -31,9 +31,9 @@ That's the whole surface. The runtime pre-loads every bundled plugin instance fr
 
 <Steps>
   <Step title="The runtime starts with the bundled list">
-    [`BUNDLED_PLUGINS`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) is a fixed 16-plugin tuple — memory, portal, firecrawl, domain-indexer, composio, sandbox, skills, editor, agui, slack, tasks, credits, calls, user-preferences, matrix-group-chats, vfs.
+    [`BUNDLED_PLUGINS`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts) is a fixed 14-plugin tuple — memory, portal, firecrawl, domain-indexer, composio, sandbox, skills, editor, agui, tasks, user-preferences, matrix-group-chats, vfs, oracle-payments.
 
-    You do not import or instantiate the plugins you want at defaults — they are already there.
+    You do not import or instantiate the plugins you want at defaults — they are already there. `credits`, `slack`, `calls`, and `flows` are **not** in the tuple: `features` never reaches them, so you construct each one and pass it in [`plugins`](#plugins-that-are-not-bundled).
   </Step>
 
   <Step title="Each plugin gets a feature decision">
@@ -70,19 +70,17 @@ Each plugin's `autoDetect` predicate decides whether to opt in when you leave it
 | `memory` | `MEMORY_MCP_URL` set | Visibility `always` |
 | `portal` | always on | Visibility `on-demand` |
 | `firecrawl` | `FIRECRAWL_MCP_URL` set | Visibility `on-demand` |
-| `domain-indexer` | always on | Visibility `always` |
+| `domain-indexer` | always on | Visibility `on-demand` |
 | `composio` | `COMPOSIO_API_KEY` set | Visibility `on-demand` |
 | `sandbox` | `SANDBOX_MCP_URL` set | Visibility `always` |
 | `skills` | always on | Visibility `always`; depends on `sandbox` |
-| `editor` | always on | Needs `matrixClient` — instantiate explicitly |
+| `editor` | always on | Visibility `on-demand` — auto-loaded whenever the request carries an active editor session (`editorRoomId`/`spaceId`), no `load_capability` step needed. Needs `matrixClient` — instantiate explicitly |
 | `agui` | always on | Visibility `on-demand` |
-| `slack` | `SLACK_BOT_OAUTH_TOKEN` set | Visibility `silent` (transport) |
 | `tasks` | `REDIS_URL` set | Visibility `on-demand`; BullMQ-backed async tasks (needs `REDIS_URL`) |
-| `credits` | always on | Visibility `silent`; pass `redis` for production |
-| `calls` | always on | Visibility `silent`; placeholder stub (no tools yet) |
 | `user-preferences` | always on | Visibility `always` |
 | `matrix-group-chats` | always on | Visibility `on-demand`; gating middleware + tools fire only in Matrix group rooms (`memberCount > 2`) |
-| `vfs` | always on | Visibility `always`; worker URLs derived from `NETWORK`. Contributes tools only when the oracle has a UCAN signing key and the user granted filesystem access |
+| `vfs` | always on | Visibility `on-demand`, except `vfs_search` + `vfs_read` which are per-tool `always` so file recall needs no load step. Worker URLs derived from `NETWORK`. Contributes tools only when the oracle has a UCAN signing key and the user granted filesystem access |
+| `oracle-payments` | unless `ORACLE_PAYMENTS_DISABLED=true` | Visibility `always`; Matrix-only commerce lane. A no-op until the oracle publishes an Agent Card, and paid work needs `EVAL_ENGINE_URL` |
 
 Full per-plugin env vars: [plugin catalog](/build-an-oracle/reference/bundled-plugins/overview) and [environment variables reference](/build-an-oracle/reference/environment-variables).
 
@@ -136,9 +134,11 @@ Full per-plugin env vars: [plugin catalog](/build-an-oracle/reference/bundled-pl
   </Step>
 </Steps>
 
-## Plugins that need constructor args
+## Plugins that are not bundled
 
-Two bundled plugins take a live runtime object you provide — instantiate explicitly and pass them via `plugins`:
+`credits`, `slack`, `calls`, and `flows` ship inside `@ixo/oracle-runtime` but are absent from `BUNDLED_PLUGINS`, so `features` never reaches them. Load one by constructing it and passing it in `plugins` — anything in that array loads unconditionally.
+
+The same array is how you replace a bundled plugin with a custom-constructed instance (the loader dedupes by `name`, and yours wins). `editor` is the usual case: the bundled instance builds its own Matrix client from the `MATRIX_*` admin env vars, so pass `matrixClient` only to reuse a client your app already keeps synced.
 
 ```ts
 import { createOracleApp, EditorPlugin, CreditsPlugin } from '@ixo/oracle-runtime';
@@ -156,8 +156,8 @@ const redis = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
 const app = await createOracleApp({
   config,
   plugins: [
-    new EditorPlugin({ matrixClient }),
-    ...(redis ? [new CreditsPlugin({ redis, network: 'devnet' })] : []),
+    new EditorPlugin({ matrixClient }),                              // overrides the bundled instance
+    ...(redis ? [new CreditsPlugin({ redis, network: 'devnet' })] : []), // not bundled — this is the only way it loads
   ],
 });
 ```
@@ -165,7 +165,7 @@ const app = await createOracleApp({
 Live example: [apps/qiforge-example/src/main.ts](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/apps/qiforge-example/src/main.ts).
 
 <Note>
-The bundled `editorPlugin` and `creditsPlugin` instances boot in stub form (for testing). For production behaviour, instantiate them yourself and pass the live objects in.
+`credits` without a Redis client loads in pass-through mode and skips the settlement cron. Since it is also where LLM token metering lives, an oracle that never wires it has no metering at all.
 </Note>
 
 ## Retune a bundled plugin's manifest
@@ -176,8 +176,9 @@ The bundled `editorPlugin` and `creditsPlugin` instances boot in stub form (for 
 const app = await createOracleApp({
   config,
   manifestOverrides: {
-    // Take a noisy `always` bundled plugin out of the Tier-1 prompt.
-    'domain-indexer': { visibility: 'on-demand' },
+    // Promote an `on-demand` bundled plugin into the Tier-1 prompt so the
+    // agent sees it without a `load_capability` step.
+    'domain-indexer': { visibility: 'always' },
     // Hide a transport plugin entirely; its tools still bind.
     portal: { visibility: 'silent' },
   },
@@ -196,7 +197,7 @@ Override keys that don't match a loaded plugin are logged (`boot.plugin.manifest
     //   loaded: ['memory', 'domain-indexer', 'editor', 'user-preferences', 'weather'],
     //   excluded: [
     //     { plugin: 'composio', reason: 'auto-detect precondition not met (COMPOSIO_API_KEY)' },
-    //     { plugin: 'slack',    reason: 'feature flag set to false' },
+    //     { plugin: 'tasks',    reason: 'feature flag set to false' },
     //   ],
     //   softDepGaps: [],
     // }

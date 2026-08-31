@@ -12,24 +12,15 @@ icon: "phone"
 | Version | `0.0.0` |
 | Visibility | `silent` |
 | Stability | `experimental` |
-| Default state | Loaded by default (stub — contributes nothing) |
+| Default state | Opt-in — not in `BUNDLED_PLUGINS` (stub — contributes nothing) |
 
 <Warning>
-`calls` is a **placeholder stub**, not a shipped feature. It is the only bundled entry created via `stub('calls', 'Calls')` in `plugins/index.ts` — version `0.0.0`, no tools, no sub-agents, no middleware, no Nest modules. Don't rely on it.
+`calls` is a **placeholder stub**, not a shipped feature. It is created via `stub('calls', 'Calls')` in `plugins/index.ts` — version `0.0.0`, no tools, no sub-agents, no middleware, no Nest modules. Don't rely on it.
 </Warning>
 
 ## Status: deferred
 
-`calls` exists in `BUNDLED_PLUGINS` only so the `features` toggle key resolves. Because it declares no `autoDetect`, the loader loads it by default — but it contributes nothing, so loading it has no effect. The legacy `apps/app` codebase had a `@Controller('calls')` for LiveKit integration; the `getNestModules` API hook would technically unblock a real implementation. Deferred for now.
-
-It contributes nothing, so there is nothing to enable. You can keep it from loading at all with:
-
-```ts
-const app = await createOracleApp({
-  config,
-  features: { calls: false }, // skip the stub entirely
-});
-```
+`calls` is exported from the package but is not in `BUNDLED_PLUGINS`, so nothing loads it. It contributes nothing, so there is nothing to enable either. The legacy `apps/app` codebase had a `@Controller('calls')` for LiveKit integration; the `getNestModules` API hook would technically unblock a real implementation. Deferred for now.
 
 See the framework's [follow-ups](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/docs/spec-and-roadmap/follow-ups.md) for the rebuild plan.
 

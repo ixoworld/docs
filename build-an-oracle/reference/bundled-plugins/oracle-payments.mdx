@@ -1,0 +1,231 @@
+---
+title: "oracle-payments"
+description: "Sell services from the chat — publish an Agent Card, let users contract the oracle on-chain, and get paid for delivered work."
+icon: "handshake"
+---
+
+**Source:** [`packages/oracle-runtime/src/plugins/oracle-payments/`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/oracle-payments/)
+
+| Attribute | Value |
+| --- | --- |
+| Feature key | `oracle-payments` |
+| Visibility | `always` |
+| Stability | `beta` |
+| Category | `ui` |
+| Default state | On unless `ORACLE_PAYMENTS_DISABLED=true` |
+| Depends on | — (reads the [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox) bridge when delivering a file) |
+| Surface | Matrix rooms. HTTP turns get the support tools only — routing, engagements, and cards are Matrix-side. |
+
+## Summary
+
+Turns the user's Matrix DM room with the oracle into a place they can **discover, contract, and pay for work**. The oracle plays two roles in the same room:
+
+- **Support** (free) — explains what the oracle sells, what it costs, and whether the user is contracted.
+- **Work** (paid) — performs one contracted service and hands over the result.
+
+A cheap classifier routes every incoming Matrix message to one of the two. Once a paid job starts in a thread, routing is **sticky** for that thread until the job ends. Work only starts if the user has contracted the oracle on-chain; otherwise the oracle posts an interactive contract card into the chat and stays in support mode.
+
+Nothing here is a subscription. The user authorizes a **quota of jobs** at a **per-job price ceiling**, and each job is settled individually against a claim that an independent evaluator judges.
+
+## The moving parts
+
+### Agent Card
+
+The list of services the oracle sells. It is a signed document anchored on the oracle's entity as the `#acard` LinkedResource, and each service declares:
+
+| Field | Meaning |
+| --- | --- |
+| `id` | Stable service id — what `show_contract` takes and what the claim records. |
+| `name`, `description` | What the user sees on the cards. |
+| `price` | `{ amount, currency }`, priced in USDC. |
+| `deliverables` | What the user actually receives. |
+| `doneMeans` | 1–10 plain sentences defining "done right". These become the evaluation criteria the delivered work is judged against — write them as if a stranger will grade the work using only that list. |
+| `tags`, `examples` | Optional routing hints for the classifier. |
+
+Publish one with `qiforge-cli agent-card`. That command anchors the card on the entity, writes a local copy into the project, and sets [`AGENT_CARD_PATH`](#environment-variables) in `.env` — worth keeping, because the local file self-describes the plugin manifest so the model knows its own services and prices **without a tool call**.
+
+<Note>
+No card anywhere means no paid lane: the classifier stays off and the oracle behaves exactly as it did before. Support chat still works.
+</Note>
+
+### Contract
+
+The user grants an on-chain `SubmitClaimAuthorization` over their claim collection, scoped to the services they picked, carrying:
+
+- a **quota** — how many jobs the oracle may bill for;
+- a **max amount** — the ceiling on a single job;
+- an **intent duration** — how long a reservation may sit before the chain releases it on its own. It defaults to **1 hour** (`DEFAULT_INTENT_DURATION_NS` in `@ixo/oracles-chain-client`) and is set per grant at contracting time. The oracle reads this value back — it cannot set or shorten it.
+
+### Engagement
+
+One paid job, keyed to a Matrix thread: thread = session = engagement = claim. **Only one engagement can be active per user at a time** — the chain permits one active intent per (agent, claim collection), so a second concurrent job could never reserve its payment. A work request while another job is running is refused at the gate and the oracle says which job is running and offers to wait or cancel.
+
+### Reservation (escrow)
+
+When a job starts, the oracle reserves the service price on-chain (`MsgClaimIntent`). This is unconditional — there is no unreserved path and no flag. The reservation is released when the job is delivered, cancelled, or the intent duration lapses.
+
+### Delivery
+
+`deliver_work` does two things at once: it puts the file in the room for the user, and it submits a **work claim** recording the service, the request, the work summary, the honest result status, the deliverable, and any proofs. An independent evaluation engine judges the claim against the service's `doneMeans`. Approval releases the escrow to the oracle; rejection returns it to the user.
+
+Honesty is structural, not a matter of prompt discipline: the claim's `request` and `workSummary` are extracted from the thread by a separate model the work agent does not control, and the evaluator inspects the real deliverable.
+
+### Cancellation
+
+`cancel_work` submits a release claim — `resultStatus: 'unable'`, no deliverables, the user's reason in `proofs`. Submitting it frees the reservation immediately, so the user can start a new job right away; the evaluator then rejects it (deterministically, because there are no deliverables), which returns the escrow. **A cancellation still costs one quota slot** — the chain decrements quota on submit regardless of outcome.
+
+## How a user contracts
+
+<Steps>
+  <Step title="They ask what the oracle does">
+    The classifier routes to support. The model calls `list_services`, which posts a service catalog card into the room.
+  </Step>
+  <Step title="They pick a service">
+    The model calls `show_contract` with that `serviceId`. The card carries the price, the deliverables, and the `doneMeans` bullets, plus a **Contract this agent** action.
+  </Step>
+  <Step title="They approve the grant in the IXO Portal">
+    The card opens the Portal's agent-contract flow with the service preselected. Approving mints the `SubmitClaimAuthorization` grant and registers the contract with the evaluation engine.
+  </Step>
+  <Step title="The oracle notices immediately">
+    The Portal posts an `ixo.oracle.contracted` event into the room. The oracle treats it purely as a cache-buster — it re-queries the engine rather than trusting the event — so "contract in the modal, then say go" works without waiting out a cache.
+  </Step>
+  <Step title="The next work request starts a job">
+    The gate passes, the oracle reserves the price on-chain, the thread flips to work mode, and it stays there until `deliver_work` or `cancel_work`.
+  </Step>
+</Steps>
+
+When the gate fails, the turn never errors — it proceeds in support mode with the reason attached, so the model can explain and offer the right next step:
+
+| Reason | What the model should do |
+| --- | --- |
+| `not_contracted` | Explain, then `show_contract`. |
+| `quota_exhausted` | Explain that the runs are used up, then `show_contract` to top up. |
+| `max_amount_too_low` | The per-job ceiling does not cover this service — `show_contract`. |
+| `service_not_contracted` | This specific service is not in the grant — `show_contract`. |
+| `engagement_in_progress` | Not a contracting problem. Name the running job and offer wait-or-`cancel_work`. Never show a contract card. |
+| `intent_failed` | The contract is fine; the on-chain reservation failed. Explain, do not re-contract. |
+
+## Environment variables
+
+Everything is optional — but the paid lane needs `EVAL_ENGINE_URL`.
+
+| Var | Required | Description |
+| --- | --- | --- |
+| `ORACLE_PAYMENTS_DISABLED` | no | Enum — exactly `'true'` or `'false'`. `'true'` excludes the plugin at boot (kill switch). |
+| `EVAL_ENGINE_URL` | no | Base URL of the evaluation engine. **Contract lookups are disabled without it** — every work request gates as `not_contracted`, so no paid work can start. Support chat is unaffected. |
+| `AGENT_CARD_PATH` | no | Path to the oracle's local agent-card JSON. Seeds the card cache (so discovery works before the card is anchored on-chain) and derives the plugin manifest from the card. An explicitly set path that cannot be read, is not JSON, is not a valid card, or describes a different entity than `ORACLE_ENTITY_DID` **fails boot** — a misconfigured card is a config error, not a silent fallback. |
+| `ORACLE_PAYMENTS_ROUTER_MODEL` | no | Model id for the support/work classifier. Defaults to the provider's `routing` role model. |
+| `ORACLE_PAYMENTS_EXTRACTOR_MODEL` | no | Model id for the trusted `request`/`workSummary` extractor. Defaults to the provider's `custom_medium` role model. |
+| `ORACLE_PAYMENTS_MAX_DELIVERABLE_MB` | no | Coerced positive number; default `25`. Size ceiling on a single delivered file. |
+| `PORTAL_URL` | no | Portal base URL. When set, the delivery receipt and payment cards carry a deep link to the claim; when unset the link is omitted. |
+
+Read but not owned: `ORACLE_ENTITY_DID` (which entity's card to resolve), `ORACLE_DID` + `SECP_MNEMONIC` + `MATRIX_VALUE_PIN` (claim signing), `MATRIX_ACCOUNT_ROOM_ID` (where the pending-claims index lives), `NETWORK` (price → denom), `BLOCKSYNC_GRAPHQL_URL` (card + evaluation reads) — all from the [core base schema](/build-an-oracle/reference/environment-variables#tier-0-core).
+
+## What it contributes
+
+- **Tools:** six, built per request. Which ones the model sees depends on the thread's mode.
+
+  | Tool | Mode | What it does |
+  | --- | --- | --- |
+  | `list_services` | support | Posts the service catalog card and returns the same list so the reply is grounded. |
+  | `show_contract` | support | Posts the contract card for one `serviceId`. Errors with the valid ids if the id is unknown. |
+  | `get_contract_status` | support | Read-only: is this user contracted, which services, how much quota is left, what the per-job ceiling is. |
+  | `deliver_work` | work | Hands the finished work to the user **and** submits the work claim. Called exactly once per job. |
+  | `cancel_work` | work | Closes the job early and releases the reservation with a release claim. |
+  | `get_thread_attachment` | both | Lists the files the user shared in **this thread**, each mapped to the sandbox path it was archived to under `/workspace/output/`. Downloads nothing. |
+
+- **Sub-agents:** none.
+- **Middleware:** none. (Routing happens on the Matrix ingress lane, before the graph.)
+- **Nest modules:** one — the contract-record lookup and its `ixo.oracle.contracted` cache-bust listener, the thread-engagement store, the contract gate, the escrow-first engagement start, the delivery lane, the registrar that plugs this plugin's knowledge into the core message router, and a cron that reports each submitted claim's evaluation outcome back into its thread.
+- **HTTP routes:** none.
+- **Shared state:** `oraclePayments.services()` and `oraclePayments.engagement(roomId, threadId)`.
+
+### Delivering a file
+
+`deliver_work` takes either written content (`kind: 'text'`, materialized as markdown) or a file the oracle produced in the sandbox (`kind: 'file'`, read from a path under `/workspace/data/`). Either way real bytes are attached to the claim — a claim whose deliverables do not resolve to bytes is rejected by design.
+
+## Matrix events
+
+The plugin (and the core router) post `ixo.oracle.component` timeline events. The IXO Portal renders each `component` as an interactive card; clients without a renderer (Element, for one) show the plain-text `body` fallback.
+
+| `component` | Posted by | Purpose |
+| --- | --- | --- |
+| `list_services` | `list_services` | Service catalog — one row per contractable service. |
+| `show_contract` | `show_contract` | Contract proposal — opens the Portal flow with the service preselected. |
+| `work_status` | the router + the tool wrapper | Per-turn liveness card (`routing` → `working` → `delivering` → `done`, or `superseded`). Updates in place via `m.replace`. |
+| `work_delivered` | `deliver_work` | Receipt: the file, the summary, the cost, the claim id, and the claim deep link. |
+| `payment_update` | the claim-status cron | Evaluation outcome — `approved`, `rejected`, `under_review`, or `disputed` — worded differently for a delivery than for a cancellation. |
+
+The Portal posts one event **into** the room: `ixo.oracle.contracted`, after a successful contract registration. The oracle treats it as an untrusted cache-buster only.
+
+## Deployment prerequisites
+
+Chat and support work with none of this. Only the paid lane is gated.
+
+<Steps>
+  <Step title="Publish an Agent Card">
+    `qiforge-cli agent-card` anchors the `#acard` LinkedResource on the oracle entity and writes the local copy `AGENT_CARD_PATH` points at. Without a card there are no services to sell.
+  </Step>
+  <Step title="Point EVAL_ENGINE_URL at an evaluation engine">
+    It is the source of truth for "is this user contracted, for what, with how much quota left". Unset means no user can ever pass the gate.
+  </Step>
+  <Step title="Make sure that engine accepts intent-backed agent-work claims">
+    Every job reserves its payment before work starts and settles with `useIntent: true`. An oracle pointed at an engine that rejects those claims will lock escrow it can never settle.
+  </Step>
+  <Step title="Keep credits enabled">
+    See below — "free support" means "no work claim", not "free LLM".
+  </Step>
+</Steps>
+
+## How this relates to `credits`
+
+Two different lanes that do not overlap:
+
+| | [`credits`](/build-an-oracle/reference/bundled-plugins/credits) | `oracle-payments` |
+| --- | --- | --- |
+| Bills for | LLM token usage | delivered work |
+| Unit | per-user credit budget | one job, at the card's service price |
+| Settles via | the usage-claim cron | one agent-work claim per job, escrow-backed |
+| Who judges | nobody — metering is mechanical | an independent evaluator, against `doneMeans` |
+
+**Token metering _is_ the `credits` plugin.** With `credits` off there is no metering at all, so a commerce oracle should run with it on: the free support persona is then metered as ordinary LLM usage. "Free" describes the absence of a work claim, not the absence of cost.
+
+## Opt out / Opt in
+
+```ts
+const app = await createOracleApp({
+  config,
+  features: { 'oracle-payments': false }, // never load
+});
+
+// Or via env: ORACLE_PAYMENTS_DISABLED=true
+```
+
+## When to use it
+
+- The oracle sells something concrete a user would pay for, delivered as a file or a document.
+- Users talk to the oracle over Matrix (the IXO Portal chat surface or a Matrix client).
+- You want the payment to depend on the work being judged good, not on the oracle asserting it was.
+
+## When NOT to use it
+
+- Metering LLM usage or enforcing a subscription — that is [`credits`](/build-an-oracle/reference/bundled-plugins/credits).
+- Oracles that only serve HTTP. Routing, engagements, and the cards are Matrix-side; over HTTP only the support tools bind, and the cards have no room to post into.
+- Free oracles with nothing to sell. Leave the plugin loaded and publish no card — it stays a no-op.
+
+## Where to read next
+
+<CardGroup cols={2}>
+  <Card title="credits" icon="coins" href="/build-an-oracle/reference/bundled-plugins/credits">
+    The other billing lane — LLM usage metering.
+  </Card>
+  <Card title="sandbox" icon="server" href="/build-an-oracle/reference/bundled-plugins/sandbox">
+    Where a file deliverable is produced and read from.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/build-an-oracle/reference/cli">
+    Every `qiforge-cli` command, including the entity the card is anchored on.
+  </Card>
+  <Card title="Environment variables" icon="key" href="/build-an-oracle/reference/environment-variables">
+    Every var in one table.
+  </Card>
+</CardGroup>

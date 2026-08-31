@@ -14,7 +14,7 @@ Oracle: (calls list_capabilities → load_capability(weather) → get_current_we
 
 A live oracle on `localhost:3000` with:
 
-- The 16 bundled plugins resolved at boot.
+- The 14 bundled plugins resolved at boot.
 - A custom Weather plugin loading on demand.
 - A `GET /weather/now?city=X` public HTTP route.
 - A streaming chat endpoint over SSE.
@@ -202,7 +202,7 @@ Watch the server logs at the same time — you'll see the weather middleware pri
     Every option you can pass — config, plugins, features, hooks.
   </Card>
   <Card title="Bundled plugins" icon="boxes-stacked" href="/build-an-oracle/reference/bundled-plugins/overview">
-    The 16 plugins shipped with the runtime.
+    The 14 plugins that load by default, plus the four you wire in yourself.
   </Card>
   <Card title="For AI agents" icon="robot" href="/build-an-oracle/for-ai-agents">
     Dense one-pager with every signature inlined.

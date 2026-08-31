@@ -11,7 +11,7 @@ icon: "slack"
 | Visibility | `silent` |
 | Stability | `stable` |
 | Category | `core` |
-| Default state | Auto-detect (env: `SLACK_BOT_OAUTH_TOKEN`) |
+| Default state | Opt-in — not in `BUNDLED_PLUGINS`. Construct it and pass it in `plugins`. |
 | Depends on | — |
 
 ## Summary
@@ -39,14 +39,18 @@ Connects a Slack bot to the oracle. The plugin contributes **no agent-visible to
 
 ## Opt out / Opt in
 
+`slack` is not in `BUNDLED_PLUGINS`, so `features` never reaches it. Load it by passing an instance:
+
 ```ts
+import { createOracleApp, SlackPlugin } from '@ixo/oracle-runtime';
+
 const app = await createOracleApp({
   config,
-  features: { slack: false }, // never load
-  // features: { slack: true }, // force load (will fail env validation if SLACK_BOT_OAUTH_TOKEN missing)
-  // features: { slack: 'auto' }, // run autoDetect (default)
+  plugins: [new SlackPlugin()],
 });
 ```
+
+Its `autoDetect` still applies once wired: without `SLACK_BOT_OAUTH_TOKEN` it is skipped at boot and no module is registered.
 
 ## When to use it
 

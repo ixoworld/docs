@@ -14,7 +14,7 @@ If you are an AI agent: read top-to-bottom once. Every signature you need is inl
 
 ## TL;DR — what you produce
 
-A QiForge oracle is **one `main.ts`** that calls `createOracleApp({ config, plugins, … })` plus **one folder per plugin** under `src/plugins/<name>/`. The runtime handles HTTP, auth, the agent graph, the checkpointer, Matrix, and bundles 16 plugins by default. You ship glue code, not infrastructure.
+A QiForge oracle is **one `main.ts`** that calls `createOracleApp({ config, plugins, … })` plus **one folder per plugin** under `src/plugins/<name>/`. The runtime handles HTTP, auth, the agent graph, the checkpointer, Matrix, and bundles 14 plugins by default. You ship glue code, not infrastructure.
 
 ## main.ts shape
 
@@ -180,7 +180,7 @@ interface PluginSubAgent {
 
 `silent` means *not advertised* — the tools are still bound and the agent can call them; they're just kept out of the Tier-1 prompt and `list_capabilities`. It is not a security boundary.
 
-## Bundled plugins (15)
+## Bundled plugins (14)
 
 From [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworld/ixo-oracles-boilerplate/blob/main/packages/oracle-runtime/src/plugins/index.ts):
 
@@ -195,14 +195,15 @@ From [`packages/oracle-runtime/src/plugins/index.ts`](https://github.com/ixoworl
 | `skills` | always | on (needs `sandbox`) | — |
 | `editor` | on-demand | on (needs Matrix) | — |
 | `agui` | on-demand | on | — |
-| `slack` | silent | auto-detect | `SLACK_BOT_OAUTH_TOKEN` |
 | `tasks` | on-demand | auto-detect | `REDIS_URL` |
-| `credits` | silent | on unless `DISABLE_CREDITS=true` | — |
-| `calls` | silent | on (placeholder stub — no tools) | — |
 | `user-preferences` | always | on | — |
 | `matrix-group-chats` | on-demand | on (opt out via `features`) | — (optional `CHANNEL_MEMORY_*`) |
+| `vfs` | always | on | — (worker URLs from `NETWORK`) |
+| `oracle-payments` | always | on unless `ORACLE_PAYMENTS_DISABLED=true` | — (`EVAL_ENGINE_URL` for the paid lane) |
 
 Toggle via `features` in `createOracleApp`: `true` forces on, `false` forces off, `'auto'` runs `autoDetect`.
+
+**Not in `BUNDLED_PLUGINS`** — these ship in the package but `features` never reaches them; construct each one and pass it in `plugins`: `credits` (`new CreditsPlugin({ redis, network })` — also where LLM token metering lives), `slack` (`new SlackPlugin()`), `calls` (stub), `flows` (`new FlowsPlugin({ matrixClient })`).
 
 Per-plugin reference pages: [`/build-an-oracle/reference/bundled-plugins/overview`](/build-an-oracle/reference/bundled-plugins/overview).
 
@@ -245,7 +246,7 @@ These are the exact names the runtime validates — set them character-for-chara
 | `LANGSMITH_PROJECT` | optional | LangSmith project name. |
 | `LANGSMITH_ENDPOINT` | optional | LangSmith endpoint override. |
 
-There is no `ANTHROPIC_API_KEY` — the agent's model id is fixed per role in the provider model map; switch the provider with `LLM_PROVIDER` + its key, or override the main model via the `resolveModel` hook. Plugin-specific env vars (`MEMORY_MCP_URL`, `FIRECRAWL_MCP_URL`, `SANDBOX_MCP_URL`, `COMPOSIO_API_KEY`, `SLACK_BOT_OAUTH_TOKEN`, `REDIS_URL`, …) merge in via each plugin's `configSchema`.
+There is no `ANTHROPIC_API_KEY` — the agent's model id is fixed per role in the provider model map; switch the provider with `LLM_PROVIDER` + its key, or override the main model via the `resolveModel` hook. Plugin-specific env vars (`MEMORY_MCP_URL`, `FIRECRAWL_MCP_URL`, `SANDBOX_MCP_URL`, `COMPOSIO_API_KEY`, `REDIS_URL`, `EVAL_ENGINE_URL`, `AGENT_CARD_PATH`, …) merge in via each plugin's `configSchema`.
 
 ## Copy-pasteable plugin template
 
