@@ -106,6 +106,86 @@ Follow a tight loop: **discover → plan → confirm → build → hand off.** O
 
 Conditions are written **directly as `props.conditions`** in the frontend evaluator's operator vocabulary; the compiler's verbatim operators never evaluate at runtime.
 
+## Delegated integration blocks
+
+Delegated integration blocks let the **template author** connect their own Gmail, Outlook, or Slack account **once at design time** and have any **runner** of the flow send email or post to Slack on the author's behalf. The runner never connects the integration and never holds the author's credential — execution goes through an opaque server-side binding.
+
+Contrast this with `qi/email.send`, which sends a **pre-registered templated email from the platform owner's address**. Delegated blocks send **free-form content from the author's own account**.
+
+Each block is side-effecting and delivers a real message. It runs when the runner clicks it, **or** automatically when a wired upstream block event fires — there is no slide-to-sign.
+
+### Available blocks
+
+| Block | Sends from | Emits |
+| --- | --- | --- |
+| `qi/gmail.email.send` | Author's connected Gmail | `email.sent` |
+| `qi/outlook.email.send` | Author's connected Outlook | `email.sent` |
+| `qi/slack.message.send` | Author's connected Slack workspace | `message.sent` |
+
+Every block declares a required `connection` input port that carries the author's opaque binding — set at design time when the author connects the integration. Runners never populate it.
+
+### Input fields
+
+All other fields accept literals **or** references wired from upstream block outputs (for example, a recipient email pulled from a form's submission).
+
+**`qi/gmail.email.send`**
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `recipient_email` | yes | Single recipient. |
+| `body` | yes | Plain text unless `is_html` is `true`. |
+| `subject` | no | Subject line. |
+| `cc`, `bcc` | no | Comma-separated addresses. |
+| `is_html` | no | Render `body` as HTML. |
+
+**`qi/outlook.email.send`**
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `to_email` | yes | Single recipient. |
+| `subject` | yes | Subject line. |
+| `body` | yes | Plain text unless `is_html` is `true`. |
+| `to_name` | no | Display name for the recipient. |
+| `cc_emails`, `bcc_emails` | no | Comma-separated addresses. |
+| `is_html` | no | Render `body` as HTML. |
+
+**`qi/slack.message.send`**
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `channel` | yes | Channel ID or name, e.g. `#general` or `C0123456`. |
+| `markdown_text` | no | Message body in Slack markdown. |
+| `thread_ts` | no | Parent message timestamp to reply within a thread. |
+
+### Authoring flow
+
+1. The author connects Gmail, Outlook, or Slack **once** from the flow editor. The binding is stored on the template.
+2. The author drops the corresponding block into the flow and fills its fields — literals or wires from upstream outputs.
+3. Runners open the flow and either click the block to send, or let it fire automatically from an upstream event (see below).
+
+## Chaining blocks with event triggers
+
+To make a delegated block (or any step) run automatically when an upstream block emits an event, set an **event trigger** using the flows editor API:
+
+```ts
+import { setStepEventTrigger } from '@ixo/oracle-runtime';
+
+setStepEventTrigger(doc, 'send_confirmation', {
+  fromStep: 'submit_form',
+  event: 'form.submitted',
+});
+```
+
+`setStepEventTrigger` writes the same `trigger` / `triggerMode` props the compiler produces for a `block.event` trigger, so the downstream step auto-runs the moment the upstream step emits the named event.
+
+Rules to know:
+
+- **Use friendly step ids.** `fromStep` must be a short step id (e.g. `submit_form`). Passing an internal block id (`flow_block_*`) is rejected.
+- **Upstream action must be event-capable.** The same rule `validate_flow` enforces at plan level (spec §2.3) is checked here: if the upstream step's action can't emit events, `setStepEventTrigger` throws and you should fall back to ordering (`after`) plus an input reference.
+- **Setting the trigger back to `manual` clears the event trigger.** Call `setStepTrigger(doc, stepId, 'manual')` to reset.
+
+From the agent's authoring tools, the same behaviour is exposed through `update_step` via an `onEvent` patch (takes precedence over a `trigger` patch when both are given); `set_step_trigger` sets `manual` / `flow-start` and clearing to `manual` here also removes any event trigger.
+
 ## Opt in
 
 `flows` is opt-in. Add the plugin instance explicitly — the bundled loader will not load it for you:
