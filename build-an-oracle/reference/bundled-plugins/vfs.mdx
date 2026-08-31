@@ -46,7 +46,7 @@ The worker URLs are **bundled per network** — there is nothing to configure. E
 
 | Var | Required | Description |
 | --- | --- | --- |
-| `NETWORK` | yes | `mainnet` / `testnet` / `devnet`. Selects the bundled VFS + UCAN Store worker URLs (`https://[testnet.\|devnet.]vfs.ixo.earth`). Owned by the core base env schema. |
+| `NETWORK` | yes | `mainnet` / `testnet` / `devnet`. Selects the bundled VFS + UCAN Store worker URLs (`https://[testnet.\|devnet.]vfs.ixo.earth`). Owned by the core base env schema. The oracle's `did:ixo` (`ORACLE_DID`), the VFS worker, and the UCAN Store worker must all be on the same network — a cross-network setup will 401 on every call. |
 | `VFS_MAX_READ_LINES` | no | Max lines a single `vfs_read` window returns. Default `2000`. |
 | `VFS_REQUEST_TIMEOUT_MS` | no | Per-request timeout to the VFS worker. Default `20000`. |
 | `SANDBOX_MCP_URL` | no | Read but not owned (declared by [`sandbox`](/build-an-oracle/reference/bundled-plugins/sandbox)). When set, adds the two [sandbox bridge tools](#sandbox-bridge-tools). |
