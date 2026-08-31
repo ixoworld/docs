@@ -1,0 +1,255 @@
+---
+title: "Integrate with the ixo Auth Hub"
+description: "Sign users into your app through the ixo Auth Hub with PKCE, CSRF state, redirect URI registration, and the consent screen."
+---
+
+The ixo Auth Hub is the shared OAuth-style login surface for ixo apps. Your app redirects the user to the hub, the user signs in (WorkOS AuthKit — Google, Apple, or Enterprise SSO) and approves your app on a consent screen, then the hub redirects back with a one-time `code` that your app exchanges for the user's session data (address, DID, session key, Matrix credentials).
+
+This guide covers the integrator contract you need to meet to stay compatible as the hub rolls out enforcement of PKCE, CSRF `state`, and the redirect URI allowlist.
+
+## Before you start
+
+You need:
+
+- A calling app with a stable `redirect_uri` (HTTPS, loopback for local dev, or a custom scheme for native apps).
+- The Auth Hub base URL for your target network — see [Networks and endpoints](/reference/networks-and-endpoints).
+- The ability to store a short-lived value (the PKCE `code_verifier` and CSRF `state`) between the redirect out and the callback in — typically `sessionStorage` for web, or the equivalent secure store on native.
+
+## What the hub expects from your app
+
+The hub now enforces four things at every point where a one-time `code` can be minted (`/api/auth/login`, `/api/auth/register/start`, `/api/auth/complete`) so the requirements can't be downgraded mid-flow:
+
+1. **PKCE (S256)** — send a `code_challenge` on the initial redirect and the matching `code_verifier` on exchange.
+2. **CSRF `state`** — send a random `state` on the initial redirect; verify it matches on callback.
+3. **Registered `redirect_uri`** — the exact URI must be registered as one of your app's redirect URIs (loopback addresses are always allowed for local dev).
+4. **Consent** — the user sees a Google-style consent screen showing your app's name and logo the first time, then again after 90 days.
+
+All four are currently rolled out in **report-only** mode across every environment — non-compliant requests are still allowed, but they log a `CLIENT_ADOPTION_GAP` marker so operators can see who still needs to migrate. Adopt them now so the flip to enforced (`REQUIRE_PKCE`, `REQUIRE_STATE`, `REQUIRE_ALLOWLIST` = `true`, rolling devnet → testnet → mainnet) is a no-op for your users.
+
+## Step 1 — Generate PKCE and state
+
+Generate a fresh `code_verifier` and `state` per login attempt and store them locally. Derive the `code_challenge` as the base64url-encoded SHA-256 of the verifier (RFC 7636, `S256`).
+
+```ts
+async function sha256Base64Url(input: string): Promise<string> {
+  const bytes = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+function randomUrlSafe(length = 43): string {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "")
+    .slice(0, length);
+}
+
+const codeVerifier = randomUrlSafe(64);
+const codeChallenge = await sha256Base64Url(codeVerifier);
+const state = randomUrlSafe(32);
+
+sessionStorage.setItem("authhub.code_verifier", codeVerifier);
+sessionStorage.setItem("authhub.state", state);
+```
+
+The `code_verifier` never leaves the browser. That's what binds the one-time `code` to the app that started the flow — a phished or leaked `code` can't be redeemed by anyone else.
+
+## Step 2 — Redirect the user to the hub
+
+Send the user to `/api/auth/login` with your `redirect_uri`, `state`, `code_challenge`, and `code_challenge_method=S256`.
+
+```ts
+const params = new URLSearchParams({
+  redirect_uri: "https://yourapp.example/auth/callback",
+  state,
+  code_challenge: codeChallenge,
+  code_challenge_method: "S256",
+});
+
+window.location.href = `${AUTH_HUB_BASE_URL}/api/auth/login?${params}`;
+```
+
+Optional query parameters:
+
+| Parameter | Purpose |
+|-----------|---------|
+| `organization_id` | Force a specific WorkOS organization / SSO connection. |
+| `matrix_homeserver` | Provision a new user's Matrix identity on a specific homeserver (HTTPS only, reachability-checked). Ignored for returning users. |
+| `hide_mnemonic` | Set to `true` to skip the recovery-phrase screen during registration. The mnemonic is still generated and stored encrypted; your app owns backup messaging. |
+
+### `redirect_uri` scheme policy
+
+Independent of the allowlist, every `redirect_uri` must pass a scheme-safety gate (enforced in all environments):
+
+- `https://` — allowed for any host.
+- `http://` — allowed **only** for loopback (`localhost`, `127.0.0.1`, `::1`). Plaintext HTTP to a remote host is rejected — the one-time code could be intercepted in transit.
+- Custom schemes (`impactsx://…`, `com.example.app:/…`) — allowed, so native and mobile apps keep working.
+- `javascript:`, `data:`, `vbscript:`, `blob:`, `file:` — always rejected.
+
+A disallowed scheme sends the user to a styled same-origin error page (`/auth-error?error=insecure_redirect_uri`); the hub never bounces to an untrusted target.
+
+## Step 3 — Handle the callback
+
+The hub redirects the user back to your `redirect_uri` with `code` and `state` on success, or `error` and `error_description` on failure. Verify `state` matches what you stored, then exchange the code.
+
+```ts
+const url = new URL(window.location.href);
+const code = url.searchParams.get("code");
+const returnedState = url.searchParams.get("state");
+const error = url.searchParams.get("error");
+
+if (error) {
+  // e.g. access_denied (user cancelled consent), invalid_request, unregistered_client
+  throw new Error(url.searchParams.get("error_description") ?? error);
+}
+
+const storedState = sessionStorage.getItem("authhub.state");
+if (!code || !returnedState || returnedState !== storedState) {
+  throw new Error("state mismatch or missing code");
+}
+```
+
+<Warning>
+If `state` doesn't match, abort the flow. Never exchange a code you can't tie back to a login attempt you started — that's exactly the CSRF case `state` is protecting against.
+</Warning>
+
+## Step 4 — Exchange the code
+
+Call `/api/auth/exchange` with the `code` and the `code_verifier` you stashed in Step 1. The hub verifies the S256 hash and returns the user's session data.
+
+```ts
+const codeVerifier = sessionStorage.getItem("authhub.code_verifier")!;
+sessionStorage.removeItem("authhub.code_verifier");
+sessionStorage.removeItem("authhub.state");
+
+const res = await fetch(
+  `${AUTH_HUB_BASE_URL}/api/auth/exchange?code=${encodeURIComponent(code)}&code_verifier=${encodeURIComponent(codeVerifier)}`,
+);
+
+if (!res.ok) {
+  throw new Error(`exchange failed: ${res.status}`);
+}
+
+const session = await res.json();
+// { address, did, sessionKey, matrixHomeserver, matrixAccessToken, ... }
+```
+
+Codes are one-time and short-lived. A mismatched `code_verifier` returns an error and marks the code as consumed.
+
+## Redirect URI registration
+
+The hub matches the incoming `redirect_uri` **exactly** against a per-environment allowlist of registered clients (D1-backed, one redirect URI → one client). There's no `client_id` parameter — the URI is the identity.
+
+Registration gives your app:
+
+- A **name and logo** on the consent screen (unknown web clients show the host; native apps with custom schemes show "an app on your device").
+- **Remembered consent** for 90 days per `(user, client)` — only registered clients get this.
+- Compatibility once `REQUIRE_ALLOWLIST=true` flips per environment.
+
+To register (or update) your app in an environment, open a PR to [`ixoworld/ixo-auth-hub`](https://github.com/ixoworld/ixo-auth-hub) adding an entry to the `CLIENTS` map in `sync-clients.mjs` with:
+
+- `id` — a short stable slug (also the consent key).
+- `name` — the human name shown on the consent screen.
+- `logo_url` — optional; falls back to a coloured initial-avatar.
+- `homepage` — optional.
+- One or more **exact** `redirect_uri` values.
+
+Operators run `node sync-clients.mjs <env>` to upsert the registry (idempotent, per environment). Changes take effect within about 60 seconds — the worker caches the registry in-memory per isolate.
+
+<Note>
+Loopback addresses (`http://localhost:*`, `127.0.0.1`, `::1`) are always accepted for local development regardless of the allowlist and do not need to be registered. Don't add loopback URIs to remote environments.
+</Note>
+
+Once `REQUIRE_ALLOWLIST=true` is set for an env, an unregistered `redirect_uri`:
+
+- At `/login` → renders the styled `/auth-error?error=unregistered_client&redirect_uri=…` page (the hub does **not** bounce to the invalid target).
+- At `/register/start` → `400`.
+- At `/complete` → `403`.
+
+The returning-user path (`/callback`, `/verify-email`) is unaffected.
+
+## The consent screen
+
+Before any code is handed over, the auth-hub SPA shows a Google-style consent screen with the calling app's name and logo:
+
+- **Continue** — consent is recorded for 90 days, the code's clock is reset, and the user is redirected to `redirect_uri?code=…&state=…`.
+- **Cancel** — the code is invalidated server-side and the user is returned with `redirect_uri?error=access_denied&state=…` (OAuth 2.0 §4.1.2.1).
+
+On later logins within 90 days the screen is skipped automatically for the same `(user, client)` pair. Only registered clients are remembered; unregistered clients see the screen every time.
+
+## Rolling out enforcement — the `REQUIRE_*` flags
+
+`REQUIRE_PKCE`, `REQUIRE_STATE`, and `REQUIRE_ALLOWLIST` are all currently `"false"` in every environment (devnet, testnet, mainnet) — the hub is in **report-only** mode. Non-compliant logins are allowed but logged with a standardised marker:
+
+```
+CLIENT_ADOPTION_GAP missing=<pkce|state|client_allowlist> client=<id|unregistered> redirect_uri=<uri>
+```
+
+Operators watch these markers per environment. Once a feature shows no gaps for the clients that matter, the flag is flipped to `"true"` for that env (rolled devnet → testnet → mainnet). Enforcement is re-asserted at `/login`, `/register/start`, and `/complete` so it can't be downgraded mid-flow. Direct auth-hub logins that don't pass a `redirect_uri` are never affected.
+
+Migrate proactively:
+
+- Send `code_challenge` + `code_challenge_method=S256` on `/login` and `code_verifier` on `/exchange`.
+- Send a random `state` on `/login` and verify it on callback.
+- Register your `redirect_uri` via `sync-clients.mjs`.
+
+Search Cloudflare logs for `CLIENT_ADOPTION_GAP` filtered by your `redirect_uri` to confirm your app is clean before a flip.
+
+## Error handling
+
+When a request is malformed under enforcement (missing PKCE, missing `state`, unregistered redirect, etc.), the hub follows OAuth 2.0 §4.1.2.1 based on whether the `redirect_uri` is trusted:
+
+- **Trusted** (a registered client or loopback) — the hub redirects **back to your app** with `redirect_uri?error=<code>&error_description=<msg>&state=<state>`. Handle these on your callback route like any other OAuth error.
+- **Untrusted or missing** — the hub never bounces to that target; it shows the user a styled same-origin error page at `/auth-error?error=<code>&error_description=<msg>`.
+
+Common error codes: `invalid_request` (bad or missing `code_challenge`, missing `state`), `unregistered_client`, `insecure_redirect_uri`, `access_denied` (user cancelled consent), `pkce_failed` and `invalid_or_used_code` (on `/exchange`).
+
+## Audit log
+
+Every login and exchange step now writes to a durable, append-only audit log — `login.start`, `login.rejected` (with a reason), `auth.authenticated`, `register.start`, `auth.code_issued`, `consent.grant`, `consent.denied`, `auth.exchange` (success or `pkce_failed`), and `logout` among others. Email addresses and other PII are no longer written to auth logs; WorkOS user ids are stored hashed and codes are stored as SHA-256 hashes so a code's whole lifecycle can be correlated without keeping the secret. This is transparent to your app — no changes required — but it means operators can answer "which client was authorised for which user, when, from where, and did it succeed?" from the audit table.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="`error=unregistered_client` on `/login`" icon="ban">
+    Your `redirect_uri` isn't in the allowlist for that environment. Add it via `sync-clients.mjs` and re-run the sync for the target env — it takes effect within about 60 s.
+  </Accordion>
+  <Accordion title="`error=invalid_request` with `pkce_required`" icon="key">
+    `REQUIRE_PKCE` is on for this env and your `/login` request has no `code_challenge`. Generate a `code_verifier`, derive the S256 `code_challenge`, and include `code_challenge_method=S256`.
+  </Accordion>
+  <Accordion title="`pkce_failed` on `/exchange`" icon="lock">
+    The `code_verifier` you sent doesn't hash to the `code_challenge` from `/login`. Make sure you're re-reading the same verifier you stored before the redirect and haven't double-encoded it. The code is invalidated on failure — restart the login flow.
+  </Accordion>
+  <Accordion title="`error=access_denied`" icon="user-slash">
+    The user hit **Cancel** on the consent screen. The code has been invalidated server-side. Show a "sign in was cancelled" state and let the user retry.
+  </Accordion>
+  <Accordion title="`error=insecure_redirect_uri`" icon="shield">
+    Your `redirect_uri` uses `http://` against a non-loopback host, or a rejected scheme (`javascript:`, `data:`, `blob:`, `file:`, `vbscript:`). Use `https://` in production; loopback `http://` is fine for local dev.
+  </Accordion>
+  <Accordion title="State mismatch on callback" icon="triangle-exclamation">
+    The `state` returned doesn't match what you stored. Don't exchange the code. This usually means the user opened the callback in a different tab / storage context, or the login was initiated from a third party (CSRF). Restart the flow.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Session signing with SignX" icon="key" href="/guides/dev/session-keys">
+    Sign transactions in the browser after login without per-action wallet confirmations.
+  </Card>
+  <Card title="Smart accounts" icon="user-shield" href="/guides/dev/smart-accounts">
+    Add on-chain enforcement of which message types a session can sign.
+  </Card>
+  <Card title="Networks and endpoints" icon="network-wired" href="/reference/networks-and-endpoints">
+    Look up the Auth Hub base URL for the target network.
+  </Card>
+  <Card title="Authentication overview" icon="lock" href="/guides/dev/authentication">
+    Pick the right auth pattern for each IXO API surface.
+  </Card>
+</CardGroup>
