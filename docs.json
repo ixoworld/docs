@@ -172,6 +172,7 @@
                 ]
               },
               "build-an-oracle/develop/test-your-oracle",
+              "build-an-oracle/develop/verify-topic-research",
               "build-an-oracle/develop/identity-and-auth",
               "build-an-oracle/develop/observability",
               "build-an-oracle/develop/deploy"
@@ -204,6 +205,7 @@
               "build-an-oracle/reference/state-schema",
               "build-an-oracle/reference/environment-variables",
               "build-an-oracle/reference/api-endpoints",
+              "build-an-oracle/reference/workers-shared-workspaces",
               "build-an-oracle/reference/cli",
               "build-an-oracle/reference/client-sdk",
               "build-an-oracle/reference/glossary",

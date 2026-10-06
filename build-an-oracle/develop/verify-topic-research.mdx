@@ -1,0 +1,100 @@
+---
+title: "Verify shared Topic research"
+description: "Activate a candidate Workers and Portal integration, then collect evidence for research, durable artifacts, and independent review."
+---
+
+# Verify shared Topic research
+
+Use this guide to prepare acceptance checks for the shared research integration before enabling it for users. The journey combines the Workers runtime, IXO Matrix, the skills registry, sandbox execution, VFS artifacts, and canonical Topic review. Research runtime contracts remain pending final integration; this is an acceptance guide, not a runnable released quickstart. Local tests and a visible interface are separate from live acceptance evidence.
+
+## Before you start
+
+You need an integrated research implementation, two authenticated people with distinct DIDs and Matrix accounts, an encrypted Topic room, a deployed oracle with current UCAN grants, and working sandbox, skills, and VFS services. Choose a bounded research skill and a Topic whose completion rule requires review of its brief.
+
+The requester and reviewer need their own current permissions. Grant only the resources and actions the skill requires. Keep model credentials, private checkpoints, and memory outside shared files and Topic records.
+
+See [Workers shared workspaces](/build-an-oracle/reference/workers-shared-workspaces) for the runtime contracts, authenticated routes, and artifact boundaries. This guide does not claim that any deployment has passed these checks.
+
+## Activate the integration
+
+Deploy the compatible runtime and Portal revisions together. Verify the runtime's oracle identity, UCAN key resolution, Matrix gateway, skills registry, sandbox connection, and VFS grants before opening the workflow. Use the runtime's supported model selection; CopilotKit and CopilotKit Intelligence are not dependencies.
+
+Portal retains the existing Topic delivery recipe settings:
+
+| Public build setting | Value |
+| --- | --- |
+| `NEXT_PUBLIC_TOPIC_DELIVERY_PILOT` | `true` |
+| `NEXT_PUBLIC_TOPIC_DELIVERY_RECIPE_DID` | The publishing `protocol/topic` domain DID. |
+| `NEXT_PUBLIC_TOPIC_DELIVERY_RECIPE_VERSION` | The published recipe version. |
+| `NEXT_PUBLIC_TOPIC_DELIVERY_RECIPE_DIGEST` | Its canonical `sha256:` recipe digest. |
+| `NEXT_PUBLIC_TOPIC_DELIVERY_RECIPE_BYTE_DIGEST` | The `sha256:` digest of the exact published file bytes. |
+
+Publish the recipe through the existing domain publishing flow. A locally generated recipe or a matching title is insufficient. Portal must load and verify the actual published bytes and both pins.
+
+The Portal research implementation adds:
+
+| Public build setting | Value |
+| --- | --- |
+| `NEXT_PUBLIC_TOPIC_RESEARCH` | `true` |
+| `NEXT_PUBLIC_TOPIC_RESEARCH_SKILL_ID` | The approved skill ID. |
+| `NEXT_PUBLIC_TOPIC_RESEARCH_SKILL_VERSION` | The pinned skill version. |
+| `NEXT_PUBLIC_TOPIC_RESEARCH_SKILL_DIGEST` | Its immutable skill digest. |
+| `NEXT_PUBLIC_TOPIC_RESEARCH_CAPABILITIES` | JSON array of allowed `{ "with": "RESOURCE", "can": "ACTION" }` entries. |
+| `NEXT_PUBLIC_TOPIC_RESEARCH_CREDENTIAL_NAMES` | JSON array of selectable tool credential names. |
+
+These public settings contain references and names, never secret values or authorization tokens. A displayed capability is a requested scope; the runtime must resolve and authorize it before use.
+
+The published `@ixo/topic-protocol` version `1.0.0-rc.4` used by the Portal baseline imports `node:crypto` through its public entrypoint and fails the browser fixture. The [browser digest fix](https://github.com/ixoworld/topic-protocol/commit/4e5a87ef7c70a537d776a46ac09c840bac18f806) is merged in protocol source, but Portal still needs a reproducible compatible dependency and a passing browser fixture before activation. Do not bypass recipe verification or treat a merged source fix as deployed acceptance evidence.
+
+## Run and review one result
+
+1. Open the Topic in the room or under **Workspace → Topics**. Open its **Workspace** control.
+2. Use **Conversation** and **Sources and files** to inspect the shared context. Private agent conversations remain under their owner's account.
+3. Set **Work mode** to **Research with an authorized skill**. Inspect the pinned skill, requested resources and actions, and selected credential names.
+4. Select a different authorized reviewer who belongs to the Topic room. Start the work after checking the goal and sources. The execution freezes the selected inputs.
+5. Follow status or cancel from the same attempt. After a lost response, reload and recover it before starting anything else.
+6. Inspect the completed Markdown, execution references, input digest, and committed artifact versions. The reviewer must open each pinned file version under their own permissions; Portal checks its bytes against the recorded digest before enabling acceptance.
+7. Sign in as the reviewer and review the exact submitted result. Acceptance records a review decision; canonical Topic completion is a separate repository operation.
+
+Choose **Draft from supplied sources** to exercise the existing no-tools baseline first. That mode does not perform live research. A changes request preserves the previous artifact; the requester explicitly starts a new attempt for revised inputs.
+
+## Verify the result
+
+Record the deployed revisions, authenticated actors, operation and run IDs, Topic revision, artifact versions and digests, and review record. Evidence records must exclude credentials and reusable bearer invocations.
+
+| Check | Required observation |
+| --- | --- |
+| Two people | The reviewer sees the shared result using their own identity and rights, without requester checkpoints, memory, or credentials. |
+| Concurrent edits | Editing the Topic or file head during execution or review cannot change the frozen input or exact reviewed artifact. |
+| Duplicate wake and delivery | Replaying the same authenticated notification or lost delivery response recovers the existing operation. |
+| Unknown external effect | A lost external write response blocks replay until an authorized reconciliation establishes the outcome. |
+| Worker restart | The original operation recovers, and committed output remains readable. |
+| Sandbox replacement | A fresh target restores committed workspace state and exact artifacts from durable storage. |
+| Revocation | Revoking execution or review rights prevents the corresponding queued action or canonical review mutation. |
+| Independent acceptance | A different currently authorized person accepts the exact result through the Topic repository. |
+
+Exercise these checks with real workerd, signed UCAN, Matrix, sandbox, and VFS integrations. Scripted models and fake gateways prove local behavior only. Keep execution, delivery, acceptance, determination, and settlement evidence distinct; this research journey does not execute payments.
+
+## Troubleshooting
+
+### Research mode is absent
+
+Check the integrated Portal revision, public research settings, valid skill pins, and signed-in requester DID. Keep the feature disabled when configuration or dependencies are incomplete.
+
+### The published recipe does not verify
+
+Check the publishing domain, version, canonical digest, exact byte digest, and browser-compatible protocol package. Use the actual published recipe; do not substitute a locally constructed one.
+
+### A request failed after work may have started
+
+Read the saved operation with its original request and owner before creating another attempt. A connection failure does not prove that execution or publication failed. Terminal failed, interrupted, or cancelled results permit an explicitly authorized new attempt; unknown results require recovery or reconciliation.
+
+### Review or publication is refused
+
+Recheck the current Topic revision, assigned reviewer, room membership, lifecycle state, and authority. An execution receipt or room membership alone cannot authorize canonical publication or acceptance.
+
+## Related references
+
+- [Workers shared workspaces](/build-an-oracle/reference/workers-shared-workspaces) for execution and recovery contracts.
+- [Client SDK](/build-an-oracle/reference/client-sdk) for existing authenticated frontend integration.
+- [VFS plugin](/build-an-oracle/reference/bundled-plugins/vfs) for file grants and managed encryption.

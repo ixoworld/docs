@@ -1,0 +1,182 @@
+---
+title: "Workers shared workspaces"
+description: "Execution, authorization, artifact, and review contracts for shared Topic work using the Workers runtime and IXO services."
+---
+
+# Workers shared workspaces
+
+Use this reference when integrating shared Topic work with Agentic Oracles on Cloudflare Workers. A workspace presents existing domain, project, Topic, Qi Flow, and file relationships. IXO services continue to own those records and their permissions.
+
+This page documents `@ixo/oracle-runtime-workers`. The [tasks](/build-an-oracle/reference/bundled-plugins/tasks), [sandbox](/build-an-oracle/reference/bundled-plugins/sandbox), and [API endpoints](/build-an-oracle/reference/api-endpoints) pages describe the Node runtime; their Redis, NestJS, and deployment requirements do not describe Workers.
+
+## Scope and activation
+
+The supplied-evidence Topic drafting API is present in the runtime source baseline at commit `77012a8`. It is disabled by default. A deployed runtime must contain the API before its Portal integration is enabled. Source inspection and local tests do not establish live availability.
+
+Shared research also requires the research implementation, its authorized execution provider, and versioned file storage. Enabling the existing drafting API does not grant the agent tools or enable research.
+
+The approval, reconciliation, and credential sections describe implementation commit `ad8878102f093ba098ce6bde7559c8ad8e27b7f5`. They are additions to the inspected baseline, not evidence of a published or deployed release. Shared research contracts remain pending integration.
+
+| Foundation | Operator requirement |
+| --- | --- |
+| User execution | Deploy the Workers shell and `UserOracleDO`; each authenticated user has their own execution and database. |
+| Collaboration | Configure IXO Matrix, the oracle gateway, and the intended Topic room audience. |
+| Identity | Configure the oracle Decentralized Identifier (DID) and key resolution. Require signed User-controlled Authorization Network (UCAN) invocations. |
+| Durable owner storage | Use IXO Virtual Filesystem (VFS) owner storage. The example's `OWNER_STORE=matrix` is a local harness setting. |
+| Skills and compute | Configure the existing skills registry and sandbox service when research needs them. |
+| Model selection | Configure the runtime's operator-selected model provider and any supported user credentials. |
+| Topic integration | Verify the published recipe, its canonical digest, and its exact file-byte digest before activation. |
+
+The shared workspace uses the IXO frontend action bridge: `action_call`, `action_call_result`, streaming, and authenticated realtime connections. The `agui` plugin name does not introduce a CopilotKit dependency. Neither CopilotKit nor CopilotKit Intelligence configuration is required.
+
+Keep `ORACLE_DEBUG_ROUTES` disabled in shared deployments. If gateway debug routes are needed, configure `ORACLE_OPERATOR_DIDS` with the permitted operator DIDs. An absent allowlist leaves those enabled gateway routes available to any authenticated caller; a user-issued admin tool grant is consent, not operator authority.
+
+## Authentication and authority
+
+Workers protected requests use `Authorization: Bearer INVOCATION` and `X-Auth-Type: ucan`. The invocation is addressed to the oracle DID and uses the existing `*` capability on `ixo:oracle`. The validated signer selects the user's Durable Object. `x-did`, Topic IDs, and Matrix room IDs cannot select a different owner or confer publication rights.
+
+`x-ucan-delegation` carries authorization for downstream calls. A delegation alone does not authenticate the Topic drafting API, including deployments that enable the shell's legacy bare-delegation fallback.
+
+Keep these checks separate:
+
+| Boundary | Authority |
+| --- | --- |
+| Room audience | Matrix membership and room confidentiality. |
+| Agent action | The requester's current UCAN capabilities and host policy. |
+| File access | Current VFS permissions for each file and version. |
+| Topic publication | The canonical Topic repository's current authority, revision, and lifecycle checks. |
+| Human review | The assigned reviewer acting under their own authenticated identity and current Topic rights. |
+
+A room invitation grants no inherited execution authority. A reviewer does not read another user's model checkpoints, memory, or credentials. Shared views expose selected work status, sources, artifacts, and review records.
+
+The shell authentication invocation is a short-lived reusable bearer. It is not bound to the HTTP method, path, or request body; validation is cached until expiry. Protect invocations accordingly. Frozen operation inputs and canonical Topic checks provide additional operation-level boundaries.
+
+## Supplied-evidence drafting API
+
+Set `TOPIC_DELIVERABLES_ENABLED=true` on a runtime containing this API. When the setting is absent or different, the routes return `404`.
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| `PUT` | `/topic-deliverables/:operationId` | Start or recover the same bound operation. |
+| `GET` | `/topic-deliverables/:operationId` | Read persisted status and output without starting a model turn. |
+| `POST` | `/topic-deliverables/:operationId/cancel` | Persist cancellation, then abort the isolated task session. |
+
+### Request shape
+
+Start and cancellation require the same complete request body. Read has no body.
+
+```json
+{
+  "topic": {
+    "id": "TOPIC_ID",
+    "roomId": "MATRIX_ROOM_ID",
+    "threadId": "MATRIX_THREAD_ID",
+    "attemptId": "ATTEMPT_ID"
+  },
+  "title": "Research brief",
+  "goal": "Summarize the supplied evidence",
+  "instructions": "Separate source evidence from assumptions",
+  "sources": [
+    { "label": "SOURCE_LABEL", "text": "SOURCE_TEXT" }
+  ]
+}
+```
+
+Unknown properties are rejected. `operationId` allows 1–128 ASCII letters, digits, hyphens, or underscores. The body limit is 128 KiB. At most 12 inline sources are accepted; each source text is limited to 32,000 characters. `title` allows 120 characters, `goal` 4,000, `instructions` 16,000, and IDs and source labels 255.
+
+The runtime freezes the parsed body with schema-ordered object keys and unchanged array and string values. It performs no Unicode normalization. An identical Start after a lost response recovers the same task. A different body under the same operation ID returns `409`. Changed inputs require a new operation and attempt ID.
+
+Cancellation can arrive before Start. The persisted cancelled operation fences a delayed identical Start; it cannot silently create work again. Cancellation after output completion returns `409`, including while Matrix delivery is pending.
+
+### Response shape
+
+Responses contain `operationId`, `taskId`, `topic`, `status`, and optional `runId`, `output`, and `delivery` fields. Completed output contains the full `markdown`, its lowercase hexadecimal SHA-256 in `sha256`, and `completedAt`.
+
+| Field | Values |
+| --- | --- |
+| `status` | `queued`, `working`, `ready`, `stopping`, `cancelled`, `failed`, `interrupted`, or `paused` |
+| `delivery` | `pending`, `delivered`, or `failed` |
+
+`paused` describes a row paused outside this API; the API itself cannot pause it. Require `status === 'ready'` before offering an artifact for review. Failed Matrix delivery does not erase completed output or change `ready` to failed execution.
+
+### Execution and recovery
+
+The `supplied-context-markdown` profile runs once, with `approval: 'never'`, through the existing scheduler and durable run ledger. It binds no tools and rejects model-generated tool calls. It excludes personal preferences, memory, plugin hooks, page context, attachment processing, and capability routing. This path drafts from supplied text; it performs no live research.
+
+One operation ID identifies one attempt. A restart recovers that attempt from its checkpoint. A terminal model failure, empty result, or unrecoverable interruption requires an explicitly created new operation. Delivery retries do not run the model again.
+
+The API never accepts work, completes a Topic, or publishes a canonical outcome. Portal performs those mutations through its existing Topic repository after verifying current authority and the exact output.
+
+### Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid operation ID or request body. |
+| `401` | No valid signed invocation, including a delegation-only request. |
+| `404` | API disabled, operation missing, or unsupported method. |
+| `409` | Input conflicts with the bound operation, or cancellation arrived after output completion. |
+| `413` | Request body exceeds 128 KiB. |
+| `429` | New work exceeds the per-user task limit; an existing operation can still be recovered. |
+
+## Artifact and review boundaries
+
+Keep source snapshots and published results bound to immutable revisions and content digests. A mutable VFS file head is not the approved artifact. Artifact provenance identifies the requesting principal, operation, attempt, execution, and exact file version; it contains no credentials or bearer links.
+
+A completed execution receipt records what ran and what it produced. A delivery record records what was shared. A reviewer decision records acceptance or requested changes against the exact artifact. Semantic evaluation, determination, external execution, and settlement remain separate records. Acceptance of a research brief does not prove that a real-world outcome occurred.
+
+VFS uses managed encryption and current access controls. It is not end-to-end encrypted or zero-knowledge storage. Sandbox scratch state is replaceable compute state. Commit required work to durable storage before replacing a target; keep private checkpoints and memory outside the shared artifact projection.
+
+## Revision-bound task approval
+
+Workers `before-action` tasks persist an `approvalRequest` containing `id`, `digest`, `occurrence`, and delivery state. The digest binds the title, intent, schedule, approval mode, delivery room, execution profile, and scheduled occurrence. Updating the task invalidates the outstanding request and any approved occurrence.
+
+When resolving approval through `ctx.tasks.resolveApproval(taskId, decision, note, approvalRequestId)`, supply the exact current request ID. The scheduler refuses a missing, stale, or mismatched ID or digest, and checks the binding again before execution. A later occurrence cannot inherit a prior occurrence's approval.
+
+Task approval does not authorize canonical Topic publication, another person's file access, or settlement. Those services retain their own current authority checks.
+
+## Shared research contracts — pending integration
+
+The implementation plan adds `SkillManifest`, `WakeSubscription`, `ExecutionTargetProvider`, `ConsequenceGuard`, and `WorkspaceAdapter`. Their schema exports, provider method signatures, research request and response shapes, and runtime activation settings still require final source alignment and validation. They are not documented here as available APIs.
+
+The supplied-evidence API remains the verified starting point. Research must retain its immutable operation binding while adding current authorization, selected credentials, replaceable execution targets, durable VFS revisions, and independent review. Keep research disabled until those contracts and the browser dependency pass integration checks.
+
+## Unknown-write reconciliation
+
+An interrupted external write stays blocked across later turns and run-history retention. Warning the model or restarting the Worker does not establish whether the effect occurred.
+
+The implementation exposes owner-invocation-only routes:
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| `GET` | `/write-reconciliations` | List outstanding write claims for the authenticated owner. |
+| `POST` | `/write-reconciliations/:fingerprint` | Record an outcome and explicit retry authorization for the original run. |
+
+`fingerprint` is a lowercase 64-character hexadecimal digest. Reconciliation requires:
+
+```json
+{
+  "expectedRunId": "ORIGINAL_RUN_ID",
+  "evidenceRef": "PROVIDER_RECONCILIATION_RECORD",
+  "outcome": "not-applied",
+  "authorizeRetry": true
+}
+```
+
+`outcome` is `applied`, `not-applied`, or `unknown`. `authorizeRetry: true` is valid only with `not-applied`. A successful response is `{ "resolved": true }`; stale run binding or conflicting evidence returns `409`, and an invalid body returns `400`.
+
+The owner provides the evidence reference and outcome. Recording that reference does not independently verify an external provider's state. Confirm the effect with the provider before authorizing a retry. An `applied` or `unknown` record does not release the claim for automatic replay.
+
+## Sandbox credential selection
+
+Workers sandbox discovery forwards no user or operator tool secrets. Execution forwards only host-selected names through `SandboxPlugin({ selectCredentials })`, or through the configured comma-separated `SANDBOX_USER_SECRET_NAMES` and `SANDBOX_ORACLE_SECRET_NAMES` allowlists. With no selection, neither category is forwarded.
+
+`ORACLE_SECRETS` supplies available operator tool secret values; it does not select every value for forwarding. Selected user secrets use the existing filtered secret adapter, which excludes runtime-only model credentials and OAuth tokens. Deployments that depended on implicit forwarding must configure the required names.
+
+Credential names are execution inputs; values remain inside the host-to-target credential channel. They must not enter skill manifests, work definitions, workspace revisions, artifact receipts, or review records. A named credential never grants the associated UCAN capability.
+
+## Related references
+
+- [Verify shared Topic research](/build-an-oracle/develop/verify-topic-research) for activation and live acceptance evidence.
+- [Client SDK](/build-an-oracle/reference/client-sdk) for the existing authenticated frontend bridge.
+- [VFS plugin](/build-an-oracle/reference/bundled-plugins/vfs) for file permissions and managed storage.
+- [Workers runtime architecture](https://github.com/ixoworld/qiforge/blob/main/packages/oracle-runtime-workers/docs/architecture.md) for framework maintenance details.

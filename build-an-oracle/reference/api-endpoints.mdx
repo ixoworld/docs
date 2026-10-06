@@ -6,6 +6,8 @@ icon: "server"
 
 ## Overview
 
+This page describes the Node runtime. For Workers Topic drafting, shared workspace authorization, and artifact review, use [Workers shared workspaces](/build-an-oracle/reference/workers-shared-workspaces).
+
 A running QiForge oracle exposes a REST + WebSocket surface. Most routes require a UCAN delegation header; some (`/health`, `/docs`, plus anything declared in `getAuthExcludedRoutes()` or `authExcludedRoutes`) are public.
 
 The Swagger UI at `/docs` is generated from the running app's controllers — open it in a browser for the live, deployment-specific reference.
