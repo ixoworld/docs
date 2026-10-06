@@ -15,7 +15,7 @@ The supplied-evidence Topic drafting API is present in the runtime source baseli
 
 Shared research also requires the research implementation, its authorized execution provider, and versioned file storage. Enabling the existing drafting API does not grant the agent tools or enable research.
 
-The approval, reconciliation, and credential sections describe implementation commit `ad8878102f093ba098ce6bde7559c8ad8e27b7f5`. They are additions to the inspected baseline, not evidence of a published or deployed release. Shared research contracts remain pending integration.
+The approval, reconciliation, and credential sections describe the implementation through commit `684d94c9384ded68e6e169a3e1428e9ee416b721`. They are additions to the inspected baseline, not evidence of a published or deployed release. Shared research contracts remain pending integration.
 
 | Foundation | Operator requirement |
 | --- | --- |
@@ -130,7 +130,30 @@ VFS uses managed encryption and current access controls. It is not end-to-end en
 
 Workers `before-action` tasks persist an `approvalRequest` containing `id`, `digest`, `occurrence`, and delivery state. The digest binds the title, intent, schedule, approval mode, delivery room, execution profile, and scheduled occurrence. Updating the task invalidates the outstanding request and any approved occurrence.
 
-When resolving approval through `ctx.tasks.resolveApproval(taskId, decision, note, approvalRequestId)`, supply the exact current request ID. The scheduler refuses a missing, stale, or mismatched ID or digest, and checks the binding again before execution. A later occurrence cannot inherit a prior occurrence's approval.
+The model's `resolve_task_approval` tool is inspect-only: it returns `reviewRequired` and cannot record a human decision. The model-facing `update_task` cannot remove an existing `before-action` gate. Record approval through a signed owner action:
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| `GET` | `/task-approvals/:taskId` | Read the owner's task and approval receipts. |
+| `POST` | `/task-approvals/:taskId` | Approve or reject the exact outstanding request. |
+
+```json
+{
+  "approvalRequestId": "CURRENT_APPROVAL_REQUEST_UUID",
+  "decision": "approve",
+  "note": "Optional audit note"
+}
+```
+
+`decision` is `approve` or `reject`. `note` is optional and limited to 4,000 characters. Unknown properties are rejected; the request limit is 8 KiB. `taskId` must match `task_` followed by ASCII letters, digits, hyphens, or underscores. Both routes require a signed owner invocation; a delegation alone is insufficient.
+
+Read returns `{ task, receipts }`. A decision response also includes `resolved`; a stale or mismatched pending request returns `409` with `resolved: false`. Receipts contain `taskId`, `actorDid`, `approvalRequestId`, `digest`, `occurrence`, `decision`, optional `note`, and `decidedAt`. The authenticated owner's DID is recorded by the host.
+
+The scheduler refuses a missing, stale, or mismatched request ID or digest, and checks the binding again before execution. A later occurrence cannot inherit a prior occurrence's approval. Notes are audit records and never additional execution instructions. Revise the task inputs and obtain a new approval when the requested work changes.
+
+Approval delivery is durable work. The runtime persists the request and arms its retry alarm before the first Matrix send. A restart retains the same request ID and delivery transaction identity; recovering delivery does not create another approval occurrence.
+
+`ctx.tasks.resolveApproval(taskId, decision, note, approvalRequestId)` remains a trusted host integration API. Do not expose it as model-authorized approval or treat model text as the signed owner's decision.
 
 Task approval does not authorize canonical Topic publication, another person's file access, or settlement. Those services retain their own current authority checks.
 
@@ -138,7 +161,7 @@ Task approval does not authorize canonical Topic publication, another person's f
 
 The implementation plan adds `SkillManifest`, `WakeSubscription`, `ExecutionTargetProvider`, `ConsequenceGuard`, and `WorkspaceAdapter`. Their schema exports, provider method signatures, research request and response shapes, and runtime activation settings still require final source alignment and validation. They are not documented here as available APIs.
 
-The supplied-evidence API remains the verified starting point. Research must retain its immutable operation binding while adding current authorization, selected credentials, replaceable execution targets, durable VFS revisions, and independent review. Keep research disabled until those contracts and the browser dependency pass integration checks.
+The supplied-evidence API remains the verified starting point. Research must retain its immutable operation binding while adding current authorization, selected credentials, replaceable execution targets, durable VFS revisions, and independent review. Keep research disabled until those contracts and the combined deployment pass integration checks.
 
 ## Unknown-write reconciliation
 

@@ -19,6 +19,8 @@ See [Workers shared workspaces](/build-an-oracle/reference/workers-shared-worksp
 
 Deploy the compatible runtime and Portal revisions together. Verify the runtime's oracle identity, UCAN key resolution, Matrix gateway, skills registry, sandbox connection, and VFS grants before opening the workflow. Use the runtime's supported model selection; CopilotKit and CopilotKit Intelligence are not dependencies.
 
+The operator must configure and verify the host's canonical Topic resolver and the pinned recipe activation. Their deployment wiring remains unresolved while the research runtime is under integration. Service endpoints in example configuration are not proof of configured credentials or two-user access. No live service acceptance is recorded by this guide.
+
 Portal retains the existing Topic delivery recipe settings:
 
 | Public build setting | Value |
@@ -44,7 +46,9 @@ The Portal research implementation adds:
 
 These public settings contain references and names, never secret values or authorization tokens. A displayed capability is a requested scope; the runtime must resolve and authorize it before use.
 
-The published `@ixo/topic-protocol` version `1.0.0-rc.4` used by the Portal baseline imports `node:crypto` through its public entrypoint and fails the browser fixture. The [browser digest fix](https://github.com/ixoworld/topic-protocol/commit/4e5a87ef7c70a537d776a46ac09c840bac18f806) is merged in protocol source, but Portal still needs a reproducible compatible dependency and a passing browser fixture before activation. Do not bypass recipe verification or treat a merged source fix as deployed acceptance evidence.
+The Portal implementation pins `@ixo/topic-protocol` to `git+https://github.com/ixoworld/topic-protocol.git#4e5a87ef7c70a537d776a46ac09c840bac18f806`, which contains the [browser digest fix](https://github.com/ixoworld/topic-protocol/commit/4e5a87ef7c70a537d776a46ac09c840bac18f806). Its lockfile and prepare-build allowlist bind that exact commit. Preserve this reproducible pin or use a published release containing the verified fix.
+
+The package's version remains `1.0.0-rc.4`; installing the npm package with that version does not select the same browser implementation. No additional npm publication is required to consume the Git pin. A compatible dependency and a passing controlled browser fixture remain separate from live service acceptance.
 
 ## Run and review one result
 
