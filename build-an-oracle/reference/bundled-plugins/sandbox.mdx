@@ -16,6 +16,8 @@ icon: "server"
 
 ## Summary
 
+This page describes the Node sandbox plugin. Workers execution and credential boundaries are documented in [Workers shared workspaces](/build-an-oracle/reference/workers-shared-workspaces).
+
 Per-user Linux sandbox. `sandbox_run` runs shell/python (writes anywhere via shell, including `/tmp` for scratch). `sandbox_write_file` writes raw bytes BUT only under `/workspace/data/` — other paths are rejected; use `sandbox_run` with a here-doc for `/tmp`. The plugin surfaces every upstream MCP tool verbatim and authenticates the connection with a UCAN invocation plus operator and per-user secrets as request headers. Used internally by [`skills`](/build-an-oracle/reference/bundled-plugins/skills) for skill execution.
 
 ## Environment variables

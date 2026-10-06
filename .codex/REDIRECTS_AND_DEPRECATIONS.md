@@ -95,6 +95,8 @@ Example:
 | changed | `/build-an-oracle/building/observability` | `/build-an-oracle/build/observability` | Build-track consolidation | Same |
 | changed | `/build-an-oracle/building/deployment` | `/build-an-oracle/build/deploy` | Build-track consolidation; verb-led title | Same |
 | added | n/a | `/build-an-oracle/for-ai-agents` | Dense single-page entry for AI tools scaffolding oracles | Mirrors AGENTS.md / llms.txt convention |
+| added | n/a | `/build-an-oracle/reference/workers-shared-workspaces` | Canonical Workers execution and shared Topic reference | Node plugin references retain their existing scope |
+| added | n/a | `/build-an-oracle/develop/verify-topic-research` | Activation and acceptance guide for shared Topic research | Requires compatible integrated runtime and Portal revisions |
 | added | n/a | `/build-an-oracle/build/overview` | Build-track index | Replaces conceptual plugin overview as developer entry |
 | added | n/a | `/build-an-oracle/understand/what-is-qiforge` | Extracted mental-model summary | Lets the landing stay lean |
 | added | n/a | `/build-an-oracle/reference/bundled-plugins/<plugin>` | One reference page per bundled plugin | 14 leaf pages + overview |

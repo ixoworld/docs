@@ -18,6 +18,8 @@ icon: "clock"
 
 ## Summary
 
+This page describes Node tasks backed by Redis and BullMQ. Workers uses its per-user Durable Object scheduler and run ledger; see [Workers shared workspaces](/build-an-oracle/reference/workers-shared-workspaces) for Topic drafting and review.
+
 Lets the agent schedule itself to run later. A task is a saved spec (title + intent) plus a trigger (`time.once` or `time.cron`). When the trigger fires, the runtime starts a **fresh background session** — no memory of the conversation that created it — runs one agent turn, and delivers the result to the user's main oracle room or a dedicated `[Task]` room. The agent owns the whole lifecycle through 10 tools, a mandatory **preview → create** approval flow, and an optional per-run **before-action** approval gate.
 
 <Note>
