@@ -13,19 +13,19 @@ This page documents `@ixo/oracle-runtime-workers`. The [tasks](/build-an-oracle/
 
 The supplied-evidence Topic drafting API is present in the runtime source baseline at commit `77012a8`. It is disabled by default. A deployed runtime must contain the API before its Portal integration is enabled. Source inspection and local tests do not establish live availability.
 
-Shared research also requires the research implementation, its authorized execution provider, and versioned file storage. Enabling the existing drafting API does not grant the agent tools or enable research.
+The approval, reconciliation, and credential-selection sections describe committed hardening through `3149e2c6910d5c15f0c6099684544a0b8d9ce424`. The control-plane contracts, research API, fresh revocation checks, selected-credential scrubbing, and Composio restriction describe proposed PR implementation `afcf7f019b79796b437198fad6af01518d264271`. Research is inactive by default. These source revisions do not establish a published package, deployed service, or live acceptance result.
 
-The approval, reconciliation, and credential sections describe the implementation through commit `684d94c9384ded68e6e169a3e1428e9ee416b721`. They are additions to the inspected baseline, not evidence of a published or deployed release. Shared research contracts remain pending integration.
+Shared research requires explicit host activation, an approved execution provider, and versioned file storage. Enabling the supplied-evidence drafting API does not enable research. Use a prepared candidate deployment for the [acceptance guide](/build-an-oracle/develop/verify-topic-research), and keep general user activation gated on that evidence.
 
 | Foundation | Operator requirement |
 | --- | --- |
 | User execution | Deploy the Workers shell and `UserOracleDO`; each authenticated user has their own execution and database. |
 | Collaboration | Configure IXO Matrix, the oracle gateway, and the intended Topic room audience. |
-| Identity | Configure the oracle Decentralized Identifier (DID) and key resolution. Require signed User-controlled Authorization Network (UCAN) invocations. |
+| Identity | Configure the oracle Decentralized Identifier (DID), key resolution, and signed User-controlled Authorization Network (UCAN) invocations. Research requires a reachable `UCAN_STORE_URL` for fresh revocation checks. |
 | Durable owner storage | Use IXO Virtual Filesystem (VFS) owner storage. The example's `OWNER_STORE=matrix` is a local harness setting. |
-| Skills and compute | Configure the existing skills registry and sandbox service when research needs them. |
+| Skills and compute | Configure the existing skills registry and sandbox service; activate exact trusted skill pins and named credentials in host policy. |
 | Model selection | Configure the runtime's operator-selected model provider and any supported user credentials. |
-| Topic integration | Verify the published recipe, its canonical digest, and its exact file-byte digest before activation. |
+| Topic integration | Supply a host resolver for canonical Topic authority and the VFS resource. Verify the published recipe, its canonical digest, and its exact file-byte digest before activation. |
 
 The shared workspace uses the IXO frontend action bridge: `action_call`, `action_call_result`, streaming, and authenticated realtime connections. The `agui` plugin name does not introduce a CopilotKit dependency. Neither CopilotKit nor CopilotKit Intelligence configuration is required.
 
@@ -49,7 +49,9 @@ Keep these checks separate:
 
 A room invitation grants no inherited execution authority. A reviewer does not read another user's model checkpoints, memory, or credentials. Shared views expose selected work status, sources, artifacts, and review records.
 
-The shell authentication invocation is a short-lived reusable bearer. It is not bound to the HTTP method, path, or request body; validation is cached until expiry. Protect invocations accordingly. Frozen operation inputs and canonical Topic checks provide additional operation-level boundaries.
+The shell authentication invocation is a short-lived reusable bearer. It is not bound to the HTTP method, path, or request body. Without `UCAN_STORE_URL`, successful validation can be cached until expiry. With the URL configured, shell authentication bypasses positive verdict reuse and checks revocation without a negative-result cache, failing closed on service errors. Concurrent verification is coalesced per token and authentication policy. DID key resolution retains its separate one-minute cache. Protect invocations accordingly; frozen inputs and canonical Topic checks provide additional operation boundaries.
+
+Research requires `UCAN_STORE_URL` and a current delegation belonging to the requester. It rechecks expiry and revocation before execution and artifact mutations, and refuses research if current delegation validation or the revocation service fails. Matrix membership and an earlier successful Start cannot substitute for these checks.
 
 ## Supplied-evidence drafting API
 
@@ -157,11 +159,116 @@ Approval delivery is durable work. The runtime persists the request and arms its
 
 Task approval does not authorize canonical Topic publication, another person's file access, or settlement. Those services retain their own current authority checks.
 
-## Shared research contracts — pending integration
+## Control-plane contracts
 
-The implementation plan adds `SkillManifest`, `WakeSubscription`, `ExecutionTargetProvider`, `ConsequenceGuard`, and `WorkspaceAdapter`. Their schema exports, provider method signatures, research request and response shapes, and runtime activation settings still require final source alignment and validation. They are not documented here as available APIs.
+The proposed implementation exports version 1 schemas and types from `@ixo/common/work`, and provider interfaces and implementations from `@ixo/oracle-runtime-workers/work`. The Workers root entrypoint also exports the provider APIs. Use a package revision containing these source changes; package publication and deployment remain separate release steps.
 
-The supplied-evidence API remains the verified starting point. Research must retain its immutable operation binding while adding current authorization, selected credentials, replaceable execution targets, durable VFS revisions, and independent review. Keep research disabled until those contracts and the combined deployment pass integration checks.
+| Contract | Binding and behavior |
+| --- | --- |
+| `SkillManifest` | Binds `skillId`, `skillVersion`, entrypoint `digest`, accepted work types, required `{ with, can }` capabilities, privilege planes, target kinds, timeout, required credential names, output declarations, consequence class, and publisher provenance. |
+| `WakeSubscription` | Binds a principal, schedule or Topic source, resource, event filter, cursor, expiry, and `notify` or `evaluate` delivery policy. Its persisted state is `active` or `revoked`. A wake requests evaluation; it grants no authority. |
+| `ExecutionTargetProvider` | Prepares a request against a target descriptor, executes or collects a bound receipt, requests cancellation, and releases local resources. Target kind declarations do not establish delivered providers. The branch implements `SandboxExecutionTarget`. |
+| `ConsequenceGuard` | Evaluates an `ActionRequest` bound to its principal, resource, input digest, privilege plane, consequence, and evidence or decision references. The decision records the action binding, policy version, reason, and `allow`, `deny`, or `review`. |
+| `WorkspaceAdapter` | Binds a workspace to a principal, resource, and root path; snapshots exact artifacts, commits revisions with provenance, restores a pinned revision, and materializes selected bytes into a provider. The branch implements `VfsWorkspaceAdapter`. |
+
+The schemas reject unknown properties. Contract digests are bare lowercase 64-character SHA-256 values. Execution inputs reject reserved configuration keys; callers must still exclude credentials and authorization tokens from ordinary data. Supported target-kind values are `sandbox`, `worker`, `computer`, and `local`; only the sandbox provider is implemented in this research journey.
+
+### Provider and workspace methods
+
+`PreparedExecution` contains the parsed `ExecutionRequest` and `ExecutionTargetDescriptor`. An execution request binds the requester, request ID, work reference, input digest, selected inputs and artifacts, requested capabilities, and timeout. An `ExecutionReceipt` repeats that binding and the provider and target IDs, with timestamps, artifacts, evidence references, and a `completed`, `failed`, `cancelled`, or `unknown` outcome.
+
+| `ExecutionTargetProvider` method | Result |
+| --- | --- |
+| `materializeArtifacts(files)` | Stages `{ reference: ArtifactRef, bytes: Uint8Array }` inputs. |
+| `inspect()` | Returns the target descriptor. |
+| `prepare(request)` | Returns the frozen request and target binding. |
+| `execute(execution)` | Returns the bound execution receipt. |
+| `cancel(execution)` | Returns `requested` or `confirmed`; callers must preserve the distinction. |
+| `collect(execution)` | Returns a matching receipt or `null`. |
+| `teardown(execution)` | Releases provider resources. |
+
+`WorkspaceAdapter` exposes `open(binding)`, `materialize(target)`, `snapshot()`, `commit(message, provenance)`, `restore(revisionArtifact)`, `listArtifacts()`, and `close()`. Restore takes an `ArtifactRef` for the exact revision file. `VfsWorkspaceAdapter` also exposes `put(name, content, mediaType)` for text artifacts.
+
+An `ArtifactRef` contains `resource`, `fileId`, positive integer `version`, `cid`, `sha256`, `name`, `path`, `mediaType`, and byte count `bytes`. Workspace revisions bind those references, their parent revision, and provenance containing `principalDID`, `workRef`, `inputDigest`, and the commit message. Workspace commit does not publish or accept a Topic.
+
+`VfsWorkspaceAdapter` writes content-addressed objects under `/.workspaces/<workspaceId>/`, verifies returned file versions and digests, and verifies pinned bytes during restore or materialization. Selected materialized files are limited to 10 MiB in total. The research host supplies current-authority callbacks around mutations; VFS independently checks file permissions.
+
+### Guards and durable stores
+
+`ConsequenceGuard.evaluate(action)` is a host policy check. The stock `createConsequenceGuard` returns `allow` or `deny`, rejects the admin plane and settlement, and allows only configured consequence classes after authorization. The research policy permits `none`. A manifest's declared consequence does not enforce filesystem or network restrictions and is not a semantic determination.
+
+`WakeSubscriptionStore` persists subscriptions and deduplicates each subscription/event pair. It checks expiry, revocation, resource, and event type before admitting an operation. Re-registering a subscription cannot silently change its binding or reactivate a revoked subscription. Source adapters must reread current authority; the research Start path separately performs that check.
+
+`ExecutionReceiptStore` persists the prepared binding before execution and checks every receipt against it. A completed receipt can be reused. Finding a started operation without a confirmed completed receipt makes its outcome `unknown` and blocks another target execution. This prevents automatic replay after a lost sandbox response or restart.
+
+## Authorized Topic research API
+
+The proposed implementation adds `TOPIC_RESEARCH_ENABLED=true`, signed owner routes, and the `topic-research-v1` profile. The flag alone is insufficient: the operator must provide `hooks.topicResearch` when constructing the Worker, with a trusted `TopicResearchHost`. Missing host integration fails closed.
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| `PUT` | `/topic-research/:operationId` | Start or recover the same frozen research attempt. |
+| `GET` | `/topic-research/:operationId` | Read the authenticated owner's persisted snapshot. |
+| `POST` | `/topic-research/:operationId/cancel` | Repeat the frozen request, persist cancellation, and abort the task session. |
+
+All three routes require the owner's signed invocation. A reviewer uses their own authority to read the delivered files and review through the canonical Topic repository; they do not receive access to the requester's private operation. Disabled routes return `404`. Research requires a configured `UCAN_STORE_URL`.
+
+### Frozen request and response
+
+Start and cancellation use the same complete body:
+
+```json
+{
+  "topic": {
+    "id": "TOPIC_ID",
+    "roomId": "MATRIX_ROOM_ID",
+    "threadId": "MATRIX_THREAD_ID",
+    "attemptId": "ATTEMPT_ID",
+    "observedRevision": "CURRENT_TOPIC_REVISION"
+  },
+  "title": "Research brief",
+  "goal": "Answer the bounded research question",
+  "instructions": "Distinguish evidence from inference",
+  "sources": [{ "label": "SOURCE_LABEL", "text": "SOURCE_TEXT" }],
+  "skill": {
+    "id": "PINNED_CAPSULE_CID",
+    "version": "PINNED_SKILL_VERSION",
+    "digest": "LOWERCASE_SHA256_HEX"
+  },
+  "capabilities": [{ "with": "RESOURCE", "can": "ACTION" }],
+  "credentialNames": ["TOOL_CREDENTIAL_NAME"]
+}
+```
+
+The placeholder digest must be replaced with 64 lowercase hexadecimal characters; this request also accepts the `sha256:` prefix. The body limit is 1 MiB. The strict schema accepts at most 20 sources, 32 capabilities, and 32 credential names. Title is limited to 160 characters; goal and instructions to 16,000 each; source text to 32,000. IDs, source labels, skill version, and capability values are trimmed nonempty strings of at most 512 characters. Credential names contain letters, digits, and underscores, start with a letter, and allow 128 characters.
+
+`researchInputDigest` hashes the recursively key-sorted JSON of the parsed request, preserving array order and the optional `sha256:` prefix in the requested skill digest. Activation strips that prefix only for pin comparison. The same operation and digest recover existing work; changed inputs return `409` and require a new attempt. Cancellation before Start persists a tombstone that fences a delayed Start. Cancellation after completed execution returns `409`.
+
+Snapshots add `requesterDid`, `inputDigest`, and versioned `artifacts` to the supplied-evidence response fields. Research has the same statuses except `paused`; it cannot become `ready` without committed artifacts. The completed Markdown retains its own SHA-256 digest and timestamp. Matrix delivery and canonical acceptance remain separate from execution completion.
+
+After the completed result is persisted, private requester-notification retries continue independently of current Topic authority. They do not authorize sharing, publication, or review in the canonical Topic repository. Those mutations require current authority and revision checks.
+
+Invalid requests return `400`, unsigned or delegation-only calls `401`, disabled or missing operations `404`, conflicting inputs or late cancellation `409`, oversized bodies `413`, and new work above the per-user limit `429`. Missing host or service configuration is an activation error, not proof of a missing operation.
+
+### Host authority and skill activation
+
+`TopicResearchHost` supplies `allowedSkills`, separate user and oracle credential-name allowlists in `allowedCredentials`, and `resolveTopicAuthority({ principalDid, topic, request })`. The resolver must reread canonical Topic state, room membership, current action authority, and revision after Portal creates the canonical delivery attempt. It returns `{ observedRevision, resourceRef, allowed }` and chooses the VFS resource. Echoing the request's revision does not establish current authority. The runtime compares the resolved revision with the frozen request and rechecks the resource before execution and artifact mutations. The model cannot choose the authority resolver or a replacement storage resource.
+
+Each `ResearchSkillActivation` binds the skill ID, version, entrypoint digest, and declared publisher DID. For this provider the skill ID is its immutable capsule CID. The authenticated registry must contain the selected capsule and a matching JSON `qiforgeManifest` sidecar. The current registry helper requests `skills/*` on `ixo:skills`; the requester's delegation must satisfy that invocation. The manifest is loaded only for the selected research skill; ordinary skill discovery does not activate it.
+
+The host must review and activate a trusted read-only skill with accepted work type `topic-research`, orchestration privilege only, consequence `none`, and sandbox target support. The request must include its required capabilities and credentials, and those credential names must also be host allowed. The provider checks the pinned entrypoint bytes against the manifest digest before running them; the capsule CID pins the bundle. Metadata and matching pins do not independently establish publisher trust or skill safety.
+
+### Execution limits and recovery
+
+The `topic-research-v1` agent binds only the no-argument `run_topic_research` tool. The model receives frozen inputs and committed evidence, then produces Markdown using the operator-selected model. It cannot submit arbitrary code, choose another skill, approve itself, or invoke canonical publication, determination, or settlement tools.
+
+`SandboxExecutionTarget` reports provider `ixo-sandbox`, isolation `principal`, remote locality, and a persistent lifecycle. It uses the existing per-principal sandbox. That sandbox has ambient filesystem and network access; staged input selection does not confine the skill to those inputs or prohibit network writes. Host approval of a pinned trusted skill is the boundary. Do not activate unreviewed skills or describe this target as isolated per execution.
+
+The provider timeout is bounded by the manifest, up to 180 seconds. Cancellation returns `requested`; closing the client does not prove the remote process stopped. Teardown releases local clients and staged input references, and does not wipe the persistent sandbox. Persist required evidence and reports to VFS before target replacement.
+
+The reference path admits an authenticated one-shot Topic research wake through the existing scheduler and run ledger. Recurring research intent and additional wake adapters for webhooks, Model Context Protocol (MCP) events, chain events, voice, and channels remain roadmap work, along with Node runtime parity.
+
+Unknown target outcomes require provider inspection before an explicitly authorized new operation. The ordinary-tool reconciliation routes below do not settle research target receipts. Reusing a completed receipt and retrying delivery must not run the skill again.
 
 ## Unknown-write reconciliation
 
@@ -189,6 +296,8 @@ The implementation exposes owner-invocation-only routes:
 
 The owner provides the evidence reference and outcome. Recording that reference does not independently verify an external provider's state. Confirm the effect with the provider before authorizing a retry. An `applied` or `unknown` record does not release the claim for automatic replay.
 
+In the proposed implementation, ordinary Composio tools permit only `COMPOSIO_SEARCH_TOOLS` and `COMPOSIO_GET_TOOL_SCHEMAS`. Consequential or unknown execution, including multi-execute and connection-management calls, is blocked before its SDK tool invocation because the installed SDK can retry effects internally. These remaining tools discover names and schemas; they do not execute a discovered research or application action. There is no activation flag or available verified no-retry transport for consequential Composio execution.
+
 ## Sandbox credential selection
 
 Workers sandbox discovery forwards no user or operator tool secrets. Execution forwards only host-selected names through `SandboxPlugin({ selectCredentials })`, or through the configured comma-separated `SANDBOX_USER_SECRET_NAMES` and `SANDBOX_ORACLE_SECRET_NAMES` allowlists. With no selection, neither category is forwarded.
@@ -196,6 +305,10 @@ Workers sandbox discovery forwards no user or operator tool secrets. Execution f
 `ORACLE_SECRETS` supplies available operator tool secret values; it does not select every value for forwarding. Selected user secrets use the existing filtered secret adapter, which excludes runtime-only model credentials and OAuth tokens. Deployments that depended on implicit forwarding must configure the required names.
 
 Credential names are execution inputs; values remain inside the host-to-target credential channel. They must not enter skill manifests, work definitions, workspace revisions, artifact receipts, or review records. A named credential never grants the associated UCAN capability.
+
+For the research provider, forwarded names must be required by the manifest, selected in the frozen request, and allowed by the host for the appropriate credential category. Runtime-only model credentials remain excluded. Exact selected raw values are scrubbed locally from target results and failures before use by the model, VFS, or receipts, including values shorter than eight characters. This supplements the upstream sandbox scrub, whose minimum length is eight characters.
+
+Local scrubbing does not change upstream sandbox logs or guarantee removal of encoded or transformed secrets. Operators must review upstream logging and retention before activation. The sandbox still receives the selected values; host selection and output scrubbing do not establish end-to-end confidentiality.
 
 ## Related references
 
