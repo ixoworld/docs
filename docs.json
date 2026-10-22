@@ -233,6 +233,13 @@
             ]
           },
           {
+            "group": "Decision oracle",
+            "pages": [
+              "build-an-oracle/decision-oracle/index",
+              "build-an-oracle/decision-oracle/api-reference"
+            ]
+          },
+          {
             "group": "Help",
             "pages": [
               "build-an-oracle/troubleshooting"

@@ -1,0 +1,1611 @@
+---
+title: "Decision oracle"
+description: "Build and run a decision oracle with @ixo/decision-oracle: a Cloudflare Worker that produces the facts a rubric asks for, gets the IXO decision engine's verdict, and signs it on chain."
+icon: "scale-balanced"
+---
+
+`@ixo/decision-oracle` is an npm package for running a **decision oracle**: the service that answers
+"did this actually happen?" for claims on the IXO chain. You write a config object and a few async
+fact handlers; the package brings claim pulling, the decision engine handshake, the D1 ledgers,
+human-review folds, the chain write, billing, notices, the cron and the Workflows. It runs as a
+Cloudflare Worker. (It is a different thing from the QiForge runtime in the rest of this section: a
+decision oracle never runs an agent, it produces facts and the engine decides.)
+
+<Note>
+  You do not need your own domain. A decision oracle runs on the free
+  `<worker name>.<account subdomain>.workers.dev` address Cloudflare gives every Worker: leave out the
+  `routes` entry for that environment and set `ORACLE_HOSTNAME` to that host. A custom domain is
+  optional. Whichever you pick, choose it before `oracle init`: the host is the oracle's `did:web`
+  identity (section 3 below).
+</Note>
+
+This guide walks from an empty directory to an oracle that is hired, deciding and signing on chain,
+and then to running it. Every signature, default and cap it leans on is in the
+[API reference](/build-an-oracle/decision-oracle/api-reference).
+
+**The one sentence that explains the whole shape:** the rubric asks for named facts, this oracle
+produces them, and the decision engine decides. Your oracle never judges anything.
+
+---
+
+## 1. The concepts, in the order you meet them
+
+| Term | What it is |
+| --- | --- |
+| **Protocol** | An on-chain entity (`did:ixo:entity:…`) that *is* a claim type. It anchors two documents as linked resources: the claim form and the rubric |
+| **Claim form** (`#vct`) | The SurveyJS template a submitter fills in. Its answers are the claim's `credentialSubject` — what you see as `claim.body` / `answers` |
+| **Rubric** (`#rub`) | The commissioner's rule document: gates, scored criteria, the external sources and AI checks it needs, a duplicate rule, a submission-rate rule, human-review tasks. **You never read it.** Its id is the sha256 of its anchored bytes |
+| **Manifest** (the work order) | What the engine's binder resolved that rubric to *want*, republished at `GET /v1/rubrics/manifest?protocol=<did>`: the `ext.<name>` and `ai.<name>` facts to produce, with each one's type and fallback, plus the fields, ctx tokens and derived values the rules read. This is the only work order there is |
+| **Deed** | The domain entity people submit claims against. A collection hangs off a deed, never off the protocol |
+| **Collection** | "Claims of protocol X against deed Y." It carries the on-chain `Payments.evaluation` — the coin that pays you — and its **admin account** pays the evaluation leg on every decision |
+| **Grant** | An on-chain `EvaluateClaimAuthorization` naming your `ORACLE_ADDRESS`. Without it the chain refuses your `MsgEvaluateClaim`, so the register handshake insists on it |
+| **The engine** | The IXO decision engine. It binds the rubric to the live form, decides from your facts, mints a signed receipt, and bills the collection owner's credits |
+| **Credits** | The owner's IXO subscription balance, which the engine charges per decision. It finds that subscription through the delegation you post at register |
+| **Fact** | One named answer: a boolean, an integer score in basis points, or an explicit "could not establish". The unit of work an oracle does |
+
+### How a claim flows
+
+```text
+cron tick → discover new claims on Blocksync → one ClaimIngest workflow per claim
+  pull       the claim body from the first store that has it (VFS claims lane, VFS public copy,
+             Matrix claim bot, IPFS, Cellnode — all but the bot CID-verified) + attachment descriptors
+  facts      read the manifest → resolve ctx (ONE clock read) → run your handlers → validate → FREEZE
+  decide     POST the FactSet + the claim's content to the engine
+             → { decision, resultDigest, receipt: { cid, jws } }
+  act        on a terminal verdict, sign MsgEvaluateClaim with verification_proof = receipt.cid
+```
+
+After the freeze there is no network, no clock and no AI anywhere downstream. That is what makes a
+decision replayable — and what lets a human review fold into the *same* decision instead of starting
+a second one.
+
+**The content binding.** Every decide and every fold also carries `claimContent`, so the engine can
+check that the answers you froze are the claim's own (a hired oracle cannot change a company's
+decision). For a chain claim that is its CID plus the EXACT bytes a CID-verified store served — the
+bot's JSON comes back re-serialised, so a bot-only claim (or a document over 256 KiB) goes without
+bytes; on a payouts protocol the pull asks the CID-verified stores behind the bot before it settles
+for the bot. For an API claim it is the content you were sent, stored at accept. The engine
+refusing it (`409 CONTENT_MISMATCH`, or `413 PAYLOAD_TOO_LARGE` — also said by the oracle itself
+before a body over 6 MiB is sent) records a `content_mismatch` / `payload_too_large` decision row,
+fails the claim and pages the operator (`engine.content-mismatch` / `engine.payload-too-large`); on
+a fold it lands on the review's `foldError`. An API upload attachment names the `cid` its upload
+returned, and accept refuses one that is not that upload's.
+
+---
+
+## 2. The project after `init`
+
+```bash
+bunx @ixo/decision-oracle init my-oracle --name my-oracle
+cd my-oracle && bun install
+bun run cf-typegen
+```
+
+| File | Yours? | What it holds |
+| --- | --- | --- |
+| `src/index.ts` | **yours** | One `defineOracle({...})` call — what the oracle *is* — plus the three mandatory re-exports |
+| `src/facts/index.ts` | **yours** | `defineFacts({ ext, ai, groups?, unique?, frequency? })` — the handler table. This is the work |
+| `src/facts/<name>.ts` | **yours** | One handler per fact name the stock lanes cannot answer |
+| `test/facts.test.ts`, `test/facts/*.test.ts` | **yours** | Plain vitest in node, with `@ixo/decision-oracle/testing` |
+| `wrangler.jsonc` | **yours to fill** | Bindings, vars, the cron, the custom domains. Binding and var **names are the package's contract** — never rename one |
+| `.dev.vars` | **yours, never committed** | Local secrets. `.dev.vars.example` lists every one with what it does |
+| `tsconfig.json`, `biome.json`, `vitest.config.ts`, `package.json` | generated | Scripts: `dev`, `deploy`, `deploy:devnet`, `deploy:testnet`, `deploy:production`, `build`, `cf-typegen`, `db:migrate`, `db:migrate:remote`, `test`, `typecheck`, `lint`, `check` |
+| `.claude/skills/` | shipped | The six skills below. Refresh after an upgrade: `bunx decision-oracle skills sync` |
+| `CLAUDE.md` | shipped | The two rules, and where the package docs live |
+
+Everything else — pulling claims, the engine handshake, the D1 ledgers, review folds, the chain
+write, billing pauses, Matrix and email notices — is the package. See
+[API reference §12](/build-an-oracle/decision-oracle/api-reference#12-what-the-package-does-at-runtime) before you build any of it yourself.
+
+---
+
+## 3. Identities — two keys, two jobs
+
+```bash
+bunx decision-oracle derive --new --write .dev.vars --as SERVICE_ED25519_MNEMONIC
+bunx decision-oracle derive --new --write .dev.vars
+```
+
+`--write` appends the mnemonic to the file (0600) under `--as` (default `ORACLE_SECP_MNEMONIC`) and
+never prints it; a name the file already holds is refused (replacing a key changes the oracle's
+identity). Without `--write`, `derive` prints the mnemonic as an `ORACLE_SECP_MNEMONIC=` line.
+
+**The first** is the `did:web` key. It signs every UCAN invocation the oracle mints (to the engine,
+to external sources, to the claim bot, to the UCAN Store, to the VFS) and backs
+`/.well-known/did.json`.
+
+**The second** is the chain account key. Its mnemonic is `ORACLE_SECP_MNEMONIC` (a secret), and
+the same run prints `ORACLE_ADDRESS`, `ORACLE_DID` and `ORACLE_MATRIX_USER_ID` — those three are
+**public config**, so they go in `wrangler.jsonc` `vars`. This key signs `MsgEvaluateClaim`, holds
+the on-chain grant, and is the audience of the owner's claim-bot delegation. `ORACLE_ADDRESS` is
+asserted against the mnemonic before the first signature: a hand-typed one that differs fails loud,
+never signs as someone else.
+
+Also set, in `wrangler.jsonc` `vars`: `IXO_NETWORK`, and `ORACLE_HOSTNAME` — the host your
+`did:web` is served from (`localhost:8787` while developing). **It must be the host each
+environment you deploy is served from**, because callers resolve you by fetching
+`https://<host>/.well-known/did.json`. A custom domain is optional: delete that env's `routes`
+entry and the Worker is served on its free `<worker name>.<account subdomain>.workers.dev` host —
+set `ORACLE_HOSTNAME` to that. With a custom domain, it must equal the Custom Domain in `routes`.
+Pick the host before `oracle init` (§10): it is the oracle's identity. And in `.dev.vars`: `UNIQUE_HMAC_KEY`, any long random
+string, if the rubric you serve declares a `unique` rule.
+
+Both of these keys are, at this point, only strings in your files. `decision-oracle oracle init` (§10)
+is what makes them real on chain: it funds the wallet, creates the IID document for
+`did:ixo:<ORACLE_ADDRESS>` and puts the `SERVICE_ED25519_MNEMONIC` public key on it as a
+verification method — without which every invocation this oracle mints as its `did:ixo` (to the
+claim bot, to the UCAN Store, to the VFS claims lane) is refused. The same command creates the
+oracle's Matrix account and writes `ORACLE_MATRIX_ACCESS_TOKEN` into `.dev.vars` for you; it is not
+a value you obtain yourself.
+
+There is a third DID later: `ORACLE_ENTITY_DID`, the on-chain oracle *entity* from that same command.
+Different thing, different owner (your AuthHub session), and the portal resolves your API from it.
+
+---
+
+## 4. Read the work order
+
+```bash
+bunx decision-oracle protocol review <protocol did> [--network devnet|testnet|mainnet] [--json]
+```
+
+It is a public read — no keys, no project, no identity needed. It prints:
+
+- the claim-form **fields** the rules read, with the live form's kinds;
+- the **ctx tokens** the rules name, and the **`~derived` values the engine computes** (with their
+  expressions);
+- the **human-review tasks** a `pending_review` decision could name;
+- then, per declared name: `ext.<name>  stock` or `ext.<name>  handler needed (<why>)`, with the
+  endpoint, audience, `expect`, `onError` and `send` map (or, for an AI check, the instructions);
+- the `unique` / `frequency` rules and the attachment size limits — all stock, no handler;
+- and a closing verdict naming exactly which names need a handler.
+
+**If it comes back `unusable`, stop.** The engine could not bind that rubric to its claim form, so
+there is nothing to answer yet — the rubric or its `#vct`/`#rub` anchoring has to be fixed first
+(the `create-rubric` and `publish-protocol` skills). Exit code 2.
+
+Now fill in `src/index.ts` from what you read — `supportedProtocols: ["<protocol did>"]`,
+`pricing.evaluation` (the denom and minimum the collection's on-chain payment must carry), and the
+three policies. Serving more than one protocol at different fees? `pricing.byProtocol` overrides
+`pricing.evaluation` per protocol DID — `minAmount: "0"` accepts an empty `Payments.evaluation` leg
+for a protocol whose collections aren't paying this oracle through that split ([API reference](/build-an-oracle/decision-oracle/api-reference#oracleconfig)). Running the Decision API lane? Its price is a different thing — US dollars per
+decision, in micro-USD: `pricing.api: { amountMicroUsd: 1_200_000, byProtocol?: { … } }`, served
+publicly at `GET /v1/api/protocols/:did` and checked by the facilitator against every offer; a
+protocol with no price answers `price: null` and is never offered. **Card needs at least 50¢ per
+decision** (Stripe's minimum capture; the facilitator checks every claim on its own, so a batch
+doesn't help): below that only PAY is offered. To change the price, edit `pricing.api` in
+`src/oracle.ts` (or, with no `pricing.api` in code, the `API_PRICE_USD_CENTS` var) and redeploy.
+If your rubric has a `frequency` rule, every Decision API claim needs a `submitter` (the person it
+is about) or it is refused before any payment. The oracle never fills one: it is the caller's
+`submitter`, else the answer the source's **organisation link** names (`payeeField`, e.g.
+`courierId`) — an admin of the organisation sets that in the Decision Console, and the console's
+sync mirrors it onto the source ([API reference](/build-an-oracle/decision-oracle/api-reference), "A source's organisation"). An AI app signed in as a
+person may only name that person.
+New offers use it at once; the facilitator's price cache catches up within about 5 minutes, and an
+offer refused `price_mismatch` in that window is simply retried. The Decision Console shows the
+price read-only, with whether card can be offered. Set `allowAiChecks` true iff anything asks for a model (an `ai` check, or a
+`unique` rule with its judge on); `allowImageChecks` true iff a check reads a photo and you want
+Content Credentials screened; `autoSign` true only when unattended chain writes are deliberate.
+`allowStandingApprovals` (say it either way; IXO's own oracles turn it on) lets a signed-in AI app's auto-approve limits pay without
+the user approving each claim. Off, the oracle refuses to store one (`403 standing_approvals_off`)
+and never spends one it already holds — the hourly housekeeping sweep deletes any it stored while the
+policy was on: every hosted-MCP submit waits for the user's approval of that claim.
+
+**Per-review billing** (no setting of yours: IXO switches it on in your oracle's plan — the
+engine's `GET /v1/oracles/me` `reviewBilling` — and the facilitator refuses a chain-lane
+reservation otherwise) bills chain reviews per review instead of an escrowed evaluation fee: an
+organisation's owner signs ONE standing x402 payment delegation for your oracle in the Decision
+Console (or with `decision-oracle api review-billing enable --source <id>`, signed as the owner's login),
+stored on the organisation's Decision API source (`PUT /v1/api/source/review-billing`),
+and each claim of its collections then reserves your published `pricing.api` price before it is
+decided and settles on the engine's receipt, from the owner's subscription credits. It needs
+`API_LANE` and `API_PAYMENTS` on and a facilitator speaking x402-ixo-pay 0.7.0 (chain claim ids);
+`GET /v1/info` tells posters which model you run (`reviewBilling.mode`: `x402` or `escrow`). The
+delegation, like every verified payment header, is kept sealed under `WEBHOOK_ENCRYPTION_KEY`; its
+payer is emailed 30 and 7 days before it ends, and once each when it has spent 80% and 95% of its
+cap (a new delegation — a raised `--cap` — starts its own pair); both emails say how to raise it:
+ask Claude Code to run `decision-oracle api review-billing enable --source <id> --cap <PAY>`, the OpenHands web app (as the organisation's owner), or the
+Console's Pay for reviews tab (`CONSOLE_URL/billing/reviews`).
+
+Where that money lands is yours to say, in `wrangler.jsonc` vars: `EARNINGS_ADDRESS` (your `ixo1…`
+account, for PAY and USDC on IXO) and `EARNINGS_BASE_WALLET` (your `0x…` wallet, for USDC on Base).
+Every offer names them as its `payTo`; IXO takes its share by your plan and never chooses your
+payee. A way to pay whose address is unset is not offered — with no `EARNINGS_ADDRESS`, no PAY.
+Which ways your offers carry is IXO's plan for your oracle (the engine's `GET /v1/oracles/me`
+`accepts`, read every 5 minutes): PAY is for IXO-run oracles only, so an oracle whose plan takes
+card and/or USDC on Base sends no PAY terms and needs no `EARNINGS_ADDRESS`; the facilitator lists
+the card and USDC (`exact`) entries itself. A plan the oracle cannot read offers nothing (`503
+payments-disabled`). `GET /v1/info` lists them as `earnings`. ("Payouts" below is only your company paying its people.)
+
+### Payouts
+
+If a protocol's claims carry an amount someone should be paid — a supplier invoice, an expense —
+name where it is:
+
+```ts
+defineOracle({
+  // …
+  payouts: {
+    "did:ixo:entity:…": {
+      amount: "$.invoice.total",          // a decimal string or plain number in the claim's answers
+      currency: "EUR",                     // or { path: "$.invoice.currency" }, or { asset: "eip155:8453/erc20:0x…", decimals: 6 }
+    },
+  },
+});
+```
+
+Every claim of the protocol carries the block. Who is paid is the engine's to derive, never yours:
+a chain claim's on-chain agent, an API claim's `submitter`, else the answer the source's company link
+names (`payeeField`). A claim with no payee is still decided, its receipt a plain decision with no
+payment binding (`decisionToPayRefused: "NO_PAYEE"`, logged `payout.refused`). One credential per
+decision: when the engine approves such a claim, its **receipt** is also typed
+**DecisionToPayCredential** and carries the payment binding for that amount and payee. It is the same
+`decision.receipt` the claim record and the `claim.decided` / `claim.folded` webhooks already carry,
+public at the engine's `/v1/receipts/:cid`, and your facilitator pays from the binding on it. A
+claim with an unusable amount still gets one, declined with a reason code, and pays nothing. Use
+**opaque** submitter ids: the public receipt binds the payee by that id, so never a name, email or
+phone number. After erasure `submitter` reads null, but the receipt still binds the payee by that
+opaque id — which is why it must never be personal data.
+
+Who may approve, export or edit payout rules is not this oracle's to say: the payouts facilitator
+holds each company's payout team itself (its admins are the controllers of the company entity, `GET
+/v1/payouts/info`), and the Console manages that team there.
+
+---
+
+## 5. Stock or custom, per name
+
+The stock lanes are not a fallback for the lazy — for most rubrics they are the right answer, and
+every name you leave alone is a name that cannot have a bug.
+
+| Lane | Stock covers it when… | Write a handler when… |
+| --- | --- | --- |
+| `ext.<name>` | The declared endpoint accepts a self-signed UCAN POST (the resolved `send` map plus the whole claim body under `claimBody`; audience the endpoint's own did:web, capability `ixo:external-source`) and answers the strict `{ valid: boolean }` / `{ score: 0..10000 }` contract. An outage (5xx, 429, timeout) retries the workflow step and is never frozen as a verdict; only a 4xx refusal or a malformed answer becomes an error fact | It is a vendor API with different auth, capability or response shape · it needs your own system, database or secret · its `send` map reads a `~derived` value, or its `audience` is not the endpoint's did:web (the stock lane always answers either `error`) |
+| `ext.<name>` + a geo handler (`withinRadius`, `located`, `beforeAfter` from `@ixo/decision-oracle/facts`) | The rubric asks where or when a photo was taken. Missing GPS or capture time is an error (your `onError`), never `false`; the evidence grade (`camera` / `browser-reported` / `claim`) is in the reason. Send per-photo `capturedAt.{before,after}` from your form for phones that strip EXIF ([API reference](/build-an-oracle/decision-oracle/api-reference#geo-evidence-grades-and-capturedat)) | You need a different source ladder or a stricter grade |
+| `ai.<name>` | A plain stock AI judgment against the rubric's own `instructions` is what the author meant. The judge is as strict or as lenient as the instructions say, no more. Evidence the model cannot read (too dark, blurred, cropped) is an error (your `onError`), never a failed rule; a before/after pair is judged knowing the work changes the subject | A different model or vision vendor is required · the inputs need re-slicing or a pre-check (a missing photo, an unreadable file) · `send` reads a `~derived` value |
+| `unique` | Always — this oracle's own D1 registries, a keyed body digest, CID and perceptual-hash attachment lanes, a JS trigram near-text lane and the gray-zone same-event judge. Only claims registered earlier count, and a claim that never reached a decision (failed ingest, `invalid_facts`, a content refusal) never blocks a resubmission | Only a wholly different duplicate strategy, e.g. a vendor registry you already run. The `UniqueFact` shape is still fixed |
+| `frequency` | Always — one Blocksync submission count over the claim's own UTC calendar window (a failed read retries the step, never freezes `unresolved`) | Same: only when the count lives somewhere else |
+| `sizeProbes` | Always — the package probes the named roots itself | Never; not a handler's concern |
+| `derived[]` | The **engine** computes these; no fact is ever produced for a `~name` | A `send` map naming one forces a handler on whichever `ext`/`ai` reads it. `manifest.derived[].expression` is there for exactly that |
+
+**Upgrading an oracle that ran before the `void` registry token.** Claims that never reached a
+decision (a facts-lane outcome, a content refusal, an `unusable` rubric, a failed ingest) used to
+leave their duplicate-registry rows pending for ever, so an honest resubmission of the same
+evidence read as their duplicate. New ones are voided as they happen. Run this once per oracle,
+after deploying, to void the old ones (idempotent: it only touches rows still pending, and leaves
+claims in flight or waiting for review alone):
+
+```sh
+wrangler d1 execute <your DB binding's database> --remote --command "UPDATE claim_body_digests SET final_verdict = 'void' WHERE final_verdict IS NULL AND (EXISTS (SELECT 1 FROM decisions d WHERE d.claim_id = claim_body_digests.claim_id AND d.status NOT IN ('decided', 'pending_review')) OR (NOT EXISTS (SELECT 1 FROM decisions d WHERE d.claim_id = claim_body_digests.claim_id) AND EXISTS (SELECT 1 FROM claim_ingests i WHERE i.claim_id = claim_body_digests.claim_id AND i.status = 'failed')));"
+```
+
+Two judgment calls are the provider's to make, not yours to guess: *do you control that endpoint
+(can you make it speak the stock contract)*, and *is a stock AI check the judge the author meant*.
+
+Then scaffold:
+
+```bash
+bunx decision-oracle facts scaffold <protocol did> [--all] [--dir src/facts]
+```
+
+One `src/facts/<name>.ts` per name that needs a handler, plus a test beside it; nothing existing is
+overwritten, and you add each export to the table in `src/facts/index.ts` yourself. **Every stub
+returns `fact.error("not implemented: <name>")`** — a visible failure the rubric routes with its own
+`onError`. Leave it that way until the real call works. Never a placeholder `true`.
+
+---
+
+## 6. Writing the lanes
+
+Every handler follows the same three-beat shape: **guard the inputs · make the one call · map only
+what you understand.** Everything else is `fact.error(detail)`.
+
+### An HTTP vendor source
+
+Read `send` (not the raw body, and not a field the rubric never declared for this source). Call the
+endpoint the rubric declares. Map the answers you recognise. Anything else is unanswered — and a
+vendor outage is `retryLater`, not a verdict.
+
+```ts
+// src/facts/deliveryConfirmed.ts
+import { type ExtHandler, fact } from "@ixo/decision-oracle/facts";
+
+interface VendorDelivery {
+  status?: unknown;
+  signed_by?: unknown;
+}
+
+export const deliveryConfirmed: ExtHandler = async ({ send, expected }, tools) => {
+  const reference = send.reference;
+  if (typeof reference !== "string" || reference.length === 0) {
+    // Nothing to look up IS an answer about the world — a checked `false`, not a failure to check.
+    return fact.ok(false, { reason: "the claim carries no delivery reference" });
+  }
+  const { COURIER_API_KEY } = tools.env as typeof tools.env & { COURIER_API_KEY?: string };
+  if (!COURIER_API_KEY) return fact.error("COURIER_API_KEY is not configured on this oracle");
+
+  const res = await tools.http.json<VendorDelivery>(expected.endpoint, {
+    method: "POST",
+    headers: { authorization: `Bearer ${COURIER_API_KEY}` },
+    body: { reference },
+    timeoutMs: expected.timeoutMs ?? 5000,
+  });
+
+  if (res.status === null || res.status >= 500) {
+    throw fact.retryLater(`courier API unavailable (status ${res.status ?? "none"})`);
+  }
+  if (res.status === 404) {
+    return fact.ok(false, {
+      reason: `courier has no delivery for ${reference}`,
+      transcript: res.transcript,
+    });
+  }
+  if (!res.ok) return fact.error(`courier answered ${res.status}`, { transcript: res.transcript });
+
+  const status = res.body?.status;
+  if (typeof status !== "string") {
+    return fact.error("courier answered a body with no status field", {
+      transcript: res.transcript,
+    });
+  }
+  if (status === "delivered") {
+    const signedBy = typeof res.body?.signed_by === "string" ? res.body.signed_by : "unknown";
+    return fact.ok(true, { reason: `courier recorded delivery, signed by ${signedBy}` });
+  }
+  if (status === "in_transit" || status === "returned" || status === "lost") {
+    return fact.ok(false, { reason: `courier status is ${status}` });
+  }
+  // A status this handler has never seen is NOT a "no" — it is an unanswered fact.
+  return fact.error(`unrecognised courier status: ${status}`, { transcript: res.transcript });
+};
+```
+
+Note `tools.http.json<T>` with the response type named — without the generic, `res.body` is
+`unknown`. It never throws for an HTTP outcome, retries a 5xx / 408 / 429 or a network error three
+times with backoff under a ~30 s budget (any other 4xx comes back after one call — the 404 above is
+answered once), refuses a non-public host, and hands you a transcript with credentials taken out:
+credential headers dropped (`authorization`, cookies, any name ending in `key` but
+`idempotency-key`, or naming a token/secret/password/credential/signature), credential query values
+masked (`?api_key=[redacted]`), and a response body over 64 KiB recorded as its size and sha256
+([API reference](/build-an-oracle/decision-oracle/api-reference), `http.json`). Hand that transcript back on the fact: it is the "why did the engine
+decide this" record.
+
+If a source authenticates *you* rather than a bearer key, sign the call the way the stock lane
+would:
+
+```ts
+const res = await tools.http.json(expected.endpoint, { method: "POST", ucan: true, body });
+```
+
+That token is from your oracle's did:web to the did:web of the host you call — bound to the URL, so
+it can never be addressed anywhere else — with `{ can: "*", with: "ixo:external-source" }`. If your
+API checks another capability, name it in code —
+`{ ucan: { capability: { can: "shipments/read", with: "did:web:api.example" } } }`. Never
+forward `expected.capability`: that is the rubric's, the protocol owner's words shared by every
+oracle serving it, and what your key grants is yours alone. The stock lane ignores it (with an
+`ext.source.capability-ignored` warning) and calls a source only when its `audience` is the
+endpoint's own did:web; an IXO service capability (`ixo:eval-engine`, `ixo:ixo-pay-facilitator`, …)
+is refused everywhere, as an `error` fact with the rubric's `onError`. The full wire shape — body, headers, token — is in the [API reference](/build-an-oracle/decision-oracle/api-reference), "How an external
+source is called".
+
+A `score` source returns **integer basis points**, never a float, never a percentage — the engine
+rejects a float and never clamps:
+
+```ts
+export const onTimeRate: ExtHandler = async ({ expected }, tools) => {
+  const res = await tools.http.json<{ on_time_pct?: unknown }>(expected.endpoint);
+  const pct = res.body?.on_time_pct;
+  if (!res.ok || typeof pct !== "number") return fact.error(`courier answered ${res.status}`);
+  return fact.ok(Math.round(pct * 100), { reason: `${pct}% on time` });
+};
+```
+
+### An AI check forwarded to the stock judge
+
+The rubric's own `instructions` are the judge's rules, so there is usually nothing bespoke to judge
+*with*. What a handler adds is the guard the model should never be asked to make:
+
+```ts
+// src/facts/handoverPhotoLooksReal.ts
+import { type AiHandler, fact } from "@ixo/decision-oracle/facts";
+
+export const handoverPhotoLooksReal: AiHandler = async (_input, tools) => {
+  if (tools.attachments.on("handoverPhoto").length === 0) {
+    // Never `false`: that would claim a model looked at a photo and found it fake.
+    return fact.error("the claim carries no handoverPhoto attachment");
+  }
+  return tools.stock();
+};
+```
+
+`tools.stock()` is typed as *this lane's* fact (`AiFact` here, `ExtFact` in an ext handler), so
+`return tools.stock()` needs no cast. And **never call the declared endpoint and `tools.stock()`
+both** — that is two calls, and two charges, for one fact.
+
+### An AI check with your own judge
+
+```ts
+export const photoShowsHandover: AiHandler = async ({ name, check }, tools) => {
+  const images = tools.ai.inputsFor(check).filter((entry) => entry.kind === "attachment");
+  if (images.length === 0) return fact.error(`${name}: the claim carries no image to judge`);
+  const { JUDGE_MODEL } = tools.env as typeof tools.env & { JUDGE_MODEL?: string };
+  return tools.ai.judge(
+    [...check.instructions, "The parcel must be in the recipient's hands, not on a doorstep."],
+    images,
+    JUDGE_MODEL ? { model: JUDGE_MODEL } : {},
+  );
+};
+```
+
+`tools.ai.judge` is the same machinery the stock lane runs — the compliance prompt, strict
+structured output, a verdict derived in code from the failed rules, the confidence floor (an answer
+below it is re-sampled, up to three paid attempts; a 4xx from the provider is not retried), the
+frozen transcript with token and cost accounting. It also honours the policy gate: with
+`policies.allowAiChecks` off it returns `error / ai-checks-disabled` and makes no model call.
+
+Images ride at the `AI_IMAGE_DETAIL` var — `high` by default, because a photo **of a screen** or a
+generated image gives itself away only in fine detail (moiré, a pixel grid, garbled text) that `low`
+downsamples out. `high` costs more image tokens per check; drop to `low` only for an oracle whose
+rules never turn on it.
+
+The judge thinks at `AI_REASONING_EFFORT` — `low` by default, the measured balance: no thinking
+loses quality on rule-by-rule judgment, and `medium` / `high` answer slower with more output tokens.
+Measure latency and cost on your own claims before raising it. Each attempt has 60 s (3 minutes
+when a PDF, video or audio input rides along), three attempts per call.
+
+### Reading attachments, and image provenance
+
+Attachments arrive as **descriptors** — the bytes stay in Matrix, content-addressed. Ask for them by
+the root question name, and read them on demand:
+
+```ts
+export const photoIsOriginal: ExtHandler = async (_input, tools) => {
+  const [photo] = tools.attachments.on("handoverPhoto");
+  if (!photo) return fact.ok(false, { reason: "the claim carries no handover photo" });
+  const body = await tools.attachments.bytes(photo, { maxBytes: 5_000_000 });
+  if (!body.ok) return fact.error(`photo could not be read: ${body.reason}`);
+
+  const provenance = await tools.c2pa.screen(body.bytes, photo.mediaType);
+  // No manifest at all is the COMMON case (a screenshot strips it) — inconclusive, not a "no".
+  if (!provenance) return fact.ok(true, { reason: "no Content Credentials on the photo" });
+  // `trusted` is the only thing that makes the manifest's claims mean anything.
+  return fact.ok(!(provenance.trusted && provenance.aiGenerated), {
+    reason: provenance.trusted
+      ? `Content Credentials signed by ${provenance.vendor}`
+      : "Content Credentials present but untrusted",
+  });
+};
+```
+
+"Too large" and "could not be read" are different answers — the first is a file you can still
+describe, the second taught you nothing.
+
+### A `~derived` value the engine computes
+
+The engine owns the expression grammar; this package carries no evaluator, so the stock lanes refuse
+a `send` map that names one. A custom handler is not short-circuited: it gets the refs in
+`unresolved` and the expressions on `manifest.derived`, and may reproduce the value itself.
+
+```ts
+import { type ExtHandler, fact, readAnswer } from "@ixo/decision-oracle/facts";
+
+export const withinBudget: ExtHandler = ({ send, unresolved, answers, manifest }, tools) => {
+  const ref = unresolved[0];
+  // No `~derived` ref in this rubric's send map: `send` already carries everything.
+  if (ref === undefined) return typeof send.total === "number" && send.total <= 100_000;
+
+  const expression = manifest.derived.find((d) => `~${d.name}` === ref)?.expression;
+  if (expression !== "sum($lineItems[*].amount)") {
+    // Only ever reproduce an expression you recognise EXACTLY. Anything else is unanswered.
+    return fact.error(`cannot compute ${ref} (${expression ?? "no expression on the manifest"})`);
+  }
+  const cells = readAnswer(answers, "$lineItems[*].amount");
+  if (!Array.isArray(cells)) return fact.error(`${ref}: the claim carries no line items`);
+  const total = cells.reduce<number>((sum, v) => sum + (typeof v === "number" ? v : 0), 0);
+  tools.logger.info("computed the rubric's derived total", { ref, total });
+  return total <= 100_000;
+};
+```
+
+`readAnswer` is the engine binder's own `$path` grammar: `.seg` steps into an object, `[*]` fans out
+over an array (so a `[*]` ref resolves to an array of cell values), and a path that walks off the
+data resolves to `undefined`.
+
+### A fact read off the buyer statement
+
+Guard first, then the **one** `tools.agreement()` call as late as possible — the engine records the
+snapshot current at decision time on its receipt, so reading it last is what makes the receipt name
+the version your facts used.
+
+```ts
+export const priceMatchesAgreement: ExtHandler = async ({ answers }, tools) => {
+  const { serviceId, priceUsd } = answers;
+  if (typeof serviceId !== "string" || typeof priceUsd !== "number") {
+    return fact.ok(false, { reason: "the claim carries no serviceId / priceUsd to compare" });
+  }
+  const agreement = await tools.agreement();
+  if (!agreement) return fact.error("no agreement on file for this claim's counterparty");
+
+  const services = agentServices(agreement.doc); // your own parser for the doc `kind` you support
+  if (!services) return fact.error(`agreement ${agreement.id} is not an agent-services/v1 document`);
+  const agreed = services.find((service) => service.id === serviceId);
+  if (!agreed) return fact.ok(false, { reason: `service ${serviceId} is not in the agreement` });
+  // Money is integers — whole cents, never float equality.
+  return fact.ok(cents(agreed.priceUsd) === cents(priceUsd), {
+    reason: `claimed $${priceUsd}, agreed $${agreed.priceUsd}`,
+  });
+};
+```
+
+Note which failures are which: "the claim named a service the agreement does not list" is a real,
+checked answer (`ok(false)`); "there is no agreement on file" or "this is a document shape I do not
+understand" is an `error`. Neither is ever an invented `true`.
+
+### A fact read off an entity's own document
+
+An ask's terms (`#done`), its payout terms, a profile: documents an entity anchors as a
+`LinkedResource`. Read them with `readLinkedDoc` from `@ixo/decision-oracle/facts`, never a bare
+`fetch`. The `serviceEndpoint` may be the IXO Vault, the IXO IPFS gateway (or a bare `ipfs:<cid>`)
+or, on older entities, Matrix media; `readLinkedDoc` reads all three and checks the bytes against
+the resource's `proof`, so a store that serves the wrong bytes can never become your fact.
+
+```ts
+export const withinAskBudget: ExtHandler = async ({ send }, tools) => {
+  const { deedDid, amount } = send;
+  if (typeof deedDid !== "string" || typeof amount !== "number") {
+    return fact.error("the rubric's send map names no deed / amount");
+  }
+  const done = (await tools.chain.linkedResources(deedDid)).find((r) => r.id?.endsWith("#done"));
+  if (!done) return fact.error(`${deedDid} anchors no #done`);
+  const read = await readLinkedDoc(done, { ipfsGateway: tools.config.IPFS_GATEWAY_URL });
+  if (!read.ok) {
+    // A store that is down retries; bytes that are not the proof are never read as the terms.
+    if (read.retryable) throw fact.retryLater(read.message);
+    return fact.error(`#done of ${deedDid}: ${read.message}`);
+  }
+  const { maxAmount } = read.json as { maxAmount?: unknown };
+  if (typeof maxAmount !== "number") return fact.error(`#done of ${deedDid} sets no maxAmount`);
+  return fact.ok(amount <= maxAmount, { reason: `claimed ${amount}, the ask allows ${maxAmount}` });
+};
+```
+
+### A custom `unique` or `frequency`
+
+Rare, and only when the answer genuinely lives elsewhere. Both replace their lane wholesale, so
+`tools.stock()` throws in them by design, and both return the wire shape the engine reads.
+
+```ts
+import type { UniqueHandler } from "@ixo/decision-oracle/facts";
+
+export const unique: UniqueHandler = async ({ rule, claim }, tools) => {
+  const res = await tools.http.json<{ digest?: unknown; scoreBps?: unknown }>(
+    "https://registry.example/duplicates",
+    { method: "POST", body: { claimId: claim.claimId, collectionId: claim.collectionId } },
+  );
+  const digest = res.body?.digest;
+  if (!res.ok || typeof digest !== "string") {
+    // A registry we could not reach is never a pass.
+    return { ruleId: rule.id, digest: "registry-unavailable", scoreBps: 0, band: "review" };
+  }
+  const scoreBps = typeof res.body?.scoreBps === "number" ? res.body.scoreBps : 0;
+  return {
+    ruleId: rule.id,
+    digest,
+    scoreBps,
+    band:
+      scoreBps >= rule.thresholds.rejectAtBps
+        ? "reject"
+        : scoreBps >= rule.thresholds.reviewAtBps
+          ? "review"
+          : "pass",
+    vendor: "registry.example", // extra fields ride loose into the engine's trace
+  };
+};
+```
+
+`rule` already carries the engine's own defaults (reject ≥ 9000 bps, review ≥ 5000 bps, and the
+rest — see [API reference §4](/build-an-oracle/decision-oracle/api-reference#uniquehandler--the-duplicate-fact)). For `frequency`, remember the
+count **includes** the claim under evaluation, windows are UTC calendar periods derived from the
+claim's on-chain `submissionDate` (the rubric has no time-zone setting, so a "day" is a UTC day),
+and an uncountable window is `unresolved: true` — its own state, which the engine fails closed
+(a final reject) rather than reading as headroom. So keep `unresolved` for a deterministic miss (no
+submitter, no usable date) and `throw fact.retryLater(...)` when the count could not be read: the
+stock lane does exactly that, so a Blocksync outage retries the step instead of rejecting claims.
+
+### The rules a handler must never break
+
+1. **Never fake an ok.** A fact you could not establish is `fact.error(detail)`. Returning `false`
+   says "I checked, and it is false" — a different claim about the world, and the rubric may reject
+   on it. A stub is `fact.error("not implemented: <name>")`, visibly.
+2. **Never choose `onError`.** There is no argument for it and no way to pass one: the runner stamps
+   the manifest's own value. The rubric's author already made that call.
+3. **Never decide.** No thresholds, no gates, no rubric parsing, no reading `rubric.json`. The
+   manifest is the only work order and the engine is the only judge.
+4. **`ctx.now`, never `Date.now()`.** The engine's date rules compare against the frozen instant; a
+   second clock read makes a fact that cannot be replayed.
+5. **No concurrency of your own.** The runner already caps ext+ai at 4 in flight and caches every
+   answer, so a crashed step never re-buys a paid call.
+6. **No secrets in code or commits.** A vendor key is a `.dev.vars` secret / `wrangler secret put`,
+   read as `tools.env.<NAME>`.
+7. **A handler never imports the worker.** `@ixo/decision-oracle/facts` and `@ixo/decision-oracle/testing`
+   only — which is what keeps the tests plain node, fast and real.
+
+---
+
+## 7. Test them in node
+
+```bash
+bun run test        # vitest, environment: node — no Worker, no pool, no network
+```
+
+`runFacts` is the same runner production uses, followed by the same `validateFacts` —
+`issues: []` means the engine would accept this FactSet.
+
+```ts
+import { fakeTools, httpResponse, runFacts, sampleClaim, sampleManifest } from "@ixo/decision-oracle/testing";
+import { describe, expect, it } from "vitest";
+import { facts } from "../src/facts";
+
+const manifest = sampleManifest({
+  ext: {
+    deliveryConfirmed: {
+      expect: "boolean",
+      onError: "review",
+      endpoint: "https://courier.example/deliveries",
+      send: { reference: "$reference" },
+    },
+  },
+});
+
+describe("ext.deliveryConfirmed", () => {
+  it("answers ok when the courier says delivered", async () => {
+    const out = await runFacts(facts, {
+      claim: sampleClaim({ reference: "ABC" }),
+      manifest,
+      tools: fakeTools({
+        env: { COURIER_API_KEY: "test-key" },
+        http: { "https://courier.example/deliveries": { status: "delivered" } },
+      }),
+    });
+    expect(out.issues).toEqual([]);
+    expect(out.ext.deliveryConfirmed).toMatchObject({ status: "ok", value: true });
+  });
+
+  it("answers error — never false — on a body it cannot read", async () => {
+    const out = await runFacts(facts, {
+      claim: sampleClaim({ reference: "ABC" }),
+      manifest,
+      tools: fakeTools({
+        env: { COURIER_API_KEY: "test-key" },
+        http: { "https://courier.example/deliveries": httpResponse(422, { detail: "bad ref" }) },
+      }),
+    });
+    expect(out.ext.deliveryConfirmed).toMatchObject({ status: "error", onError: "review" });
+  });
+});
+```
+
+**A handler with only a happy-path test is not tested.** Cover the failure it will actually meet: an
+unmatched URL in `fakeTools` is a network failure (`ok: false`, `status: null`); `httpResponse(503,
+…)` is a bad status; a claim with no attachment exercises a guard. `fakeTools().logs` collects what
+the handler logged. `sampleCtx({ now })` pins the clock. And there is no stock lane behind a test:
+`tools.stock()` answers an error fact unless you pass `fakeTools({ stock })`, which is exactly how
+you test a handler that forwards to it. Full option tables:
+[API reference §10](/build-an-oracle/decision-oracle/api-reference#10-testing--ixodecision-oracletesting).
+
+---
+
+## 8. Dry-run against a real claim
+
+```bash
+bunx decision-oracle facts run --protocol <protocol did> --claim protocol/sample-claim.json \
+  [--collection <id>] [--agent <address>] [--preview] [--no-ai] [--facts src/facts/index.ts] [--json]
+```
+
+It reads your `.dev.vars`, pulls the **live** manifest, runs your table over that claim with **real**
+tools (real HTTP, real UCAN signing, a real model call for `tools.ai.judge` — that one spends
+money), runs the same `validateFacts`, and prints every fact, the run's AI spend (tokens per model;
+USD where the provider reports it at call time — on the gateway it is in the gateway's logs) and any
+issue. Exit 1 on issues, 2 on
+an unusable rubric.
+
+`--claim` takes either shape:
+
+- a **flat answers object** — the same file `submit-claim --answers` posts, so a protocol's
+  `sample-claim.json` works as it stands;
+- the **envelope** `{ answers, attachments: [{ question, name, mediaType, path }] }` when a claim
+  carries files. Each `path` is relative to the claim file, and the bytes ride as `data:` URLs, so
+  `tools.attachments.bytes()` behaves exactly as it does against Matrix — without the claim bot.
+
+A flat file has no attachments, so a handler that reads one fails closed. That is the point: run the
+passport example against its flat sample claim and the AI fact comes back `error` (the guard's path),
+not a stock verdict.
+
+Three things are not real off a Worker, and the command says so as it runs:
+
+- **`ctx`** without `--collection`: the clock is the real one (a "not in the future" rule is judged
+  against the same instant the deployed oracle would freeze), but the collection window and
+  submission plane around it are a sample's empty ones. Pass `--collection <id>` for the real ones.
+- **the stock `unique` lane**, which reads this oracle's D1 registries. It stands in with a
+  fail-closed placeholder — band `review`, score 0, a digest no body could have — so the rest of the
+  run still happens. A `facts.unique` handler of yours always wins over it.
+- **C2PA provenance**, which cannot instantiate its wasm outside a Worker: inconclusive here, only
+  ever screened for real in the deployed oracle.
+
+`--preview` then freezes the FactSet and asks the engine's preview route what it *would* decide —
+nothing persisted, nothing billed, no grant needed. It needs `bun run dev` up first, because the
+engine resolves your `did:web` by fetching `/.well-known/did.json` from `ORACLE_HOSTNAME`; the
+command checks that and says so rather than letting the engine fail with an unrelated auth error.
+`--preview` is skipped when there are validation issues — fix those first.
+
+---
+
+## 9. Run it locally
+
+```bash
+wrangler d1 create <project-name>        # paste the id into wrangler.jsonc
+wrangler kv namespace create CACHE_KV    # same
+bun run db:migrate                       # the package's own migrations, onto the local D1
+bun run dev                              # wrangler dev --test-scheduled
+```
+
+Crons do not fire on a schedule locally — fire one by hand (each trigger runs its own tier, see
+[§12](#12-operating-it)):
+
+```bash
+curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"     # minute: the scan, resumes, webhooks
+curl "http://localhost:8787/__scheduled?cron=*/5+*+*+*+*"   # five: AI cost, payment reconcile, balance watch
+curl "http://localhost:8787/__scheduled?cron=0+*+*+*+*"     # hour: housekeeping, reminders, rooms, link re-check
+```
+
+`GET /health` and `GET /.well-known/did.json` should answer immediately; `GET /v1/info` is your
+public listing. The local D1 lives under `.wrangler/state` (there is no `db:reset` — delete the
+directory).
+
+Two CLI commands drive a running oracle as its owner, using your AuthHub session:
+
+```bash
+bunx decision-oracle register --collection <id> [--delegation <bot CAR>] [--contact-email <addr>] [--kit <url>]
+bunx decision-oracle scan --collection <id>     # discover + start now, not at the next tick
+```
+
+With the Decision API lane on (`API_LANE`), `decision-oracle api …` is its console from a terminal,
+signed as the same session — an admin (controller) of a source's organisation, or one of the
+oracle's admins named in `ORACLE_ADMIN_DIDS` (the oracle's operator's own people):
+
+```bash
+bunx decision-oracle org create --name "Acme" --yes   # { entityDid, created } — the org entity, once (idempotent by name)
+bunx decision-oracle api source create --name "Acme" --contact ops@acme.example --entity <org did>  # secret once; pending-link
+bunx decision-oracle api source link <sourceId> --yes  # sign the org's link at the engine, sync → active
+bunx decision-oracle org balance --entity <org did>    # { adminAddress, balances }
+bunx decision-oracle org fund --entity <org did> --amount 5 --yes  # top its admin account up from your wallet (IXO; --coin usdc on mainnet)
+bunx decision-oracle api key create --source <sourceId> --scopes claims:write,claims:read  # the key, once
+bunx decision-oracle api keys --source <sourceId>
+bunx decision-oracle api key revoke --source <sourceId> <prefix> --grace-days 7 --yes
+bunx decision-oracle api admin protocols <sourceId> <did,…> --yes   # operator: the allow-list, whole (--none: nothing)
+bunx decision-oracle api admin billing-mode <sourceId> none --yes   # operator only, by design
+bunx decision-oracle api review-billing enable --source <sourceId> --yes  # default --cap 1000 PAY; "Pay for reviews", as the org's chain owner
+bunx decision-oracle api review-billing status --source <sourceId>
+bunx decision-oracle api review-billing disable --source <sourceId> --yes          # drop it here + revoke it in the UCAN store
+```
+
+The oracle is `--kit <url>`, else `ORACLE_HOSTNAME` from `.dev.vars` (a project config that
+does not load is reported var by var); the network is `--network`, else the project's
+`IXO_NETWORK`, else devnet. `--json` prints the raw answer and nothing else on stdout — a gate's
+plan goes to stderr, so a dry run under `--json` prints nothing there. `key revoke` takes the
+prefix or the masked key a listing prints. Every write sends a fresh `Idempotency-Key`; a refusal
+prints the error's `code`, `message` and `requestId` and exits 1. `decision-oracle api --help` lists
+every subcommand.
+
+Every source belongs to an **organisation**: its on-chain entity. A source is that organisation's
+access to your oracle, added by one of its admins (the entity's controllers, read live on chain).
+It starts `pending-link` — no claims, no keys, no invites, no webhooks, and its id in no log line —
+until the admin signs the organisation's link in the Decision Console, or with `decision-oracle api
+source link` (the link lives at the decision engine; the console, or the CLI, then calls the
+oracle's sync). `org create` makes the organisation entity itself, the console's way, `org fund` sends IXO
+(or mainnet USDC) from your wallet to its admin account (you must own or control it), and
+`logout` forgets a network's saved session. From then on the entity's current
+admins run the source — keys, members, settings — with no membership of their own; an admin
+removed on chain loses it at once. Nothing to configure on the oracle; [API reference](/build-an-oracle/decision-oracle/api-reference) "A source's
+organisation" has the rules. Members get one of five console roles: `owner`, `developer`,
+`reviewer`, `viewer`, or `submitter` — staff who only file claims (`claims/submit` + `claims/read`:
+submit, upload the files a claim attaches, read the decisions), e.g. through an AI app.
+
+With the lane on, your oracle also hosts an MCP server at `/v1/mcp`, and AI apps (claude.ai,
+ChatGPT, Claude Code) can connect to it by signing your customers in through IXO AuthHub, with no
+API key to paste. You configure nothing for this: `AUTH_HUB_URL` defaults to the network's AuthHub,
+and the oracle publishes `/.well-known/oauth-protected-resource/v1/mcp` for the apps to find it. Two
+things to know as an operator:
+
+- An app never pays on its token alone. Each claim it submits waits for the user to approve it on
+  AuthHub (`APPROVAL_REQUIRED`), and the payment is a delegation for that one claim at the price the
+  user saw. An app's grant also stops at $20.00 a day (`SPEND_CAP`).
+- The app acts as the user on the sources whose organisation they are a current admin of (as
+  root, no membership needed) or they are a live member of (submitting needs `submitter` or
+  `owner`). Removing a member from a source, or an admin from the entity on chain, ends their apps'
+  access at once. The audit log names the app (actor kind `oauth`), and
+  the claim's `accepted` event says `via: oauth:<client_id>`.
+- In apps that render MCP Apps (claude.ai, Claude desktop, ChatGPT, VS Code), `submit_claim` /
+  `get_decision` show a decision card, `verify_receipt` a receipt badge and `list_protocols` the
+  protocols or one work order instead of raw JSON (an approval ask is a normal result there, so its
+  card with the approve button shows);
+  Claude Code and other text clients get the same text as before.
+
+[API reference](/build-an-oracle/decision-oracle/api-reference) §"Use with Claude Code and other MCP clients" has the full rules. For a local AuthHub,
+set `AUTH_HUB_URL` in `.dev.vars`; its did:web is then the only caller the approvals back-channel
+(`/v1/oauth/approvals/:approvalId`) accepts.
+
+**A running `wrangler dev` reloads source, never `.dev.vars`.** Restart it after any secret or
+hostname change, or a rebuilt claim silently runs against the old, empty secret.
+
+---
+
+## 10. Billing, provisioning on chain, and deploy
+
+### The owner's delegation (do this before register)
+
+The engine bills the **oracle owner's** credits per decision, and finds that subscription through a
+UCAN delegation you post once, at register. Mint it as the owner:
+
+```bash
+bunx decision-oracle login --network <devnet|testnet|mainnet>     # once per network; a browser login
+bunx decision-oracle delegation --for engine \
+  --audience did:web:<engine host> --oracle did:web:<ORACLE_HOSTNAME> \
+  --out owner-delegation.car [--days 36500] --yes
+printf 'OWNER_DELEGATION_CAR="%s"\n' "$(cat owner-delegation.car)" >> .dev.vars
+```
+
+The engine host is the one this oracle is configured against — the per-network default unless
+`EVAL_ENGINE_HOSTNAME` overrides it. A `:` in a host is `%3A` inside a `did:web`. **Never print the
+CAR**: it is a bearer credential. Deployed, it is
+`wrangler secret put OWNER_DELEGATION_CAR < owner-delegation.car`. Its lifetime is 100 years by
+default, because nothing renews it — the engine reads the expiry only at register. Shorten it with
+`--days` only if you will re-mint **and** re-register before it lapses.
+
+A `402` at register is not a bug: `NO_SUBSCRIPTION` (none at all) or `INSUFFICIENT_CREDITS` (below
+one decision's price, carrying a `manageSubscriptionUrl`). The owner buys credits at that URL and
+registers again. Nothing in the package can fake it.
+
+### Provision the oracle on chain
+
+A fresh `derive` identity exists only in your `.dev.vars`. On chain it has an **unfunded wallet**
+(it cannot pay for a `MsgEvaluateClaim`), **no IID document** and **no Ed25519 verification method**
+for `did:ixo:<ORACLE_ADDRESS>` — which is the DID every invocation to the claim bot, the UCAN
+Store and the VFS claims lane is minted as, so all three refuse it — **no Matrix account** (so
+`ORACLE_MATRIX_ACCESS_TOKEN` has nothing to hold and the review-card lane no-ops), and **no oracle
+entity**, so nobody browsing the protocol can find you. One command fixes all of it:
+
+```bash
+bunx decision-oracle oracle init --protocol <protocol did> --kit-url http://localhost:8787 \
+  [--logo <url|file>] [--openhands [--price-pay <n>]] [--only <step>] [--relogin] [--network <n>] [--yes]
+```
+
+**A full on-chain identity is mandatory** for every oracle built with this kit — the entity, its
+`#pro` profile, its `#dmn` domain card and its `#acard` Agent Card. `--logo` — an https URL, or a local .png/.jpg/.webp/.svg file (up to 5 MB) the CLI stores on the IXO Vault (the dry run shows its content-addressed URL, `--yes` uploads it) — is the one input to ask for: without it the domain card carries no logo, and the portal, the console and the Openhands app show a placeholder.
+
+Thirteen steps, always in this order, each printing `do` or `skip (<why>)`:
+
+**The wallet and the identity** — signed by the *oracle's own* wallet, except the funding.
+
+1. `fund` — your AuthHub session tops `ORACLE_ADDRESS` up to 1 IXO (`1000000uixo`). That balance is
+   what pays the gas on every verdict this oracle signs. Skipped when the spendable balance is
+   already ≥ 1 IXO — a **floor check**, so a later run over a wallet that has since dipped below it
+   sends another full top-up, and this is the one step a re-run can legitimately repeat.
+2. `iid` — `MsgCreateIidDocument` for `did:ixo:<ORACLE_ADDRESS>`, with a `#matrix` service pointing
+   at the network's homeserver. Only the oracle's own key may create its own DID document. Skipped
+   when the DID resolves.
+3. `key` — `MsgAddVerification` puts the `SERVICE_ED25519_MNEMONIC` public key on that document
+   (`authentication` + `assertionMethod`). **This is the step that makes the pull lane work**: the
+   claim bot, the UCAN Store and the VFS claims lane resolve the DID and check the invocation's
+   signature against this key. Skipped when a verification method for that exact key is already
+   there.
+4. `matrix` — creates the oracle's Matrix account (the rooms bot, answering a challenge your wallet
+   signs) if it does not exist, logs in, sets the display name from `GET <kit-url>/v1/info`, and
+   **writes `ORACLE_MATRIX_ACCESS_TOKEN` into `.dev.vars`** — never to the terminal. Skipped when
+   the file already holds a token whose `whoami` is `ORACLE_MATRIX_USER_ID`.
+
+**The entity** — signed by your AuthHub session, which owns what it creates.
+
+5. `entity` — `MsgCreateEntity`, carrying both services and the protocol edge in one transaction.
+   Skipped when **this oracle** already has an entity — found by the oracle, never by its owner,
+   because one AuthHub session may own several oracles' entities: `ORACLE_ENTITY_DID` when set
+   (read from `env.<--network>.vars`, else the top-level vars, `.dev.vars` winning; checked to be
+   an oracle entity the session owns AND bound to this oracle by one of the two links below — a pin
+   on another oracle's entity stops the run), else the session's oracle entity whose `#orz` grants
+   `ORACLE_ADDRESS` (so a moved host still finds it), else whose `#eval` is `--kit-url`. Two
+   matches, or an `#orz` that cannot be read, stop the run. The moment it creates the entity it
+   writes its DID into `.dev.vars` as `ORACLE_ENTITY_DID`, so a re-run after a later failure takes
+   the pin instead of minting a second entity while blocksync catches up.
+6. `orz` — the `#orz` `oracleAuthZConfig` resource: the portal reads it to bridge the entity to the
+   `ORACLE_ADDRESS` it must grant. Skipped when `#orz` is on the entity — unless it is still on
+   Matrix media: a re-run moves any `#orz`, `#pro`, `#dmn` or `#acard` there onto the Vault (same
+   content, delete + add in one transaction).
+7. `profile` — the `#pro` `Settings` resource, built from the running oracle's own `GET /v1/info`
+   (plus `--logo`). Skipped when `#pro` is there **or when the kit URL is not reachable** — a skip,
+   never a failure, so a not-yet-deployed oracle never blocks the run. The one exception: a
+   `--logo` that differs from the live profile's replaces `#pro` as a merge (only `logo` changes),
+   because the portal's avatar is read from it.
+8. `domain` — the `#dmn` `domainCard` resource: the portal's `ixo:DomainCard` credential, built from
+   `GET /v1/info` (name, description), `url` = `--kit-url`, and `logo` / `image` only when `--logo`
+   is given; issued by your session. Like `#pro` and `#acard` it is stored on the IXO Vault under
+   your session's key (else the IXO IPFS gateway — the run says so), its public
+   `…/public/cid/<cid>` URL as `serviceEndpoint`, the bytes' `bafkrei…` CID as `proof`. This is
+   what the domain indexer, the portal and the console list you by. The kit owns only what it
+   writes — name, description, `url`, and the logo when `--logo` is given; skipped when those match
+   and the proof is the CID of the served bytes, or when the kit URL is not reachable. A card whose
+   owned fields drifted (a renamed oracle, a new host, a logo passed) — or whose proof is the old
+   sha256 hex — is deleted and re-added in one transaction, **merged onto the live card**: anything
+   you added by hand (a logo, images, keywords, a location) survives, and without `--logo` the live
+   logo stays. A card that cannot be read is left alone with a `⚠`, never replaced.
+9. `acard` — the `#acard` `agentCard` resource: an `ixo:AgentCard` credential the portal's contract
+   flow reads: a `claim-evaluation` service when the kit publishes evaluation pricing (its fee for
+   `--protocol`, `byProtocol` first) and a `decision-api` service when its Decision API publishes a
+   price for `--protocol` (`GET /v1/api/protocols` — the same `publishedPrice` the facilitator
+   checks, `API_PRICE_USD_CENTS` included). A service with no price behind it is not carded. Your own
+   services survive a replace. Validated against the engine's Agent Card schema — the merged card,
+   before anything is uploaded; skipped and replaced by the same rule as `domain`.
+   To be listed as a checker in the Openhands app, pass `--openhands`: the card then also carries
+   a `check-openhands` service (the shape openhands-oracles writes), priced in PAY at your
+   per-review price — `/v1/info`'s `pricing.api` for `--protocol` (`byProtocol` first), else
+   `--price-pay <n>` (1 PAY = 1 USD; the run fails when neither gives one). The oracle must also be
+   registered with the engine. Without the flag the kit leaves `check-openhands` alone, so one
+   you added by hand survives every replace.
+
+**The wiring** — also the session.
+
+10. `linked` — the oracle → protocol `linkedEntity` edge.
+11. `service` — `#eval` → `--kit-url`. An existing `#eval` pointing somewhere **else** is deleted
+    and re-added in one transaction, which is how a redeploy to a new host is fixed.
+12. `backlink` — the protocol's edge back to you, which is what the marketplace filters on. If your
+    session does not own the protocol, it prints the exact edge to ask its owner for.
+13. `index` — tells the network's domain indexer the entity exists, last so it reads the `#dmn`
+    just anchored. On `--yes` only (a dry run asks the indexer nothing) it is skipped when the
+    indexer's `GET /domain-cards/<did>` serves that card (`blockchain_version_id` = its proof) with
+    `status: completed`. A refusal or an unreachable indexer is a `⚠` line and nothing more.
+
+**Dry-run, then `--yes`.** Without `--yes` the command signs, creates and writes nothing: every step
+reads live state and prints the decision it would act on, so the plan you read is the plan that
+executes. Read it, then re-run the identical line with `--yes`.
+
+**Run it twice, and again after every redeploy.** Run it first against `http://localhost:8787` with
+`bun run dev` up, so the Matrix token lands in `.dev.vars` before you deploy. Run it again with the
+deployed host: `service` re-points `#eval`, `profile` fills in what it had to skip, and `domain` /
+`acard` replace the cards that named the old host. `fund` is a
+floor check rather than a once-only step: if the first run's own `iid`/`key` transactions left the
+wallet below 1 IXO, it sends another full 1 IXO (not the shortfall) to top it back up. The
+rest say `skip`. Nothing is derived from a marker this command wrote — every decision comes
+from the chain, the homeserver and the entity themselves — so re-running after a partial failure, a
+redeploy or a second person's attempt converges on the same state.
+
+`--only <step>` runs exactly one of the thirteen step names above, for debugging a stuck run.
+Only `iid`, `key` and `matrix` act as the oracle itself and need `ORACLE_SECP_MNEMONIC` /
+`SERVICE_ED25519_MNEMONIC` (each stops naming the one it lacks); every other step signs with the
+AuthHub session, so once your keys live only in the deployed worker's secrets you can still run,
+say, `--only profile --yes` from a machine that holds just the session and `wrangler.jsonc`.
+`--relogin` forces a fresh Matrix login where a live token would have skipped — it mints a new
+Matrix device, so it is not a thing to run casually.
+
+**Then put the entity DID it prints into `ORACLE_ENTITY_DID`** (a `wrangler.jsonc` var) and
+redeploy. It is required for a deployed oracle: on any `ORACLE_HOSTNAME` that is not local
+(`localhost`, `127.0.0.1`, `*.localhost`), `/health/ready` fails its `identity` check until it is
+set, and `/v1/admin/status` says what to run. Unset, the Matrix review card also cannot resolve your API and a review can only be answered
+from the portal's claim page — and every later `oracle init` uses it as the pin. The entity is owned by whoever logged in via AuthHub;
+`ORACLE_ADDRESS` / `ORACLE_DID` remain the runtime identity that signs and holds grants. Keep
+`supportedProtocols` in step with what you declared — nothing reconciles that drift.
+
+### Deploy
+
+```bash
+bun run db:migrate:remote        # BEFORE the first deploy of that environment
+bun run deploy:testnet           # or deploy / deploy:production
+```
+
+Before shipping an environment, check all four:
+
+1. the **D1 and KV ids** in that env's block are real (named envs inherit nothing — every binding
+   and the whole `vars` block is redeclared per env);
+2. that env's `ORACLE_HOSTNAME` is, character for character, the host it is served from — the
+   **Custom Domain** in `routes`, or, with no `routes`, its `workers.dev` host — callers resolve
+   your `did:web` by fetching it;
+3. every **secret** is set with `wrangler secret put` for that env — including
+   `ORACLE_MATRIX_ACCESS_TOKEN`, the one `oracle init` wrote into your local `.dev.vars`
+   (`wrangler secret put ORACLE_MATRIX_ACCESS_TOKEN`, then paste it);
+4. `bun run cf-typegen` has been re-run since the last binding or var change.
+
+Then run `oracle init` once more with the deployed host, to re-point `#eval` at it.
+
+---
+
+## 11. Getting hired
+
+Registration is one call with four gates, in this order:
+
+1. **Who** — the caller is the collection entity's chain owner, or holds an active on-chain
+   `EvaluateClaimAuthorization` for it (read uncached, because the portal grants and registers in
+   one flow).
+2. **Hired** — *this* oracle's `ORACLE_ADDRESS` holds that same grant, or it could never sign
+   `MsgEvaluateClaim`. Otherwise `409`.
+3. **Protocol** — the collection's protocol is in your `supportedProtocols` (when that list is
+   non-empty). Otherwise `409` — checked *before* payment, so a wrong-protocol collection hears
+   "this oracle won't serve you" rather than being sent off to fix a payment that never mattered.
+4. **Paid** — the collection's on-chain `Payments.evaluation` is in your denom and at least your
+   `minAmount`. Otherwise `402`. While per-review billing is on (IXO's plan), a collection whose company (the
+   engine's answer) has a live review-billing delegation registers with an EMPTY evaluation leg
+   instead — paid per review from the organisation owner's credits — and only once those credits
+   cover one review (`402 insufficient_credits` otherwise; `503 credits_unavailable` /
+   `company_unavailable` when the facilitator or the engine cannot say). Without one, the leg gate
+   above stands, its refusal `402 no_review_billing` naming both ways in.
+
+Every refusal carries a stable machine code in `details.reason` (`collection_not_found`,
+`not_owner_or_grantee`, `not_hired`, `unsupported_protocol`, `evaluation_underpaid`,
+`no_review_billing`, `insufficient_credits`, `company_unavailable`, `credits_unavailable`, …), so a
+portal never matches a message.
+
+### Getting hired on OpenHands
+
+The OpenHands app lets anyone post an ask (a task, a question, a check) and pick the oracle that
+judges the answers. To be one of those oracles, set `openhands` in `defineOracle` —
+`decision-oracle init --openhands` does it for a new project, with the two bindings it needs:
+
+```ts
+const oracle = defineOracle({
+  // …name, protocols, pricing, policies, facts as usual…
+  openhands: {},
+});
+export const { ClaimIngest, ReviewComplete, OpenhandsHire, SequenceManagerDO } = oracle;
+```
+
+Then you register nothing by hand. When a poster picks you, their posting transaction grants your
+oracle the right to authorize itself on the new collection, and the app calls
+`POST /openhands/hire/<collectionId>` on your host. The oracle checks that grant on chain, mints its
+own evaluate grant under it, registers the collection through the same four gates above, and scans
+it. A backstop every five minutes catches a call that never arrived and keeps every hired ask
+topped up. `GET /v1/info` lists the two webhooks under `openhands` — that is how the app knows
+you are an OpenHands checker. ([API reference](/build-an-oracle/decision-oracle/api-reference) §2, "The OpenHands add-on", has every step and answer.)
+
+Three things to decide:
+
+- **Your protocols.** With `supportedProtocols` set, the app offers your oracle for asks on those
+  protocols (the poster's ask uses your protocol as it is). With `[]`, you judge any protocol.
+- **Who pays for decisions.** The engine bills every decision to the account that registered your
+  oracle. Charge an evaluation fee (`pricing.evaluation`), or bound whose asks you take with
+  `openhands.admit` (an allow-list, a daily budget) — otherwise any poster can spend your credits.
+- **Who registers it.** The engine never lets the account that registered an oracle review that
+  oracle's claims. Register the oracle with an account you will NOT use to post or review asks
+  (a company or service login), so you can still answer reviews yourself.
+
+### Third-party oracle fees
+
+An oracle that IXO does not run is paid on chain claims by the collection's on-chain **evaluation
+fee**: the `Payments.evaluation` coin, split by the chain (80% to the oracle, 10% to the network, 10% to the relayer node — the x/claims `network_fee_percentage` / `node_fee_percentage` chain params, governance-set, 10/10 on mainnet today; rounding remainder to the oracle) on every `MsgEvaluateClaim`. Gate 4
+holds a collection to your fee, matching the denom exactly. The coin differs per network:
+
+- **mainnet** — real USDC: USDC.inj, native Circle USDC on Injective over IBC (the USDC IXO's
+  on-ramp lands), `ibc/77C12480BD8C29BF0ACEC2143736C15BAF8CD232CA27BAE09336677B828955E6`
+  (6 decimals, so `1000000` is 1 USDC) — or IXO (`uixo`);
+- **devnet and testnet** — `uixo` (they have no USDC).
+
+**Never PAY (`upay`).** PAY is IXO's own coin: only an oracle IXO runs (its engine plan is
+`ixoManaged`) may charge in it, and register refuses a PAY fee on any other oracle (`409`,
+`details.reason: pay_requires_ixo_managed`).
+
+Set it per env in `wrangler.jsonc` with `EVALUATION_DENOM` and `EVALUATION_MIN_AMOUNT`. They replace
+`pricing.evaluation` from `defineOracle`, and `/v1/info` (and so `oracle init`'s Agent Card) shows the
+result. On mainnet they are **required**: without them the worker fails config validation at
+isolate start, so a stand-in written in code can never be charged there. Off mainnet they are
+optional, and a plain `pricing.evaluation` in code still works. A `pricing.byProtocol` entry still
+wins for its protocol. The collection's admin must still hold the evaluation fee plus the approval
+payment for every claim (`admin-unfunded`, §12). The coin you choose is the one the collection must
+be created with (`create-collection --eval-denom`).
+
+The row's `ownerDid` is always the **chain owner** (never the registrant): the owner→oracle Matrix
+delegation the pull path needs is theirs to issue. The registrant is recorded beside it for the read
+gate. Re-registering is the "change my mind" path, and it also re-activates a paused collection.
+On a re-register only the chain owner or the current registrant may change `contactEmail` or
+resume a paused collection; any other grant holder gets `403` for either (their re-register still
+refreshes the fee and the delegation, and never touches the status). A `delegationCar` must be the
+owner's own root delegation (no proofs), **signed** by the owner's key — the Ed25519 key their
+`did:ixo` publishes on chain — or it is a `400`. The row keeps the owner it was registered with:
+after an entity transfer, the new owner re-registers to take over pause/resume.
+With no `contactEmail` sent and none on the row, register asks the engine for the collection's
+company (`GET /v1/collections/:id/company`) and defaults the contact to that company's `active`
+Decision API source (the oldest activated), so the collection notices reach someone. The company is
+the collection's entity, or, for a collection on a poster's deed, the org linked to that deed both
+ways. A `disputed` company, a collection the engine does not know, or an engine that cannot answer
+(its `503` while Blocksync is down, a network blip) leaves the contact empty and the register still
+succeeds (`register.company-unavailable` is logged); register again later to fill it. An explicit or
+stored contact is never overwritten.
+
+The same answer — the engine is asked once per register — also **links** the collection to every
+`active` Decision API source of that company, so the organisation's reviewers see its chain claims
+in the Decision Console without a member linking each collection by hand (`POST
+/v1/api/source/collections`, which only the collection's chain owner can do). Only the engine's `ok`
+links; a `disputed` company, an unknown collection or an engine error links nothing and never fails
+the register. Such a link's `linkedBy` is the company's entity DID (no member made it), its audit row
+is `source.collection_linked` by `system:company-link`, and the hourly link re-check holds it to the
+engine's answer: it is dropped (`not_company`) once the engine names another company or `disputed`
+(or does not know the collection twice in a row). A member's link goes once its linker is confirmed
+no longer a member who may link or no longer the collection's chain owner. Only such a positive
+finding removes a link: a Blocksync or engine error, a timeout or a re-check that did not run keeps
+it, and the claim reads keep showing it (contracts 1.23.0; they used to hide a link not confirmed
+within 2 hours). The re-check runs on the hourly cron trigger.
+An existing link is left as it is. The engine is asked only when the answer could be used: no
+contact sent or stored, or an `active` source not yet linked to the collection.
+
+Collections registered before register linked them get the same links from the operator's backfill:
+`bunx decision-oracle relink [--collection <id>]…` (`POST /v1/admin/collections/relink`, your DID in
+`ORACLE_ADMIN_DIDS`) — every watched collection, or those named, one engine read each; it prints each
+one's outcome and is safe to re-run.
+
+**A real commissioner** grants you the Evaluate role on their collection (the portal's "Grant Role"
+flow) and registers it (the portal makes that call). Give them your `ORACLE_ADDRESS` and your host.
+
+**To prove the loop yourself**, hire yourself with the same AuthHub session — the `create-collection`
+skill drives the whole sequence, and the two commands underneath it are:
+
+```bash
+bunx decision-oracle create-deed --protocol <protocol did> --title "<a name>" [--yes]
+bunx decision-oracle create-collection --entity <deed did> --protocol <protocol did> \
+  --eval-amount <base units> [--fund <base units>] [--evaluate <your ORACLE_ADDRESS>] [--yes]
+bunx decision-oracle register --collection <id> --delegation delegation.car
+bunx decision-oracle submit-claim --collection <id> --answers protocol/sample-claim.json --yes
+bunx decision-oracle scan --collection <id>
+```
+
+Two things people get wrong here: a collection hangs off a **deed**, never off the protocol (the
+chain accepts `entity = protocol`, and then the portal says "No claim protocols are linked"); and
+the on-chain grant alone is not enough — without the owner→oracle **claim-bot** delegation
+(`delegation --for bot --audience did:ixo:<ORACLE_ADDRESS>`, passed as `--delegation`) the oracle
+holds the grant but still cannot pull claim bodies out of Matrix.
+
+Everything under `create-deed` / `create-collection` signs **real** transactions and spends real
+funds. Dry-run first, read the plan, only then `--yes`. `--network` defaults to devnet; testnet and
+mainnet are always explicit.
+
+---
+
+## 12. Operating it
+
+**The cron triggers.** Three, in `wrangler.jsonc` `triggers.crons`, each running only its own jobs —
+keep all three, or that tier's jobs never run:
+
+| Trigger | Tier | Jobs |
+| --- | --- | --- |
+| `* * * * *` | minute | the claim scan; the engine-credits, admin-funds and payer-billing resumes; webhook deliveries and retries; review-batch emails; the backlog gauges |
+| `*/5 * * * *` | five | the AI-cost backfill; with a facilitator, the payment reconcile and the balance watch |
+| `0 * * * *` | hour | housekeeping; the payment-header seal; review and review-billing reminders; review expiry; review rooms (chain and API); the linked-collection re-check |
+
+An unknown cron string is a `cron.unknown` log line and runs nothing. A provider that adds a
+trigger of its own handles it in its own `scheduled` before delegating the rest to the oracle's.
+
+**The claims feed.** Every minute the oracle reads the chain's new claims ONCE, chain-wide, and
+starts the ones in collections it watches (`claims-feed`, [API reference](/build-an-oracle/decision-oracle/api-reference#cron-three-triggers)):
+a claim is usually picked up within a minute or two of landing, however many collections you
+watch. An hourly replay re-reads what turned 24 h old, for a claim Blocksync indexed late.
+
+**The cron tick.** `CRON_COLLECTIONS_PER_TICK` (default `25`, see [API reference §11](/build-an-oracle/decision-oracle/api-reference#11-configuration))
+bounds how many watched collections one tick visits; a fleet larger than that rotates in over later
+ticks, least-recently-scanned first. The rotation visits a collection only when it is due: a closed
+or long-ended one weekly, one that never had a claim daily, the rest hourly — the claims feed is
+what finds new claims within a minute. Raise it for a large fleet. To act on one collection sooner
+than the next tick — e.g. the instant your own webhook sees a submission — call
+`scanCollection(env, collectionId)` from `@ixo/decision-oracle/runtime`, or hit
+`POST /v1/collections/:collectionId/scan`; both run the exact same discover-and-start pass the tick
+does, so a webhook and the cron racing on one claim can never double-start it. Only the tick's own
+visit moves a collection to the back of the rotation: an early webhook scan that finds nothing
+leaves it where it was.
+
+**Watching a claim.** `GET /v1/claims?collectionId=<id>` lists newest-first with a keyset cursor;
+`GET /v1/claims/:claimId` is the full record — the ingest row, the decision (codes, scores,
+identifiers; never answer values), the receipt CID and JWS, the chain status and tx hash, and any
+human review. Both are UCAN-guarded and gated to the collection's current chain owner or a live
+evaluate-grant holder — the registrant only while it still holds its grant — and the single-claim
+read to the collection's live reviewers too, and to the claim's own submitter (its on-chain agent DID or
+address, who sees the decision and its public receipt — which names who reviewed — but never the
+review's answers). `chainStatus` is `pending` / `submitted` / `owner_submitted` / `blocked` / `skipped`
+(a decision nothing will ever sign: an engine `unusable`, or a `decided` review verdict with no review
+held for a person), or
+**`held`** when your own `policies.act` hook chose to keep a decided verdict back instead of signing
+it immediately — a payout you mean to pool across several claims, say (`ActContext`/`ActDecision`,
+[API reference](/build-an-oracle/decision-oracle/api-reference#1-import-map)). `signEvaluation(env, claimId, amount?)` from
+`@ixo/decision-oracle/runtime` is the release pass that signs a `held` row later, for the amount you
+compute then. Any amount of yours — the hook's or the release pass's — stands only on a collection
+whose **owner** opted in: `PATCH /v1/collections/:id/settings` `{ operatorAmounts: "allowed" }`,
+callable by the collection's current chain owner alone. Tell that owner how you pick the amount
+with `policies.actSummary` (one plain sentence): `GET /v1/info` publishes it as
+`payouts.operatorAmount.summary`, next to `payouts.decisionToPay` (your `payouts` map), and the
+Portal shows both before the owner says yes. While it is `"off"` (the default) the lane
+pays its own default and logs `act.amount-ignored-not-opted-in`, so ask the owner first; the yes
+is that owner's, so a collection that changes hands is back to the default until the new owner
+says it again. `GET /v1/collections/:id/settings` (the owner again) answers what is set and
+whether it is in force now (`effective`), by the act lane's own reading. The chain caps every amount — the default too: the evaluate grant's
+`MaxCustomAmount`, which `create-collection` writes as `0<denom>` unless the owner passes
+`--max-custom-amount`, is checked against ANY non-empty evaluation amount (its denom must be
+listed), and the lane's default on an ordinary claim is the claim's own coins. So a collection
+whose claims carry coins needs a cap at least the largest claim amount in each denom, or its
+approvals fail at MsgExec; `0` fits only claims that carry none. `signEvaluation` is a provider-authority call, not just a release: it signs any deliverable row —
+`pending`, `blocked` or `held` — without consulting `policies.act`, so the hook that parked a claim
+never gets a second say over your own decision to sign it.
+
+**Erasing a claim: the organisation's call, never the oracle's.** Your oracle never deletes an
+organisation's claim data on its own — no clock, no retention window, on either lane. A chain claim's answers shadow into two places your D1 holds: the fact transcripts on
+`decisions.facts` (an AI check's prompt, an external source's payload) and the duplicate registry's
+normalized text. The collection's **current chain owner** erases them with
+`DELETE /v1/claims/:claimId/body` (UCAN `claims/erase`; the enroller, grant holders and your own
+`ORACLE_ADMIN_DIDS` get `403`), or in bulk with `bunx decision-oracle erase --collection <id> --yes`
+signed as their session. The decision, its receipt and the digests stay, so the receipt still
+verifies and duplicates are still caught. An API source erases its claims with
+`DELETE /v1/api/claims/:claimId/body`, which also deletes the claim's uploads and empties its
+webhook payloads, and deletes an upload no claim uses with `DELETE /v1/api/uploads/:uploadId`.
+Either erase is `409` while the claim is still being decided; the CLI skips those and lists them.
+The hourly housekeeping only expires what is not the organisation's data —
+idempotency answers, OAuth approvals past their window, an export bundle after its day, a deleted
+source's files.
+
+**Reviews.** A `review` verdict is a `pending_review` decision naming the tasks a human must answer.
+The oracle posts a card into the collection's Matrix review room and emails the registered contact.
+Answers come back to `POST /v1/reviews/:claimId` and must cover **exactly** the pending tasks; the
+`ReviewComplete` workflow then folds them into the *same* decision — a byte-identical re-pull, the
+frozen trace replayed, **no new AI calls and no new charges**. A re-POST before the fold replaces
+the answers and re-spawns (that is also how a `foldError` clears); after the fold it `409`s.
+
+**The reviewer note.** An AI check's reason is written for its rule ("the summary is specific"),
+which tells the person deciding nothing. With `policies.reviewerNote` (on by default for an
+OpenHands checker) the oracle makes one more AI call for each held claim and stores a note for that
+person: `says` — what the answer claims, in plain words — and `checkThese` — what no check could
+verify (a file no check read, a claim nothing measured), each with what to do about it. It never
+recommends a verdict and never reaches the engine; reviewers read it beside `checks` on
+`GET /v1/reviews/:claimId`. For a claim held before you turned it on, `decision-oracle reviewer-note <claimId>` makes one.
+
+**Who answers: the company's reviewers.** Only a person the collection's company named may answer
+— never you (your identities are refused), never a holder of an Evaluate grant (that power already
+signs and pays; an evaluator does not also review), never the owner by being the owner. A current
+controller of the collection's entity grants a reviewer `claims/review` on the collection for at
+most 30 days, signed with their own `did:ixo` key (the Portal does this; by hand it is one
+`@ixo/ucan` delegation):
+
+```ts
+import { createDelegation, serializeDelegation } from "@ixo/ucan";
+
+const now = Math.floor(Date.now() / 1000);
+const grant = await createDelegation({
+  issuer: controllerSigner, // a current controller of the collection's entity
+  audience: "did:ixo:ixo1…", // the reviewer
+  capabilities: [
+    { with: `ixo:oracle/did:web:${oracleHost}/collection/${collectionId}`, can: "claims/review" },
+  ],
+  notBefore: now,
+  expiration: now + 30 * 86_400, // at most 30 days after notBefore
+});
+// POST /v1/collections/<collectionId>/reviewers   UCAN collections/reviewers-grant
+// { "delegation": await serializeDelegation(grant) }
+```
+
+The oracle checks it the way it will check every answer (one link, the exact resource and ability,
+the window, a live controller as issuer, no oracle and no evaluator in it) and files it; the
+reviewer is invited into the review room at the next review request. The reviewer reads their own
+grant back from `GET /v1/collections/:id/reviewers` and sends it as `reviewerGrant` beside the
+answers and the attestation; the fold checks it again and forwards it, and the engine records the
+root in the receipt. `POST /v1/collections/:id/reviewers/:delegationCid/revoke` ends it at once: the
+reviewer is kicked from the room, and a pending answer under it fails its fold. So does a
+controller leaving the entity: their reviewers stop reading at once and leave the room at the next
+hourly pass. A grant that runs out is renewed by signing a new one. Send the CAR exactly as
+`serializeDelegation` wrote it (standard, padded base64), and never to the collection's owner —
+the owner already sits in the room.
+
+**On the Decision API lane** (`POST /v1/api/claims/:claimId/review`) the reviewers are the source's
+console members, each signing with the `did:key` they registered — and the organisation's
+controllers, who need no membership. Every answer carries a `reviewerGrant` (the engine refuses
+the fold without one; the Decision Console signs it):
+
+- a **member** sends two links: its current role grant from a controller (exactly the one the
+  console stored for it — a `reviewer` or `developer` grant lasting at most 30 days), then its own
+  grant from its `did:ixo` to its reviewer `did:key`, `claims/review` on
+  `ixo:oracle/did:web:<oracleHost>/source/<sourceId>`, at most 30 days;
+- a **controller** answers in its own `did:ixo` (the attestation's `kid` a key on its DID
+  document) and sends one delegation to ITSELF, `claims/review` on the source, signed with the same
+  key, `notBefore` and `expiration` at most 30 days apart.
+
+An answer without the grant is `400 REVIEWER_GRANT_INVALID`. The fold first re-checks the
+reviewer (a member revoked, narrowed or re-granted since, or a controller removed, is a `foldError`
+`REVIEWER_NOT_AUTHORIZED` and nothing is forwarded), then forwards the grant, and the engine
+re-checks, live, that its root still controls the organisation.
+
+**Who is emailed about a claim waiting for review.** Every accepted member whose live grant carries
+`claims/review` over the claim's protocol, with an address and `notifyReviews` on, gets the
+review-needed email at once — at most one per member per source per 15 minutes: claims that arrive
+inside the window go out together as one email when it ends — and the 3- and 14-day reminders. The
+source's `contactEmail` gets the same three emails, on its own 15-minute window (an organisation
+admin needs no member row to hear of a claim), unless a member with that same address
+(case-insensitive) is already sent every claim it would be. The source's Matrix review room takes
+every review-capable member.
+
+**A held duplicate shows what it matched.** A rubric's `unique` rule rejects at `rejectAtBps` and
+holds for review between `reviewAtBps` and it (the same file bytes again score 8800, so with the
+common 5000/9000 bands a reused photo is held, not rejected; the same identity key — or the same
+answers — from the SAME submitter scores 10000 and rejects, from another submitter 8800 and is
+held; on the Decision API lane the submitter is the claim's `submitter`). The pending task is
+`unique:<ruleId>`, and on the Decision API lane the reviewer view
+(`GET /v1/api/claims/:claimId/review`) carries `duplicates: [{ taskId, ruleId, score?, prior }]` —
+the engine's score in basis points and the earlier claim it matched: `prior.outcome` (this oracle's
+decision on it, `null` when none) and, only when the earlier claim is the same source's under the
+same protocol, `prior.claimId`, `prior.submittedAt` and `prior.files` (the shared files, else its
+images, signed like the view's own). Another organisation's claim never shows its id or files.
+Nothing to configure: the oracle stores the engine's `pendingTaskDetails` with the decision. The
+chain lane's `GET /v1/reviews/:claimId` does not carry it. Reference: [API reference](/build-an-oracle/decision-oracle/api-reference), "What a held
+duplicate matched".
+
+**Pauses.** Seven reasons, five of which lift themselves:
+
+| Reason | What happened | Who lifts it |
+| --- | --- | --- |
+| `engine-credits` | The owner's credits ran out — **every** watched collection pauses | The billing cron, once the engine says `ok` |
+| `admin-unfunded` | The collection's admin account cannot pay what a `MsgEvaluateClaim` draws from it — the evaluation payment, plus the approval payment on an ordinary approve (an intent claim's is escrowed) or the rejection payment on a reject; the chain fails the whole message unless every leg is covered. Decisions are recorded but parked `blocked` | The funding cron, once the balance covers the largest single parked delivery, per denom — and it re-delivers the parked decisions |
+| `engine-no-grant` | Your Evaluate authorization is gone | The owner grants again, then re-registers |
+| `rubric-unusable` | The anchored rubric no longer binds to its claim form. Every claim would be refused the same way, so a broken catalog entry is paid for at most once | Fix the rubric or `#vct`, then `POST /v1/collections/:id/resume` |
+| `payer-credits` | Per-review billing: the paying organisation's credits (or its send permission) did not cover a review's reservation | The payer cron, once a top-up covers a review — the claims that gave up meanwhile are restarted |
+| `oracle-plan` | Per-review billing: IXO's plan for your oracle no longer allows it (the facilitator or the engine said so). IXO is paged; the owner is not told | The payer cron, once IXO's plan allows it again |
+| `payer-delegation` | Per-review billing: nobody can pay — no live delegation, expired, used up, or signed by someone who no longer owns the organisation | A new delegation in the Decision Console: its `PUT` resumes the organisation's collections at once (the cron otherwise) |
+
+Each pause tells the owner once, with the action to take (the `admin-unfunded` notice names the
+account and the full amount the failed claim needs — evaluation plus its verdict's payment, per
+denom), and each recovery sends the paired "resumed" notice. An operator's own `POST …/pause` has
+no reason and no cron ever lifts it. `POST …/pause` and `POST …/resume` take the
+chain owner, the registrant (while it still holds a live Evaluate grant) or an `ORACLE_ADMIN_DIDS`
+invoker; any other grant holder can read the collection but gets `403` here, so a competing oracle
+hired on it can neither stall it nor lift a stop.
+
+**Notices are delivery, never judgement.** Matrix and email are both fail-soft and idempotent: an
+unset `ORACLE_MATRIX_ACCESS_TOKEN` or `EMAIL_FROM_ADDRESS` turns its lane into a logged skip, and no
+claim is ever blocked on one.
+
+**A Decision API source that runs low is told.** Give a source a `refillFloorCents` and, with a
+facilitator configured, the balance watch (every 5 minutes) sends a `balance.low` webhook the
+first time the payer's balance drops below it, and emails the source's `contactEmail` once per UTC
+day while it stays below (a send that fails is retried on the next check): the balance against the floor in dollars, and an "Add credits" link to your console's
+Credits page (`CONSOLE_URL/billing/credits`). Without `CONSOLE_URL` or a sender, the email is a logged skip.
+
+**Uptime and status.** Point your uptime monitor (Sentry Uptime, or any HTTP checker, every
+minute) at `GET /health/ready`, not `/health`: `/health` only proves the worker boots, while
+`/health/ready` answers `200 { "ok": true }` when D1, KV and the engine (and, with `API_LANE` and
+`API_PAYMENTS` on, the facilitator) all answer within 2 s and a deployed oracle has its on-chain
+identity (`ORACLE_ENTITY_DID`, from `oracle init`) and an `OWNER_DELEGATION_CAR`, when set, that
+parses (`owner-delegation`: a broken one would refuse every review answer), and `503 { "ok": false }` otherwise. It names nothing else, is rate-limited per IP like the API, and is cached for 15 s, so a
+monitor cannot load your dependencies. To see *which* check failed, list your own `did:ixo` in `ORACLE_ADMIN_DIDS` and
+call `GET /v1/admin/status` with a UCAN from it: the per-check `{ ok, ms }` (a failed `identity` or `owner-delegation` adds a `detail` naming the command to run), the backlog (reviews
+pending, paused collections — and with `API_LANE` on paused sources and due webhooks — by reason)
+and the engine's billing status for this oracle (`needs_funds` means your credits ran out). To let
+a monitoring service read the same status — e.g. your decision engine's status board, identified by
+its DID — list its DID (any method, `did:web:…` included) in `STATUS_READER_DIDS`: it can read
+`GET /v1/admin/status` and nothing else. Never put a monitor in `ORACLE_ADMIN_DIDS` for this —
+operators also gate write routes. With both unset that route is `403` for everyone.
+
+**Errors and alerts.** Both are yours to wire and both are optional — unset, the oracle only logs.
+`SENTRY_DSN` (a secret) turns on Sentry: every failure a lane swallows by design (a notify, a chain
+write, a webhook retry job) is still reported, codes and ids only — answers, facts, tokens and the
+API lane's personal fields are redacted there and in every log line. `SENTRY_TRACES_SAMPLE_RATE`
+(default `0.1`) and `SENTRY_ENVIRONMENT` (default `ENVIRONMENT`) tune it. The cron triggers check in
+to Sentry cron monitors: `oracle-scan` and — only with `API_LANE` on — `oracle-api-lane` every
+minute, `oracle-cron-five` every five minutes and `oracle-cron-hour` every hour; alert
+on a missed check-in and a stopped cron pages you. The conditions that need a person — a collection
+or API source paused (per reason), a webhook receiver that refused all 8 attempts, a paid claim whose
+settlement was lost or whose receipt the facilitator refused, a facilitator that refuses the
+oracle itself (not allow-listed, a clock) or its offers (`price_mismatch` / `plan_inactive` — every
+paid submit answers `503` until fixed), a paid review whose reservation could not be extended,
+a failing API-lane cron job or auto-resume — are each one Sentry issue, and, with
+`OPS_ALERT_WEBHOOK_URL` (a secret: a Slack-compatible incoming webhook) set, one Slack message per
+condition per 30 minutes (Sentry is deduped the same way).
+
+**Sentry in ten minutes (one project is all you need).**
+
+1. In Sentry create **one project** for your oracle (platform: Cloudflare Workers) and copy its
+   **DSN** (Project Settings → Client Keys). A DSN can only send events to that project, nothing more.
+2. `wrangler secret put SENTRY_DSN [--env testnet|production]` for each environment you deploy.
+   Optional: `wrangler secret put OPS_ALERT_WEBHOOK_URL` with a Slack incoming webhook, so pages
+   also post straight to a channel.
+3. Deploy. The cron monitors (`oracle-scan`, `oracle-cron-five`, `oracle-cron-hour`, and
+   `oracle-api-lane` with `API_LANE` on) appear by themselves on their first run.
+4. Add these alerts in Sentry (Alerts → Create Alert), each notifying you (email, or Slack if you
+   installed Sentry's Slack integration):
+
+   | Alert | Type | Setting |
+   | --- | --- | --- |
+   | Something needs a person | Issue alert | *A new issue is created* **and** the event's tag `alert` is set — these are the pages listed above |
+   | Any new error | Issue alert | *A new issue is created* (frequency: once per issue) |
+   | A cron stopped | Cron monitor | on each monitor: notify on a missed or failed check-in |
+   | The oracle is down | Uptime monitor | `GET https://<your oracle>/health/ready`, every 1 minute, alert after 3 failures |
+
+That is the whole setup; the oracle decides what is page-worthy, you only choose where it goes.
+
+**Metrics.** Every metric is a structured log line (`msg = "metric"`) in Workers Logs, always.
+For percentiles, bind `METRICS` to a Workers Analytics Engine dataset (`analytics_engine_datasets`
+in `wrangler.jsonc`, one dataset per environment — the template has it commented out); unbound,
+nothing breaks and the log lines stay at `info`, bound they drop to `debug` because the dataset
+carries them. Each data point has one fixed shape: `index1`/`blob1` the metric name, `blob2` op,
+`blob3` route, `blob4` status, `blob5` outcome, `blob6` network (`IXO_NETWORK`), `blob7` a
+low-volume id or `-`, `double1` the value, `double2` the milliseconds. The names: `http.request`
+(op = method, route = the endpoint pattern — never the raw path — or `unmatched`), `upstream` (op =
+the host, or `rpc` with the call name as route, for chain calls; outcome `ok` / `http_error` /
+`network_error` / `timeout`, or `error` for rpc), `cron.tick` (op = the job), `cache` (op = the
+cache; `hit` / `miss` / `error`), `errors` (status = the error code), plus the lanes' own counters.
+Weight by `_sample_interval` when you query: p95 is
+`quantileExactWeighted(0.95)(double2, _sample_interval)`, a count is
+`sum(_sample_interval * double1)`. At most 250 points per request, tick or workflow run.
+
+The domain metrics, by the same slots (`-` = unused):
+
+| Name | Type | op | route | status | outcome | id |
+| --- | --- | --- | --- | --- | --- | --- |
+| `api.decision.latency` | timing — accept → decision row; **the SLO** | lane `api` / `chain` | - | `ai` / `no_ai` | verdict | protocol DID |
+| `engine.call` | timing | `decide`, `decision`, `review`, `manifest`, `me`, `register`, `agreements`, `report`, `preview`, `stats` | - | HTTP status or `network` | `ok`, the engine's error code (`unknown` if it is not a plain short code), or `unavailable` | - |
+| `claim.pull` | timing, per store read | `blocksync`, `vfs`, `vfs-public`, `matrix`, `ipfs`, `cellnode` | - | - | `ok` (found or a miss) / `error` | - |
+| `facts.handler` | timing, per handler call | `ext-source` / `ai-check` (stock), `custom`, `group`, `unique`, `frequency` | fact name (a group: its names; a rule: its id) | - | `ok` / `error` / `cached` | protocol DID |
+| `ai.tokens` | count, summed per model per facts build | model | `prompt` / `completion` | - | the provider (`cloudflare` / `openrouter`) | protocol DID |
+| `ai.cost_micro_usd` | count — OpenRouter: summed per model per facts build; Cloudflare AI Gateway: per call, when the `ai-cost-backfill` cron job (every fifth minute) reads the USD off the gateway's log | model | - | - | the provider | protocol DID (OpenRouter only) |
+| `workflow.step` | timing, the step's own work (a replayed step records nothing) | `claim-ingest` / `review-complete` | step name | attempt | `ok` / `error` | - |
+| `ingest.terminal` | count | lane | - | - | failure class (`invalid_facts`, `engine_rejected`, `body_mismatch`, `retries_exhausted`) | - |
+| `chain.broadcast` | timing | - | - | tx code, `-` if it threw | `ok` / `error` | - |
+| `webhook.post` | timing | - | - | HTTP status, `network`, or `redirects` | `delivered` / `failed` / `dead` | source id |
+| `webhook.dead` | count | - | - | - | - | source id |
+| `facilitator.call` | timing | `offers`, `verify`, `settle`, `settlement`, `extend`, `balances` | - | HTTP status or `network`; `settlement_pending` for PAY's normal settle | `ok`, `error`, or the refusal code (a `/verify` `invalidReason` or `/settle` `errorReason` too — both answer HTTP 200) | - |
+| `api.submit` | count, per claim taken | `sync` / `async` (a `Prefer: wait` above 0, or none / `wait=0`), `batch` | - | - | - | - |
+| `api.wait` | count, per wait asked (above 0) | `submit` / `get` | - | - | `hit` (the decision landed in time) / `miss` | - |
+| `api.402` | count, every 402 answered | `first_leg` (x402's opening `PAYMENT_REQUIRED`, no `PAYMENT-SIGNATURE` sent) / `refused` | - | `PAYMENT_REQUIRED` / `SPEND_CAP` / `INSUFFICIENT_CREDITS` | - | - |
+| `api.idempotent_replay` | count, per repeat answered | `submit` / `batch` (a claim's repeat), `other` (any other keyed route's stored answer) | - | - | - | - |
+| `api.rate_limited` | count, per key/source limit hit | - | the endpoint pattern | - | - | - |
+| `ucan.wildcard` | count, per chain-lane call still signing the legacy `can: "*"` | - | `<METHOD> <route pattern>` | - | - | - |
+
+`api.decision.latency` starts at the API claim's `receivedAt`, or when a chain claim's ledger row
+was written; `ai` means the protocol's rubric declares AI checks. The backlog gauges are written
+once per minute tick: `review.pending` (decisions awaiting a reviewer) and `collections.paused`, and
+with `API_LANE` on `backlog.webhook.due`, `backlog.webhook.oldest_age_s` and `sources.paused` — and,
+with a facilitator configured, every 5 minutes after the payment reconcile,
+`backlog.charge.unsettled.oldest_age_s` (how long the oldest decided claim with a receipt has waited
+for the facilitator to accept it; alert above 10 minutes). The
+paused gauges have one point per reason that has any (outcome = the reason) plus an outcome `total`
+point that is always written.
+
+**Correlation.** A claim accepted over HTTP starts its workflow with the request's `traceparent`
+and `requestId`; a claim the scan found, with the tick's trace. Every log line of the run carries
+that `traceId` plus `claimId`, `instanceId` and `workflow`, and the engine call sends the same
+`traceparent` — one `traceId` finds the accept, the run, the engine's decision and the run's
+inline webhook attempt together (a later retry from the cron logs under the tick's trace).
+
+**Traces** (optional). Workers Traces show where a request's or workflow step's time goes: the
+platform records a span for every D1, KV, fetch and Durable Object call, and the facts runner adds
+one `facts.handler` span per handler call, tagged like the metric (`op`, `route`, `id`). They are
+off in the template: uncomment `observability.traces` in `wrangler.jsonc` (top level for devnet,
+and the commented per-env `observability` block for testnet and production — an env's block
+replaces the top-level one whole), and set `head_sampling_rate` to the share of requests to trace
+(the template suggests 1 / 0.2 / 0.05). From 2026-10-01 Cloudflare bills every span as one
+Workers Observability event, the same quota as log lines (Workers Paid: 20 million a month
+included, then $0.60 per million), so start low and check the volume after a week. Traces go to
+the Cloudflare dashboard; to also send them to an OpenTelemetry backend, create an OTLP
+destination in the dashboard (Workers Observability → Destinations) and name it in
+`observability.traces.destinations` — no code.
+
+**The answer archive** (optional). Bind an R2 bucket as `ANSWERS_ARCHIVE` and the oracle keeps
+a copy of everything it evaluated — the ask, every answer, every photo — in your own account, so
+the data outlives the stores it was pulled from. No binding, no archive; there is no flag.
+
+```jsonc
+// wrangler r2 bucket create my-oracle-answers   (one bucket per env, redeclared in each env block)
+"r2_buckets": [{ "binding": "ANSWERS_ARCHIVE", "bucket_name": "my-oracle-answers" }]
+```
+
+One folder per ask, named by the ask's id and its title (`<askId>` is the chain collection's id,
+or an API scope's `api:<sourceId>:<protocolDid>`; the slug is lowercase ASCII and dashes, at most
+60 characters; no title ⇒ the folder is `<askId>`). One oracle serves one network, so the network
+is not in the path:
+
+```text
+<askId>-<slug>/about.json              what the ask was about, as people saw it: title, question,
+                                       kind, place, reward, postedBy, opensAt/closesAt, askId,
+                                       proof {entity, collection}
+<askId>-<slug>/<claimId>/answer.json   the Q&A record: askId, question, answer {text, files,
+                                       answeredAt, place}, verdict, why, checks, paid,
+                                       answeredBy, receipt {cid}, archivedAt
+<askId>-<slug>/<claimId>/claim.json    the claim body verbatim (a chain claim's exact stored bytes)
+<askId>-<slug>/<claimId>/<n>-<name>    each attachment's bytes, unchanged (EXIF and GPS included)
+```
+
+`about.json` is written once, by the ask's first archived claim, from the ask's own public
+documents: with no hook it carries the deed's `#pro` name as the title (else its `alsoKnownAs`), the
+collection's window as `opensAt`/`closesAt` and its approval payment as `reward`, and nothing else.
+Your `archive` hooks in `defineOracle` fill the rest ([API reference §2](/build-an-oracle/decision-oracle/api-reference#oracleconfig)):
+`describe(ask)` gets the collection, the deed's documents as they are (`#pro`, `#done`, … parsed)
+and `docsOf(did)` for another entity's, and returns any part of the view; `answer({ body })` returns
+the answer's `text` and exact `place`. These are the ask's own documents, never the rubric.
+
+In `answer.json`, `why` is the engine's reason lines (else its explanation), `checks` one entry
+per frozen `ext`/`ai` fact (`pass`, `fail`, or `not-run` with the error), and `paid` is `no` for a
+rejection, `pending` until the act lane signs an approved verdict on chain, then `yes`. It is
+written inside the `evaluate` step once the decision has landed (both lanes), re-written by the
+review fold, and re-written with `paid: yes` after the chain write (an `archive-paid` step).
+Attachments are written once, byte for byte; one over 32 MB, or one that cannot be
+read, is listed under `answer.filesNotCopied` and not copied. Nothing is dropped: `claim.json` keeps
+the whole body. Every object carries R2 custom metadata — `askId`, `title` (≤ 100 characters),
+`kind`, `place` (its name), `oracle` (your `ORACLE_HOSTNAME`), and on a claim's objects `answeredAt`
+(the date) and, on `answer.json` and `claim.json`, `verdict` — so a listing with
+`include: ["customMetadata"]` reads an ask without opening it. Archiving is fail-soft — an R2
+failure is a Sentry issue and an `archive.failed` log line, never a failed or retried evaluation —
+so a claim whose archive failed simply stays out of it. There is no index: list the bucket by
+prefix to find an ask's answers.
+
+**Privacy.** The archive holds what claimants sent: exact locations, times and photos. Keep the
+bucket private (no public bucket, no `r2.dev` URL, no custom domain), and grant its API tokens
+sparingly. It sits outside the oracle's own erasure: the Decision API lane's retention sweep does
+not reach it, so a deletion request is yours to honour by deleting the claim's folder
+(`<askId>-<slug>/<claimId>/`). The API lane's `submitter` is stored as its
+erasure-proof digest, never the raw value.
+
+**Operator recovery** is the Cloudflare dashboard: rerun an errored `ClaimIngest` instance (its
+params are retained) and the ledger converges. The handlers run again: the fact cache covers a step's
+own retries, and a terminal failure clears it.
+
+---
+
+## 13. Troubleshooting
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `401` on any `/v1` call | The invocation's audience is not `did:web:<ORACLE_HOSTNAME>`, or `/.well-known/did.json` is not served from that host | Make `ORACLE_HOSTNAME`, the served host (Custom Domain or `workers.dev`) and the audience the same string. Check `SERVICE_ED25519_MNEMONIC` is set |
+| `401` from the claim bot, the UCAN Store or the VFS claims lane (`claim.store-denied`), on an invocation minted as `did:ixo:…` | That DID has no IID document, or the `SERVICE_ED25519_MNEMONIC` key is not a verification method on it — the resolver has nothing to check the signature against | Re-run `oracle init --protocol <protocol did> --kit-url https://<your host> --yes`: every step already done says `skip`, so only the missing `iid` / `key` writes anything. (`--protocol` and `--kit-url` are always required, and `--only <step>` without `--yes` is still just a dry run) |
+| `bunx @ixo/decision-oracle@<version>` says `No version matching … found (but package exists)` right after a release | bun's cached copy of the package list is older than the release | `bun pm cache rm`, then run it again — or `BUN_INSTALL_CACHE_DIR=$(mktemp -d) bunx @ixo/decision-oracle@<version> …` |
+| A protocol shows as "Unnamed" in the portal, the console or the Openhands app | It has no `#pro` profile: `publish-protocol` writes one only with `--name` | `publish-protocol --phase profile --entity <protocol did> --rubric <file> --form <file> --name "<name>" [--description "<text>"] --yes` |
+| A service or test account cannot sign in through a browser | `login` is a browser flow | `login --session-file <session.json> --network <n>` saves a session in the shape `login` writes |
+| `MsgEvaluateClaim` fails with `insufficient funds` | The oracle's own wallet was never funded; it pays its own gas, and the AuthHub session's balance is a different account | `oracle init --protocol <protocol did> --kit-url https://<your host> --only fund --yes` (tops it back up to 1 IXO). `chainStatus` on `GET /v1/claims/:claimId` names the failure |
+| `ORACLE_MATRIX_USER_ID (…) is not <network>'s MXID for did:ixo:…` | The MXID in `wrangler.jsonc` was hand-edited, or was derived for a different network's homeserver | Use the expected MXID the error prints — it is derived from `ORACLE_ADDRESS` and the network. Nothing is signed or written before this check |
+| `oracle init` says `.dev.vars`'s token belongs to someone else, or the homeserver did not answer for it | A stale or rotated `ORACLE_MATRIX_ACCESS_TOKEN`, or a homeserver blip — either way the answer is a fresh login | Let the `matrix` step run (or force it with `--relogin`); account creation underneath is idempotent, so the worst case is one extra Matrix device |
+| `⚠ domain indexer refused …` / `unreachable` at the end of `oracle init` | The domain indexer is a nice-to-have submission, not part of the chain state | Nothing — the exit code is untouched and the entity is already on chain. Re-run later if the portal listing looks stale |
+| The portal resolves your oracle at an old host | `#eval` still points where the last `oracle init` put it — a redeploy does not move it | Re-run `oracle init --protocol <protocol did> --kit-url https://<the new host> --yes`: the `service` step deletes and re-adds `#eval` in one transaction |
+| `402` at register | The **owner's** credits, not a bug: `NO_SUBSCRIPTION` or `INSUFFICIENT_CREDITS` (with a `manageSubscriptionUrl`) — or the collection's `Payments.evaluation` is below your `pricing.evaluation.minAmount` | Owner buys credits at the printed URL, or the collection's admin raises the evaluation payment. Then register again |
+| `403` at register | Gate 1: the caller is neither the collection entity's chain owner nor a holder of an active Evaluate grant | Register as the owner, or have them grant the caller first |
+| `409` at register | Gate 2 (this oracle holds no Evaluate grant) or gate 3 (the protocol is not in `supportedProtocols`) | Grant `ORACLE_ADDRESS` the Evaluate role; or add the protocol DID to `supportedProtocols` and redeploy |
+| `409` on `POST …/scan` | The collection is paused | Resume it — and read `pausedReason` first |
+| `409` on `POST /v1/reviews/:claimId` | Already folded | Read `GET /v1/reviews/:claimId` for the stored answers |
+| `400 REVIEWER_GRANT_INVALID` on `POST /v1/reviews/:claimId`, or as a `foldError` | No `reviewerGrant`, or one that is not the reviewer's, is past its window or over 30 days, or names another collection or ability | The reviewer fetches their grant from `GET /v1/collections/:id/reviewers` (or asks a controller for a new one) and answers again |
+| `403 REVIEWER_NOT_AUTHORIZED`, on the answer or as a `foldError` | The grant was revoked or never filed, its signer is no longer a controller of the collection's entity, the reviewer (or signer) holds an Evaluate grant on the collection, or either is this oracle's owner (`oracle-owner`: the account that signed `OWNER_DELEGATION_CAR`) | A current controller who neither evaluates nor owns the oracle grants a reviewer who does not evaluate; the reviewer answers again |
+| A decision comes back `unusable` | The engine cannot bind the rubric to the live claim form (no `#rub`, swapped bytes, a drifted `#vct`, an unbindable ref). Recorded once, then the collection pauses `rubric-unusable` | Fix the anchored rubric or form, then resume. `protocol review` prints the exact issues |
+| `invalid_facts` in the ledger, and the ingest failed loudly | Your table's answer misses the work order — see the `FACT_*` codes in [API reference §9](/build-an-oracle/decision-oracle/api-reference#coverage-factissue-codes) | `facts run` reproduces it locally; the issue names the path and the reason |
+| `content_mismatch` / `payload_too_large` in the ledger, the ingest failed, `engine.content-mismatch` paged | The engine would not bind the decision to the claim's content: the answers, attachments or agent you froze are not the claim's (`details.reason` is in the row's explanation), or the body is over its 6 MiB cap | Nothing to retry — the answers are the claim's or they are not. A mismatch on a chain claim is a bug on one side (the bytes are CID-verified): report it with the claim id. Never re-send edited answers |
+| `RUBRIC_PIN_MISMATCH` | The `#rub` was re-anchored between the manifest read and the decide call | Nothing to do — the workflow invalidates the cached manifest, re-reads and rebuilds once |
+| `RECEIPT_MISSING` on a failed ingest or as a `foldError`, `engine.receipt-missing` paged | The engine answered a final decision or fold without its receipt (its mint failed), and kept doing so through every retry. A receipt-less decision is never recorded: the receipt is the one credential the chain write and the payout spend, so each retry asks the engine again until its stored row comes back with the receipt | Report it to IXO with the claim id. Once the engine mints again, rerun the `ClaimIngest` instance or re-POST the review |
+| `NO_EVALUATE_GRANT` from the engine | You are not (or no longer) hired for that collection | The owner grants again; then re-register to clear the `engine-no-grant` pause |
+| `Invalid environment configuration: ORACLE_HOSTNAME: …` at boot | A required var is missing or malformed. Config is validated at isolate start, deliberately | The message names the var. Every var is documented in [API reference §11](/build-an-oracle/decision-oracle/api-reference#11-configuration) |
+| `tools.env: this build carries no worker env` | `tools.env` was read in a test or a `facts run` dry run, where there is no worker env | Pass `fakeTools({ env: { … } })` in tests; in a dry run, read the value from `tools.config` or guard on it |
+| `defineOracle() was already called` | Two different config objects in one isolate | There is one oracle per worker. In tests, go through a shared helper rather than calling `defineOracle` twice |
+| `UNIQUE_HMAC_KEY not configured` | The rubric declares a `unique` rule and the secret is unset | Set it — one long random string, **for the life of the oracle**: rotating it orphans every registered digest |
+| `AI binding / AI_GATEWAY_ID not configured` or `OPENROUTER_API_KEY not configured` | An AI check (or the duplicate judge) ran without its provider's pieces. Loud on purpose, so the step retries rather than freezing a verdict | Add the `ai` binding + `AI_GATEWAY_ID` (or set the key with `AI_PROVIDER=openrouter`), or turn `policies.allowAiChecks` off deliberately. `AI_GATEWAY_ID` is the name of a gateway in YOUR Cloudflare account: dashboard → AI → AI Gateway → create one, and use its name. Third-party models through the gateway need AI Gateway credits on the account |
+| `ai.credits-exhausted` alert; AI facts erroring (`Insufficient AI Gateway credits`) | The Cloudflare account ran out of AI Gateway credits | Load credits: dashboard → AI → AI Gateway → Credits. Affected claims went to their `onError` |
+| Audio/video attachment judged as "content not sent: audio/video inputs are off" | `AI_AUDIO_VIDEO` is off (the default) | Set `AI_AUDIO_VIDEO=true` with `AI_PROVIDER=openrouter` — the gateway route cannot read them |
+| A `.dev.vars` edit made no difference | `wrangler dev` reloads source, never secrets | Restart it |
+| A wasm / bundle error on `deploy` or `dev` | Usually a stale `worker-configuration.d.ts`, or the package's wasm not copied after an install | `bun run cf-typegen`, then reinstall. `wrangler deploy --dry-run` (`bun run build`) reproduces a bundle failure without shipping |
+| `facts run` says a handler is `handler-unused` | The name in your table is not a name the manifest declares | Copy the name from `protocol review`, exactly |
+| `facts run --preview` says to start `bun run dev` | The engine resolves your `did:web` from `ORACLE_HOSTNAME` and found nothing there | Start the dev server (or point `ORACLE_HOSTNAME` at a reachable host) |
+| A decision is `decided` but never lands on chain | `policies.autoSign` or `AUTO_SIGN` is off · `ORACLE_SECP_MNEMONIC` is unset · `chainStatus` is `blocked` (no grant, no receipt CID, or an unfunded admin account) · `chainStatus` is `held` (your own `policies.act` hook parked it on purpose) | Read `chainStatus` / `chainError` on `GET /v1/claims/:claimId`. An unfunded admin account resumes and re-delivers by itself once topped up; a `held` row waits for your own `signEvaluation(env, claimId, amount?)` call; a `blocked` row whose `chainError` says its facts could not be rebuilt (a decision recovered after a crash) is released by `decision-oracle redeliver <claimId> --yes`, which rebuilds the facts your act policy reads and signs — the engine's decision and receipt stay as recorded |
+
+---
+
+## 14. For AI agents working in a generated project
+
+Six skills ship with the package and are copied into `.claude/skills/` by `init` (refresh with
+`bunx decision-oracle skills sync`). Invoke the one that matches the job rather than improvising:
+
+| Job | Skill |
+| --- | --- |
+| Set up, configure, deploy or get an oracle hired — the runbook this guide narrates | `create-oracle` |
+| Write or debug one fact handler; test with `runFacts`/`fakeTools`; chase a `FACT_MISSING` / `FACT_KIND` | `write-facts` |
+| Author the rubric a protocol will anchor | `create-rubric` |
+| Anchor a claim form and rubric as an on-chain protocol entity | `publish-protocol` |
+| Create a deed and a claim collection, fund it, grant the roles | `create-collection` |
+| Turn on, deploy and verify the Decision API lane (`API_LANE`) — engine registration (payable at once on the Standard plan), operator sources and keys, verifying it | `decision-api-oracle` |
+
+And the three rules that matter more than any of them:
+
+1. **The manifest is the work order — never the rubric doc.** If `protocol review` says `unusable`,
+   there is nothing to build against yet. Stop and say so.
+2. **Never invent a fact value.** A stub is a visible `fact.error("not implemented: <name>")`. A
+   wrong value that passes shape validation is worse than a loud failure the rubric routes itself.
+3. **`bun run check` stays green** after any `src/` edit, and `bun run cf-typegen` runs after any
+   `wrangler.jsonc` binding or var change.
