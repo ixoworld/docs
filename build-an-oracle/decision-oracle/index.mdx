@@ -19,6 +19,41 @@ decision oracle never runs an agent, it produces facts and the engine decides.)
   identity (section 3 below).
 </Note>
 
+## Easiest way: build it with your AI agent
+
+The `ixo-oracle-builder` plugin, from the `ixoworld/ixo-plugins` marketplace, walks you through
+everything step by step, even if you are not technical:
+
+- explains each term as it comes up;
+- checks for bun and Node, and installs them with your OK;
+- starts on testnet (play money) by default;
+- needs only a free Cloudflare account, and runs the oracle on the free `workers.dev` address;
+- asks you to confirm before every chain write;
+- then hands off to this package's own skills.
+
+<Tabs>
+  <Tab title="Claude Code">
+    ```bash
+    /plugin marketplace add ixoworld/ixo-plugins
+    /plugin install ixo-oracle-builder@ixo-plugins
+    ```
+  </Tab>
+  <Tab title="Codex">
+    ```bash
+    codex plugin marketplace add ixoworld/ixo-plugins
+    codex plugin add ixo-oracle-builder@ixo-plugins
+    ```
+  </Tab>
+  <Tab title="Claude app">
+    On a paid plan: **Customize → Plugins → Add marketplace**, enter `ixoworld/ixo-plugins`, then
+    **Discover → ixo-oracle-builder → Add**. Use it in the **Code** tab.
+  </Tab>
+</Tabs>
+
+Then ask it: **"I want to build an oracle"**.
+
+The rest of this page is the manual path, and the reference for what the plugin does.
+
 This guide walks from an empty directory to an oracle that is hired, deciding and signing on chain,
 and then to running it. Every signature, default and cap it leans on is in the
 [API reference](/build-an-oracle/decision-oracle/api-reference).
